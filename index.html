@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BasketballLife｜Online Beta V7.40</title>
+<title>BasketballLife｜Online Beta V7.41 · BL LIVE</title>
 <style>
 :root{--bg:#0b0f15;--card:#131a25;--card2:#182231;--line:#2b394d;--txt:#f5f7fb;--mut:#91a0b6;--gold:#f0b64b;--blue:#5593ff;--green:#49cf88;--red:#e23b3b;--orange:#e88946}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 25% 0,#172238,#0b0f15 38%);color:var(--txt);font-family:system-ui,-apple-system,"Microsoft JhengHei",sans-serif}
@@ -3353,6 +3353,20 @@ body.onlineModalOpen{
   }
 }
 </style>
+<style>
+/* V7.41 BL LIVE realtime */
+.onlineStatus.online::after{
+  content:"LIVE";
+  margin-left:2px;
+  padding:1px 5px;
+  border:1px solid #315847;
+  border-radius:999px;
+  color:#6fd49e;
+  font-size:8px;
+  font-weight:950;
+  letter-spacing:.5px;
+}
+</style>
 </head>
 <body><div class="wrap">
 <div class="brandRow">
@@ -3433,10 +3447,8 @@ window.BL_ONLINE_CONFIG = {
 
 
 /* =========================================================
-   BasketballLife Online Account Layer — V7.40
-   Stage 1:
-   Supabase connection -> anonymous auth -> player nickname.
-   BL LIVE publishing/realtime is connected in the next stage.
+   BasketballLife Online Layer — V7.41
+   Anonymous auth + nickname + BL LIVE history + Realtime.
    ========================================================= */
 (function(){
  const cfg=window.BL_ONLINE_CONFIG||{};
@@ -3447,7 +3459,11 @@ window.BL_ONLINE_CONFIG = {
    nickname:"",
    ready:false,
    offline:false,
-   initPromise:null
+   initPromise:null,
+   liveChannel:null,
+   liveReady:false,
+   knownNewsIds:new Set(),
+   publishFingerprints:new Set()
  };
 
  const $=id=>document.getElementById(id);
@@ -3538,6 +3554,170 @@ window.BL_ONLINE_CONFIG = {
    return data||null;
  }
 
+ function normalizeDbNews(row){
+   if(!row)return null;
+   return {
+     id:row.id||"",
+     user_id:row.user_id||"",
+     nickname:row.nickname||"",
+     player:row.player_name||"",
+     type:row.event_type||"history",
+     importance:Number(row.importance||0),
+     message:row.message||"",
+     league:row.league||"",
+     year:row.career_year||null,
+     created_at:row.created_at||new Date().toISOString(),
+     createdAt:row.created_at?Date.parse(row.created_at):Date.now(),
+     global:true
+   };
+ }
+
+ function addGlobalRow(row){
+   if(!row || !row.id)return;
+   if(state.knownNewsIds.has(row.id))return;
+   state.knownNewsIds.add(row.id);
+   const item=normalizeDbNews(row);
+   if(item && item.importance>=4){
+     window.BasketballLifeTicker?.addGlobalNews?.(item);
+   }
+ }
+
+ async function loadGlobalNews(){
+   if(!state.client || !state.user)return;
+   try{
+     const {data,error}=await withTimeout(
+       state.client
+         .from("global_news")
+         .select("id,user_id,nickname,player_name,event_type,importance,message,league,career_year,created_at")
+         .order("created_at",{ascending:false})
+         .limit(20),
+       8000
+     );
+     if(error)throw error;
+
+     const rows=(data||[]).map(normalizeDbNews).filter(Boolean);
+     state.knownNewsIds=new Set((data||[]).map(x=>x.id).filter(Boolean));
+     window.BasketballLifeTicker?.setGlobalNews?.(rows);
+   }catch(err){
+     console.warn("BL LIVE history load failed:",err);
+   }
+ }
+
+ function subscribeGlobalNews(){
+   if(!state.client || !state.user || state.liveChannel)return;
+
+   state.liveChannel=state.client
+     .channel("basketballlife-global-news")
+     .on(
+       "postgres_changes",
+       {event:"INSERT",schema:"public",table:"global_news"},
+       payload=>addGlobalRow(payload?.new)
+     )
+     .subscribe(status=>{
+       state.liveReady=status==="SUBSCRIBED";
+       if(status==="CHANNEL_ERROR" || status==="TIMED_OUT"){
+         console.warn("BL LIVE Realtime status:",status);
+       }
+     });
+ }
+
+ async function startLive(){
+   if(!state.client || !state.user)return;
+   await loadGlobalNews();
+   subscribeGlobalNews();
+ }
+
+ function dbEventType(item){
+   const text=String(item?.message||"");
+   const t=String(item?.type||"");
+   if(t==="nba")return "nba";
+   if(t==="award")return "award";
+   if(t==="championship")return "championship";
+   if(t==="national")return "national";
+   if(t==="genius")return "genius";
+   if(t==="overseas")return "overseas";
+   if(t==="major_injury" || t==="injury")return "injury";
+   if(t==="legacy"){
+     if(/球衣退休|退休.*球衣/.test(text))return "jersey";
+     if(/名人堂/.test(text))return "hof";
+     return "history";
+   }
+   if(t==="hof" || t==="jersey" || t==="history" || t==="pro")return t;
+   if(/名人堂/.test(text))return "hof";
+   if(/球衣退休|退休.*球衣/.test(text))return "jersey";
+   if(/重傷|韌帶|阿基里斯|ACL/.test(text))return "injury";
+   return "history";
+ }
+
+ function newsIcon(type){
+   return {
+     nba:"🏀",pro:"💼",overseas:"🌏",award:"🏅",championship:"🏆",
+     national:"🇹🇼",genius:"✨",history:"◆",hof:"🏛️",jersey:"🏟️",injury:"🏥"
+   }[type]||"◆";
+ }
+
+ function actionText(raw,player){
+   let x=String(raw||"").trim();
+   x=x.replace(/^[\u{1F000}-\u{1FAFF}\u2600-\u27BF\uFE0F\u200D\s]+/u,"").trim();
+   if(player){
+     const safe=String(player).replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+     x=x.replace(new RegExp("^"+safe+"\\s*"),"").trim();
+   }
+   return x || "完成重大生涯事件";
+ }
+
+ function publicMessage(item,type){
+   const player=String(item?.player||window.p?.name||"球員");
+   const nick=state.nickname||"匿名玩家";
+   return `${newsIcon(type)} ${nick} 的球員「${player}」${actionText(item?.message,player)}`.slice(0,300);
+ }
+
+ async function publishNews(item){
+   if(!item || Number(item.importance||0)<4)return false;
+   if(!state.client || !state.user || !state.nickname || state.offline)return false;
+
+   const type=dbEventType(item);
+   const player=String(item.player||window.p?.name||"球員").slice(0,30);
+   const message=publicMessage(item,type);
+   const fingerprint=`${state.user.id}|${player}|${item.year||""}|${type}|${message}`;
+
+   // Prevent accidental duplicate inserts from the same screen/event.
+   if(state.publishFingerprints.has(fingerprint))return false;
+   state.publishFingerprints.add(fingerprint);
+   setTimeout(()=>state.publishFingerprints.delete(fingerprint),15000);
+
+   try{
+     const row={
+       user_id:state.user.id,
+       nickname:state.nickname,
+       player_name:player,
+       event_type:type,
+       importance:Math.max(4,Math.min(5,Number(item.importance||4))),
+       message,
+       league:String(item.league||window.p?.path||"").slice(0,80),
+       career_year:Number.isFinite(Number(item.year))?Number(item.year):null
+     };
+
+     const {data,error}=await withTimeout(
+       state.client
+         .from("global_news")
+         .insert(row)
+         .select("id,user_id,nickname,player_name,event_type,importance,message,league,career_year,created_at")
+         .single(),
+       8000
+     );
+     if(error)throw error;
+
+     // Show immediately for the sender; Realtime echo is deduped by id.
+     addGlobalRow(data);
+     return true;
+   }catch(err){
+     state.publishFingerprints.delete(fingerprint);
+     console.warn("BL LIVE publish failed:",err);
+     return false;
+   }
+ }
+
  async function init(){
    if(state.initPromise)return state.initPromise;
 
@@ -3580,6 +3760,7 @@ window.BL_ONLINE_CONFIG = {
          setStatus("online",`Online｜${state.nickname}`);
          hideNicknameModal();
          setStartReady();
+         startLive();
        }else{
          state.nickname="";
          state.ready=true;
@@ -3641,6 +3822,7 @@ window.BL_ONLINE_CONFIG = {
      hideNicknameModal();
      setStatus("online",`Online｜${nickname}`);
      setStartReady();
+     startLive();
    }catch(err){
      console.warn("Nickname save failed:",err);
      if(errBox){
@@ -3664,13 +3846,8 @@ window.BL_ONLINE_CONFIG = {
    return false;
  }
 
- function nickname(){
-   return state.nickname||"";
- }
-
- function userId(){
-   return state.user?.id||"";
- }
+ function nickname(){return state.nickname||""}
+ function userId(){return state.user?.id||""}
 
  window.BasketballLifeOnline={
    state,
@@ -3680,8 +3857,12 @@ window.BL_ONLINE_CONFIG = {
    requiresNickname,
    nickname,
    userId,
+   publishNews,
+   loadGlobalNews,
+   startLive,
    client(){return state.client},
-   isOnline(){return !!state.client && !!state.user && !state.offline}
+   isOnline(){return !!state.client && !!state.user && !state.offline},
+   isLive(){return !!state.liveReady}
  };
 
  window.addEventListener("DOMContentLoaded",()=>{
@@ -3691,6 +3872,7 @@ window.BL_ONLINE_CONFIG = {
    });
  });
 })();
+
 
 // Robust DOM bindings: do not rely on browsers exposing element IDs as global variables.
 
@@ -5036,7 +5218,11 @@ function refreshTicker(){
  const el=document.getElementById("liveTrack");if(!el)return;
  const local=(p?.news||[]).map(normalizeTickerItem).filter(x=>(x.importance||0)>=GLOBAL_TICKER_MIN_IMPORTANCE);
  const merged=[...externalGlobalNews,...local]
-   .filter((x,i,a)=>x.message&&a.findIndex(y=>y.message===x.message)===i)
+   .filter((x,i,a)=>{
+     if(!x.message)return false;
+     if(x.id)return a.findIndex(y=>y.id&&y.id===x.id)===i;
+     return a.findIndex(y=>!y.id&&y.message===x.message)===i;
+   })
    .sort((a,b)=>(b.created_at?Date.parse(b.created_at):b.createdAt||0)-(a.created_at?Date.parse(a.created_at):a.createdAt||0))
    .slice(0,12);
  const txt=merged.length
