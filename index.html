@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BasketballLife｜Online Beta V7.42 · Community</title>
+<title>BasketballLife｜Online Beta V7.43 · Balance Polish</title>
 <style>
 :root{--bg:#0b0f15;--card:#131a25;--card2:#182231;--line:#2b394d;--txt:#f5f7fb;--mut:#91a0b6;--gold:#f0b64b;--blue:#5593ff;--green:#49cf88;--red:#e23b3b;--orange:#e88946}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 25% 0,#172238,#0b0f15 38%);color:var(--txt);font-family:system-ui,-apple-system,"Microsoft JhengHei",sans-serif}
@@ -3450,9 +3450,9 @@ body.onlineModalOpen{
   <div class="onlineModalCard">
     <div class="onlineEyebrow">BASKETBALLLIFE ONLINE</div>
     <h2 id="nicknameTitle">設定玩家暱稱</h2>
-    <p class="mut">這是你的「玩家身分」，和每一輪生涯的球員姓名不同。未來 BL LIVE、公開生涯紀錄會顯示這個暱稱。</p>
+    <p class="mut">這是你的「玩家身分」，和每一輪生涯的球員姓名不同。</p>
     <label for="onlineNicknameInput">玩家暱稱</label>
-    <input id="onlineNicknameInput" maxlength="20" autocomplete="nickname" placeholder="2～20 個字，例如：AKai0013">
+    <input id="onlineNicknameInput" maxlength="20" autocomplete="nickname" placeholder="2～20 個字，例如：MAX">
     <div id="nicknameError" class="nicknameError"></div>
     <button id="nicknameSaveBtn" class="start onlineSaveBtn" type="button" onclick="BasketballLifeOnline.saveNickname()">確認暱稱</button>
     <div class="onlinePrivacy">匿名登入不需要 Email 或密碼；本機瀏覽器會保留登入 session。</div>
@@ -3998,6 +3998,15 @@ window.BL_ONLINE_CONFIG = {
    </button>`;
  }
 
+ function openLeaderboardNewTab(metricKey="power"){
+   const key=leaderboardMetrics[metricKey]?metricKey:"power";
+   const url=new URL(location.href);
+   url.search="";
+   url.hash="";
+   url.searchParams.set("leaderboard",key);
+   window.open(url.toString(),"_blank","noopener,noreferrer");
+ }
+
  async function openLeaderboard(metricKey="power",pushUrl=true){
    state.activeMetric=leaderboardMetrics[metricKey]?metricKey:"power";
    showCommunityShell("全球排行榜");
@@ -4256,6 +4265,7 @@ window.BL_ONLINE_CONFIG = {
    publishCareer,
    copyCareerLink,
    openLeaderboard,
+   openLeaderboardNewTab,
    changeRankMetric,
    openCareer,
    closeCommunity,
@@ -4473,14 +4483,14 @@ function teamCompetitiveScore(r,tournamentIndex){
  if(tournamentIndex===2)form-=2; // 主賽事更難
  return teamBase+impact+chemistry+injury+form;
 }
-const HBL_TEAMS=["南山高中","松山高中","能仁家商","光復高中","東山高中","南湖高中","泰山高中","東泰高中","高苑工商","三民家商","新榮高中","再興中學","青年高中","基隆商工","后綜高中","宜蘭高中"];
-const UBA_TEAMS=["政治大學","健行科大","輔仁大學","國立體大","世新大學","文化大學","臺灣師大","臺灣藝大"];
+const HBL_TEAMS=["男山高中","崧山高中","能人家商","光富高中","東杉高中","南弧高中","鈦山高中","冬泰高中","高院工商","三旻家商","欣榮高中","再星中學","清年高中","機隆商工","后粽高中","宜藍高中"];
+const UBA_TEAMS=["政治大學","建行科大","輔人大學","國立體大","世新大學","文化大學","臺灣師大","臺灣藝大"];
 const PRO_TEAMS=["臺北猛獅","新北雷霆","桃園飛鷹","新竹風城","臺中獵豹","臺南海神","高雄鋼鐵人","福爾摩沙勇士"];
-const JAPAN_PRO_TEAMS=["東京武士","大阪雷神","名古屋獵鷹","千葉航海者"];
-const KOREA_PRO_TEAMS=["首爾騎士","釜山海潮","昌原獵鷹","水原音速"];
-const CBA_TEAMS=["上海大鯊魚","北京首鋼","廣東華南虎","浙江雄獅"];
+const JAPAN_PRO_TEAMS=["東京雷神","大阪獵鷹","名古屋航海者","千葉武士"];
+const KOREA_PRO_TEAMS=["首爾獵鷹","釜山音速","昌原騎士","水原海潮"];
+const CBA_TEAMS=["上海雄獅","北京華南虎","廣東鯊魚","浙江首鋼"];
 const NJCAA_TEAMS=["NJCAA 東區學院","NJCAA 西區學院","NJCAA 南區學院","NJCAA 北區學院"];
-const SEMIPRO_TEAMS=["台北戰鷹","新北海盜","桃園青年軍","台中雷豹二隊","高雄海港"];
+const SEMIPRO_TEAMS=["台北戰鷹","新北海盜","桃園青年軍","台中雷豹","高雄海港"];
 const GLEAGUE_TEAMS=["南灣疾風","奧斯汀銀星","鹽湖城山貓","長島航海家","聖克魯茲浪潮","首都Go-Go"];
 const NBA_TEAMS=["洛杉磯星辰","紐約帝國","芝加哥烈焰","邁阿密浪潮","達拉斯孤星","波士頓綠衫","舊金山灣區","鳳凰城烈日"];
 const LEAGUE_CFG={
@@ -5503,11 +5513,11 @@ function seasonBodyAssessment(){
 }
 function estimatedPlanRisk(plan){
  let recent=(p.injuryHistory||[]).filter(x=>p.year-(x.year||0)<=3).length;
- let base=4+(100-p.durability)*.08+(p.bodyLoad||0)*.14+recent*1.8+(p.age>=30?(p.age-29)*.7:0);
- base+=plan==="attack"?13:plan==="normal"?3:-7;
+ let base=3+(100-p.durability)*.06+(p.bodyLoad||0)*.10+recent*1.3+(p.age>=30?(p.age-29)*.55:0);
+ base+=plan==="attack"?11:plan==="normal"?2:-7;
  if(medicalProtectionActive())base-=7;
- base+=chainInjuryMod()*.55+injuryRiskModifier()*.5+(hasTitle("steady")?-3:0);
- return Math.max(2,Math.min(55,Math.round(base)));
+ base+=chainInjuryMod()*.40+injuryRiskModifier()*.40+(hasTitle("steady")?-3:0);
+ return Math.max(1,Math.min(45,Math.round(base)));
 }
 function showProSeasonPlan(){
  p.stage="plan";resetMain();render();flow.innerHTML="";
@@ -5531,7 +5541,7 @@ function showProSeasonPlan(){
  let notice=`${x==="attack"?"你決定把身體推到極限。":x==="care"?"你決定把健康放在數據之前。":"你採取標準負荷。"} 估計整季傷病風險 ${risk}%。`;
 
  // Plan selection itself can reveal an early strain; full-attack is much more dangerous.
- let preseasonTrigger=(x==="attack"?risk*.42:x==="normal"?risk*.14:risk*.035);
+ let preseasonTrigger=(x==="attack"?risk*.30:x==="normal"?risk*.075:risk*.018);
  if(!p.injury && r()*100<preseasonTrigger){
    let before=p.injuryHistory.length;
    createInjury(r, x==="attack"?Math.max(46,risk):Math.max(25,risk));
@@ -6213,7 +6223,7 @@ function retireCareer(reason){
      <div class="legacySalary">生涯總收入 ${moneyText(p.careerSalary)}</div>
    </div>
    <div class="legacySection"><div class="legacySeed"><b>🎴 隱藏屬性揭曉｜${p.seedTierLabel}</b><br>${p.seedTierDesc}</div></div>
-   <div class="retireBtns"><button class="btn" onclick="showRetirementSummary()">查看完整逐季生涯</button><button class="btn" onclick="showShareCard()">生涯紀念摘要</button><button class="btn onlinePublishBtn" onclick="BasketballLifeOnline.publishCareer()">🌐 發布公開生涯</button><button class="btn" onclick="BasketballLifeOnline.openLeaderboard()">🏆 全球排行榜</button></div><div id="publicCareerStatus" class="publicCareerStatus"></div>
+   <div class="retireBtns"><button class="btn" onclick="showRetirementSummary()">查看完整逐季生涯</button><button class="btn" onclick="showShareCard()">生涯紀念摘要</button><button class="btn onlinePublishBtn" onclick="BasketballLifeOnline.publishCareer()">🌐 發布公開生涯</button><button class="btn" onclick="BasketballLifeOnline.openLeaderboardNewTab()">🏆 全球排行榜 ↗</button></div><div id="publicCareerStatus" class="publicCareerStatus"></div>
    ${retirementRestartHTML()}
  </div>`;
  pushNews(`🏁 ${p.name} 於 ${p.age} 歲正式退休｜生涯評價 ${p.careerRating}`); setTimeout(()=>{fitGameToViewport();const cp=document.getElementById("currentPanel");if(cp)cp.scrollTop=0;},0);
@@ -6234,7 +6244,7 @@ function showRetirementSummary(){
    <div class="legacySection"><div class="legacySectionTitle">生涯稱號</div><div class="legacyBadges">${titles.length?titles.map(x=>`<span class="legacyBadge">${x}</span>`).join(""):"無特殊稱號"}</div></div>
    <div class="legacySection"><div class="legacySectionTitle">逐季數據</div>${legacySeasonTable()}</div>
    <div class="legacySection"><div class="legacySeed"><b>🎴 世界種子｜${p.seedTierLabel}</b><br>${p.seedTierDesc}<br><span class="mut">SEED：${p.seed}</span></div></div>
-   <div class="retireBtns"><button class="btn" onclick="showShareCard()">生涯紀念摘要</button><button class="btn onlinePublishBtn" onclick="BasketballLifeOnline.publishCareer()">🌐 發布公開生涯</button><button class="btn" onclick="BasketballLifeOnline.openLeaderboard()">🏆 全球排行榜</button></div><div id="publicCareerStatus" class="publicCareerStatus"></div>${retirementRestartHTML()}
+   <div class="retireBtns"><button class="btn" onclick="showShareCard()">生涯紀念摘要</button><button class="btn onlinePublishBtn" onclick="BasketballLifeOnline.publishCareer()">🌐 發布公開生涯</button><button class="btn" onclick="BasketballLifeOnline.openLeaderboardNewTab()">🏆 全球排行榜 ↗</button></div><div id="publicCareerStatus" class="publicCareerStatus"></div>${retirementRestartHTML()}
  </div>`;
  setTimeout(()=>{fitGameToViewport();const cp=document.getElementById("currentPanel");if(cp)cp.scrollTop=0;},0);
 }
@@ -6256,7 +6266,7 @@ function showShareCard(){
    <div class="legacySection"><div class="legacySectionTitle">生涯稱號</div><div class="legacyBadges">${titles.length?titles.map(x=>`<span class="legacyBadge">${x}</span>`).join(""):"無"}</div></div>
    <div class="legacySection"><div class="legacySeed"><b>🎴 ${p.seedTierLabel}</b><br>${p.seedTierDesc}<br><span class="mut">seed：${p.seed}</span></div></div>
  </div>
- <div class="retireBtns"><button class="btn downloadBtn" onclick="downloadCareerPNG()">📸 下載生涯結算圖 PNG</button><button class="btn" onclick="showRetirementSummary()">返回完整生涯</button><button class="btn onlinePublishBtn" onclick="BasketballLifeOnline.publishCareer()">🌐 發布公開生涯</button><button class="btn" onclick="BasketballLifeOnline.openLeaderboard()">🏆 全球排行榜</button></div><div id="publicCareerStatus" class="publicCareerStatus"></div>${retirementRestartHTML()}`;
+ <div class="retireBtns"><button class="btn downloadBtn" onclick="downloadCareerPNG()">📸 下載生涯結算圖 PNG</button><button class="btn" onclick="showRetirementSummary()">返回完整生涯</button><button class="btn onlinePublishBtn" onclick="BasketballLifeOnline.publishCareer()">🌐 發布公開生涯</button><button class="btn" onclick="BasketballLifeOnline.openLeaderboardNewTab()">🏆 全球排行榜 ↗</button></div><div id="publicCareerStatus" class="publicCareerStatus"></div>${retirementRestartHTML()}`;
  setTimeout(()=>{fitGameToViewport();const cp=document.getElementById("currentPanel");if(cp)cp.scrollTop=0;},0);
 }
 function downloadCareerPNG(){
@@ -6319,12 +6329,12 @@ function showTraining(){
  p.stage="training";resetMain();render();chapter.textContent=`${p.year} · ${p.age}歲 · ${p.path} · 新賽季`;
  title.textContent="季初特訓";
  text.textContent=p.path==="HBL"
-   ?"新賽季開始。高中階段屬於快速發育期：骰子數量維持不變，但16～18歲的訓練吸收效率較高。"
-   :"新賽季開始。完成一次自主訓練後，本季才會進入事件與正式賽事。";
+   ?"新賽季開始。高中階段屬於快速發育期：22歲前每季會有4～6顆訓練骰，且16～18歲的訓練吸收效率最高。"
+   :"新賽季開始。22歲後每季仍維持3～6顆訓練骰，但年齡越高，單顆骰子的吸收效率會逐漸下降。完成自主訓練後，本季才會進入事件與正式賽事。";
  let planNotice=p.preseasonPlanNotice?`<div class="notice ${p.injury?"fail":""}"><b>開季規劃結果</b><br>${p.preseasonPlanNotice}</div>`:"";
  p.preseasonPlanNotice="";
  let r=RNG(p.seed+"training-"+p.year+"-"+p.path);
- let count=p.age<22?ri(r,3,6):p.age<30?ri(r,2,4):p.age<35?ri(r,2,3):ri(r,1,3);
+ let count=p.age<22?ri(r,4,6):ri(r,3,6);
  p.dice=Array.from({length:count},()=>ri(r,1,6));p.used=Array(count).fill(false);p.trainingUndo=[];selectedDie=null;
  let sixes=p.age<22?p.dice.filter(x=>x===6).length:0;
  if(!p.genius&&p.age<22&&sixes){
@@ -6699,7 +6709,7 @@ function resolveNationalCallup(){
  p.rep+=repGain;p.specialBonusPoints+=reward;
  if(["冠軍","亞軍","四強"].includes(finish))p.careerNationalAwards++;
  p.internationalHistory.push({year:p.year,event,finish,reward});
- let injuryHTML="",risk=Math.max(4,8+(100-p.durability)*.15+p.fatigue*.12);
+ let injuryHTML="",risk=Math.max(3,3.5+(100-p.durability)*.09+p.fatigue*.07);
  if(!p.injury&&r()*100<risk){createInjury(r,Math.max(22,risk));injuryHTML=`<br><span class="bad">國際賽負荷造成 ${p.injury.name}（${p.injury.level}）。</span>`;}
  pushNews(`🇹🇼 ${p.name} 代表國家隊參加${event}，最終${finish}`);
  let chainHTML=p.nationalCaps>=5&&!chainHas("national")?unlockChain("national"):"";
@@ -7067,18 +7077,18 @@ function resolveEvent(type,label){
    msg+=" 「豪賭之星」讓這次大成功獲得額外成長。";
  }
  let baseRisk=
-   2.1+
-   (100-p.durability)*.060+
-   p.fatigue*.060+
-   injBoost*.36+
-   injuryRiskModifier()*.58+
+   1.15+
+   (100-p.durability)*.040+
+   p.fatigue*.035+
+   injBoost*.25+
+   injuryRiskModifier()*.45+
    (hasTitle("steady")?-2.5:0)+
-   (p.planRiskMod||0)*.40+
-   chainInjuryMod()*.58;
+   (p.planRiskMod||0)*.28+
+   chainInjuryMod()*.45;
 
- // Normal basketball events should not feel like an injury lottery.
- // Typical healthy player: ~3–7% per event. Reckless choices can still spike.
- baseRisk=Math.max(1.8,Math.min(36,baseRisk));
+ // V7.43: healthy players should usually sit around ~2–4% per ordinary event.
+ // Age, fatigue, reckless plans and old-injury traits can still push risk much higher.
+ baseRisk=Math.max(1.0,Math.min(28,baseRisk));
  let injuryTriggered=false;
  if(!p.injury && r()*100<baseRisk){createInjury(r,baseRisk);injuryTriggered=true;}
 
