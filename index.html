@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BasketballLife V5 Season Loop</title>
+<title>BasketballLife｜Online Beta V7.40</title>
 <style>
 :root{--bg:#0b0f15;--card:#131a25;--card2:#182231;--line:#2b394d;--txt:#f5f7fb;--mut:#91a0b6;--gold:#f0b64b;--blue:#5593ff;--green:#49cf88;--red:#e23b3b;--orange:#e88946}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 25% 0,#172238,#0b0f15 38%);color:var(--txt);font-family:system-ui,-apple-system,"Microsoft JhengHei",sans-serif}
@@ -3216,9 +3216,150 @@ body.retirementMode .hofStoryLegacy{
   margin-top:3px;
 }
 </style>
+<style>
+/* =========================================================
+   V7.40 ONLINE ACCOUNT UI
+   ========================================================= */
+.brandRow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:10px;
+}
+.brandRow .brand{
+  margin-bottom:0!important;
+}
+.onlineStatus{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  flex:none;
+  padding:6px 9px;
+  border:1px solid #354657;
+  border-radius:999px;
+  background:#101821;
+  color:#91a2af;
+  font-size:10.5px;
+  font-weight:850;
+  white-space:nowrap;
+}
+.onlineDot{
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:#778692;
+  box-shadow:0 0 0 3px #77869220;
+}
+.onlineStatus.connecting .onlineDot{
+  background:#e3a055;
+  box-shadow:0 0 0 3px #e3a05522;
+  animation:onlinePulse 1.2s ease-in-out infinite;
+}
+.onlineStatus.online{
+  color:#8ed9b1;
+  border-color:#315847;
+}
+.onlineStatus.online .onlineDot{
+  background:#57cc8a;
+  box-shadow:0 0 0 3px #57cc8a22;
+}
+.onlineStatus.needsName{
+  color:#efb36d;
+  border-color:#72512f;
+}
+.onlineStatus.needsName .onlineDot{
+  background:#ee9e50;
+}
+.onlineStatus.offline{
+  color:#9aa4ac;
+  border-color:#3a444c;
+}
+.onlineStatus.offline .onlineDot{
+  background:#68737c;
+}
+@keyframes onlinePulse{
+  50%{opacity:.35;transform:scale(.8)}
+}
+
+.start:disabled{
+  cursor:not-allowed;
+  opacity:.55;
+  filter:saturate(.45);
+}
+
+.onlineModal{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  background:rgba(3,8,12,.84);
+  backdrop-filter:blur(8px);
+}
+.onlineModalCard{
+  width:min(460px,100%);
+  padding:22px;
+  border:1px solid #3c5365;
+  border-radius:15px;
+  background:
+    linear-gradient(145deg,rgba(20,32,42,.98),rgba(10,18,25,.99));
+  box-shadow:0 24px 80px #000a;
+}
+.onlineEyebrow{
+  color:#e99b51;
+  font-size:10px;
+  font-weight:950;
+  letter-spacing:1.7px;
+}
+.onlineModalCard h2{
+  margin:5px 0 7px;
+  color:#f1ede7;
+  font-size:23px;
+  font-weight:950;
+}
+.onlineModalCard label{
+  margin-top:15px;
+}
+.nicknameError{
+  min-height:20px;
+  padding-top:6px;
+  color:#ff8c82;
+  font-size:11px;
+  font-weight:750;
+}
+.onlineSaveBtn{
+  margin-top:8px!important;
+}
+.onlinePrivacy{
+  margin-top:10px;
+  color:#758997;
+  font-size:9.5px;
+  line-height:1.5;
+  text-align:center;
+}
+body.onlineModalOpen{
+  overflow:hidden;
+}
+@media(max-width:620px){
+  .brandRow{
+    align-items:flex-start;
+  }
+  .onlineStatus{
+    padding:5px 7px;
+    font-size:9.5px;
+  }
+}
+</style>
 </head>
 <body><div class="wrap">
-<div class="brand">🏀 Basketball<span>Life</span></div><div id="liveTicker" class="liveTicker"><div class="liveLabel">BL LIVE</div><div class="liveViewport"><div id="liveTrack" class="liveTrack">新的籃球人生即將開始。</div></div></div>
+<div class="brandRow">
+  <div class="brand">🏀 Basketball<span>Life</span></div>
+  <div id="onlineStatus" class="onlineStatus connecting"><span class="onlineDot"></span><span id="onlineStatusText">連線中…</span></div>
+</div>
+<div id="liveTicker" class="liveTicker"><div class="liveLabel">BL LIVE</div><div class="liveViewport"><div id="liveTrack" class="liveTrack">新的籃球人生即將開始。</div></div></div>
 
 <section id="setup" class="card setup">
 <div class="gold" style="font-weight:900">NEW CAREER</div><h1>從一個名字開始。</h1>
@@ -3227,8 +3368,21 @@ body.retirementMode .hofStoryLegacy{
 <label>位置</label><div id="posgrid" class="posgrid"></div>
 <label>世界種子</label><div class="seed"><div id="seed" class="seedcode"></div><button class="btn" onclick="newSeed()">換一個</button></div>
 <p class="mut" style="font-size:12px">相同種子＋相同位置＝相同先天條件與主要命運走向。種子級別全程隱藏，退休後才會揭曉。</p>
-<button class="start" onclick="startCareer()">開始人生 · 高一</button>
+<button id="startCareerBtn" class="start" onclick="startCareer()" disabled>連線中…</button>
 </section>
+
+<div id="nicknameModal" class="onlineModal hidden" role="dialog" aria-modal="true" aria-labelledby="nicknameTitle">
+  <div class="onlineModalCard">
+    <div class="onlineEyebrow">BASKETBALLLIFE ONLINE</div>
+    <h2 id="nicknameTitle">設定玩家暱稱</h2>
+    <p class="mut">這是你的「玩家身分」，和每一輪生涯的球員姓名不同。未來 BL LIVE、公開生涯紀錄會顯示這個暱稱。</p>
+    <label for="onlineNicknameInput">玩家暱稱</label>
+    <input id="onlineNicknameInput" maxlength="20" autocomplete="nickname" placeholder="2～20 個字，例如：AKai0013">
+    <div id="nicknameError" class="nicknameError"></div>
+    <button id="nicknameSaveBtn" class="start onlineSaveBtn" type="button" onclick="BasketballLifeOnline.saveNickname()">確認暱稱</button>
+    <div class="onlinePrivacy">匿名登入不需要 Email 或密碼；本機瀏覽器會保留登入 session。</div>
+  </div>
+</div>
 
 <section id="game" class="hidden">
 <div class="header">
@@ -3258,6 +3412,7 @@ body.retirementMode .hofStoryLegacy{
 </section>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /*
  * BasketballLife Online hook
@@ -3270,11 +3425,272 @@ body.retirementMode .hofStoryLegacy{
  *   window.BasketballLifeTicker.addGlobalNews(row)
  * 把其他玩家的重大消息送進跑馬條。
  */
-window.BL_ONLINE_CONFIG = window.BL_ONLINE_CONFIG || {
-  enabled:false,
-  supabaseUrl:"",
-  publishableKey:""
+window.BL_ONLINE_CONFIG = {
+  enabled:true,
+  supabaseUrl:"https://qqzdrcfxypdnfisroamm.supabase.co",
+  publishableKey:"sb_publishable_DVxBcp9oPaCkd9d5KrJmHA_Py2Ii_ar"
 };
+
+
+/* =========================================================
+   BasketballLife Online Account Layer — V7.40
+   Stage 1:
+   Supabase connection -> anonymous auth -> player nickname.
+   BL LIVE publishing/realtime is connected in the next stage.
+   ========================================================= */
+(function(){
+ const cfg=window.BL_ONLINE_CONFIG||{};
+ const state={
+   enabled:!!cfg.enabled,
+   client:null,
+   user:null,
+   nickname:"",
+   ready:false,
+   offline:false,
+   initPromise:null
+ };
+
+ const $=id=>document.getElementById(id);
+
+ function setStatus(mode,label){
+   const root=$("onlineStatus"),txt=$("onlineStatusText");
+   if(root){
+     root.classList.remove("connecting","online","offline","needsName");
+     root.classList.add(mode);
+   }
+   if(txt)txt.textContent=label;
+ }
+
+ function setStartReady(){
+   const btn=$("startCareerBtn");
+   if(!btn)return;
+   btn.disabled=false;
+   btn.textContent="開始人生 · 高一";
+ }
+
+ function setStartConnecting(){
+   const btn=$("startCareerBtn");
+   if(!btn)return;
+   btn.disabled=true;
+   btn.textContent="連線中…";
+ }
+
+ function cleanNickname(v){
+   return String(v||"").replace(/\s+/g," ").trim().slice(0,20);
+ }
+
+ function cachedNickname(){
+   try{return cleanNickname(localStorage.getItem("bl_online_nickname")||"")}catch(_){return ""}
+ }
+
+ function cacheNickname(v){
+   try{localStorage.setItem("bl_online_nickname",v)}catch(_){}
+ }
+
+ function showNicknameModal(){
+   const modal=$("nicknameModal"),input=$("onlineNicknameInput"),err=$("nicknameError");
+   if(!modal)return;
+   if(err)err.textContent="";
+   modal.classList.remove("hidden");
+   document.body.classList.add("onlineModalOpen");
+   if(input){
+     input.value=state.nickname||cachedNickname();
+     setTimeout(()=>input.focus(),30);
+   }
+   setStatus("needsName","Online｜請設定暱稱");
+ }
+
+ function hideNicknameModal(){
+   $("nicknameModal")?.classList.add("hidden");
+   document.body.classList.remove("onlineModalOpen");
+ }
+
+ async function withTimeout(promise,ms=8000){
+   let timer;
+   const timeout=new Promise((_,reject)=>{
+     timer=setTimeout(()=>reject(new Error("連線逾時")),ms);
+   });
+   try{return await Promise.race([promise,timeout])}
+   finally{clearTimeout(timer)}
+ }
+
+ async function ensureAnonymousUser(){
+   const {data:sessionData,error:sessionError}=await withTimeout(state.client.auth.getSession(),8000);
+   if(sessionError)throw sessionError;
+   if(sessionData?.session?.user)return sessionData.session.user;
+
+   const {data,error}=await withTimeout(state.client.auth.signInAnonymously(),10000);
+   if(error)throw error;
+   if(!data?.user)throw new Error("匿名登入沒有取得使用者資料");
+   return data.user;
+ }
+
+ async function loadProfile(){
+   const {data,error}=await withTimeout(
+     state.client
+       .from("profiles")
+       .select("nickname")
+       .eq("user_id",state.user.id)
+       .maybeSingle(),
+     8000
+   );
+   if(error)throw error;
+   return data||null;
+ }
+
+ async function init(){
+   if(state.initPromise)return state.initPromise;
+
+   state.initPromise=(async()=>{
+     setStartConnecting();
+     setStatus("connecting","連線中…");
+
+     if(!state.enabled){
+       state.offline=true;
+       state.ready=true;
+       setStatus("offline","Offline｜單機");
+       setStartReady();
+       return state;
+     }
+
+     try{
+       if(!window.supabase?.createClient){
+         throw new Error("Supabase SDK 載入失敗");
+       }
+
+       state.client=window.supabase.createClient(
+         cfg.supabaseUrl,
+         cfg.publishableKey,
+         {
+           auth:{
+             persistSession:true,
+             autoRefreshToken:true,
+             detectSessionInUrl:true
+           }
+         }
+       );
+
+       state.user=await ensureAnonymousUser();
+
+       const profile=await loadProfile();
+       if(profile?.nickname){
+         state.nickname=cleanNickname(profile.nickname);
+         cacheNickname(state.nickname);
+         state.ready=true;
+         setStatus("online",`Online｜${state.nickname}`);
+         hideNicknameModal();
+         setStartReady();
+       }else{
+         state.nickname="";
+         state.ready=true;
+         setStartReady();
+         showNicknameModal();
+       }
+
+       state.client.auth.onAuthStateChange((_event,session)=>{
+         if(session?.user)state.user=session.user;
+       });
+
+       return state;
+     }catch(err){
+       console.warn("BasketballLife Online init failed:",err);
+       state.offline=true;
+       state.ready=true;
+       state.nickname=cachedNickname();
+       hideNicknameModal();
+       setStatus("offline","Offline｜單機模式");
+       setStartReady();
+       return state;
+     }
+   })();
+
+   return state.initPromise;
+ }
+
+ async function saveNickname(){
+   const input=$("onlineNicknameInput"),errBox=$("nicknameError"),btn=$("nicknameSaveBtn");
+   const nickname=cleanNickname(input?.value);
+
+   if(!nickname || nickname.length<2){
+     if(errBox)errBox.textContent="暱稱至少需要 2 個字。";
+     return;
+   }
+   if(!state.client || !state.user){
+     if(errBox)errBox.textContent="目前沒有連上 Supabase，請重新整理後再試。";
+     return;
+   }
+
+   if(btn){btn.disabled=true;btn.textContent="儲存中…"}
+   if(errBox)errBox.textContent="";
+
+   try{
+     const {error}=await withTimeout(
+       state.client
+         .from("profiles")
+         .upsert(
+           {user_id:state.user.id,nickname},
+           {onConflict:"user_id"}
+         ),
+       8000
+     );
+
+     if(error)throw error;
+
+     state.nickname=nickname;
+     cacheNickname(nickname);
+     hideNicknameModal();
+     setStatus("online",`Online｜${nickname}`);
+     setStartReady();
+   }catch(err){
+     console.warn("Nickname save failed:",err);
+     if(errBox){
+       errBox.textContent=
+         err?.code==="23505"
+           ?"這個玩家暱稱已經有人使用，請換一個。"
+           :"暱稱儲存失敗，請稍後再試。";
+     }
+   }finally{
+     if(btn){btn.disabled=false;btn.textContent="確認暱稱"}
+   }
+ }
+
+ function requiresNickname(){
+   if(state.offline)return false;
+   if(!state.ready)return true;
+   if(!state.nickname){
+     showNicknameModal();
+     return true;
+   }
+   return false;
+ }
+
+ function nickname(){
+   return state.nickname||"";
+ }
+
+ function userId(){
+   return state.user?.id||"";
+ }
+
+ window.BasketballLifeOnline={
+   state,
+   init,
+   saveNickname,
+   showNicknameModal,
+   requiresNickname,
+   nickname,
+   userId,
+   client(){return state.client},
+   isOnline(){return !!state.client && !!state.user && !state.offline}
+ };
+
+ window.addEventListener("DOMContentLoaded",()=>{
+   init();
+   $("onlineNicknameInput")?.addEventListener("keydown",e=>{
+     if(e.key==="Enter")saveNickname();
+   });
+ });
+})();
 
 // Robust DOM bindings: do not rely on browsers exposing element IDs as global variables.
 
@@ -3525,6 +3941,7 @@ const injuryTypes=[
 ];
 
 function startCareer(){
+ if(window.BasketballLifeOnline?.requiresNickname?.())return;
  const seed=document.getElementById("seed").textContent,n=document.getElementById("playerNameInput").value.trim()||"無名球員",r=RNG(seed+chosenPos);
  const tier=seedTierProfile(seed);
  const tb=()=>ri(r,tier.start[0],tier.start[1]);
