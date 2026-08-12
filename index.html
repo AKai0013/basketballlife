@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BasketballLife｜Online Beta V7.41 · BL LIVE</title>
+<title>BasketballLife｜Online Beta V7.42 · Community</title>
 <style>
 :root{--bg:#0b0f15;--card:#131a25;--card2:#182231;--line:#2b394d;--txt:#f5f7fb;--mut:#91a0b6;--gold:#f0b64b;--blue:#5593ff;--green:#49cf88;--red:#e23b3b;--orange:#e88946}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 25% 0,#172238,#0b0f15 38%);color:var(--txt);font-family:system-ui,-apple-system,"Microsoft JhengHei",sans-serif}
@@ -3367,11 +3367,61 @@ body.onlineModalOpen{
   letter-spacing:.5px;
 }
 </style>
+<style>
+/* =========================================================
+   V7.42 COMMUNITY / PUBLIC CAREER / LEADERBOARDS
+   ========================================================= */
+.brandActions{display:flex;align-items:center;gap:7px}
+.topRankBtn{
+  border:1px solid #5b4936;border-radius:999px;background:#17130f;color:#e7a05a;
+  padding:6px 10px;font-size:10.5px;font-weight:900;cursor:pointer
+}
+.topRankBtn:hover{border-color:#d48d49;background:#21170f}
+.communityPage{width:min(1080px,100%);margin:10px auto 20px;padding:15px;border:1px solid #314b5c;border-radius:13px;background:#0d171f}
+.communityTop{display:flex;align-items:center;gap:14px;padding-bottom:11px;border-bottom:1px solid #273e4c}
+.communityBack{flex:none!important;width:auto!important}
+.communityEyebrow{color:#df914a;font-size:10px;font-weight:950;letter-spacing:1.6px}
+.communityTop h1{margin:2px 0 0;font-size:22px;color:#f1ede7}
+.communityContent{padding-top:12px}
+.communityLoading,.communityError,.rankEmpty{padding:28px 12px;text-align:center;color:#899aa7;font-size:12px}
+.communityError{color:#ff9287}
+.rankIntro{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:end}
+.rankKicker{color:#7fa6bb;font-size:9px;font-weight:900;letter-spacing:1.4px}
+.rankIntro h2{margin:3px 0 3px;color:#eea057;font-size:20px}
+.rankIntro p{margin:0;color:#899ba8;font-size:11px}
+.rankSummary{display:grid;grid-template-columns:repeat(4,92px);gap:5px}
+.rankSummary span{padding:7px;border:1px solid #2c4351;border-radius:8px;background:#111e27;text-align:center}
+.rankSummary small{display:block;color:#788d9b;font-size:8.5px;font-weight:750}
+.rankSummary b{display:block;margin-top:2px;color:#f0ebe4;font-size:14px;font-weight:950}
+.rankTabs{display:flex;gap:5px;overflow-x:auto;padding:11px 0 8px;scrollbar-width:thin}
+.rankTab{flex:none;border:1px solid #304959;border-radius:999px;background:#11202a;color:#9eb0bc;padding:6px 10px;font-size:10px;font-weight:850;cursor:pointer}
+.rankTab.on{border-color:#d58a45;background:#332114;color:#f2ac66}
+.rankNotice{margin-bottom:7px;padding:7px 9px;border-left:2px solid #d78e49;background:#151d22;color:#7f929e;font-size:9.5px;line-height:1.5}
+.rankList{display:flex;flex-direction:column;gap:5px}
+.rankRow{width:100%;display:grid;grid-template-columns:52px minmax(0,1fr) 160px;align-items:center;gap:9px;padding:9px 11px;border:1px solid #2c4351;border-radius:9px;background:#101c25;color:inherit;text-align:left;cursor:pointer}
+.rankRow:hover{border-color:#58758a;background:#13232e}
+.rankNo{color:#d99a58;font-size:13px;font-weight:950;text-align:center}
+.rankIdentity b{display:block;color:#f0ece5;font-size:13.5px;font-weight:950}
+.rankIdentity small{display:block;margin-top:2px;color:#8194a2;font-size:9.5px}
+.rankValue{text-align:right}.rankValue b{display:block;color:#efa258;font-size:15px;font-weight:950}.rankValue small{display:block;margin-top:2px;color:#738894;font-size:8.5px}
+.publicCareerStatus{margin-top:7px}.publishedBox{padding:9px 10px;border:1px solid #326047;border-radius:8px;background:#10251b;color:#9cdeb6;font-size:10.5px}
+.publishedUrl{margin-top:4px;color:#8199a7;font-size:9px;word-break:break-all}.publishedBtns{display:flex;gap:6px;margin-top:7px;flex-wrap:wrap}.copyHint{margin-top:5px;color:#72d49d;font-size:9px}
+.publicLegacy{padding:14px 16px;border:1px solid #5b4938;border-radius:12px;background:linear-gradient(145deg,#151b20,#0c151c)}
+.publicLegacyTop{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;padding-bottom:10px;border-bottom:1px solid #344853}
+.powerStamp{flex:none;min-width:135px;padding:9px;border:1px solid #65492f;border-radius:9px;background:#1d160f;text-align:right}.powerStamp small{display:block;color:#a9896a;font-size:8.5px;font-weight:900;letter-spacing:1px}.powerStamp b{display:block;color:#eea057;font-size:26px;line-height:1.05;font-weight:950}.powerStamp span{display:block;margin-top:3px;color:#b8c2c7;font-size:9px}
+.publicBadgeRow{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}.publicBadgeRow span{padding:4px 7px;border:1px solid #564331;border-radius:999px;color:#e4a05d;background:#1a1511;font-size:9.5px;font-weight:850}
+.publicMetricGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:9px}.publicMetricGrid span{padding:8px;border:1px solid #2c424e;border-radius:8px;background:#101c24;text-align:center}.publicMetricGrid small{display:block;color:#778c9a;font-size:8.5px}.publicMetricGrid b{display:block;margin-top:2px;color:#eee9e2;font-size:13px;font-weight:950}
+.publicShareBtns{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}
+@media(max-width:760px){.rankIntro{grid-template-columns:1fr}.rankSummary{grid-template-columns:repeat(2,1fr)}.rankRow{grid-template-columns:42px minmax(0,1fr) 105px}.publicMetricGrid{grid-template-columns:repeat(2,1fr)}.publicLegacyTop{display:block}.powerStamp{margin-top:8px;text-align:left}.brandActions{gap:4px}.topRankBtn{padding:5px 7px;font-size:9.5px}}
+</style>
 </head>
 <body><div class="wrap">
 <div class="brandRow">
   <div class="brand">🏀 Basketball<span>Life</span></div>
-  <div id="onlineStatus" class="onlineStatus connecting"><span class="onlineDot"></span><span id="onlineStatusText">連線中…</span></div>
+  <div class="brandActions">
+    <button id="leaderboardBtn" class="topRankBtn" type="button" onclick="BasketballLifeOnline.openLeaderboard()">🏆 排行榜</button>
+    <div id="onlineStatus" class="onlineStatus connecting"><span class="onlineDot"></span><span id="onlineStatusText">連線中…</span></div>
+  </div>
 </div>
 <div id="liveTicker" class="liveTicker"><div class="liveLabel">BL LIVE</div><div class="liveViewport"><div id="liveTrack" class="liveTrack">新的籃球人生即將開始。</div></div></div>
 
@@ -3383,6 +3433,17 @@ body.onlineModalOpen{
 <label>世界種子</label><div class="seed"><div id="seed" class="seedcode"></div><button class="btn" onclick="newSeed()">換一個</button></div>
 <p class="mut" style="font-size:12px">相同種子＋相同位置＝相同先天條件與主要命運走向。種子級別全程隱藏，退休後才會揭曉。</p>
 <button id="startCareerBtn" class="start" onclick="startCareer()" disabled>連線中…</button>
+</section>
+
+<section id="communityPage" class="communityPage hidden">
+  <div class="communityTop">
+    <button class="btn communityBack" type="button" onclick="BasketballLifeOnline.closeCommunity()">← 返回</button>
+    <div>
+      <div class="communityEyebrow">BASKETBALLLIFE COMMUNITY</div>
+      <h1 id="communityTitle">全球排行榜</h1>
+    </div>
+  </div>
+  <div id="communityContent" class="communityContent"><div class="communityLoading">讀取中…</div></div>
 </section>
 
 <div id="nicknameModal" class="onlineModal hidden" role="dialog" aria-modal="true" aria-labelledby="nicknameTitle">
@@ -3463,7 +3524,10 @@ window.BL_ONLINE_CONFIG = {
    liveChannel:null,
    liveReady:false,
    knownNewsIds:new Set(),
-   publishFingerprints:new Set()
+   publishFingerprints:new Set(),
+   leaderboardCache:null,
+   activeMetric:"power",
+   returnView:"setup"
  };
 
  const $=id=>document.getElementById(id);
@@ -3718,6 +3782,323 @@ window.BL_ONLINE_CONFIG = {
    }
  }
 
+
+ function esc(v){
+   return String(v??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+ }
+
+ function careerUrl(id){
+   return `${location.origin}${location.pathname}?career=${encodeURIComponent(id)}`;
+ }
+
+ function publicTitles(){
+   if(!window.p)return [];
+   return [...(p.titles||[]),...(p.chainTitles||[])].map(x=>typeof x==="string"?x:x.name).filter(Boolean);
+ }
+
+ function publicCareerSnapshot(){
+   if(!window.p || !p.retired)return null;
+   return {
+     retirement_reason:p.retirementReason||"",
+     career_national_awards:p.careerNationalAwards||0,
+     career_mvp:p.careerMVP||0,
+     career_finals_mvp:p.careerFinalsMVP||0,
+     career_dpoy:p.careerDPOY||0,
+     career_first_team:p.careerFirstTeam||0,
+     career_second_team:p.careerSecondTeam||0,
+     career_all_star:p.careerAllStar||0,
+     career_scoring_titles:p.careerScoringTitles||0,
+     career_assist_titles:p.careerAssistTitles||0,
+     career_rebound_titles:p.careerReboundTitles||0,
+     hall_votes:p.hallVotes||[],
+     stats:{
+       career_pts_total:p.careerPtsTotal||0,
+       career_reb_total:p.careerRebTotal||0,
+       career_ast_total:p.careerAstTotal||0,
+       career_blocks_total:p.careerBlocksTotal||0
+     }
+   };
+ }
+
+ async function publishCareer(){
+   const status=document.getElementById("publicCareerStatus");
+   if(!window.p || !p.retired){
+     if(status)status.textContent="只有正式退休後的完整生涯可以發布。";
+     return;
+   }
+   if(!state.client || !state.user || !state.nickname){
+     if(status)status.textContent="請先完成 Online 玩家登入。";
+     if(!state.nickname)showNicknameModal();
+     return;
+   }
+   if(p.publicCareerId){
+     showPublishedCareerLink(p.publicCareerId);
+     return;
+   }
+
+   const buttons=document.querySelectorAll(".onlinePublishBtn");
+   buttons.forEach(b=>{b.disabled=true;b.textContent="發布中…"});
+   if(status)status.textContent="正在建立公開生涯紀錄…";
+
+   const row={
+     user_id:state.user.id,
+     nickname:state.nickname,
+     player_name:String(p.name||"球員").slice(0,30),
+     position:p.pos||"",
+     seed:p.seed||"",
+     seed_tier:p.seedTierLabel||p.seedTier||"",
+     retired_age:p.age||0,
+     final_year:p.year||0,
+     peak_overall:p.peakOverall||0,
+     career_rating:p.careerRating||0,
+     career_games:p.careerGames||0,
+     career_salary:Math.round(p.careerSalary||0),
+     championships:p.championships||0,
+     national_caps:p.nationalCaps||0,
+     hall_of_fame:p.hallOfFame||[],
+     jersey_retired:p.jerseyRetired||[],
+     awards:p.careerAwards||[],
+     titles:publicTitles(),
+     league_summary:typeof careerLeagueSummary==="function"?careerLeagueSummary():{},
+     season_history:p.seasonHistory||[],
+     career_data:publicCareerSnapshot()||{},
+     is_public:true
+   };
+
+   try{
+     const {data,error}=await withTimeout(
+       state.client.from("career_records").insert(row).select("id").single(),
+       12000
+     );
+     if(error)throw error;
+     p.publicCareerId=data.id;
+     showPublishedCareerLink(data.id);
+     // Clear leaderboard cache so the new career appears immediately.
+     state.leaderboardCache=null;
+   }catch(err){
+     console.warn("Public career publish failed:",err);
+     if(status)status.textContent=`發布失敗：${err?.message||"請稍後再試"}`;
+   }finally{
+     buttons.forEach(b=>{b.disabled=false;b.textContent=p?.publicCareerId?"✓ 已發布公開生涯":"🌐 發布公開生涯"});
+   }
+ }
+
+ function showPublishedCareerLink(id){
+   const status=document.getElementById("publicCareerStatus");
+   if(!status)return;
+   const url=careerUrl(id);
+   status.innerHTML=`<div class="publishedBox"><b>✓ 公開生涯已建立</b><div class="publishedUrl">${esc(url)}</div><div class="publishedBtns"><button class="btn" onclick="BasketballLifeOnline.copyCareerLink('${id}')">複製分享網址</button><button class="btn" onclick="BasketballLifeOnline.openCareer('${id}')">查看公開頁</button></div></div>`;
+ }
+
+ async function copyCareerLink(id){
+   const url=careerUrl(id);
+   try{
+     await navigator.clipboard.writeText(url);
+     const status=document.getElementById("publicCareerStatus");
+     if(status){
+       const old=status.querySelector(".copyHint");if(old)old.remove();
+       status.insertAdjacentHTML("beforeend",`<div class="copyHint">已複製分享網址。</div>`);
+     }
+   }catch(_){
+     window.prompt("複製這個公開生涯網址：",url);
+   }
+ }
+
+ function captureReturnView(){
+   const community=document.getElementById("communityPage");
+   if(community && !community.classList.contains("hidden"))return;
+   const game=document.getElementById("game"),setup=document.getElementById("setup");
+   state.returnView=game&&!game.classList.contains("hidden")?"game":setup&&!setup.classList.contains("hidden")?"setup":"setup";
+ }
+
+ function showCommunityShell(title){
+   captureReturnView();
+   document.body.classList.remove("retirementMode");
+   document.getElementById("setup")?.classList.add("hidden");
+   document.getElementById("game")?.classList.add("hidden");
+   document.getElementById("communityPage")?.classList.remove("hidden");
+   const t=document.getElementById("communityTitle");if(t)t.textContent=title;
+   window.scrollTo({top:0,behavior:"instant"});
+ }
+
+ function closeCommunity(updateUrl=true){
+   document.getElementById("communityPage")?.classList.add("hidden");
+   if(state.returnView==="game" && window.p){
+     document.getElementById("game")?.classList.remove("hidden");
+     if(p.retired)document.body.classList.add("retirementMode");
+     setTimeout(()=>window.fitGameToViewport?.(),0);
+   }else{
+     document.getElementById("setup")?.classList.remove("hidden");
+   }
+   if(updateUrl && (location.search.includes("career=")||location.search.includes("leaderboard="))){
+     history.pushState({},"",location.pathname);
+   }
+ }
+
+ function awardCount(record,keyword){
+   return (Array.isArray(record.awards)?record.awards:[]).filter(a=>String(a?.name||a).includes(keyword)).length;
+ }
+
+ const leaderboardMetrics={
+   power:{label:"BL POWER",short:"總實力",value:r=>Number(r.career_rating||0),fmt:v=>Math.round(v).toLocaleString()},
+   peak:{label:"巔峰 OVR",short:"巔峰OVR",value:r=>Number(r.peak_overall||0),fmt:v=>Math.round(v)},
+   championships:{label:"主要冠軍",short:"冠軍",value:r=>Number(r.championships||0),fmt:v=>`${v} 座`},
+   mvp:{label:"年度 MVP",short:"MVP",value:r=>awardCount(r,"年度MVP"),fmt:v=>`${v} 次`},
+   fmvp:{label:"總冠軍賽 MVP",short:"FMVP",value:r=>awardCount(r,"總冠軍賽MVP"),fmt:v=>`${v} 次`},
+   dpoy:{label:"最佳防守球員",short:"DPOY",value:r=>awardCount(r,"最佳防守球員"),fmt:v=>`${v} 次`},
+   first:{label:"年度第一隊",short:"一陣",value:r=>awardCount(r,"年度第一隊"),fmt:v=>`${v} 次`},
+   allstar:{label:"明星賽",short:"明星賽",value:r=>awardCount(r,"明星賽"),fmt:v=>`${v} 次`},
+   scoring:{label:"得分王",short:"得分王",value:r=>awardCount(r,"得分王"),fmt:v=>`${v} 次`},
+   assists:{label:"助攻王",short:"助攻王",value:r=>awardCount(r,"助攻王"),fmt:v=>`${v} 次`},
+   rebounds:{label:"籃板王",short:"籃板王",value:r=>awardCount(r,"籃板王"),fmt:v=>`${v} 次`},
+   hof:{label:"名人堂入選",short:"名人堂",value:r=>Array.isArray(r.hall_of_fame)?r.hall_of_fame.length:0,fmt:v=>`${v} 席`},
+   jersey:{label:"球衣退休",short:"球衣退休",value:r=>Array.isArray(r.jersey_retired)?r.jersey_retired.length:0,fmt:v=>`${v} 隊`},
+   national:{label:"國家隊資歷",short:"國家隊",value:r=>Number(r.national_caps||0),fmt:v=>`${v} 次`},
+   games:{label:"職業出賽",short:"生涯場次",value:r=>Number(r.career_games||0),fmt:v=>`${Math.round(v).toLocaleString()} 場`},
+   salary:{label:"生涯總收入",short:"總收入",value:r=>Number(r.career_salary||0),fmt:v=>`${Math.round(v).toLocaleString()}萬`}
+ };
+
+ async function loadLeaderboardRecords(force=false){
+   if(!state.client||!state.user)throw new Error("尚未連上 Online");
+   if(!force && state.leaderboardCache && Date.now()-state.leaderboardCache.at<60000)return state.leaderboardCache.rows;
+   const {data,error}=await withTimeout(
+     state.client.from("career_records")
+       .select("id,user_id,nickname,player_name,position,seed_tier,retired_age,final_year,peak_overall,career_rating,career_games,career_salary,championships,national_caps,hall_of_fame,jersey_retired,awards,titles,created_at,is_public")
+       .eq("is_public",true)
+       .order("created_at",{ascending:false})
+       .limit(500),
+     12000
+   );
+   if(error)throw error;
+   state.leaderboardCache={at:Date.now(),rows:data||[]};
+   return data||[];
+ }
+
+ function bestPerPlayer(records,metricKey){
+   const def=leaderboardMetrics[metricKey]||leaderboardMetrics.power;
+   const best=new Map();
+   records.forEach(r=>{
+     const val=def.value(r);
+     if(metricKey!=="power" && metricKey!=="peak" && metricKey!=="games" && metricKey!=="salary" && val<=0)return;
+     const key=r.user_id||r.nickname||r.id;
+     const old=best.get(key);
+     if(!old || val>def.value(old) || (val===def.value(old)&&Number(r.career_rating||0)>Number(old.career_rating||0)))best.set(key,r);
+   });
+   return [...best.values()].sort((a,b)=>def.value(b)-def.value(a)||Number(b.career_rating||0)-Number(a.career_rating||0));
+ }
+
+ function rankRow(record,index,def){
+   const medal=index===0?"🥇":index===1?"🥈":index===2?"🥉":`#${index+1}`;
+   const value=def.value(record);
+   const hof=(record.hall_of_fame||[]).length,jersey=(record.jersey_retired||[]).length;
+   return `<button class="rankRow" onclick="BasketballLifeOnline.openCareer('${esc(record.id)}')">
+     <span class="rankNo">${medal}</span>
+     <span class="rankIdentity"><b>${esc(record.nickname)}</b><small>${esc(record.player_name)} · ${esc(record.position||"")} · 退役${record.retired_age||"-"}歲${hof?` · 🏛️${hof}`:""}${jersey?` · 🏟️${jersey}`:""}</small></span>
+     <span class="rankValue"><b>${esc(def.fmt(value))}</b><small>BL POWER ${Number(record.career_rating||0).toLocaleString()}</small></span>
+   </button>`;
+ }
+
+ async function openLeaderboard(metricKey="power",pushUrl=true){
+   state.activeMetric=leaderboardMetrics[metricKey]?metricKey:"power";
+   showCommunityShell("全球排行榜");
+   const content=document.getElementById("communityContent");
+   if(content)content.innerHTML=`<div class="communityLoading">正在讀取公開生涯…</div>`;
+   if(pushUrl)history.pushState({bl:"leaderboard"},"",`${location.pathname}?leaderboard=${encodeURIComponent(state.activeMetric)}`);
+   try{
+     const records=await loadLeaderboardRecords();
+     renderLeaderboard(records,state.activeMetric);
+   }catch(err){
+     if(content)content.innerHTML=`<div class="communityError">排行榜讀取失敗：${esc(err?.message||"請稍後再試")}</div>`;
+   }
+ }
+
+ function renderLeaderboard(records,metricKey){
+   const content=document.getElementById("communityContent");if(!content)return;
+   const def=leaderboardMetrics[metricKey]||leaderboardMetrics.power;
+   const rows=bestPerPlayer(records,metricKey);
+   const players=new Set(records.map(r=>r.user_id||r.nickname)).size;
+   const topPower=records.length?Math.max(...records.map(r=>Number(r.career_rating||0))):0;
+   const topPeak=records.length?Math.max(...records.map(r=>Number(r.peak_overall||0))):0;
+   content.innerHTML=`
+     <div class="rankIntro">
+       <div><div class="rankKicker">PUBLIC CAREER RANKING</div><h2>${esc(def.label)}排行榜</h2><p>每個玩家在這個項目只取自己的最佳一輪生涯，避免同一人重複佔榜。</p></div>
+       <div class="rankSummary"><span><small>公開玩家</small><b>${players}</b></span><span><small>公開生涯</small><b>${records.length}</b></span><span><small>最高 POWER</small><b>${topPower.toLocaleString()}</b></span><span><small>最高 OVR</small><b>${topPeak}</b></span></div>
+     </div>
+     <div class="rankTabs">${Object.entries(leaderboardMetrics).map(([k,m])=>`<button class="rankTab ${k===metricKey?"on":""}" onclick="BasketballLifeOnline.changeRankMetric('${k}')">${esc(m.short)}</button>`).join("")}</div>
+     <div class="rankNotice">BL POWER ＝遊戲退休頁的「生涯歷史評價」，已綜合巔峰能力、聯盟層級、實戰數據與主要榮譽。排行榜目前屬 Online Beta 公開紀錄。</div>
+     <div class="rankList">${rows.length?rows.slice(0,30).map((r,i)=>rankRow(r,i,def)).join(""):`<div class="rankEmpty">這個項目目前還沒有公開紀錄。</div>`}</div>`;
+ }
+
+ async function changeRankMetric(metricKey){
+   state.activeMetric=metricKey;
+   history.replaceState({bl:"leaderboard"},"",`${location.pathname}?leaderboard=${encodeURIComponent(metricKey)}`);
+   try{renderLeaderboard(await loadLeaderboardRecords(),metricKey)}catch(err){console.warn(err)}
+ }
+
+ function recordAwardSummary(record){
+   const map={};(record.awards||[]).forEach(a=>{const n=String(a?.name||a);map[n]=(map[n]||0)+1});
+   return Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,18);
+ }
+
+ function publicLeagueTable(summary){
+   const entries=summary&&typeof summary==="object"?Object.entries(summary):[];
+   if(!entries.length)return `<div class="rankEmpty">沒有聯盟累積資料。</div>`;
+   return `<div class="legacyTableWrap"><table class="legacyTable"><tr><th>聯盟</th><th>季</th><th>GP</th><th>MPG</th><th>PTS</th><th>REB</th><th>AST</th><th>STL</th><th>BLK</th></tr>${entries.map(([k,g])=>`<tr><td>${esc(k)}</td><td>${g.yrs||0}</td><td>${g.g||0}</td><td>${g.g?(g.mins/g.g).toFixed(1):0}</td><td>${g.g?(g.pts/g.g).toFixed(1):0}</td><td>${g.g?(g.reb/g.g).toFixed(1):0}</td><td>${g.g?(g.ast/g.g).toFixed(1):0}</td><td>${g.g?(g.stl/g.g).toFixed(1):0}</td><td>${g.g?(g.blk/g.g).toFixed(1):0}</td></tr>`).join("")}</table></div>`;
+ }
+
+ function publicSeasonTable(seasons){
+   const ss=Array.isArray(seasons)?seasons:[];
+   if(!ss.length)return `<div class="rankEmpty">沒有逐季資料。</div>`;
+   return `<div class="legacyTableWrap"><table class="legacyTable"><tr><th>年</th><th>球隊</th><th>聯盟</th><th>GP</th><th>MPG</th><th>PTS</th><th>REB</th><th>AST</th><th>STL</th><th>BLK</th></tr>${ss.map(x=>`<tr><td>${x.year||""}</td><td>${esc(x.team||"")}</td><td>${esc(typeof leagueDisplay==="function"?leagueDisplay(x.path):x.path||"")}</td><td>${x.games||0}</td><td>${x.mins||0}</td><td>${x.pts||0}</td><td>${x.reb||0}</td><td>${x.ast||0}</td><td>${x.stl||0}</td><td>${x.blk||0}</td></tr>`).join("")}</table></div>`;
+ }
+
+ async function openCareer(id,pushUrl=true){
+   if(!id)return;
+   showCommunityShell("公開生涯");
+   const content=document.getElementById("communityContent");if(content)content.innerHTML=`<div class="communityLoading">正在讀取生涯紀錄…</div>`;
+   if(pushUrl)history.pushState({bl:"career",id},"",`${location.pathname}?career=${encodeURIComponent(id)}`);
+   try{
+     const {data,error}=await withTimeout(
+       state.client.from("career_records").select("*").eq("id",id).maybeSingle(),
+       12000
+     );
+     if(error)throw error;
+     if(!data)throw new Error("找不到這筆公開生涯");
+     renderPublicCareer(data);
+   }catch(err){
+     if(content)content.innerHTML=`<div class="communityError">公開生涯讀取失敗：${esc(err?.message||"請稍後再試")}</div>`;
+   }
+ }
+
+ function renderPublicCareer(r){
+   const content=document.getElementById("communityContent");if(!content)return;
+   const awards=recordAwardSummary(r),hof=r.hall_of_fame||[],jersey=r.jersey_retired||[],cd=r.career_data||{};
+   const tier=Number(r.career_rating||0)>=7000?"歷史級巨星":Number(r.career_rating||0)>=4500?"聯盟傳奇":Number(r.career_rating||0)>=2800?"明星級生涯":Number(r.career_rating||0)>=1500?"優秀職業球員":"職業旅人";
+   content.innerHTML=`<div class="publicLegacy">
+     <div class="publicLegacyTop">
+       <div><div class="legacyKicker">BasketballLife · PUBLIC COURT LEGACY</div><div class="legacyName">${esc(r.player_name)}</div><div class="legacyMeta">玩家 <b>${esc(r.nickname)}</b>｜${esc(r.position||"")}｜退役 ${r.retired_age||"-"} 歲｜${r.final_year||"-"} 年</div></div>
+       <div class="powerStamp"><small>BL POWER</small><b>${Number(r.career_rating||0).toLocaleString()}</b><span>${tier}</span></div>
+     </div>
+     <div class="publicBadgeRow">${hof.length?`<span>🏛️ 名人堂 ×${hof.length}</span>`:""}${jersey.length?`<span>🏟️ 球衣退休 ×${jersey.length}</span>`:""}${r.seed_tier?`<span>🎴 ${esc(r.seed_tier)}</span>`:""}</div>
+     <div class="publicMetricGrid"><span><small>巔峰OVR</small><b>${r.peak_overall||0}</b></span><span><small>職業場次</small><b>${Number(r.career_games||0).toLocaleString()}</b></span><span><small>主要冠軍</small><b>${r.championships||0}</b></span><span><small>國家隊</small><b>${r.national_caps||0}</b></span><span><small>生涯收入</small><b>${Number(r.career_salary||0).toLocaleString()}萬</b></span></div>
+     <div class="legacySection"><div class="legacySectionTitle">歷史地位</div><div class="legacyEval">★ 生涯歷史評價：${tier}（評價 ${Number(r.career_rating||0).toLocaleString()}）<br>★ ${hof.length?esc(hof.join("、")):"名人堂：未達入選門檻"}${jersey.length?`｜球衣退休：${esc(jersey.join("、"))}`:""}</div></div>
+     <div class="legacySection"><div class="legacySectionTitle">主要榮譽</div><div class="legacyAchievements">${awards.length?awards.map(([n,c])=>`<div>・${esc(n)}${c>1?` ×${c}`:""}</div>`).join(""):"沒有主要個人獎項"}${r.championships?`<div>・主要賽事冠軍 ×${r.championships}</div>`:""}${r.national_caps?`<div>・國家隊資歷 ${r.national_caps} 次</div>`:""}</div></div>
+     <div class="legacySection"><div class="legacySectionTitle">各聯盟生涯</div>${publicLeagueTable(r.league_summary)}</div>
+     <div class="legacySection"><div class="legacySectionTitle">逐季數據</div>${publicSeasonTable(r.season_history)}</div>
+     <div class="legacySection"><div class="legacySectionTitle">生涯註記</div><div class="legacySeed">世界種子：<b>${esc(r.seed||"未公開")}</b>${r.seed_tier?`｜${esc(r.seed_tier)}`:""}<br><span class="mut">${esc(cd.retirement_reason||"")}</span></div></div>
+     <div class="publicShareBtns"><button class="btn" onclick="BasketballLifeOnline.copyCareerLink('${esc(r.id)}')">🔗 複製這頁網址</button><button class="btn" onclick="BasketballLifeOnline.openLeaderboard()">🏆 查看全球排行榜</button></div>
+   </div>`;
+ }
+
+ async function routeFromUrl(){
+   if(!state.client||!state.user)return;
+   const q=new URLSearchParams(location.search);
+   const career=q.get("career"),leader=q.get("leaderboard");
+   if(career){await openCareer(career,false);return true}
+   if(leader!==null){await openLeaderboard(leader||"power",false);return true}
+   return false;
+ }
+
  async function init(){
    if(state.initPromise)return state.initPromise;
 
@@ -3753,6 +4134,8 @@ window.BL_ONLINE_CONFIG = {
        state.user=await ensureAnonymousUser();
 
        const profile=await loadProfile();
+       const routeParams=new URLSearchParams(location.search);
+       const communityRoute=routeParams.has("career")||routeParams.has("leaderboard");
        if(profile?.nickname){
          state.nickname=cleanNickname(profile.nickname);
          cacheNickname(state.nickname);
@@ -3761,6 +4144,15 @@ window.BL_ONLINE_CONFIG = {
          hideNicknameModal();
          setStartReady();
          startLive();
+         await routeFromUrl();
+       }else if(communityRoute){
+         state.nickname="";
+         state.ready=true;
+         hideNicknameModal();
+         setStatus("online","Online｜訪客");
+         setStartReady();
+         startLive();
+         await routeFromUrl();
        }else{
          state.nickname="";
          state.ready=true;
@@ -3823,6 +4215,7 @@ window.BL_ONLINE_CONFIG = {
      setStatus("online",`Online｜${nickname}`);
      setStartReady();
      startLive();
+     routeFromUrl();
    }catch(err){
      console.warn("Nickname save failed:",err);
      if(errBox){
@@ -3860,6 +4253,13 @@ window.BL_ONLINE_CONFIG = {
    publishNews,
    loadGlobalNews,
    startLive,
+   publishCareer,
+   copyCareerLink,
+   openLeaderboard,
+   changeRankMetric,
+   openCareer,
+   closeCommunity,
+   routeFromUrl,
    client(){return state.client},
    isOnline(){return !!state.client && !!state.user && !state.offline},
    isLive(){return !!state.liveReady}
@@ -3870,6 +4270,12 @@ window.BL_ONLINE_CONFIG = {
    $("onlineNicknameInput")?.addEventListener("keydown",e=>{
      if(e.key==="Enter")saveNickname();
    });
+ });
+ window.addEventListener("popstate",async()=>{
+   if(!state.ready)return;
+   const q=new URLSearchParams(location.search);
+   if(q.has("career")||q.has("leaderboard"))await routeFromUrl();
+   else closeCommunity(false);
  });
 })();
 
@@ -5807,7 +6213,7 @@ function retireCareer(reason){
      <div class="legacySalary">生涯總收入 ${moneyText(p.careerSalary)}</div>
    </div>
    <div class="legacySection"><div class="legacySeed"><b>🎴 隱藏屬性揭曉｜${p.seedTierLabel}</b><br>${p.seedTierDesc}</div></div>
-   <div class="retireBtns"><button class="btn" onclick="showRetirementSummary()">查看完整逐季生涯</button><button class="btn" onclick="showShareCard()">生涯紀念摘要</button></div>
+   <div class="retireBtns"><button class="btn" onclick="showRetirementSummary()">查看完整逐季生涯</button><button class="btn" onclick="showShareCard()">生涯紀念摘要</button><button class="btn onlinePublishBtn" onclick="BasketballLifeOnline.publishCareer()">🌐 發布公開生涯</button><button class="btn" onclick="BasketballLifeOnline.openLeaderboard()">🏆 全球排行榜</button></div><div id="publicCareerStatus" class="publicCareerStatus"></div>
    ${retirementRestartHTML()}
  </div>`;
  pushNews(`🏁 ${p.name} 於 ${p.age} 歲正式退休｜生涯評價 ${p.careerRating}`); setTimeout(()=>{fitGameToViewport();const cp=document.getElementById("currentPanel");if(cp)cp.scrollTop=0;},0);
@@ -5828,7 +6234,7 @@ function showRetirementSummary(){
    <div class="legacySection"><div class="legacySectionTitle">生涯稱號</div><div class="legacyBadges">${titles.length?titles.map(x=>`<span class="legacyBadge">${x}</span>`).join(""):"無特殊稱號"}</div></div>
    <div class="legacySection"><div class="legacySectionTitle">逐季數據</div>${legacySeasonTable()}</div>
    <div class="legacySection"><div class="legacySeed"><b>🎴 世界種子｜${p.seedTierLabel}</b><br>${p.seedTierDesc}<br><span class="mut">SEED：${p.seed}</span></div></div>
-   <div class="retireBtns"><button class="btn" onclick="showShareCard()">生涯紀念摘要</button></div>${retirementRestartHTML()}
+   <div class="retireBtns"><button class="btn" onclick="showShareCard()">生涯紀念摘要</button><button class="btn onlinePublishBtn" onclick="BasketballLifeOnline.publishCareer()">🌐 發布公開生涯</button><button class="btn" onclick="BasketballLifeOnline.openLeaderboard()">🏆 全球排行榜</button></div><div id="publicCareerStatus" class="publicCareerStatus"></div>${retirementRestartHTML()}
  </div>`;
  setTimeout(()=>{fitGameToViewport();const cp=document.getElementById("currentPanel");if(cp)cp.scrollTop=0;},0);
 }
@@ -5850,7 +6256,7 @@ function showShareCard(){
    <div class="legacySection"><div class="legacySectionTitle">生涯稱號</div><div class="legacyBadges">${titles.length?titles.map(x=>`<span class="legacyBadge">${x}</span>`).join(""):"無"}</div></div>
    <div class="legacySection"><div class="legacySeed"><b>🎴 ${p.seedTierLabel}</b><br>${p.seedTierDesc}<br><span class="mut">seed：${p.seed}</span></div></div>
  </div>
- <div class="retireBtns"><button class="btn downloadBtn" onclick="downloadCareerPNG()">📸 下載生涯結算圖 PNG</button><button class="btn" onclick="showRetirementSummary()">返回完整生涯</button></div>${retirementRestartHTML()}`;
+ <div class="retireBtns"><button class="btn downloadBtn" onclick="downloadCareerPNG()">📸 下載生涯結算圖 PNG</button><button class="btn" onclick="showRetirementSummary()">返回完整生涯</button><button class="btn onlinePublishBtn" onclick="BasketballLifeOnline.publishCareer()">🌐 發布公開生涯</button><button class="btn" onclick="BasketballLifeOnline.openLeaderboard()">🏆 全球排行榜</button></div><div id="publicCareerStatus" class="publicCareerStatus"></div>${retirementRestartHTML()}`;
  setTimeout(()=>{fitGameToViewport();const cp=document.getElementById("currentPanel");if(cp)cp.scrollTop=0;},0);
 }
 function downloadCareerPNG(){
