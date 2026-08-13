@@ -2,7 +2,8 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BasketballLife｜Online Beta V7.49.8 · Ranking Entry & Dice Reveal</title>
+<title>BasketballLife｜Online Beta V7.49.10 · Automatic Career Ranking</title>
+<link rel="icon" type="image/png" href="./basketballlife-logo.png">
 <style>
 :root{--bg:#0b0f15;--card:#131a25;--card2:#182231;--line:#2b394d;--txt:#f5f7fb;--mut:#91a0b6;--gold:#f0b64b;--blue:#5593ff;--green:#49cf88;--red:#e23b3b;--orange:#e88946}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 25% 0,#172238,#0b0f15 38%);color:var(--txt);font-family:system-ui,-apple-system,"Microsoft JhengHei",sans-serif}
@@ -3936,7 +3937,6 @@ body.retirementMode .legacyPage{
   background:linear-gradient(180deg,#111f27,#0b171e);box-shadow:inset 0 1px rgba(255,255,255,.025)
 }
 .legacyRailBrand{display:flex;align-items:center;gap:9px;padding:0 2px 10px;border-bottom:1px solid #2b424e}
-.legacyRailBall{display:grid;place-items:center;width:31px;height:31px;border-radius:50%;background:#e29a51;color:#111820;font-size:17px;box-shadow:0 0 0 4px rgba(226,154,81,.09)}
 .legacyRailBrand b{display:block;color:#eef1ef;font-size:14px;letter-spacing:.05em}
 .legacyRailBrand small{display:block;margin-top:2px;color:#7e94a1;font-size:8px;font-weight:950;letter-spacing:.18em}
 .legacyRailScroll{min-height:0;overflow:auto;padding:4px 5px 4px 1px;scrollbar-width:thin;scrollbar-color:#4a5e68 transparent}
@@ -3989,25 +3989,30 @@ body.retirementMode .legacyHero .legacyMeta{margin-top:7px!important;color:#aab8
 .fanEchoCard p{margin:0;color:#d5dcdf;font-size:11.5px;line-height:1.6}
 .fanEchoCard small{display:block;margin-top:6px;color:#8ea0a9;font-size:9.5px;font-weight:850}
 .retirementCredit{margin-top:10px;padding-bottom:2px}
-.retirementRankingDecision{
-  display:grid;grid-template-columns:42px minmax(0,1fr) auto;gap:11px;align-items:center;
-  margin-top:8px;padding:12px;border:1px solid #79532f;border-radius:11px;
-  background:linear-gradient(135deg,rgba(91,55,26,.3),rgba(14,25,32,.95));box-shadow:inset 3px 0 #dc914b
+/* V7.49.10: brand emblem + automatic retirement ranking upload. */
+.brand{display:flex!important;align-items:center;gap:8px}
+.brandLogo{
+  width:32px;height:32px;flex:0 0 auto;border:1px solid #89582e;border-radius:50%;
+  object-fit:cover;background:#080b0f;box-shadow:0 0 0 3px rgba(226,148,73,.07),0 4px 14px rgba(0,0,0,.35)
 }
-.retirementRankingDecision.needsDecision{animation:rankingDecisionPulse .45s ease 2}
-.rankingDecisionIcon{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:#e39a50;color:#17110c;font-size:18px;font-weight:950}
-.rankingDecisionCopy small{display:block;color:#c4854b;font-size:8px;font-weight:950;letter-spacing:.16em}
-.rankingDecisionCopy>b{display:block;margin-top:2px;color:#f0eee8;font-size:14px}
-.rankingDecisionCopy p{margin:4px 0 0;color:#aebac0;font-size:10.5px;line-height:1.5}
-.rankingDecisionActions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
-.rankingDecisionActions .btn{padding:8px 9px!important;font-size:10px!important}
-.rankingDecisionActions .rankingPrimary{border-color:#d68e49;background:linear-gradient(135deg,#bd7136,#e2a157);color:#17110d;font-weight:950}
-.retirementRankingDecision.localOnly{border-color:#445761;box-shadow:inset 3px 0 #718791;background:#101c23}
-.retirementRankingDecision.localOnly .rankingDecisionIcon{background:#526875;color:#e3e8ea}
-.retirementRankingDecision.enrolled{border-color:#39694f;box-shadow:inset 3px 0 #64bd83;background:linear-gradient(135deg,rgba(36,88,57,.3),#0e1b21)}
-.retirementRankingDecision.enrolled .rankingDecisionIcon{background:#68c088;color:#0a1b11}
-.rankingDecisionError{grid-column:2/-1;color:#ef9b88;font-size:10px;font-weight:850}
-@keyframes rankingDecisionPulse{50%{transform:scale(1.01);box-shadow:0 0 0 4px rgba(222,146,75,.13),inset 3px 0 #dc914b}}
+.brand .brandText{color:#f6f2eb!important;font:inherit;letter-spacing:inherit}
+.brand .brandText b{color:var(--orange);font:inherit}
+.setupIdentity{display:grid;grid-template-columns:104px minmax(0,1fr);gap:16px;align-items:center;margin-bottom:10px}
+.setupLogoFrame{
+  position:relative;display:grid;place-items:center;width:104px;height:104px;border:1px solid #6f4a2b;border-radius:50%;
+  background:radial-gradient(circle,#2c1c0f,#090d12 70%);box-shadow:0 10px 30px rgba(0,0,0,.34),0 0 0 5px rgba(224,145,72,.045)
+}
+.setupLogoFrame::before{content:"🏀";position:absolute;color:#d99149;font-size:36px}
+.setupLogo{position:relative;z-index:1;width:100%;height:100%;border-radius:50%;object-fit:cover}
+.setupIdentity h1{margin:4px 0 7px;font-size:26px;line-height:1.12}
+.setupIdentity p{margin:0;font-size:12px}
+.legacyRailLogo{width:31px;height:31px;flex:0 0 auto;border:1px solid #82532e;border-radius:50%;object-fit:cover;background:#080c10;box-shadow:0 0 0 4px rgba(226,154,81,.07)}
+.legacyRankMarkHost:empty{display:none}
+.legacyRankMark{margin-top:7px;padding-top:6px;border-top:1px solid rgba(229,157,82,.24);line-height:1.35}
+.legacyRankMark b{display:block!important;margin:0!important;color:#76d497!important;font-size:8.5px!important;letter-spacing:.04em}
+.legacyRankMark span{display:block!important;margin-top:2px;color:#b8a084!important;font-size:7.5px!important;letter-spacing:0!important}
+.retirementRankingActionsHost{display:contents}
+.rankingSyncBtn{opacity:.72;cursor:wait!important}
 
 @media(max-width:700px){
   .assign{grid-template-columns:repeat(2,minmax(0,1fr))!important}
@@ -4051,14 +4056,15 @@ body.retirementMode .legacyHero .legacyMeta{margin-top:7px!important;color:#aab8
   .legacyHeroStats{grid-template-columns:repeat(2,minmax(0,1fr))}
   .fanEchoGrid{grid-template-columns:1fr}
   .fanEchoIntro{align-items:flex-start;flex-direction:column;gap:3px}
-  .retirementRankingDecision{grid-template-columns:38px minmax(0,1fr)}
-  .rankingDecisionActions{grid-column:1/-1;display:grid;grid-template-columns:1fr}
+  .setupIdentity{grid-template-columns:76px minmax(0,1fr);gap:11px}
+  .setupLogoFrame{width:76px;height:76px}
+  .setupIdentity h1{font-size:21px}
 }
 </style>
 </head>
 <body><div class="wrap">
 <div class="brandRow">
-  <div class="brand">🏀 Basketball<span>Life</span></div>
+  <div class="brand"><img class="brandLogo" src="./basketballlife-logo.png" alt="" onerror="this.remove()"><span class="brandText">Basketball<b>Life</b></span></div>
   <div class="brandActions">
     <span id="careerSaveStatus" class="careerSaveStatus hidden" aria-live="polite">本機自動存檔</span>
     <button id="quickRestartBtn" class="quickRestartBtn hidden" type="button" onclick="toggleQuickRestartMenu(event)" title="重新開始這段生涯" aria-label="重新開始">↻</button>
@@ -4073,8 +4079,7 @@ body.retirementMode .legacyHero .legacyMeta{margin-top:7px!important;color:#aab8
 <div id="liveTicker" class="liveTicker"><div class="liveLabel">BL LIVE</div><div class="liveViewport"><div id="liveTrack" class="liveTrack">新的籃球人生即將開始。</div></div></div>
 
 <section id="setup" class="card setup">
-<div class="gold" style="font-weight:900">NEW CAREER</div><h1>從一個名字開始。</h1>
-<p class="mut">姓名與位置由你決定；天賦、能力上限、成長速度、抗傷體質、人生事件與職涯高度，都藏在 8 碼世界種子裡。</p>
+<div class="setupIdentity"><div class="setupLogoFrame"><img class="setupLogo" src="./basketballlife-logo.png" alt="BasketballLife 遊戲徽章" onerror="this.remove()"></div><div><div class="gold" style="font-weight:900">NEW CAREER</div><h1>從一個名字開始。</h1><p class="mut">姓名與位置由你決定；天賦、能力上限、成長速度、抗傷體質、人生事件與職涯高度，都藏在 8 碼世界種子裡。</p></div></div>
 <label>球員姓名</label><input id="playerNameInput" placeholder="例如：林子翔" maxlength="12">
 <label>位置</label><div id="posgrid" class="posgrid"></div>
 <label>世界種子</label><div class="seed"><div id="seed" class="seedcode"></div><button class="btn" onclick="newSeed()">換一個</button></div>
@@ -4531,16 +4536,17 @@ window.BL_ONLINE_CONFIG = {
 
  async function publishCareer(options={}){
    const showLink=options.showLink!==false;
+   const silent=options.silent===true;
    const status=document.getElementById("publicCareerStatus");
    if(!gamePlayer() || !p.retired){
-     if(status)status.textContent="只有正式退休後的完整生涯可以發布。";
+     if(status&&!silent)status.textContent="只有正式退休後的完整生涯可以發布。";
      return null;
    }
    if(!state.client || !state.user || !state.nickname){
-     if(status)status.textContent="請先完成 Online 玩家登入。";
+     if(status&&!silent)status.textContent="請先完成 Online 玩家登入。";
      if(!state.nickname){
        if(options.enrollment)state.pendingCareerEnrollment=true;
-       showNicknameModal();
+       if(!silent)showNicknameModal();
      }
      return null;
    }
@@ -4551,7 +4557,7 @@ window.BL_ONLINE_CONFIG = {
 
    const buttons=document.querySelectorAll(".onlinePublishBtn");
    buttons.forEach(b=>{b.disabled=true;b.textContent="發布中…"});
-   if(status)status.textContent="正在建立公開生涯紀錄…";
+   if(status&&!silent)status.textContent="正在建立公開生涯紀錄…";
 
    const row={
      user_id:state.user.id,
@@ -4594,7 +4600,7 @@ window.BL_ONLINE_CONFIG = {
    }catch(err){
      console.warn("Public career publish failed:",err);
      const detail=[err?.message,err?.details,err?.hint].filter(Boolean).join("｜");
-     if(status)status.textContent=`發布失敗：${detail||"請稍後再試"}`;
+     if(status&&!silent)status.textContent=`發布失敗：${detail||"請稍後再試"}`;
      return null;
    }finally{
      buttons.forEach(b=>{b.disabled=false;b.textContent=p?.publicCareerId?"✓ 已發布公開生涯":"🌐 發布公開生涯"});
@@ -4610,48 +4616,56 @@ window.BL_ONLINE_CONFIG = {
    }catch(_){return {power:null,peak:null,total:null}}
  }
 
+ let retirementAutoPublishTimer=0;
+ let retirementAutoPublishPromise=null;
+
  function showEnrollmentSuccess(id,ranks={}){
-   const box=document.getElementById("retirementRankingDecision");
-   if(!box)return;
-   const rankBits=[];
-   if(ranks.power)rankBits.push(`BL POWER 第 <b>${ranks.power}</b> 名`);
-   if(ranks.peak)rankBits.push(`巔峰 OVR 第 <b>${ranks.peak}</b> 名`);
-   box.className="retirementRankingDecision enrolled";
-   box.innerHTML=`<div class="rankingDecisionIcon">✓</div><div class="rankingDecisionCopy"><small>GLOBAL RANKING ENTRY</small><b>這支生涯已登錄全球排行榜</b><p>${rankBits.length?rankBits.join("｜"):`BL POWER ${Number(p.careerRating||0).toLocaleString()} 已完成登錄。`}</p></div><div class="rankingDecisionActions"><button class="btn rankingPrimary" onclick="BasketballLifeOnline.openLeaderboardNewTab()">🏆 查看排行榜 ↗</button><button class="btn" onclick="BasketballLifeOnline.shareRetirementCareer()">📤 分享生涯連結 ↗</button></div>`;
+   p.retirementRankSummary={power:ranks.power||null,peak:ranks.peak||null,total:ranks.total||null};
+   p.leaderboardChoice="public";
+   state.pendingCareerEnrollment=false;
+   refreshRetirementRankingView();
+   const status=document.getElementById("publicCareerStatus");
+   if(status)status.textContent="";
  }
 
- async function enrollRetirementCareer(){
-   if(!gamePlayer()||!p.retired)return null;
-   if(state.offline||!state.client||!state.user){
-     const box=document.getElementById("retirementRankingDecision");
-     if(box)box.insertAdjacentHTML("beforeend",`<div class="rankingDecisionError">目前為離線模式，暫時無法登錄；生涯仍完整保存在本機。</div>`);
-     return null;
-   }
-   if(!state.nickname){
-     state.pendingCareerEnrollment=true;
-     p.leaderboardChoice="pending";
-     refreshRetirementRankingDecision();
-     showNicknameModal();
-     return null;
-   }
-   p.leaderboardChoice="pending";
-   refreshRetirementRankingDecision("正在登錄並計算排名……");
-   const id=await publishCareer({showLink:false,enrollment:true});
-   if(!id){
-     p.leaderboardChoice=null;
-     refreshRetirementRankingDecision("登錄失敗，請稍後再試；本機生涯不受影響。");
-     return null;
-   }
-   showEnrollmentSuccess(id,await retirementRankSummary(id));
-   scheduleCareerAutosave();
-   return id;
+ function scheduleRetirementAutoPublish(delay=100){
+   window.clearTimeout(retirementAutoPublishTimer);
+   const gp=gamePlayer();
+   if(!gp||!gp.retired||gp.publicCareerId)return;
+   retirementAutoPublishTimer=window.setTimeout(()=>autoPublishRetirementCareer(),delay);
  }
 
- function keepRetirementLocal(){
-   if(!gamePlayer()||!p.retired)return;
-   p.leaderboardChoice="local";
-   refreshRetirementRankingDecision();
+ async function autoPublishRetirementCareer(){
+   const gp=gamePlayer();
+   if(!gp||!gp.retired)return null;
+   if(gp.publicCareerId){
+     gp.leaderboardChoice="public";
+     if(!gp.retirementRankSummary?.power)showEnrollmentSuccess(gp.publicCareerId,await retirementRankSummary(gp.publicCareerId));
+     return gp.publicCareerId;
+   }
+   if(retirementAutoPublishPromise)return retirementAutoPublishPromise;
+   gp.leaderboardChoice="pending";
+   state.pendingCareerEnrollment=true;
+   refreshRetirementRankingView();
    scheduleCareerAutosave();
+   if(state.offline||!state.client||!state.user||!state.nickname)return null;
+
+   retirementAutoPublishPromise=(async()=>{
+     const id=await publishCareer({showLink:false,enrollment:true,silent:true});
+     if(!id){
+       gp.leaderboardChoice="retry";
+       state.pendingCareerEnrollment=true;
+       refreshRetirementRankingView();
+       scheduleCareerAutosave();
+       scheduleRetirementAutoPublish(15000);
+       return null;
+     }
+     showEnrollmentSuccess(id,await retirementRankSummary(id));
+     scheduleCareerAutosave();
+     return id;
+   })();
+   try{return await retirementAutoPublishPromise}
+   finally{retirementAutoPublishPromise=null}
  }
 
  function showPublishedCareerLink(id){
@@ -4674,16 +4688,8 @@ window.BL_ONLINE_CONFIG = {
    const gp=gamePlayer();
    if(!gp || !gp.retired)return;
 
-   if(!gp.publicCareerId){
-     const box=document.getElementById("retirementRankingDecision");
-     if(box){box.scrollIntoView?.({behavior:"smooth",block:"center"});box.classList.add("needsDecision")}
-     const status=document.getElementById("publicCareerStatus");
-     if(status)status.textContent="請先選擇「登錄全球排行榜」，建立公開生涯後才能分享連結。";
-     return;
-   }
-
    // Open immediately from the click gesture, otherwise browsers may block
-   // a new tab after awaiting the Supabase publish request.
+   // a new tab while a rare unfinished automatic upload is being retried.
    let shareTab=null;
    try{
      shareTab=window.open("about:blank","_blank");
@@ -4694,13 +4700,13 @@ window.BL_ONLINE_CONFIG = {
      }
    }catch(_){}
 
-   const id=gp.publicCareerId;
+   const id=gp.publicCareerId||await autoPublishRetirementCareer();
 
    if(!id){
      try{shareTab?.close()}catch(_){}
      const status=document.getElementById("publicCareerStatus");
-     if(status && !status.textContent.includes("發布失敗")){
-       status.insertAdjacentHTML("beforeend",`<div class="copyHint">公開生涯尚未建立，無法開啟分享頁。</div>`);
+     if(status){
+       status.innerHTML=`<div class="copyHint">目前連線不穩，系統仍會自動補傳這支生涯；連線恢復後再按一次分享即可。</div>`;
      }
      return;
    }
@@ -5057,7 +5063,7 @@ window.BL_ONLINE_CONFIG = {
      routeFromUrl();
      if(state.pendingCareerEnrollment){
        state.pendingCareerEnrollment=false;
-       setTimeout(()=>enrollRetirementCareer(),0);
+       setTimeout(()=>autoPublishRetirementCareer(),0);
      }
    }catch(err){
      console.warn("Nickname save failed:",err);
@@ -5098,8 +5104,8 @@ window.BL_ONLINE_CONFIG = {
    loadGlobalNews,
    startLive,
    publishCareer,
-   enrollRetirementCareer,
-   keepRetirementLocal,
+   autoPublishRetirementCareer,
+   scheduleRetirementAutoPublish,
    copyCareerLink,
    shareRetirementCareer,
    openCareerNewTab,
@@ -5284,7 +5290,7 @@ function saveCareerNow(){
  if(!p||careerSaveRestoring)return false;
  try{
    const save={
-     schema:CAREER_SAVE_SCHEMA,gameVersion:"7.49.8",savedAt:Date.now(),
+     schema:CAREER_SAVE_SCHEMA,gameVersion:"7.49.10",savedAt:Date.now(),
      player:p,chosenPos,selectedDie,screen:currentCareerScreen()
    };
    localStorage.setItem(CAREER_SAVE_KEY,JSON.stringify(save));
@@ -5602,7 +5608,7 @@ function startCareer(){
     recentEvents:[],feedHistory:[],expandedFeedYear:null,showOlderFeedYears:false,pendingRenewalOffer:null,marketOriginTeam:"",marketOriginLeague:"",marketReturnOffer:null,
     medicalProtectionUntilYear:0,medicalProtectionReason:"",medicalProtectedArea:"",postOpCareChosen:false,lastMajorInjuryYear:0,
     lastDanceActive:false,lastDanceUsed:false,retirementDefianceUsed:false,retirementCrisisCount:0,retirementCrisisReason:"",
-    leaderboardChoice:null,diceRevealCount:0,diceRolling:false,
+    leaderboardChoice:null,retirementRankSummary:null,diceRevealCount:0,diceRolling:false,
     developmentSeasons:0,developmentLastChanceUsed:false,firstFullProAge:null};
 
  p.team=HBL_TEAMS[ri(RNG(p.seed+"hbl-team"),0,HBL_TEAMS.length-1)];
@@ -7248,12 +7254,6 @@ function retirementRestartHTML(){
  </div>`;
 }
 function restartCareer(mode){
- if(p?.retired&&!p.publicCareerId&&!['local','public'].includes(p.leaderboardChoice)){
-   refreshRetirementRankingDecision("請先選擇登錄排行榜或只保留在本機，再開啟下一段人生。");
-   const decision=document.getElementById("retirementRankingDecision");
-   if(decision){decision.classList.add("needsDecision");decision.scrollIntoView?.({behavior:"smooth",block:"center"})}
-   return;
- }
  document.getElementById("quickRestartMenu")?.classList.add("hidden");
  document.getElementById("quickRestartBtn")?.classList.add("hidden");
  document.body.classList.remove("retirementMode");
@@ -7377,7 +7377,7 @@ function legacyCareerRailHTML(){
  if(p.jerseyRetired?.length)legacyMarks.push(`${p.jerseyRetired.length} 隊退休球衣`);
  if(p.nationalCaps)legacyMarks.push(`國家隊 ${p.nationalCaps} 次`);
  return `<aside class="legacyCareerRail" aria-label="生涯軌跡">
-   <div class="legacyRailBrand"><span class="legacyRailBall">🏀</span><div><b>生涯軌跡</b><small>CAREER WALK</small></div></div>
+   <div class="legacyRailBrand"><img class="legacyRailLogo" src="./basketballlife-logo.png" alt="" onerror="this.remove()"><div><b>生涯軌跡</b><small>CAREER WALK</small></div></div>
    <div class="legacyRailScroll">${route||`<div class="legacyRailEmpty">尚無逐季生涯紀錄</div>`}</div>
    <div class="legacyRailFinish"><span></span><div><b>${p.year} · 正式引退</b><small>${legacyMarks.join(" · ")||"旅程在此落幕"}</small></div></div>
  </aside>`;
@@ -7400,7 +7400,7 @@ function legacyHeaderHTML(){
      <div class="legacyMeta">${escapeFeedText(p.pos)}｜最後效力 ${escapeFeedText(last.team||p.team||"—")} · ${escapeFeedText(last.path?leagueDisplay(last.path):leagueDisplay(p.path))}｜巔峰 OVR ${p.peakOverall} · 引退總評 ${overall()}</div>
      <div class="legacyBadges">${badges.join("")}</div>
    </div>
-   <div class="legacyPowerStamp"><small>BL POWER</small><b>${Number(p.careerRating||0).toLocaleString("en-US")}</b><span>歷史總評</span></div>
+   <div class="legacyPowerStamp"><small>BL POWER</small><b>${Number(p.careerRating||0).toLocaleString("en-US")}</b><span>歷史總評</span><div class="legacyRankMarkHost">${retirementRankMarkHTML()}</div></div>
    <div class="legacyHeroStats">
      <div><small>引退年齡</small><b>${p.age}</b><span>歲</span></div>
      <div><small>生涯球季</small><b>${yearCount}</b><span>季</span></div>
@@ -7436,23 +7436,20 @@ function fanEchoHTML(){
 function creatorCreditHTML(){
  return `<div class="creatorCredit retirementCredit">Produced by <a href="https://www.threads.com/@basketballlife_k?xmt=AQG0tS6gtXrN8CWiBiJqphKuoz5VwtJFONP4svLNEbhjdt0" target="_blank" rel="noopener noreferrer">BasketballLife_K</a></div>`;
 }
-function retirementRankingDecisionHTML(note=""){
- if(p.publicCareerId){
-   return `<div id="retirementRankingDecision" class="retirementRankingDecision enrolled"><div class="rankingDecisionIcon">✓</div><div class="rankingDecisionCopy"><small>GLOBAL RANKING ENTRY</small><b>這支生涯已登錄全球排行榜</b><p>BL POWER ${Number(p.careerRating||0).toLocaleString()} 已完成登錄；社群分享是額外選項。</p></div><div class="rankingDecisionActions"><button class="btn rankingPrimary" onclick="BasketballLifeOnline.openLeaderboardNewTab()">🏆 查看排行榜 ↗</button><button class="btn" onclick="BasketballLifeOnline.shareRetirementCareer()">📤 分享生涯連結 ↗</button></div></div>`;
- }
- if(p.leaderboardChoice==="local"){
-   return `<div id="retirementRankingDecision" class="retirementRankingDecision localOnly"><div class="rankingDecisionIcon">⌂</div><div class="rankingDecisionCopy"><small>LOCAL CAREER</small><b>這支生涯目前只保留在本機</b><p>不會出現在排行榜，也沒有對外分享；之後仍可改為登錄。</p></div><div class="rankingDecisionActions"><button class="btn" onclick="BasketballLifeOnline.enrollRetirementCareer()">改為登錄排行榜</button></div></div>`;
- }
- const pending=p.leaderboardChoice==="pending",submitting=pending&&!!note;
- return `<div id="retirementRankingDecision" class="retirementRankingDecision"><div class="rankingDecisionIcon">🏆</div><div class="rankingDecisionCopy"><small>RETIREMENT DECISION</small><b>${pending?(submitting?"正在登錄全球排行榜":"完成暱稱後將繼續登錄"):"是否將這支生涯登錄全球排行榜？"}</b><p>${escapeFeedText(note||"僅公開玩家暱稱、球員履歷與生涯數據；不會公開個人資料。社群分享會在登錄後另外提供。")}</p></div><div class="rankingDecisionActions"><button class="btn rankingPrimary" onclick="BasketballLifeOnline.enrollRetirementCareer()" ${pending?"disabled":""}>${pending?(submitting?"登錄中…":"等待設定暱稱…"):"🏆 登錄並查看排名"}</button><button class="btn" onclick="BasketballLifeOnline.keepRetirementLocal()" ${submitting?"disabled":""}>只保留在本機</button></div></div>`;
+function retirementRankMarkHTML(){
+ if(!p?.publicCareerId)return "";
+ const ranks=p.retirementRankSummary||{},bits=[];
+ if(ranks.power)bits.push(`BL POWER #${ranks.power}`);
+ if(ranks.peak)bits.push(`巔峰 OVR #${ranks.peak}`);
+ return `<div class="legacyRankMark"><b>✓ 已登錄全球排行</b><span>${bits.join("｜")||"公開生涯已建立"}</span></div>`;
 }
-function refreshRetirementRankingDecision(note=""){
- const old=document.getElementById("retirementRankingDecision");
- if(!old)return;
- const holder=document.createElement("div");holder.innerHTML=retirementRankingDecisionHTML(note);
- old.replaceWith(holder.firstElementChild);
+function retirementRankingButtonsHTML(){
+ return `<button class="btn" onclick="BasketballLifeOnline.openLeaderboardNewTab()">🏆 查看全球排行榜 ↗</button><button class="btn" onclick="BasketballLifeOnline.shareRetirementCareer()">🔗 分享生涯連結 ↗</button>`;
 }
-
+function refreshRetirementRankingView(){
+ document.querySelectorAll(".legacyRankMarkHost").forEach(x=>x.innerHTML=retirementRankMarkHTML());
+ document.querySelectorAll(".retirementRankingActionsHost").forEach(x=>x.innerHTML=retirementRankingButtonsHTML());
+}
 function legacyTitleInfo(raw){
  const t=typeof raw==="string"?{id:"",name:raw}:raw||{};
  const def=TITLE_DEFS[t.id]||CHAIN_TITLES[t.id]||{};
@@ -7477,7 +7474,6 @@ function retireCareer(reason){
  special.innerHTML=`<div class="legacyPage"><div class="legacyDashboard">
    ${legacyCareerRailHTML()}<main class="legacyMain">
    ${legacyHeaderHTML()}
-   ${retirementRankingDecisionHTML()}
    <div class="legacySection"><div class="legacySectionTitle">生涯評價</div><div class="legacyEval">${evals.join("<br>")}</div></div>
    <div class="legacySection">${retirementDayNarrative()}</div>
    <div class="legacySection fanEchoSection">${fanEchoHTML()}</div>
@@ -7491,17 +7487,16 @@ function retireCareer(reason){
      <div class="legacySalary">生涯總收入 ${moneyText(p.careerSalary)}</div>
    </div>
    <div class="legacySection"><div class="legacySeed"><b>🎴 隱藏屬性揭曉｜${p.seedTierLabel}</b><br>${p.seedTierDesc}</div></div>
-   <div class="retireBtns"><button class="btn" onclick="showRetirementSummary()">查看完整逐季生涯</button><button class="btn" onclick="showShareCard()">生涯紀念摘要</button><button class="btn" onclick="BasketballLifeOnline.openLeaderboardNewTab()">🏆 全球排行榜 ↗</button></div><div id="publicCareerStatus" class="publicCareerStatus"></div>
+   <div class="retireBtns"><button class="btn" onclick="showRetirementSummary()">查看完整逐季生涯</button><button class="btn" onclick="showShareCard()">📸 生涯紀念圖</button><span class="retirementRankingActionsHost">${retirementRankingButtonsHTML()}</span></div><div id="publicCareerStatus" class="publicCareerStatus"></div>
    ${retirementRestartHTML()}
    ${creatorCreditHTML()}</main></div></div>`;
- pushNews(`🏁 ${p.name} 於 ${p.age} 歲正式退休｜生涯評價 ${p.careerRating}`); setTimeout(()=>{fitGameToViewport();const cp=document.getElementById("currentPanel");if(cp)cp.scrollTop=0;},0);
+ pushNews(`🏁 ${p.name} 於 ${p.age} 歲正式退休｜生涯評價 ${p.careerRating}`); setTimeout(()=>{fitGameToViewport();const cp=document.getElementById("currentPanel");if(cp)cp.scrollTop=0;BasketballLifeOnline.scheduleRetirementAutoPublish();},0);
 }
 function showRetirementSummary(){
  const groups=careerLeagueSummary(),evals=legacyEvaluationLines(),ach=careerAchievementEntries();
  special.innerHTML=`<div class="legacyPage"><div class="legacyDashboard">
    ${legacyCareerRailHTML()}<main class="legacyMain">
    ${legacyHeaderHTML()}
-   ${retirementRankingDecisionHTML()}
    <div class="legacySection"><div class="legacySectionTitle">生涯評價</div><div class="legacyEval">${evals.join("<br>")}</div></div>
    <div class="legacySection"><div class="legacyStoryGrid">
      <div>${retirementDayNarrative()}</div>
@@ -7515,9 +7510,9 @@ function showRetirementSummary(){
    <div class="legacySection"><div class="legacySectionTitle">生涯稱號</div><div class="legacyBadges">${legacyTitleBadgesHTML()}</div></div>
    <div class="legacySection"><div class="legacySectionTitle">逐季數據</div>${legacySeasonTable()}</div>
    <div class="legacySection"><div class="legacySeed"><b>🎴 世界種子｜${p.seedTierLabel}</b><br>${p.seedTierDesc}<br><span class="mut">SEED：${p.seed}</span></div></div>
-   <div class="retireBtns"><button class="btn" onclick="showShareCard()">生涯紀念摘要</button><button class="btn" onclick="BasketballLifeOnline.openLeaderboardNewTab()">🏆 全球排行榜 ↗</button></div><div id="publicCareerStatus" class="publicCareerStatus"></div>${retirementRestartHTML()}
+   <div class="retireBtns"><button class="btn" onclick="showShareCard()">📸 生涯紀念圖</button><span class="retirementRankingActionsHost">${retirementRankingButtonsHTML()}</span></div><div id="publicCareerStatus" class="publicCareerStatus"></div>${retirementRestartHTML()}
    ${creatorCreditHTML()}</main></div></div>`;
- setTimeout(()=>{fitGameToViewport();const cp=document.getElementById("currentPanel");if(cp)cp.scrollTop=0;},0);
+ setTimeout(()=>{fitGameToViewport();const cp=document.getElementById("currentPanel");if(cp)cp.scrollTop=0;BasketballLifeOnline.scheduleRetirementAutoPublish();},0);
 }
 function topAwardsText(){
  const m={};(p.careerAwards||[]).forEach(a=>m[a.name]=(m[a.name]||0)+1);return Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,12).map(([n,c])=>`${n}${c>1?` ×${c}`:""}`);
@@ -7527,7 +7522,6 @@ function showShareCard(){
  special.innerHTML=`<div id="shareCard" class="legacyPage"><div class="legacyDashboard">
    ${legacyCareerRailHTML()}<main class="legacyMain">
    ${legacyHeaderHTML()}
-   ${retirementRankingDecisionHTML()}
    <div class="legacySection"><div class="legacySectionTitle">生涯評價</div><div class="legacyEval">${evals.join("<br>")}</div></div>
    <div class="legacySection"><div class="legacySectionTitle">歷史地位</div>
      <div class="legacyNarrative">${p.hallOfFame.length?`⭐ <b>${p.hallOfFame.join("、")}</b>`:"未入選名人堂"}${p.jerseyRetired.length?`<br>🏟️ 球衣退休：<b>${p.jerseyRetired.join("、")}</b>`:""}<br>
@@ -7540,8 +7534,8 @@ function showShareCard(){
    <div class="legacySection"><div class="legacySectionTitle">生涯稱號</div><div class="legacyBadges">${legacyTitleBadgesHTML("無")}</div></div>
    <div class="legacySection"><div class="legacySeed"><b>🎴 ${p.seedTierLabel}</b><br>${p.seedTierDesc}<br><span class="mut">seed：${p.seed}</span></div></div>
    ${creatorCreditHTML()}</main></div></div>
- <div class="retireBtns"><button class="btn downloadBtn" onclick="downloadCareerPNG()">📸 下載生涯結算圖 PNG</button><button class="btn" onclick="showRetirementSummary()">返回完整生涯</button><button class="btn" onclick="BasketballLifeOnline.openLeaderboardNewTab()">🏆 全球排行榜 ↗</button></div><div id="publicCareerStatus" class="publicCareerStatus"></div>${retirementRestartHTML()}`;
- setTimeout(()=>{fitGameToViewport();const cp=document.getElementById("currentPanel");if(cp)cp.scrollTop=0;},0);
+ <div class="retireBtns"><button class="btn downloadBtn" onclick="downloadCareerPNG()">📸 下載生涯結算圖 PNG</button><button class="btn" onclick="showRetirementSummary()">返回完整生涯</button><span class="retirementRankingActionsHost">${retirementRankingButtonsHTML()}</span></div><div id="publicCareerStatus" class="publicCareerStatus"></div>${retirementRestartHTML()}`;
+ setTimeout(()=>{fitGameToViewport();const cp=document.getElementById("currentPanel");if(cp)cp.scrollTop=0;BasketballLifeOnline.scheduleRetirementAutoPublish();},0);
 }
 function downloadCareerPNG(){
  const canvas=document.createElement("canvas"),W=1200,H=1500;canvas.width=W;canvas.height=H;const c=canvas.getContext("2d");
