@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BasketballLife｜Online Beta V7.49.5 · Ranking Explanations</title>
+<title>BasketballLife｜Online Beta V7.49.6 · Retirement Night</title>
 <style>
 :root{--bg:#0b0f15;--card:#131a25;--card2:#182231;--line:#2b394d;--txt:#f5f7fb;--mut:#91a0b6;--gold:#f0b64b;--blue:#5593ff;--green:#49cf88;--red:#e23b3b;--orange:#e88946}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 25% 0,#172238,#0b0f15 38%);color:var(--txt);font-family:system-ui,-apple-system,"Microsoft JhengHei",sans-serif}
@@ -3877,6 +3877,83 @@ body.retirementMode .legacyTable td{padding:5px 7px!important}
 }
 .titleInfoBadge:hover::after,.titleInfoBadge:focus::after{opacity:1;visibility:visible;transform:translateY(0)}
 
+/* V7.49.6: original retirement-night layout — career museum rail + arena farewell stage. */
+.creatorCredit{
+  display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap;
+  margin-top:13px;padding-top:10px;border-top:1px solid #2d414d;
+  color:#8798a4;font-size:10.5px;font-weight:800;letter-spacing:.02em
+}
+.creatorCredit a{color:#e0a15e;text-decoration:none}
+.creatorCredit a:hover,.creatorCredit a:focus{text-decoration:underline;color:#f1bc7d}
+.creatorCredit span{color:#52636e}
+body.retirementMode .wrap{max-width:1240px!important}
+body.retirementMode .legacyPage{
+  padding:11px!important;border:1px solid #304653!important;border-radius:15px!important;
+  background:linear-gradient(160deg,#0a141b,#0d1921 56%,#101b21)!important;
+  box-shadow:0 18px 55px rgba(0,0,0,.34)!important
+}
+.legacyDashboard{display:grid;grid-template-columns:224px minmax(0,1fr);gap:12px;align-items:start}
+.legacyMain{min-width:0}
+.legacyCareerRail{
+  position:sticky;top:8px;display:flex;flex-direction:column;min-width:0;
+  max-height:calc(100vh - 116px);padding:13px 11px 11px;border:1px solid #314b58;border-radius:13px;
+  background:linear-gradient(180deg,#111f27,#0b171e);box-shadow:inset 0 1px rgba(255,255,255,.025)
+}
+.legacyRailBrand{display:flex;align-items:center;gap:9px;padding:0 2px 10px;border-bottom:1px solid #2b424e}
+.legacyRailBall{display:grid;place-items:center;width:31px;height:31px;border-radius:50%;background:#e29a51;color:#111820;font-size:17px;box-shadow:0 0 0 4px rgba(226,154,81,.09)}
+.legacyRailBrand b{display:block;color:#eef1ef;font-size:14px;letter-spacing:.05em}
+.legacyRailBrand small{display:block;margin-top:2px;color:#7e94a1;font-size:8px;font-weight:950;letter-spacing:.18em}
+.legacyRailScroll{min-height:0;overflow:auto;padding:4px 5px 4px 1px;scrollbar-width:thin;scrollbar-color:#4a5e68 transparent}
+.legacyRailGroup{padding-top:10px}
+.legacyRailGroupHead{display:flex;align-items:baseline;gap:7px;margin:0 0 6px 16px}
+.legacyRailGroupHead small{color:#d89555;font-size:8px;font-weight:950;letter-spacing:.14em}
+.legacyRailGroupHead b{color:#aebbc2;font-size:10.5px}
+.legacyRailTimeline{position:relative}
+.legacyRailTimeline:before{content:"";position:absolute;left:6px;top:7px;bottom:6px;width:1px;background:linear-gradient(#4d6977,#283d48)}
+.legacyRailItem{position:relative;display:grid;grid-template-columns:14px 38px minmax(0,1fr);column-gap:5px;row-gap:1px;min-height:34px;padding:4px 0}
+.legacyRailDot{position:relative;z-index:1;align-self:start;width:7px;height:7px;margin:5px 0 0 3px;border:2px solid #59727f;border-radius:50%;background:#0e1a21}
+.legacyRailItem.phaseLast .legacyRailDot{border-color:#dd9852;box-shadow:0 0 0 3px rgba(221,152,82,.09)}
+.legacyRailYear{color:#8195a0;font-size:9.5px;font-weight:850;line-height:17px}
+.legacyRailTeam{overflow:hidden;color:#d6dcdf;font-size:10px;font-weight:900;line-height:17px;text-overflow:ellipsis;white-space:nowrap}
+.legacyRailLeague{grid-column:3;overflow:hidden;color:#71858f;font-size:8.5px;line-height:1.35;text-overflow:ellipsis;white-space:nowrap}
+.legacyRailFinish{display:flex;gap:9px;align-items:center;margin-top:7px;padding:9px 8px;border:1px solid #6d4c2e;border-radius:9px;background:linear-gradient(135deg,rgba(193,116,54,.17),rgba(26,35,40,.7))}
+.legacyRailFinish>span{width:9px;height:9px;flex:0 0 auto;border-radius:50%;background:#efa552;box-shadow:0 0 0 4px rgba(239,165,82,.12),0 0 14px rgba(239,165,82,.35)}
+.legacyRailFinish b{display:block;color:#efad68;font-size:10.5px}
+.legacyRailFinish small{display:block;margin-top:2px;color:#84969f;font-size:8.5px;line-height:1.35}
+.legacyRailEmpty{padding:14px 6px;color:#7c909a;font-size:10px}
+.legacyHero{
+  position:relative;display:grid;grid-template-columns:minmax(0,1fr) 118px;gap:10px;overflow:hidden;
+  padding:17px 17px 13px;border:1px solid #4d5960;border-radius:14px;
+  background:radial-gradient(circle at 91% 8%,rgba(224,146,72,.22),transparent 28%),linear-gradient(135deg,#17232b,#101920 66%,#20170f)
+}
+.legacyHero:after{content:"";position:absolute;right:-44px;bottom:-83px;width:200px;height:200px;border:1px solid rgba(225,156,83,.11);border-radius:50%;box-shadow:0 0 0 22px rgba(225,156,83,.035),0 0 0 45px rgba(225,156,83,.025);pointer-events:none}
+.legacyHeroCopy,.legacyPowerStamp,.legacyHeroStats{position:relative;z-index:1}
+.legacyHeroKicker{color:#c9d1d5;font-size:10px;font-weight:950;letter-spacing:.12em}
+.legacyHeroKicker span{display:inline-block;margin-right:7px;padding:4px 6px;border-radius:4px;background:#db914c;color:#16130f;font-size:8.5px;letter-spacing:.14em}
+body.retirementMode .legacyHero .legacyName{margin-top:7px!important;color:#f3f2ec!important;font-size:38px!important;line-height:1!important;text-shadow:0 3px 18px rgba(0,0,0,.35)}
+body.retirementMode .legacyHero .legacyMeta{margin-top:7px!important;color:#aab8c0!important;font-size:12px!important}
+.legacyHero .legacyBadges{margin-top:9px!important}
+.legacyPowerStamp{align-self:start;padding:11px 8px;border:1px solid #79522f;border-radius:10px;background:rgba(35,24,15,.78);text-align:center}
+.legacyPowerStamp small,.legacyPowerStamp span{display:block;color:#b38a62;font-size:8px;font-weight:950;letter-spacing:.08em}
+.legacyPowerStamp b{display:block;margin:2px 0;color:#efa758;font-size:26px;line-height:1.05}
+.legacyHeroStats{grid-column:1/-1;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:1px;padding-top:10px;border-top:1px solid #354650}
+.legacyHeroStats>div{padding:7px 6px;border:1px solid #314650;border-radius:8px;background:rgba(8,17,23,.44);text-align:center}
+.legacyHeroStats small,.legacyHeroStats span{display:block;color:#8497a2;font-size:8.5px;font-weight:850}
+.legacyHeroStats b{display:inline-block;margin:2px 3px 1px 0;color:#edf0ef;font-size:17px;line-height:1}
+.fanEchoSection{border-top-color:#3b4a50!important}
+.fanEchoIntro{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:7px}
+.fanEchoIntro b{display:block;color:#e8a25b;font-size:16px}
+.fanEchoIntro small{display:block;margin-top:1px;color:#718894;font-size:8px;font-weight:950;letter-spacing:.16em}
+.fanEchoIntro>span{color:#84969f;font-size:9.5px}
+.fanEchoGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.fanEchoCard{position:relative;min-height:96px;padding:11px 11px 9px 31px;border:1px solid #344b57;border-radius:10px;background:linear-gradient(145deg,#111e26,#0c171e)}
+.fanEchoCard:before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:3px;border-radius:0 3px 3px 0;background:#6c8491}
+.fanEchoCard.legend:before,.fanEchoCard.farewell:before{background:#df9650}.fanEchoCard.national:before{background:#5e8fc1}.fanEchoCard.mixed:before{background:#c56c5f}.fanEchoCard.spark:before{background:#d6b95d}
+.fanEchoQuote{position:absolute;left:10px;top:5px;color:#566e7a;font:700 30px/1 Georgia,serif}
+.fanEchoCard p{margin:0;color:#d5dcdf;font-size:11.5px;line-height:1.6}
+.fanEchoCard small{display:block;margin-top:6px;color:#8ea0a9;font-size:9.5px;font-weight:850}
+.retirementCredit{margin-top:10px;padding-bottom:2px}
+
 @media(max-width:700px){
   .assign{grid-template-columns:repeat(2,minmax(0,1fr))!important}
   .trainingStats .stat{grid-template-columns:62px minmax(0,1fr) minmax(100px,max-content)!important;min-height:49px!important}
@@ -3901,6 +3978,24 @@ body.retirementMode .legacyTable td{padding:5px 7px!important}
   .rankIdentity small{font-size:10.5px!important}
   .rankValue b{font-size:16px!important}
   .titleInfoBadge::after{left:auto;right:0}
+}
+@media(max-width:900px){
+  .legacyDashboard{grid-template-columns:1fr}
+  .legacyCareerRail{position:static;max-height:none}
+  .legacyRailScroll{display:flex;gap:9px;overflow-x:auto;padding:4px 0 7px}
+  .legacyRailGroup{flex:0 0 235px;padding:8px 9px;border:1px solid #2c424d;border-radius:9px;background:#0d1920}
+  .legacyRailFinish{margin-top:3px}
+  .legacyHeroStats{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:600px){
+  body.retirementMode .legacyPage{padding:7px!important}
+  .legacyCareerRail{padding:10px 9px}
+  .legacyHero{grid-template-columns:minmax(0,1fr) 92px;padding:13px 11px 10px}
+  body.retirementMode .legacyHero .legacyName{font-size:31px!important}
+  .legacyPowerStamp b{font-size:21px}
+  .legacyHeroStats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .fanEchoGrid{grid-template-columns:1fr}
+  .fanEchoIntro{align-items:flex-start;flex-direction:column;gap:3px}
 }
 </style>
 </head>
@@ -3937,6 +4032,7 @@ body.retirementMode .legacyTable td{padding:5px 7px!important}
     <button class="btn deleteBtn" type="button" onclick="clearCareerSave(true)">刪除存檔</button>
   </div>
 </div>
+<div class="creatorCredit">Produced by <a href="https://www.threads.com/@basketballlife_k?xmt=AQG0tS6gtXrN8CWiBiJqphKuoz5VwtJFONP4svLNEbhjdt0" target="_blank" rel="noopener noreferrer">BasketballLife_K</a><span>·</span><a href="https://www.threads.com/@basketballlife_k?xmt=AQG0tS6gtXrN8CWiBiJqphKuoz5VwtJFONP4svLNEbhjdt0" target="_blank" rel="noopener noreferrer">Threads @basketballlife_k ↗</a></div>
 </section>
 
 <section id="communityPage" class="communityPage hidden">
@@ -7073,6 +7169,49 @@ function legacySeasonTable(){
  ${(p.seasonHistory||[]).map(x=>`<tr><td>${x.year}</td><td>${x.team}</td><td>${leagueDisplay(x.path)}</td><td>${x.games||0}</td><td>${x.mins||0}</td><td>${x.pts||0}</td><td>${x.reb||0}</td><td>${x.ast||0}</td><td>${x.stl||0}</td><td>${x.blk||0}</td><td>${x.fg||0}</td><td>${x.three||0}</td></tr>`).join("")}
  </table></div>`;
 }
+function legacyCareerStage(path){
+ if(path==="HBL")return {key:"hbl",label:"高中篇",eyebrow:"HBL"};
+ if(["UBA","UBA 強權","NJCAA","NCAA","日本大學"].includes(path))return {key:"college",label:"大學篇",eyebrow:"COLLEGE"};
+ if(isProfessionalPathValue(path))return {key:"pro",label:"職業篇",eyebrow:"PRO"};
+ return {key:"other",label:"生涯篇",eyebrow:"CAREER"};
+}
+function legacyCareerRailHTML(){
+ const history=p.seasonHistory||[],groups=[];
+ history.forEach(s=>{
+   const stage=legacyCareerStage(s.path);
+   let group=groups.find(g=>g.key===stage.key);
+   if(!group){group={...stage,seasons:[]};groups.push(group)}
+   group.seasons.push(s);
+ });
+ const awardByYear={};
+ (p.careerAwards||[]).forEach(a=>{
+   if(!awardByYear[a.year])awardByYear[a.year]=[];
+   awardByYear[a.year].push(a.name);
+ });
+ const route=groups.map(group=>`<section class="legacyRailGroup">
+   <div class="legacyRailGroupHead"><small>${group.eyebrow}</small><b>${group.label}</b></div>
+   <div class="legacyRailTimeline">${group.seasons.map((s,index)=>{
+     const awards=(awardByYear[s.year]||[]).slice(0,1);
+     return `<div class="legacyRailItem ${index===group.seasons.length-1?"phaseLast":""}">
+       <span class="legacyRailDot"></span><span class="legacyRailYear">${s.year}</span>
+       <span class="legacyRailTeam">${escapeFeedText(s.team||"未登錄球隊")}</span>
+       <span class="legacyRailLeague">${escapeFeedText(leagueDisplay(s.path))}${awards.length?` · ${escapeFeedText(awards[0])}`:""}</span>
+     </div>`;
+   }).join("")}</div>
+ </section>`).join("");
+ const legacyMarks=[];
+ if(p.hallOfFame?.length)legacyMarks.push(`${p.hallOfFame.length} 座名人堂`);
+ if(p.jerseyRetired?.length)legacyMarks.push(`${p.jerseyRetired.length} 隊退休球衣`);
+ if(p.nationalCaps)legacyMarks.push(`國家隊 ${p.nationalCaps} 次`);
+ return `<aside class="legacyCareerRail" aria-label="生涯軌跡">
+   <div class="legacyRailBrand"><span class="legacyRailBall">🏀</span><div><b>生涯軌跡</b><small>CAREER WALK</small></div></div>
+   <div class="legacyRailScroll">${route||`<div class="legacyRailEmpty">尚無逐季生涯紀錄</div>`}</div>
+   <div class="legacyRailFinish"><span></span><div><b>${p.year} · 正式引退</b><small>${legacyMarks.join(" · ")||"旅程在此落幕"}</small></div></div>
+ </aside>`;
+}
+function legacyLastTeam(){
+ return [...(p.seasonHistory||[])].reverse().find(x=>isProfessionalPathValue(x.path))||(p.seasonHistory||[]).slice(-1)[0]||{};
+}
 function legacyHeaderHTML(){
  const badges=[];
  if(p.hallOfFame?.length)badges.push(`<span class="legacyBadge gold">名人堂</span>`);
@@ -7080,9 +7219,49 @@ function legacyHeaderHTML(){
  if(hasTitle("genius")||p.genius)badges.push(`<span class="legacyBadge">天才</span>`);
  if(hasTitle("ironman"))badges.push(`<span class="legacyBadge">鐵人</span>`);
  if(p.nationalCaps>=8)badges.push(`<span class="legacyBadge">國家隊之魂</span>`);
- return `<div class="legacyKicker">BasketballLife · COURT LEGACY</div><div class="legacyName">${p.name}</div>
- <div class="legacyMeta">${p.pos}｜2026–${p.year}｜引退時 ${p.age} 歲｜巔峰總評 ${p.peakOverall}${p.peakAge?`（${p.peakAge}歲）`:""}｜引退總評 ${overall()}</div>
- <div class="legacyBadges">${badges.join("")}</div>`;
+ const last=legacyLastTeam(),yearCount=new Set((p.seasonHistory||[]).map(x=>x.year)).size;
+ return `<header class="legacyHero">
+   <div class="legacyHeroCopy">
+     <div class="legacyHeroKicker"><span>CAREER FINALE</span> ${retirementExitClass()==="ceremony"?"引退之夜":retirementExitClass()==="farewell"?"告別球場":"生涯終章"}</div>
+     <div class="legacyName">${escapeFeedText(p.name)}</div>
+     <div class="legacyMeta">${escapeFeedText(p.pos)}｜最後效力 ${escapeFeedText(last.team||p.team||"—")} · ${escapeFeedText(last.path?leagueDisplay(last.path):leagueDisplay(p.path))}｜巔峰 OVR ${p.peakOverall} · 引退總評 ${overall()}</div>
+     <div class="legacyBadges">${badges.join("")}</div>
+   </div>
+   <div class="legacyPowerStamp"><small>BL POWER</small><b>${Number(p.careerRating||0).toLocaleString("en-US")}</b><span>歷史總評</span></div>
+   <div class="legacyHeroStats">
+     <div><small>引退年齡</small><b>${p.age}</b><span>歲</span></div>
+     <div><small>生涯球季</small><b>${yearCount}</b><span>季</span></div>
+     <div><small>巔峰 OVR</small><b>${p.peakOverall}</b><span>${p.peakAge?`${p.peakAge} 歲`:"生涯最高"}</span></div>
+     <div><small>引退 OVR</small><b>${overall()}</b><span>最終能力</span></div>
+     <div><small>職業出賽</small><b>${p.careerGames||0}</b><span>場</span></div>
+   </div>
+ </header>`;
+}
+
+function fanEchoEntries(){
+ const last=legacyLastTeam(),lastTeam=last.team||p.team||"最後一支球隊",out=[],used=new Set();
+ const add=(tone,source,text)=>{if(!used.has(text)){used.add(text);out.push({tone,source,text})}};
+ if(hasTitle("lockerroom"))add("mixed","跟隊多年的球迷",`他的能力從來不是問題，但最後幾年和球團的拉扯也傷了更衣室。喜歡他的球迷，恐怕也得承認這段結尾並不完美。`);
+ if(p.lastDanceUsed||/最後一舞/.test(p.retirementReason||""))add("farewell","家鄉看台",`最後一舞不是來刷紀錄，而是讓我們有機會好好說再見。當他最後一次走下球場，大家都知道這張票值得留下來。`);
+ if(p.hallOfFame?.length)add("legend","資深球迷",`從年輕時的期待，到退役後走進${p.hallOfFame[0]}，我們不是只記得數字，而是記得一整個時代都有他的名字。`);
+ if((p.championships||0)>=2)add("legend","冠軍戰老球迷",`他帶走了 ${p.championships} 座主要冠軍。真正到了關鍵比賽，你會希望球在他手上——這就是我對這段生涯最深的印象。`);
+ else if((p.championships||0)===1)add("respect","冠軍年球迷",`那座冠軍不只是一行履歷。多年後再回頭看，我還是記得他在那趟季後賽替球隊扛住壓力的樣子。`);
+ if((p.nationalCaps||0)>=6)add("national","國家隊看台",`穿上國家隊球衣 ${p.nationalCaps} 次，代表他不只屬於一支球隊。每次國際賽看到他上場，心裡就是多一份踏實。`);
+ if((p.careerScoringTitles||0)>0)add("spark","數據派球迷",`得分王拿過 ${p.careerScoringTitles} 次，但最難得的是高峰不只一場。翻開那幾季的數據，你會明白防守者為什麼那麼頭痛。`);
+ if((p.careerGames||0)>=500)add("respect","一路追隨的球迷",`${p.careerGames} 場職業出賽不是一句「耐打」就能帶過。從新人到老將，他讓穩定本身也成為一種值得鼓掌的成就。`);
+ if((p.teamsPlayed||[]).length>=4)add("journey","客場也認得他的球迷",`球衣換過幾件，但每到一座城市都留下能被認出的打法。這種漂泊過、也證明過自己的生涯，同樣值得尊敬。`);
+ if(retirementExitClass()==="quiet")add("quiet","最後主場的球迷",`沒有盛大儀式有點可惜，但最後效力 ${lastTeam} 的那些日子不會因此消失。不是每段好生涯，都一定要用煙火才能被記住。`);
+ else add("farewell","主場老球迷",`謝謝他把最好的那些年留在球場。最後一次聽見全場喊他的名字，我才真的意識到：下個賽季不會再看到他上場了。`);
+ add("respect","年輕球迷",`我沒看過他最早的比賽，只能從精華和紀錄補課。但能讓不同世代一起討論，本身就是一名球員留下的影響。`);
+ return out.slice(0,4);
+}
+function fanEchoHTML(){
+ const echoes=fanEchoEntries();
+ return `<div class="fanEchoIntro"><div><b>球迷回聲</b><small>VOICES FROM THE STANDS</small></div><span>依你的生涯路線、榮譽與退場方式生成</span></div>
+ <div class="fanEchoGrid">${echoes.map(q=>`<article class="fanEchoCard ${q.tone}"><div class="fanEchoQuote">“</div><p>${escapeFeedText(q.text)}</p><small>— ${escapeFeedText(q.source)}</small></article>`).join("")}</div>`;
+}
+function creatorCreditHTML(){
+ return `<div class="creatorCredit retirementCredit">Produced by <a href="https://www.threads.com/@basketballlife_k?xmt=AQG0tS6gtXrN8CWiBiJqphKuoz5VwtJFONP4svLNEbhjdt0" target="_blank" rel="noopener noreferrer">BasketballLife_K</a><span>·</span><a href="https://www.threads.com/@basketballlife_k?xmt=AQG0tS6gtXrN8CWiBiJqphKuoz5VwtJFONP4svLNEbhjdt0" target="_blank" rel="noopener noreferrer">Threads @basketballlife_k ↗</a></div>`;
 }
 
 function legacyTitleInfo(raw){
@@ -7106,10 +7285,12 @@ function retireCareer(reason){
  title.textContent=retirementExitClass()==="ceremony"?"正式引退":retirementExitClass()==="farewell"?"告別球場":"球員生涯落幕";
  text.textContent=`${p.name} 的球員生涯正式結束。紀念頁會依實際生涯地位與離開原因呈現不同的告別方式，不會每個球員都套用明星引退儀式。`;
  const groups=careerLeagueSummary(),evals=legacyEvaluationLines(),ach=careerAchievementEntries();
- special.innerHTML=`<div class="legacyPage">
+ special.innerHTML=`<div class="legacyPage"><div class="legacyDashboard">
+   ${legacyCareerRailHTML()}<main class="legacyMain">
    ${legacyHeaderHTML()}
    <div class="legacySection"><div class="legacySectionTitle">生涯評價</div><div class="legacyEval">${evals.join("<br>")}</div></div>
    <div class="legacySection">${retirementDayNarrative()}</div>
+   <div class="legacySection fanEchoSection">${fanEchoHTML()}</div>
    <div class="legacySection"><div class="legacySectionTitle">名人堂票選</div>${hallBallotHTML()}</div>
    <div class="legacySection"><div class="legacySectionTitle">球衣退休</div>${jerseyRetirementHTML()}</div>
    <div class="legacySection"><div class="legacySectionTitle">生涯累積數據</div>${legacyLeagueTable(groups)}</div>
@@ -7122,18 +7303,20 @@ function retireCareer(reason){
    <div class="legacySection"><div class="legacySeed"><b>🎴 隱藏屬性揭曉｜${p.seedTierLabel}</b><br>${p.seedTierDesc}</div></div>
    <div class="retireBtns"><button class="btn" onclick="showRetirementSummary()">查看完整逐季生涯</button><button class="btn" onclick="showShareCard()">生涯紀念摘要</button><button class="btn onlinePublishBtn" onclick="BasketballLifeOnline.publishCareer()">🌐 發布公開生涯</button><button class="btn shareCareerBtn" onclick="BasketballLifeOnline.shareRetirementCareer()">📤 分享生涯 ↗</button><button class="btn" onclick="BasketballLifeOnline.openLeaderboardNewTab()">🏆 全球排行榜 ↗</button></div><div id="publicCareerStatus" class="publicCareerStatus"></div>
    ${retirementRestartHTML()}
- </div>`;
+   ${creatorCreditHTML()}</main></div></div>`;
  pushNews(`🏁 ${p.name} 於 ${p.age} 歲正式退休｜生涯評價 ${p.careerRating}`); setTimeout(()=>{fitGameToViewport();const cp=document.getElementById("currentPanel");if(cp)cp.scrollTop=0;},0);
 }
 function showRetirementSummary(){
  const groups=careerLeagueSummary(),evals=legacyEvaluationLines(),ach=careerAchievementEntries();
- special.innerHTML=`<div class="legacyPage">
+ special.innerHTML=`<div class="legacyPage"><div class="legacyDashboard">
+   ${legacyCareerRailHTML()}<main class="legacyMain">
    ${legacyHeaderHTML()}
    <div class="legacySection"><div class="legacySectionTitle">生涯評價</div><div class="legacyEval">${evals.join("<br>")}</div></div>
    <div class="legacySection"><div class="legacyStoryGrid">
      <div>${retirementDayNarrative()}</div>
      <div class="legacyNarrative"><b>◆ 生涯總結</b><br>你共留下 ${p.careerGames} 場正式職業出賽，巔峰總評 ${p.peakOverall}，取得 ${p.championships} 座主要冠軍、${p.nationalCaps} 次成人國家隊資歷${((p.u18Caps||0)+(p.u20Caps||0))?`，另有 U18 ${p.u18Caps||0} 次、U20 ${p.u20Caps||0} 次青年國手經歷`:""}。${p.hallOfFame.length?`最終進入 ${p.hallOfFame.join("、")}。`:"名人堂票選未能跨過門檻。"}<br><span class="mut">生涯評價 ${p.careerRating}｜總收入 ${moneyText(p.careerSalary)}</span></div>
    </div></div>
+   <div class="legacySection fanEchoSection">${fanEchoHTML()}</div>
    <div class="legacySection"><div class="legacySectionTitle">名人堂票選</div>${hallBallotHTML()}</div>
    <div class="legacySection"><div class="legacySectionTitle">球衣退休</div>${jerseyRetirementHTML()}</div>
    <div class="legacySection"><div class="legacySectionTitle">各聯盟生涯</div>${legacyLeagueTable(groups)}</div>
@@ -7142,7 +7325,7 @@ function showRetirementSummary(){
    <div class="legacySection"><div class="legacySectionTitle">逐季數據</div>${legacySeasonTable()}</div>
    <div class="legacySection"><div class="legacySeed"><b>🎴 世界種子｜${p.seedTierLabel}</b><br>${p.seedTierDesc}<br><span class="mut">SEED：${p.seed}</span></div></div>
    <div class="retireBtns"><button class="btn" onclick="showShareCard()">生涯紀念摘要</button><button class="btn onlinePublishBtn" onclick="BasketballLifeOnline.publishCareer()">🌐 發布公開生涯</button><button class="btn shareCareerBtn" onclick="BasketballLifeOnline.shareRetirementCareer()">📤 分享生涯 ↗</button><button class="btn" onclick="BasketballLifeOnline.openLeaderboardNewTab()">🏆 全球排行榜 ↗</button></div><div id="publicCareerStatus" class="publicCareerStatus"></div>${retirementRestartHTML()}
- </div>`;
+   ${creatorCreditHTML()}</main></div></div>`;
  setTimeout(()=>{fitGameToViewport();const cp=document.getElementById("currentPanel");if(cp)cp.scrollTop=0;},0);
 }
 function topAwardsText(){
@@ -7150,7 +7333,8 @@ function topAwardsText(){
 }
 function showShareCard(){
  const groups=careerLeagueSummary(),evals=legacyEvaluationLines(),ach=careerAchievementEntries();
- special.innerHTML=`<div id="shareCard" class="legacyPage">
+ special.innerHTML=`<div id="shareCard" class="legacyPage"><div class="legacyDashboard">
+   ${legacyCareerRailHTML()}<main class="legacyMain">
    ${legacyHeaderHTML()}
    <div class="legacySection"><div class="legacySectionTitle">生涯評價</div><div class="legacyEval">${evals.join("<br>")}</div></div>
    <div class="legacySection"><div class="legacySectionTitle">歷史地位</div>
@@ -7158,11 +7342,12 @@ function showShareCard(){
      冠軍 ${p.championships}｜成人國家隊 ${p.nationalCaps}｜U18 ${p.u18Caps||0}｜U20 ${p.u20Caps||0}｜巔峰總評 ${p.peakOverall}｜生涯收入 ${moneyText(p.careerSalary)}</div>
    </div>
    <div class="legacySection"><div class="legacySectionTitle">名人堂票選</div>${hallBallotHTML()}</div>
+   <div class="legacySection fanEchoSection">${fanEchoHTML()}</div>
    <div class="legacySection"><div class="legacySectionTitle">生涯累積數據</div>${legacyLeagueTable(groups)}</div>
    <div class="legacySection"><div class="legacySectionTitle">生涯榮譽（${ach.length}項）</div><div class="legacyAchievements">${ach.slice(0,20).map(x=>`<div>・${x}</div>`).join("")||"沒有主要歷史榮譽"}</div></div>
    <div class="legacySection"><div class="legacySectionTitle">生涯稱號</div><div class="legacyBadges">${legacyTitleBadgesHTML("無")}</div></div>
    <div class="legacySection"><div class="legacySeed"><b>🎴 ${p.seedTierLabel}</b><br>${p.seedTierDesc}<br><span class="mut">seed：${p.seed}</span></div></div>
- </div>
+   ${creatorCreditHTML()}</main></div></div>
  <div class="retireBtns"><button class="btn downloadBtn" onclick="downloadCareerPNG()">📸 下載生涯結算圖 PNG</button><button class="btn" onclick="showRetirementSummary()">返回完整生涯</button><button class="btn onlinePublishBtn" onclick="BasketballLifeOnline.publishCareer()">🌐 發布公開生涯</button><button class="btn shareCareerBtn" onclick="BasketballLifeOnline.shareRetirementCareer()">📤 分享生涯 ↗</button><button class="btn" onclick="BasketballLifeOnline.openLeaderboardNewTab()">🏆 全球排行榜 ↗</button></div><div id="publicCareerStatus" class="publicCareerStatus"></div>${retirementRestartHTML()}`;
  setTimeout(()=>{fitGameToViewport();const cp=document.getElementById("currentPanel");if(cp)cp.scrollTop=0;},0);
 }
