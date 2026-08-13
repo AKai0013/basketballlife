@@ -12,7 +12,7 @@ button,input{font:inherit}button{cursor:pointer}.wrap{max-width:1080px;margin:au
 .mut{color:var(--mut);line-height:1.65}label{display:block;margin:17px 0 7px;color:#c7d1df;font-size:13px;font-weight:850}
 input{width:100%;background:#0c1119;border:1px solid #36465d;color:#fff;border-radius:11px;padding:13px}.posgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
 .pos,.btn{border:1px solid #34445b;background:#192333;color:white;border-radius:10px;padding:11px;font-weight:850}.pos.on{background:var(--gold);color:#171107;border-color:var(--gold)}
-.seed{display:flex;gap:8px}.seedcode{flex:1;padding:12px;background:#0c121b;border:1px solid #34455e;border-radius:11px;color:var(--gold);font-weight:950;letter-spacing:2px}
+.seed{display:flex;gap:8px}.seedcode{flex:1;min-width:0;width:auto;padding:12px;background:#0c121b;border:1px solid #34455e;border-radius:11px;color:var(--gold);font-weight:950;letter-spacing:2px;text-transform:uppercase}.seedcode:focus{outline:2px solid #e09a504d;border-color:#e09a50}.seedcode.invalid{border-color:#d85d59;color:#ff8c82}.seedError{min-height:18px;padding-top:5px;color:#ff8c82;font-size:11px;font-weight:750}
 .start{width:100%;margin-top:20px;padding:15px;border:0;border-radius:12px;background:linear-gradient(135deg,#e59a30,#f2c653);font-weight:950}.hidden{display:none!important}
 .header{display:grid;grid-template-columns:2fr repeat(4,1fr);gap:8px;margin-bottom:12px}.box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px}.box small{display:block;color:var(--mut)}.box b{font-size:19px}
 .flow{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0 15px}.flow span{font-size:11px;color:#76849a;background:#101722;border:1px solid #273448;padding:6px 9px;border-radius:30px}.flow span.on{color:#111;background:var(--gold);border-color:var(--gold);font-weight:900}
@@ -4158,8 +4158,9 @@ body.retirementMode .legacyHero .legacyMeta{margin-top:7px!important;color:#aab8
 <div class="setupIdentity"><div class="setupLogoFrame"><img class="setupLogo" src="./basketballlife-logo.png" alt="BasketballLife 遊戲徽章" onerror="this.remove()"></div><div><div class="setupKicker">BASKETBALL CAREER SIMULATOR</div><h1>你的籃球人生，從 HBL 開始。</h1><p class="mut">16 歲踏進高中球場，走過升學、職業、旅外、國家隊，直到最後一次離開球員通道。Seed 決定天賦與體質；每一次選擇，決定你能把名字帶到多遠。</p><div class="setupPromise"><span>16 歲・高一</span><span>完整生涯模擬</span><span>多聯盟路線</span></div></div></div>
 <label for="playerNameInput">為球員取名</label><input id="playerNameInput" placeholder="例如：林子翔" maxlength="12" autocomplete="off">
 <label>選擇場上位置</label><div id="posgrid" class="posgrid"></div>
-<label>抽取世界 Seed</label><div class="seed"><div id="seed" class="seedcode"></div><button class="btn" type="button" onclick="newSeed()">重新抽取</button></div>
-<p class="seedHelp">相同 Seed ＋相同位置，會得到相同的先天條件與主要命運分歧；隱藏等級將在退休時揭曉。</p>
+<label for="seed">世界 Seed（可輸入或隨機抽取）</label><div class="seed"><input id="seed" class="seedcode" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="seedHelp seedError" oninput="normalizeSeedInput()"><button class="btn" type="button" onclick="newSeed()">重新抽取</button></div>
+<div id="seedError" class="seedError" aria-live="polite"></div>
+<p id="seedHelp" class="seedHelp">輸入或貼上 8 碼英文字母／數字。相同 Seed ＋相同位置，會得到相同的先天條件與主要命運分歧；隱藏等級將在退休時揭曉。</p>
 <button id="startCareerBtn" class="start" onclick="startCareer()" disabled>連線中…</button>
 <div id="continueCareerPanel" class="continueCareerPanel hidden">
   <div class="continueCareerHead">
@@ -4982,8 +4983,8 @@ window.BL_ONLINE_CONFIG = {
    return `<div class="legacyTableWrap"><table class="legacyTable"><tr><th>年</th><th>球隊</th><th>聯盟</th><th>GP</th><th>MPG</th><th>PTS</th><th>REB</th><th>AST</th><th>STL</th><th>BLK</th></tr>${ss.map(x=>`<tr><td>${x.year||""}</td><td>${esc(x.team||"")}</td><td>${esc(typeof leagueDisplay==="function"?leagueDisplay(x.path):x.path||"")}</td><td>${x.games||0}</td><td>${x.mins||0}</td><td>${x.pts||0}</td><td>${x.reb||0}</td><td>${x.ast||0}</td><td>${x.stl||0}</td><td>${x.blk||0}</td></tr>`).join("")}</table></div>`;
  }
 
- function publicNationalTable(history){
-   const rows=Array.isArray(history)?history:[];
+ function publicNationalTable(history,seasons=[]){
+   const normalized=internationalHistoryForDisplay(history,seasons),rows=normalized.rows;
    if(!rows.length)return `<div class="rankEmpty">沒有國家代表隊紀錄。</div>`;
    const summary=careerNationalSummary(rows),ordered=["U18","U20","SENIOR"].filter(level=>summary[level]);
    const totals=ordered.length?`<div class="legacyTableWrap"><table class="legacyTable"><tr><th>代表隊</th><th>屆</th><th>GP</th><th>MPG</th><th>PTS</th><th>REB</th><th>AST</th><th>STL</th><th>BLK</th><th>FG%</th><th>3P%</th></tr>${ordered.map(level=>{
@@ -4995,7 +4996,7 @@ window.BL_ONLINE_CONFIG = {
      return `<tr><td>${Number(x.year)||"—"}</td><td>${esc(nationalLevelLabel(x.level))}</td><td>${esc(x.event||"國際賽")}</td><td>${esc(x.finish||"—")}</td><td>${recorded?x.games:"—"}</td><td>${recorded?Number(x.mins).toFixed(1):"—"}</td><td>${recorded?Number(x.pts).toFixed(1):"—"}</td><td>${recorded?Number(x.reb).toFixed(1):"—"}</td><td>${recorded?Number(x.ast).toFixed(1):"—"}</td><td>${recorded?Number(x.stl).toFixed(1):"—"}</td><td>${recorded?Number(x.blk).toFixed(1):"—"}</td></tr>`;
    }).join("")}</table></div>`;
    const oldCount=rows.filter(x=>!hasInternationalBoxScore(x)).length;
-   return `${totals}<div class="mut" style="margin:8px 0 5px">各屆紀錄</div>${events}${oldCount?`<div class="mut" style="margin-top:7px">※ ${oldCount} 屆來自舊存檔；當時未保存球員個人數據，因此以「—」標示。</div>`:""}`;
+   return `${totals}<div class="mut" style="margin:8px 0 5px">各屆紀錄</div>${events}${normalized.estimatedCount?`<div class="mut" style="margin-top:7px">※ ${normalized.estimatedCount} 屆來自較早版本，當時未保存國際賽個人數據；本頁已依該年度球季實績補算。</div>`:""}${oldCount?`<div class="mut" style="margin-top:7px">※ ${oldCount} 屆找不到同年度球季資料，因此仍以「—」標示。</div>`:""}`;
  }
 
  function publicOffCourtHistory(history){
@@ -5038,7 +5039,7 @@ window.BL_ONLINE_CONFIG = {
      <div class="legacySection"><div class="legacySectionTitle">歷史地位</div><div class="legacyEval">★ 生涯歷史評價：${tier}（評價 ${Number(r.career_rating||0).toLocaleString()}）<br>★ ${hof.length?esc(hof.join("、")):"名人堂：未達入選門檻"}${jersey.length?`｜球衣退休：${esc(jersey.join("、"))}`:""}</div></div>
      <div class="legacySection"><div class="legacySectionTitle">主要榮譽</div><div class="legacyAchievements">${awards.length?awards.map(a=>`<div><b>・${esc(a.name)}${a.count>1?` ×${a.count}`:""}</b>${a.years.length?` <span class="honorYears">（${a.years.join("、")}）</span>`:""}</div>`).join(""):"沒有主要個人獎項"}${r.championships?`<div><b>・主要賽事冠軍 ×${r.championships}</b>${championshipYears.length?` <span class="honorYears">（${championshipYears.join("、")}）</span>`:""}</div>`:""}${r.national_caps?`<div><b>・國家隊資歷 ${r.national_caps} 次</b>${seniorNationalYears.length?` <span class="honorYears">（${seniorNationalYears.join("、")}）</span>`:""}</div>`:""}</div></div>
      <div class="legacySection"><div class="legacySectionTitle">各聯盟生涯</div>${publicLeagueTable(r.league_summary)}</div>
-     <div class="legacySection"><div class="legacySectionTitle">國家隊生涯</div>${publicNationalTable(cd.international_history)}</div>
+     <div class="legacySection"><div class="legacySectionTitle">國家隊生涯</div>${publicNationalTable(cd.international_history,r.season_history)}</div>
      <div class="legacySection"><div class="legacySectionTitle">逐季數據</div>${publicSeasonTable(r.season_history)}</div>
      ${publicOffCourtHistory(cd.off_court_history)}
      <div class="legacySection"><div class="legacySectionTitle">生涯註記</div><div class="legacySeed">世界種子：<b>${esc(r.seed||"未公開")}</b>${r.seed_tier?`｜${esc(r.seed_tier)}`:""}<br><span class="mut">${esc(cd.retirement_reason||"")}</span></div></div>
@@ -5560,11 +5561,25 @@ window.addEventListener("DOMContentLoaded",initializeCareerSave);
 function hash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
 function RNG(s){let a=hash(s);return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 function ri(r,a,b){return Math.floor(r()*(b-a+1))+a}
+function cleanSeedInput(value){return String(value||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,8)}
+function setupSeedValue(){return cleanSeedInput(document.getElementById("seed")?.value||"")}
+function setSetupSeedValue(value){
+ const el=document.getElementById("seed");if(!el)return "";
+ el.value=cleanSeedInput(value);normalizeSeedInput();return el.value;
+}
+function normalizeSeedInput(){
+ const el=document.getElementById("seed"),err=document.getElementById("seedError");if(!el)return false;
+ const cleaned=cleanSeedInput(el.value);if(el.value!==cleaned)el.value=cleaned;
+ const valid=/^[A-Z0-9]{8}$/.test(cleaned);
+ el.classList.toggle("invalid",cleaned.length>0&&!valid);
+ if(err)err.textContent=cleaned.length>0&&!valid?`還需要 ${8-cleaned.length} 碼；Seed 必須是 8 碼英文字母或數字。`:"";
+ return valid;
+}
 function newSeed(){
- const el=document.getElementById("seed"),previous=el?.textContent||"";
+ const previous=setupSeedValue();
  let next=proceduralSeed();
  while(next===previous)next=proceduralSeed();
- if(el)el.textContent=next;
+ setSetupSeedValue(next);
 }
 function renderPos(){
  const names={PG:"控球後衛",SG:"得分後衛",SF:"小前鋒",PF:"大前鋒",C:"中鋒"};
@@ -5785,10 +5800,16 @@ const injuryTypes=[
 
 function startCareer(){
  if(window.BasketballLifeOnline?.requiresNickname?.())return;
+ const seed=setupSeedValue();
+ if(!/^[A-Z0-9]{8}$/.test(seed)){
+   normalizeSeedInput();
+   const el=document.getElementById("seed"),err=document.getElementById("seedError");
+   el?.classList.add("invalid");if(err)err.textContent="請輸入完整的 8 碼英文字母／數字 Seed。";el?.focus();return;
+ }
  const previousSave=readCareerSave();
  if(previousSave&&!window.confirm("開始新人生會覆蓋目前的本機生涯存檔，確定要繼續嗎？"))return;
  if(previousSave)clearCareerSave(false);
- const seed=document.getElementById("seed").textContent,n=document.getElementById("playerNameInput").value.trim()||"無名球員",r=RNG(seed+chosenPos);
+ const n=document.getElementById("playerNameInput").value.trim()||"無名球員",r=RNG(seed+chosenPos);
  const tier=seedTierProfile(seed);
  const tb=()=>ri(r,tier.start[0],tier.start[1]);
 
@@ -7477,6 +7498,20 @@ function nationalLevelLabel(level="SENIOR"){
 function hasInternationalBoxScore(entry){
  return Number.isFinite(Number(entry?.games))&&Number(entry.games)>0&&["mins","pts","reb","ast","stl","blk","fg","three"].every(k=>Number.isFinite(Number(entry?.[k])));
 }
+function internationalHistoryForDisplay(history,seasons=[]){
+ const ss=Array.isArray(seasons)?seasons:[],source=Array.isArray(history)?history:[];
+ let estimatedCount=0;
+ const rows=source.map(raw=>{
+   if(hasInternationalBoxScore(raw))return raw;
+   const season=ss.find(s=>Number(s?.year)===Number(raw?.year));
+   if(!season||!["mins","pts","reb","ast","stl","blk","fg","three"].every(k=>Number.isFinite(Number(season?.[k]))))return raw;
+   const baseGames=({"冠軍":7,"亞軍":7,"四強":6,"八強":5,"小組賽":3}[raw.finish]||3),event=String(raw.event||"");
+   const games=event.includes("邀請賽")?Math.min(5,baseGames):event.includes("資格賽")?Math.min(6,baseGames):baseGames;
+   estimatedCount++;
+   return {...raw,games,...Object.fromEntries(["mins","pts","reb","ast","stl","blk","fg","three"].map(k=>[k,Number(season[k])])),role:"依同年球季補算",estimatedFromSeason:true};
+ });
+ return {rows,estimatedCount};
+}
 function careerNationalSummary(history=p?.internationalHistory||[]){
  const groups={};
  (Array.isArray(history)?history:[]).forEach(raw=>{
@@ -7493,7 +7528,7 @@ function careerNationalSummary(history=p?.internationalHistory||[]){
  return groups;
 }
 function legacyNationalCareerHTML(history=p.internationalHistory||[]){
- const rows=Array.isArray(history)?history:[];
+ const normalized=internationalHistoryForDisplay(history,p.seasonHistory||[]),rows=normalized.rows;
  if(!rows.length)return `<div class="mut">沒有國家代表隊紀錄。</div>`;
  const summary=careerNationalSummary(rows),ordered=["U18","U20","SENIOR"].filter(level=>summary[level]);
  const totalTable=`<div class="legacyTableWrap"><table class="legacyTable"><tr><th>代表隊</th><th>屆</th><th>GP</th><th>MPG</th><th>PTS</th><th>REB</th><th>AST</th><th>STL</th><th>BLK</th><th>FG%</th><th>3P%</th></tr>
@@ -7503,7 +7538,7 @@ function legacyNationalCareerHTML(history=p.internationalHistory||[]){
  ${rows.map(x=>{const recorded=hasInternationalBoxScore(x);return `<tr><td>${Number(x.year)||"—"}</td><td>${nationalLevelLabel(x.level)}</td><td>${escapeFeedText(x.event||"國際賽")}</td><td>${escapeFeedText(x.finish||"—")}</td><td>${recorded?x.games:"—"}</td><td>${recorded?Number(x.mins).toFixed(1):"—"}</td><td>${recorded?Number(x.pts).toFixed(1):"—"}</td><td>${recorded?Number(x.reb).toFixed(1):"—"}</td><td>${recorded?Number(x.ast).toFixed(1):"—"}</td><td>${recorded?Number(x.stl).toFixed(1):"—"}</td><td>${recorded?Number(x.blk).toFixed(1):"—"}</td><td>${recorded?Number(x.fg).toFixed(1):"—"}</td><td>${recorded?Number(x.three).toFixed(1):"—"}</td></tr>`}).join("")}
  </table></div>`;
  const oldCount=rows.filter(x=>!hasInternationalBoxScore(x)).length;
- return `${totalTable}${eventTable}${oldCount?`<div class="mut" style="margin-top:7px">※ ${oldCount} 屆來自舊存檔；當時未保存球員個人數據，因此以「—」標示。</div>`:""}`;
+ return `${totalTable}${eventTable}${normalized.estimatedCount?`<div class="mut" style="margin-top:7px">※ ${normalized.estimatedCount} 屆來自較早版本，當時未保存國際賽個人數據；本頁已依該年度球季實績補算。</div>`:""}${oldCount?`<div class="mut" style="margin-top:7px">※ ${oldCount} 屆找不到同年度球季資料，因此仍以「—」標示。</div>`:""}`;
 }
 function legacyOffCourtHistoryHTML(){
  const rows=Array.isArray(p.offCourtHistory)?p.offCourtHistory:[];
@@ -7549,7 +7584,7 @@ function restartCareer(mode){
  document.getElementById("quickRestartMenu")?.classList.add("hidden");
  document.getElementById("quickRestartBtn")?.classList.add("hidden");
  document.body.classList.remove("retirementMode");
- const oldSeed=p?.seed||document.getElementById("seed").textContent;
+ const oldSeed=p?.seed||setupSeedValue();
  const oldName=p?.name||"";
  const oldPos=p?.pos||"PG";
 
@@ -7562,11 +7597,11 @@ function restartCareer(mode){
  document.getElementById("playerNameInput").value=oldName;
 
  if(mode==="same"){
-   document.getElementById("seed").textContent=oldSeed;
+   setSetupSeedValue(oldSeed);
  }else{
    let nextSeed=proceduralSeed();
    while(nextSeed===oldSeed)nextSeed=proceduralSeed();
-   document.getElementById("seed").textContent=nextSeed;
+   setSetupSeedValue(nextSeed);
  }
 
  const lt=document.getElementById("liveTrack");
@@ -7866,41 +7901,53 @@ function careerPublicShareUrl(){
 function buildCareerShareCanvas(){
  const canvas=document.createElement("canvas"),W=1200,H=1500;canvas.width=W;canvas.height=H;const c=canvas.getContext("2d");
  const font='system-ui,-apple-system,"Microsoft JhengHei","Noto Sans TC",sans-serif';
- const txt=(t,x,y,size=28,color="#d7e1db",bold=false,align="left")=>{c.fillStyle=color;c.font=`${bold?"800":"500"} ${size}px ${font}`;c.textAlign=align;c.fillText(String(t),x,y)};
- const line=(y,x1=50,x2=1150)=>{c.strokeStyle="#294b3a";c.lineWidth=2;c.beginPath();c.moveTo(x1,y);c.lineTo(x2,y);c.stroke()};
- const box=(x,y,w,h,fill="#0c2118",stroke="#315441")=>{c.fillStyle=fill;c.fillRect(x,y,w,h);c.strokeStyle=stroke;c.lineWidth=2;c.strokeRect(x,y,w,h)};
- const wrap=(value,x,y,maxWidth,lineHeight=30,maxLines=2,color="#d7e1db",size=21,bold=false)=>{
+ const palette={bg0:"#0a141b",bg1:"#0d1921",bg2:"#101b21",panel:"#111f27",metric:"#081117",line:"#314650",line2:"#354650",text:"#edf0ef",muted:"#8497a2",soft:"#c9d1d5",orange:"#db914c",gold:"#efa758",brown:"#79522f",stamp:"#23180f"};
+ const txt=(t,x,y,size=28,color=palette.text,bold=false,align="left")=>{c.fillStyle=color;c.font=`${bold?"800":"500"} ${size}px ${font}`;c.textAlign=align;c.fillText(String(t),x,y)};
+ const path=(x,y,w,h,r=0)=>{c.beginPath();if(r&&typeof c.roundRect==="function")c.roundRect(x,y,w,h,r);else c.rect(x,y,w,h)};
+ const line=(y,x1=50,x2=1150)=>{c.strokeStyle=palette.line2;c.lineWidth=2;c.beginPath();c.moveTo(x1,y);c.lineTo(x2,y);c.stroke()};
+ const box=(x,y,w,h,fill=palette.panel,stroke=palette.line,r=12)=>{path(x,y,w,h,r);c.fillStyle=fill;c.fill();c.strokeStyle=stroke;c.lineWidth=2;c.stroke()};
+ const wrap=(value,x,y,maxWidth,lineHeight=30,maxLines=2,color=palette.text,size=21,bold=false)=>{
    const chars=[...String(value||"")];let row="",lines=[];c.font=`${bold?"800":"500"} ${size}px ${font}`;
    chars.forEach(ch=>{const test=row+ch;if(c.measureText(test).width>maxWidth&&row){lines.push(row);row=ch}else row=test});if(row)lines.push(row);
    lines.slice(0,maxLines).forEach((s,i)=>txt(i===maxLines-1&&lines.length>maxLines?s.slice(0,-1)+"…":s,x,y+i*lineHeight,size,color,bold));
    return Math.min(lines.length,maxLines)*lineHeight;
  };
- const bg=c.createLinearGradient(0,0,W,H);bg.addColorStop(0,"#07140e");bg.addColorStop(.58,"#091912");bg.addColorStop(1,"#132017");c.fillStyle=bg;c.fillRect(0,0,W,H);
- c.strokeStyle="#315441";c.lineWidth=5;c.strokeRect(18,18,W-36,H-36);
- txt("BasketballLife",50,74,31,"#f3a14a",true);txt("CAREER LEGACY · 生涯紀念",50,108,18,"#88a796",true);
- txt(p.name,50,183,58,"#f4c35e",true);const last=legacyLastTeam();
- txt(`${p.pos}｜${last.team||p.team||"—"} · ${last.path?leagueDisplay(last.path):leagueDisplay(p.path)}`,50,226,24,"#d9e4de");
- txt(`2026–${p.year}｜引退 ${p.age} 歲｜${p.seedTierLabel}`,50,264,21,"#91ad9d");
- box(870,55,280,205,"#2a1b0d","#795324");txt("BL POWER",1010,99,19,"#b99c72",true,"center");txt(Number(p.careerRating||0).toLocaleString(),1010,158,48,"#f2a64b",true,"center");txt(`巔峰 OVR ${p.peakOverall}｜引退 ${overall()}`,1010,199,19,"#e0d1bc",true,"center");
- const rank=p.retirementRankSummary||{};txt(rank.power?`全球第 ${rank.power} 名`:"完整生涯紀錄",1010,235,17,rank.power?"#79d99e":"#9db0a5",true,"center");
- line(305);
+ const bg=c.createLinearGradient(0,0,W,H);bg.addColorStop(0,palette.bg0);bg.addColorStop(.56,palette.bg1);bg.addColorStop(1,palette.bg2);c.fillStyle=bg;c.fillRect(0,0,W,H);
+ c.strokeStyle="#304653";c.lineWidth=4;c.strokeRect(18,18,W-36,H-36);
+ c.strokeStyle="rgba(225,156,83,.11)";c.lineWidth=2;[92,122,152].forEach(r=>{c.beginPath();c.arc(1125,55,r,0,Math.PI*2);c.stroke()});
+ const hero=c.createLinearGradient(50,45,1150,300);hero.addColorStop(0,"#17232b");hero.addColorStop(.66,"#101920");hero.addColorStop(1,"#20170f");box(50,45,1100,250,hero,"#4d5960",14);
+ box(74,69,190,34,palette.orange,palette.orange,4);txt("CAREER FINALE",169,93,16,"#16130f",true,"center");txt("生涯終章",280,93,18,palette.soft,true);
+ txt(p.name,74,166,58,palette.text,true);const last=legacyLastTeam();
+ txt(`${p.pos}｜最後效力 ${last.team||p.team||"—"} · ${last.path?leagueDisplay(last.path):leagueDisplay(p.path)}`,74,207,23,"#aab8c0");
+ txt(`2026–${p.year}｜引退 ${p.age} 歲｜${p.seedTierLabel}`,74,246,20,palette.muted);
+ box(870,69,250,190,palette.stamp,palette.brown,10);txt("BL POWER",995,106,18,"#b38a62",true,"center");txt(Number(p.careerRating||0).toLocaleString(),995,160,46,palette.gold,true,"center");txt(`巔峰 OVR ${p.peakOverall}｜引退 ${overall()}`,995,199,18,"#d8c8b4",true,"center");
+ const rank=p.retirementRankSummary||{};txt(rank.power?`全球第 ${rank.power} 名`:"歷史總評",995,234,16,rank.power?"#76d497":"#b8a084",true,"center");
+ line(320);
  const games=Math.max(0,p.careerGames||0),ppg=games?p.careerPtsTotal/games:0,rpg=games?p.careerRebTotal/games:0,apg=games?p.careerAstTotal/games:0;
  const seniorNational=careerNationalSummary().SENIOR;
  const nationalMetric=seniorNational?.recordedEvents?[`${seniorNational.games} / ${seniorNational.pts.toFixed(1)}`,"GP / PPG"]:[p.nationalCaps||0,"屆"];
- const metrics=[["職業出賽",games.toLocaleString(),"場"],["生涯場均",ppg.toFixed(1),"PTS"],["籃板／助攻",`${rpg.toFixed(1)} / ${apg.toFixed(1)}`,"RPG / APG"],["主要冠軍",p.championships||0,"座"],["成人國家隊",nationalMetric[0],nationalMetric[1]],["生涯總收入",moneyText(p.careerSalary||0),""]];
- metrics.forEach((m,i)=>{const col=i%3,row=Math.floor(i/3),x=50+col*370,y=340+row*135;box(x,y,340,105,"#0c1e17","#294c3a");txt(m[0],x+18,y+28,17,"#86a392",true);txt(m[1],x+18,y+70,String(m[1]).length>10?26:33,"#eef3ef",true);if(m[2])txt(m[2],x+315,y+70,15,"#82988d",true,"right")});
- let y=635;txt("生涯版圖",50,y,23,"#91ad9d",true);y+=38;
- const leagues=Object.entries(careerLeagueSummary()).map(([name,g])=>`${name} ${g.yrs}季`).join("　·　")||"尚無職業聯盟紀錄";wrap(leagues,50,y,1100,31,2,"#d9e4de",22,true);y+=75;line(y);y+=45;
- txt("歷史地位",50,y,23,"#91ad9d",true);y+=38;
+ const totalIncome=Number(p.careerSalary||0),recordedSalary=Number(p.careerBasketballSalary),careerSalary=Number.isFinite(recordedSalary)?recordedSalary:totalIncome;
+ const metrics=[
+   {label:"職業出賽",value:games.toLocaleString(),unit:"場"},
+   {label:"生涯場均",value:ppg.toFixed(1),unit:"PTS"},
+   {label:"籃板／助攻",value:`${rpg.toFixed(1)} / ${apg.toFixed(1)}`,unit:"RPG / APG"},
+   {label:"主要冠軍",value:p.championships||0,unit:"座"},
+   {label:"成人國家隊",value:nationalMetric[0],unit:nationalMetric[1]},
+   {label:"生涯總薪資",value:moneyText(careerSalary),detail:`總收入 ${moneyText(totalIncome)}`}
+ ];
+ metrics.forEach((m,i)=>{const col=i%3,row=Math.floor(i/3),x=50+col*370,y=350+row*140;box(x,y,340,116,palette.metric,palette.line,8);txt(m.label,x+18,y+29,17,palette.muted,true);txt(m.value,x+18,y+73,String(m.value).length>10?25:33,palette.text,true);if(m.unit)txt(m.unit,x+315,y+73,15,palette.muted,true,"right");if(m.detail)txt(m.detail,x+18,y+99,14,"#b8a084",true)});
+ let y=665;txt("生涯版圖",50,y,23,"#d8c9b5",true);y+=38;
+ const leagues=Object.entries(careerLeagueSummary()).map(([name,g])=>`${name} ${g.yrs}季`).join("　·　")||"尚無職業聯盟紀錄";wrap(leagues,50,y,1100,31,2,palette.text,22,true);y+=75;line(y);y+=45;
+ txt("歷史地位",50,y,23,"#d8c9b5",true);y+=38;
  const legacy=[...(p.hallOfFame||[]).map(x=>`名人堂｜${x}`),...(p.jerseyRetired||[]).map(x=>`球衣退休｜${x}`)];
  if(!legacy.length)legacy.push(`生涯評價｜${legacyEvaluationLines()[0].replace(/^★\s*/,"")}`);
- legacy.slice(0,4).forEach((s,i)=>{wrap(`★ ${s}`,50+(i%2)*560,y+Math.floor(i/2)*38,520,29,1,"#f2c15b",21,true)});y+=Math.ceil(legacy.slice(0,4).length/2)*38+25;line(y);y+=45;
- txt("主要榮譽",50,y,23,"#91ad9d",true);y+=38;
+ legacy.slice(0,4).forEach((s,i)=>{wrap(`★ ${s}`,50+(i%2)*560,y+Math.floor(i/2)*38,520,29,1,palette.gold,21,true)});y+=Math.ceil(legacy.slice(0,4).length/2)*38+25;line(y);y+=45;
+ txt("主要榮譽",50,y,23,"#d8c9b5",true);y+=38;
  let awards=groupedCareerAwards(p.careerAwards||[]).slice(0,10).map(a=>`${a.name}${a.count>1?` ×${a.count}`:""}${a.years.length?`（${a.years.join("、")}）`:""}`);
  if(!awards.length)awards=["沒有主要個人獎項"];
- awards.forEach((a,i)=>{const col=i%2,row=Math.floor(i/2);wrap(`・${a}`,50+col*560,y+row*42,520,30,1,"#cfe0d6",20,false)});y+=Math.ceil(awards.length/2)*42+25;line(Math.min(y,1270));
- const reason=String(p.retirementReason||"");if(y<1320){y+=42;txt("生涯落幕",50,y,22,"#91ad9d",true);y+=35;wrap(reason,50,y,1100,28,2,"#b7c9bf",19,false)}
- txt(`SEED ${p.seed}`,50,1440,17,"#729083");txt("Produced by BasketballLife_K",1150,1440,17,"#729083",true,"right");
+ awards.forEach((a,i)=>{const col=i%2,row=Math.floor(i/2);wrap(`・${a}`,50+col*560,y+row*42,520,30,1,"#d5dcdf",20,false)});y+=Math.ceil(awards.length/2)*42+25;line(Math.min(y,1270));
+ const reason=String(p.retirementReason||"");if(y<1320){y+=42;txt("生涯落幕",50,y,22,"#d8c9b5",true);y+=35;wrap(reason,50,y,1100,28,2,"#aab8c0",19,false)}
+ txt(`SEED ${p.seed}`,50,1440,17,palette.muted);txt("Produced by BasketballLife_K",1150,1440,17,palette.muted,true,"right");
  return canvas;
 }
 function careerShareBlob(){return new Promise((resolve,reject)=>buildCareerShareCanvas().toBlob(blob=>blob?resolve(blob):reject(new Error("PNG 產生失敗")),"image/png"))}
