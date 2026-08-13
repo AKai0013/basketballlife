@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BasketballLife｜Online Beta V7.49.6 · Retirement Night</title>
+<title>BasketballLife｜Online Beta V7.49.7 · Retirement Save Migration</title>
 <style>
 :root{--bg:#0b0f15;--card:#131a25;--card2:#182231;--line:#2b394d;--txt:#f5f7fb;--mut:#91a0b6;--gold:#f0b64b;--blue:#5593ff;--green:#49cf88;--red:#e23b3b;--orange:#e88946}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 25% 0,#172238,#0b0f15 38%);color:var(--txt);font-family:system-ui,-apple-system,"Microsoft JhengHei",sans-serif}
@@ -4032,7 +4032,7 @@ body.retirementMode .legacyHero .legacyMeta{margin-top:7px!important;color:#aab8
     <button class="btn deleteBtn" type="button" onclick="clearCareerSave(true)">刪除存檔</button>
   </div>
 </div>
-<div class="creatorCredit">Produced by <a href="https://www.threads.com/@basketballlife_k?xmt=AQG0tS6gtXrN8CWiBiJqphKuoz5VwtJFONP4svLNEbhjdt0" target="_blank" rel="noopener noreferrer">BasketballLife_K</a><span>·</span><a href="https://www.threads.com/@basketballlife_k?xmt=AQG0tS6gtXrN8CWiBiJqphKuoz5VwtJFONP4svLNEbhjdt0" target="_blank" rel="noopener noreferrer">Threads @basketballlife_k ↗</a></div>
+<div class="creatorCredit">Produced by <a href="https://www.threads.com/@basketballlife_k?xmt=AQG0tS6gtXrN8CWiBiJqphKuoz5VwtJFONP4svLNEbhjdt0" target="_blank" rel="noopener noreferrer">BasketballLife_K</a></div>
 </section>
 
 <section id="communityPage" class="communityPage hidden">
@@ -5134,7 +5134,7 @@ function saveCareerNow(){
  if(!p||careerSaveRestoring)return false;
  try{
    const save={
-     schema:CAREER_SAVE_SCHEMA,gameVersion:"7.49.5",savedAt:Date.now(),
+     schema:CAREER_SAVE_SCHEMA,gameVersion:"7.49.7",savedAt:Date.now(),
      player:p,chosenPos,selectedDie,screen:currentCareerScreen()
    };
    localStorage.setItem(CAREER_SAVE_KEY,JSON.stringify(save));
@@ -5183,7 +5183,19 @@ function continueCareer(){
    document.getElementById("setup").classList.add("hidden");
    document.getElementById("game").classList.remove("hidden");
    render();
-   restoreCareerScreen(save.screen);
+   if(p.retired||p.stage==="retired"){
+     // A saved screen contains the rendered HTML from the version that created it.
+     // Rebuild retired careers from current data so old saves receive the latest
+     // career rail, retirement-night header and fan feedback instead of stale HTML.
+     document.body.classList.add("retirementMode");
+     chapter.textContent="生涯終章";
+     title.textContent=retirementExitClass()==="ceremony"?"正式引退":retirementExitClass()==="farewell"?"告別球場":"球員生涯落幕";
+     text.textContent=`${p.name} 的球員生涯正式結束。以下內容已依目前版本重新整理。`;
+     choices.innerHTML="";flow.innerHTML="";next.className="next hidden";next.innerHTML="";
+     showRetirementSummary();
+   }else{
+     restoreCareerScreen(save.screen);
+   }
    setCareerSaveStatus("已繼續上次進度");
    window.scrollTo({top:0,behavior:"auto"});
    setTimeout(fitGameToViewport,0);
@@ -7261,7 +7273,7 @@ function fanEchoHTML(){
  <div class="fanEchoGrid">${echoes.map(q=>`<article class="fanEchoCard ${q.tone}"><div class="fanEchoQuote">“</div><p>${escapeFeedText(q.text)}</p><small>— ${escapeFeedText(q.source)}</small></article>`).join("")}</div>`;
 }
 function creatorCreditHTML(){
- return `<div class="creatorCredit retirementCredit">Produced by <a href="https://www.threads.com/@basketballlife_k?xmt=AQG0tS6gtXrN8CWiBiJqphKuoz5VwtJFONP4svLNEbhjdt0" target="_blank" rel="noopener noreferrer">BasketballLife_K</a><span>·</span><a href="https://www.threads.com/@basketballlife_k?xmt=AQG0tS6gtXrN8CWiBiJqphKuoz5VwtJFONP4svLNEbhjdt0" target="_blank" rel="noopener noreferrer">Threads @basketballlife_k ↗</a></div>`;
+ return `<div class="creatorCredit retirementCredit">Produced by <a href="https://www.threads.com/@basketballlife_k?xmt=AQG0tS6gtXrN8CWiBiJqphKuoz5VwtJFONP4svLNEbhjdt0" target="_blank" rel="noopener noreferrer">BasketballLife_K</a></div>`;
 }
 
 function legacyTitleInfo(raw){
