@@ -4175,7 +4175,12 @@ body.retirementMode .legacyHero .legacyMeta{margin-top:7px!important;color:#aab8
   width:54px;height:54px;flex:0 0 54px;overflow:hidden;border:1px solid #725031;border-radius:11px;
   background:#0b151c;box-shadow:inset 0 0 0 2px rgba(235,158,82,.06),0 5px 14px rgba(0,0,0,.25)
 }
-.playerAvatar svg,.legacyPortrait svg,.publicPortrait svg{display:block;width:100%;height:100%}
+.playerAvatar svg,.legacyPortrait svg,.publicPortrait svg,
+.playerAvatar .avatarPhoto,.legacyPortrait .avatarPhoto,.publicPortrait .avatarPhoto{display:block;width:100%;height:100%}
+.avatarPhoto{background-size:400% 400%;background-repeat:no-repeat;background-color:#0b151c;background-origin:border-box}
+.avatarPhoto.portraitSheet0{background-image:url("./basketball-player-portraits-a.webp")}
+.avatarPhoto.portraitSheet1{background-image:url("./basketball-player-portraits-b.webp")}
+.avatarPhoto.portraitVeteran{filter:saturate(.94) contrast(1.02)}
 .playerIdentity{min-width:0;flex:1}.playerIdentityName{display:flex;align-items:baseline;gap:5px;min-width:0}
 .playerIdentityName b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.playerIdentity .teamname{display:block;margin:3px 0 0}
 .legacyHeroIdentity,.publicHeroIdentity{display:flex;align-items:center;gap:13px;min-width:0;position:relative;z-index:1}
@@ -5649,68 +5654,111 @@ function newAvatarSeed(){
 }
 function avatarProfile(avatarSeed,pos="PG"){
  const r=RNG(`career-avatar-${String(avatarSeed||"BL-PLAYER")}-${pos}`);
- const skins=["#f2c7a7","#dfa77f","#c88761","#a86443","#75452f","#4d3026"];
- const hairs=["#171514","#33251e","#5a3828","#0d1115","#6d5848"];
+ const skins=[
+   ["#f0c8ab","#ffe0c7","#bd7e60"],["#dfa67e","#efbe98","#a76548"],
+   ["#c88762","#dea17a","#8b5139"],["#aa6848","#c27e59","#71402f"],
+   ["#7c4a35","#976148","#503026"],["#513329","#6b4738","#33221d"]
+ ];
+ const hairs=["#111316","#241b18","#35251f","#090c10","#4a362d"];
+ const eyes=["#1d1715","#35251f","#49352b","#171d20"];
  const jerseys=[
    ["#d9823b","#101923"],["#315f9b","#e4a451"],["#1f7775","#e79149"],
    ["#8b3437","#e2b760"],["#604783","#e28f4a"],["#394b58","#ef9b4e"]
  ];
+ const skin=skins[ri(r,0,skins.length-1)];
  const jersey=jerseys[ri(r,0,jerseys.length-1)];
  return {
-   skin:skins[ri(r,0,skins.length-1)],hair:hairs[ri(r,0,hairs.length-1)],
-   jersey:jersey[0],trim:jersey[1],hairStyle:ri(r,0,5),headband:r()<.24,
-   beard:r()<.44,browLift:ri(r,-1,2),eyeGap:ri(r,-1,2),mouth:ri(r,0,2),
+   skin:skin[0],skinLight:skin[1],skinShadow:skin[2],hair:hairs[ri(r,0,hairs.length-1)],eye:eyes[ri(r,0,eyes.length-1)],
+   jersey:jersey[0],trim:jersey[1],hairStyle:ri(r,0,5),faceShape:ri(r,0,3),headband:r()<.16,
+   beardStyle:ri(r,0,4),browLift:ri(r,-1,1),eyeGap:ri(r,-1,2),eyeTilt:ri(r,-1,1),mouth:ri(r,0,2),
    number:String(ri(r,0,99)).padStart(2,"0")
  };
 }
+function avatarFacePath(a){
+ if(a.faceShape===1)return "M29 32Q29 14 50 12Q71 14 71 32L68 53Q65 67 50 73Q35 67 32 53Z";
+ if(a.faceShape===2)return "M32 31Q32 13 50 11Q68 13 68 31L66 54Q62 69 50 74Q38 69 34 54Z";
+ if(a.faceShape===3)return "M30 31Q31 14 50 12Q69 14 70 31L67 52Q63 64 50 70Q37 64 33 52Z";
+ return "M31 31Q31 13 50 11Q69 13 69 31L67 52Q64 67 50 72Q36 67 33 52Z";
+}
 function avatarHairSVG(a){
- if(a.hairStyle===0)return `<path d="M28 39Q27 12 50 10Q75 12 72 39Q62 26 49 27Q37 26 28 39Z" fill="${a.hair}"/>`;
- if(a.hairStyle===1)return `<path d="M29 36L31 16Q49 6 69 16L72 36Q61 25 50 25Q39 25 29 36Z" fill="${a.hair}"/><path d="M33 16L67 16" stroke="#ffffff20" stroke-width="2"/>`;
- if(a.hairStyle===2)return `<g fill="${a.hair}"><circle cx="31" cy="26" r="9"/><circle cx="40" cy="18" r="10"/><circle cx="51" cy="16" r="10"/><circle cx="62" cy="19" r="10"/><circle cx="70" cy="28" r="9"/></g>`;
- if(a.hairStyle===3)return `<path d="M30 30Q50 13 70 30" fill="none" stroke="${a.hair}" stroke-width="5" stroke-linecap="round"/>`;
- if(a.hairStyle===4)return `<path d="M43 25L46 7L51 13L56 5L59 27Q50 22 43 25Z" fill="${a.hair}"/><path d="M29 36Q31 26 42 23M71 36Q69 26 58 23" fill="none" stroke="${a.hair}" stroke-width="5"/>`;
- return `<path d="M28 38Q28 13 50 11Q70 12 72 32Q62 23 49 25Q38 24 28 38Z" fill="${a.hair}"/><g stroke="${a.hair}" stroke-width="4" stroke-linecap="round"><path d="M30 28L26 54"/><path d="M35 24L31 55"/><path d="M68 25L72 54"/></g>`;
+ if(a.hairStyle===0)return `<path d="M30 35Q28 15 50 10Q72 14 70 36Q64 24 50 23Q37 24 30 35Z" fill="${a.hair}"/><path d="M31 30Q33 21 39 17" fill="none" stroke="#ffffff18" stroke-width="1.4"/>`;
+ if(a.hairStyle===1)return `<path d="M30 34Q29 13 50 10Q71 13 70 34Q62 23 50 23Q38 23 30 34Z" fill="${a.hair}"/><g fill="#ffffff14"><circle cx="38" cy="17" r="2.2"/><circle cx="46" cy="14" r="2"/><circle cx="55" cy="14" r="2.3"/><circle cx="63" cy="18" r="2"/></g>`;
+ if(a.hairStyle===2)return `<path d="M31 30Q33 15 50 12Q67 15 69 30Q60 21 50 21Q40 21 31 30Z" fill="${a.hair}" opacity=".92"/><path d="M34 24Q50 14 66 24" fill="none" stroke="#ffffff18" stroke-width="1"/>`;
+ if(a.hairStyle===3)return `<path d="M31 32L33 13Q50 7 67 13L69 32Q61 22 50 22Q39 22 31 32Z" fill="${a.hair}"/><path d="M34 13Q50 9 66 13" fill="none" stroke="#ffffff1b" stroke-width="1.4"/>`;
+ if(a.hairStyle===4)return `<path d="M29 36Q27 15 50 9Q73 14 71 36Q63 25 50 24Q37 25 29 36Z" fill="${a.hair}"/><g fill="none" stroke="#ffffff16" stroke-width="1.1"><path d="M34 20Q38 14 42 19"/><path d="M43 16Q48 10 52 16"/><path d="M53 16Q58 11 63 19"/></g>`;
+ return `<path d="M32 27Q36 14 50 12Q64 14 68 27Q59 20 50 20Q41 20 32 27Z" fill="${a.hair}" opacity=".34"/><path d="M34 23Q50 15 66 23" fill="none" stroke="${a.hair}" stroke-width="1.2" opacity=".55"/>`;
 }
 function playerAvatarSVG(avatarSeed,pos="PG",age=16,label="球員頭像"){
  const a=avatarProfile(avatarSeed,pos),older=Number(age)>=34,grey=Number(age)>=38;
- if(grey)a.hair="#665e59";
+ if(grey)a.hair="#5b5754";
+ const uid=`av${hash(`${avatarSeed}-${pos}`).toString(36)}`;
  const safe=String(label||"球員頭像").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
- const beard=a.beard&&Number(age)>=23?`<path d="M34 53Q38 70 50 72Q63 69 67 53Q61 64 50 64Q39 64 34 53Z" fill="${a.hair}" opacity=".76"/>`:"";
- const wrinkles=older?`<g fill="none" stroke="#704832" stroke-width=".8" opacity=".48"><path d="M32 45L38 46"/><path d="M62 46L68 45"/><path d="M42 58Q50 61 58 58"/></g>`:"";
+ const beard=Number(age)>=23&&a.beardStyle?`<path d="M34 52Q36 66 50 72Q64 66 67 52Q63 63 50 66Q38 63 34 52Z" fill="${a.hair}" opacity="${a.beardStyle===1?".16":a.beardStyle===2?".34":".58"}"/>${a.beardStyle>=3?`<path d="M44 58Q50 61 56 58L55 66Q50 69 45 66Z" fill="${a.hair}" opacity=".72"/>`:""}`:"";
+ const wrinkles=older?`<g fill="none" stroke="${a.skinShadow}" stroke-width=".65" opacity=".38"><path d="M33 43Q37 42 40 43"/><path d="M60 43Q64 42 68 43"/><path d="M43 61Q50 63 57 61"/></g>`:"";
  return `<svg viewBox="0 0 100 100" role="img" aria-label="${safe}" xmlns="http://www.w3.org/2000/svg">
-   <rect width="100" height="100" fill="#0b171f"/><circle cx="84" cy="14" r="35" fill="#d9853c" opacity=".13"/><circle cx="15" cy="91" r="33" fill="#3b6175" opacity=".18"/>
-   <path d="M7 100Q10 78 31 70L42 66H58L69 70Q90 78 93 100Z" fill="${a.jersey}"/><path d="M33 70Q36 82 50 86Q64 82 67 70L59 66H41Z" fill="${a.trim}" opacity=".92"/>
-   <path d="M42 58H58V75Q50 82 42 75Z" fill="${a.skin}"/><circle cx="28" cy="44" r="6" fill="${a.skin}"/><circle cx="72" cy="44" r="6" fill="${a.skin}"/>
-   <ellipse cx="50" cy="42" rx="23" ry="27" fill="${a.skin}"/>${avatarHairSVG(a)}
-   ${a.headband?`<path d="M28 33Q50 27 72 33L71 39Q50 34 29 39Z" fill="${a.trim}"/>`:""}
-   <g stroke="${a.hair}" stroke-width="2.4" stroke-linecap="round"><path d="M35 ${38+a.browLift}Q41 ${35+a.browLift} 46 ${39+a.browLift}"/><path d="M54 ${39+a.browLift}Q60 ${35+a.browLift} 66 ${38+a.browLift}"/></g>
-   <g fill="#111820"><ellipse cx="${40-a.eyeGap}" cy="44" rx="2.2" ry="2.7"/><ellipse cx="${60+a.eyeGap}" cy="44" rx="2.2" ry="2.7"/></g>
-   <path d="M50 45L47 54Q50 56 53 54" fill="none" stroke="#86553b" stroke-width="1.2" stroke-linecap="round"/>
-   ${beard}${wrinkles}<path d="${a.mouth===0?"M42 59Q50 63 58 59":a.mouth===1?"M42 60Q50 58 58 60":"M42 59L58 59"}" fill="none" stroke="#6e3d34" stroke-width="1.6" stroke-linecap="round"/>
-   <text x="50" y="96" text-anchor="middle" fill="#f5eee5" font-size="10" font-family="system-ui,sans-serif" font-weight="800">${a.number}</text>
+   <defs><linearGradient id="${uid}bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#21303b"/><stop offset=".55" stop-color="#101a22"/><stop offset="1" stop-color="#080d12"/></linearGradient><linearGradient id="${uid}skin" x1=".18" y1=".12" x2=".82" y2=".88"><stop stop-color="${a.skinLight}"/><stop offset=".48" stop-color="${a.skin}"/><stop offset="1" stop-color="${a.skinShadow}"/></linearGradient><linearGradient id="${uid}jersey" x1="0" y1="0" x2="1" y2="1"><stop stop-color="${a.jersey}"/><stop offset="1" stop-color="#10151b"/></linearGradient><radialGradient id="${uid}light" cx="35%" cy="24%" r="66%"><stop stop-color="#ffffff" stop-opacity=".18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient></defs>
+   <rect width="100" height="100" fill="url(#${uid}bg)"/><circle cx="82" cy="18" r="35" fill="#d9853c" opacity=".10"/><path d="M0 77Q50 62 100 77V100H0Z" fill="#000" opacity=".18"/>
+   <path d="M3 100Q7 79 31 73L41 69H59L69 73Q93 79 97 100Z" fill="url(#${uid}jersey)"/><path d="M31 74L41 68Q50 77 59 68L69 74L63 84Q50 77 37 84Z" fill="${a.trim}" opacity=".92"/><path d="M36 79Q50 86 64 79L61 100H39Z" fill="${a.jersey}"/>
+   <path d="M42 59H58V73Q50 80 42 73Z" fill="url(#${uid}skin)"/><path d="M42 61Q50 68 58 61V69Q50 76 42 69Z" fill="${a.skinShadow}" opacity=".25"/>
+   <ellipse cx="30" cy="43" rx="4.8" ry="7" fill="${a.skin}"/><ellipse cx="70" cy="43" rx="4.8" ry="7" fill="${a.skinShadow}"/><path d="${avatarFacePath(a)}" fill="url(#${uid}skin)"/>
+   <path d="M32 31Q31 48 36 58" fill="none" stroke="${a.skinLight}" stroke-width="1.2" opacity=".45"/><path d="M68 30Q70 48 64 59" fill="none" stroke="${a.skinShadow}" stroke-width="2" opacity=".32"/>
+   ${avatarHairSVG(a)}${a.headband?`<path d="M30 30Q50 24 70 30L69 35Q50 30 31 35Z" fill="${a.trim}"/><path d="M34 30Q50 27 66 30" fill="none" stroke="#fff" stroke-width=".7" opacity=".25"/>`:""}
+   <g fill="none" stroke="${a.hair}" stroke-width="2.1" stroke-linecap="round"><path d="M35 ${39+a.browLift}Q40 ${36+a.browLift} 45 ${39+a.browLift}"/><path d="M55 ${39+a.browLift}Q60 ${36+a.browLift} 66 ${39+a.browLift}"/></g>
+   <g><ellipse cx="${40-a.eyeGap}" cy="44" rx="4.3" ry="2.3" fill="#f4eee7" opacity=".88"/><ellipse cx="${60+a.eyeGap}" cy="44" rx="4.3" ry="2.3" fill="#f4eee7" opacity=".88"/><circle cx="${40-a.eyeGap}" cy="${44+a.eyeTilt*.3}" r="1.75" fill="${a.eye}"/><circle cx="${60+a.eyeGap}" cy="${44-a.eyeTilt*.3}" r="1.75" fill="${a.eye}"/><circle cx="${39.5-a.eyeGap}" cy="43.4" r=".45" fill="#fff"/><circle cx="${59.5+a.eyeGap}" cy="43.4" r=".45" fill="#fff"/></g>
+   <path d="M50 43Q47 50 47 54Q50 56 54 54" fill="none" stroke="${a.skinShadow}" stroke-width="1.15" stroke-linecap="round"/><path d="M51 45L53 52" stroke="${a.skinLight}" stroke-width=".7" opacity=".55"/>
+   ${beard}${wrinkles}<path d="${a.mouth===0?"M42 60Q50 63 58 60":a.mouth===1?"M42 61Q50 59 58 61":"M42 60Q50 60.5 58 60"}" fill="none" stroke="#633832" stroke-width="1.35" stroke-linecap="round"/><path d="M44 60Q50 61 56 60" stroke="#d78f82" stroke-width=".55" opacity=".5"/>
+   <rect width="100" height="100" fill="url(#${uid}light)"/>
  </svg>`;
 }
 function renderPlayerAvatar(el,avatarSeed,pos,age,label){if(el)el.innerHTML=playerAvatarSVG(avatarSeed,pos,age,label)}
 function drawPlayerAvatarCanvas(c,x,y,size,avatarSeed,pos="PG",age=16){
- const a=avatarProfile(avatarSeed,pos),older=Number(age)>=34;if(Number(age)>=38)a.hair="#665e59";
+ const a=avatarProfile(avatarSeed,pos),older=Number(age)>=34;if(Number(age)>=38)a.hair="#5b5754";
  c.save();c.translate(x,y);c.scale(size/100,size/100);c.beginPath();c.rect(0,0,100,100);c.clip();
- c.fillStyle="#0b171f";c.fillRect(0,0,100,100);c.globalAlpha=.13;c.fillStyle="#d9853c";c.beginPath();c.arc(84,14,35,0,Math.PI*2);c.fill();c.globalAlpha=.18;c.fillStyle="#3b6175";c.beginPath();c.arc(15,91,33,0,Math.PI*2);c.fill();c.globalAlpha=1;
- c.fillStyle=a.jersey;c.beginPath();c.moveTo(7,100);c.quadraticCurveTo(10,78,31,70);c.lineTo(42,66);c.lineTo(58,66);c.lineTo(69,70);c.quadraticCurveTo(90,78,93,100);c.closePath();c.fill();
- c.fillStyle=a.trim;c.beginPath();c.moveTo(33,70);c.quadraticCurveTo(36,82,50,86);c.quadraticCurveTo(64,82,67,70);c.lineTo(59,66);c.lineTo(41,66);c.closePath();c.fill();
- c.fillStyle=a.skin;c.fillRect(42,58,16,18);c.beginPath();c.arc(28,44,6,0,Math.PI*2);c.arc(72,44,6,0,Math.PI*2);c.fill();c.beginPath();c.ellipse(50,42,23,27,0,0,Math.PI*2);c.fill();
+ let bg=c.createLinearGradient(0,0,100,100);bg.addColorStop(0,"#21303b");bg.addColorStop(.55,"#101a22");bg.addColorStop(1,"#080d12");c.fillStyle=bg;c.fillRect(0,0,100,100);c.globalAlpha=.1;c.fillStyle="#d9853c";c.beginPath();c.arc(82,18,35,0,Math.PI*2);c.fill();c.globalAlpha=1;
+ let jersey=c.createLinearGradient(0,72,100,100);jersey.addColorStop(0,a.jersey);jersey.addColorStop(1,"#10151b");c.fillStyle=jersey;c.beginPath();c.moveTo(3,100);c.quadraticCurveTo(7,79,31,73);c.lineTo(41,69);c.lineTo(59,69);c.lineTo(69,73);c.quadraticCurveTo(93,79,97,100);c.closePath();c.fill();
+ c.fillStyle=a.trim;c.beginPath();c.moveTo(31,74);c.lineTo(41,68);c.quadraticCurveTo(50,77,59,68);c.lineTo(69,74);c.lineTo(63,84);c.quadraticCurveTo(50,77,37,84);c.closePath();c.fill();c.fillStyle=a.jersey;c.beginPath();c.moveTo(36,79);c.quadraticCurveTo(50,86,64,79);c.lineTo(61,100);c.lineTo(39,100);c.closePath();c.fill();
+ let skin=c.createLinearGradient(30,18,68,70);skin.addColorStop(0,a.skinLight);skin.addColorStop(.48,a.skin);skin.addColorStop(1,a.skinShadow);c.fillStyle=skin;c.fillRect(42,58,16,16);c.beginPath();c.ellipse(30,43,4.8,7,0,0,Math.PI*2);c.ellipse(70,43,4.8,7,0,0,Math.PI*2);c.fill();
+ c.beginPath();if(a.faceShape===1){c.moveTo(29,32);c.quadraticCurveTo(29,14,50,12);c.quadraticCurveTo(71,14,71,32);c.lineTo(68,53);c.quadraticCurveTo(65,67,50,73);c.quadraticCurveTo(35,67,32,53)}else if(a.faceShape===2){c.moveTo(32,31);c.quadraticCurveTo(32,13,50,11);c.quadraticCurveTo(68,13,68,31);c.lineTo(66,54);c.quadraticCurveTo(62,69,50,74);c.quadraticCurveTo(38,69,34,54)}else if(a.faceShape===3){c.moveTo(30,31);c.quadraticCurveTo(31,14,50,12);c.quadraticCurveTo(69,14,70,31);c.lineTo(67,52);c.quadraticCurveTo(63,64,50,70);c.quadraticCurveTo(37,64,33,52)}else{c.moveTo(31,31);c.quadraticCurveTo(31,13,50,11);c.quadraticCurveTo(69,13,69,31);c.lineTo(67,52);c.quadraticCurveTo(64,67,50,72);c.quadraticCurveTo(36,67,33,52)}c.closePath();c.fill();
  c.fillStyle=a.hair;c.strokeStyle=a.hair;c.lineCap="round";
- if(a.hairStyle===2){[[31,26,9],[40,18,10],[51,16,10],[62,19,10],[70,28,9]].forEach(q=>{c.beginPath();c.arc(q[0],q[1],q[2],0,Math.PI*2);c.fill()})}
- else if(a.hairStyle===3){c.lineWidth=5;c.beginPath();c.moveTo(30,30);c.quadraticCurveTo(50,13,70,30);c.stroke()}
- else if(a.hairStyle===4){c.beginPath();c.moveTo(43,25);c.lineTo(46,7);c.lineTo(51,13);c.lineTo(56,5);c.lineTo(59,27);c.quadraticCurveTo(50,22,43,25);c.fill();c.lineWidth=5;c.beginPath();c.moveTo(29,36);c.quadraticCurveTo(31,26,42,23);c.moveTo(71,36);c.quadraticCurveTo(69,26,58,23);c.stroke()}
- else{c.beginPath();c.moveTo(28,39);c.quadraticCurveTo(27,12,50,10);c.quadraticCurveTo(75,12,72,39);c.quadraticCurveTo(62,26,49,27);c.quadraticCurveTo(37,26,28,39);c.fill();if(a.hairStyle===5){c.lineWidth=4;c.beginPath();c.moveTo(30,28);c.lineTo(26,54);c.moveTo(35,24);c.lineTo(31,55);c.moveTo(68,25);c.lineTo(72,54);c.stroke()}}
- if(a.headband){c.fillStyle=a.trim;c.beginPath();c.moveTo(28,33);c.quadraticCurveTo(50,27,72,33);c.lineTo(71,39);c.quadraticCurveTo(50,34,29,39);c.closePath();c.fill()}
- c.strokeStyle=a.hair;c.lineWidth=2.4;c.beginPath();c.moveTo(35,38+a.browLift);c.quadraticCurveTo(41,35+a.browLift,46,39+a.browLift);c.moveTo(54,39+a.browLift);c.quadraticCurveTo(60,35+a.browLift,66,38+a.browLift);c.stroke();
- c.fillStyle="#111820";c.beginPath();c.ellipse(40-a.eyeGap,44,2.2,2.7,0,0,Math.PI*2);c.ellipse(60+a.eyeGap,44,2.2,2.7,0,0,Math.PI*2);c.fill();
- c.strokeStyle="#86553b";c.lineWidth=1.2;c.beginPath();c.moveTo(50,45);c.lineTo(47,54);c.quadraticCurveTo(50,56,53,54);c.stroke();
- if(a.beard&&Number(age)>=23){c.globalAlpha=.76;c.fillStyle=a.hair;c.beginPath();c.moveTo(34,53);c.quadraticCurveTo(38,70,50,72);c.quadraticCurveTo(63,69,67,53);c.quadraticCurveTo(61,64,50,64);c.quadraticCurveTo(39,64,34,53);c.fill();c.globalAlpha=1}
- c.strokeStyle="#6e3d34";c.lineWidth=1.6;c.beginPath();c.moveTo(42,59);if(a.mouth===0)c.quadraticCurveTo(50,63,58,59);else if(a.mouth===1)c.quadraticCurveTo(50,58,58,60);else c.lineTo(58,59);c.stroke();
- if(older){c.globalAlpha=.48;c.strokeStyle="#704832";c.lineWidth=.8;c.beginPath();c.moveTo(32,45);c.lineTo(38,46);c.moveTo(62,46);c.lineTo(68,45);c.stroke();c.globalAlpha=1}
- c.fillStyle="#f5eee5";c.font="800 10px system-ui,sans-serif";c.textAlign="center";c.fillText(a.number,50,96);c.restore();
+ c.beginPath();if(a.hairStyle===3){c.moveTo(31,32);c.lineTo(33,13);c.quadraticCurveTo(50,7,67,13);c.lineTo(69,32);c.quadraticCurveTo(61,22,50,22);c.quadraticCurveTo(39,22,31,32)}else if(a.hairStyle===5){c.globalAlpha=.34;c.moveTo(32,27);c.quadraticCurveTo(36,14,50,12);c.quadraticCurveTo(64,14,68,27);c.quadraticCurveTo(59,20,50,20);c.quadraticCurveTo(41,20,32,27)}else{c.moveTo(30,35);c.quadraticCurveTo(28,14,50,10);c.quadraticCurveTo(72,14,70,35);c.quadraticCurveTo(63,24,50,23);c.quadraticCurveTo(37,24,30,35)}c.closePath();c.fill();c.globalAlpha=1;
+ if(a.headband){c.fillStyle=a.trim;c.beginPath();c.moveTo(30,30);c.quadraticCurveTo(50,24,70,30);c.lineTo(69,35);c.quadraticCurveTo(50,30,31,35);c.closePath();c.fill()}
+ c.strokeStyle=a.hair;c.lineWidth=2.1;c.beginPath();c.moveTo(35,39+a.browLift);c.quadraticCurveTo(40,36+a.browLift,45,39+a.browLift);c.moveTo(55,39+a.browLift);c.quadraticCurveTo(60,36+a.browLift,66,39+a.browLift);c.stroke();
+ c.fillStyle="#f4eee7";c.globalAlpha=.88;c.beginPath();c.ellipse(40-a.eyeGap,44,4.3,2.3,0,0,Math.PI*2);c.ellipse(60+a.eyeGap,44,4.3,2.3,0,0,Math.PI*2);c.fill();c.globalAlpha=1;c.fillStyle=a.eye;c.beginPath();c.arc(40-a.eyeGap,44+a.eyeTilt*.3,1.75,0,Math.PI*2);c.arc(60+a.eyeGap,44-a.eyeTilt*.3,1.75,0,Math.PI*2);c.fill();
+ c.strokeStyle=a.skinShadow;c.lineWidth=1.15;c.beginPath();c.moveTo(50,43);c.quadraticCurveTo(47,50,47,54);c.quadraticCurveTo(50,56,54,54);c.stroke();
+ if(Number(age)>=23&&a.beardStyle){c.globalAlpha=a.beardStyle===1?.16:a.beardStyle===2?.34:.58;c.fillStyle=a.hair;c.beginPath();c.moveTo(34,52);c.quadraticCurveTo(36,66,50,72);c.quadraticCurveTo(64,66,67,52);c.quadraticCurveTo(63,63,50,66);c.quadraticCurveTo(38,63,34,52);c.fill();c.globalAlpha=1}
+ c.strokeStyle="#633832";c.lineWidth=1.35;c.beginPath();c.moveTo(42,60);if(a.mouth===0)c.quadraticCurveTo(50,63,58,60);else if(a.mouth===1)c.quadraticCurveTo(50,59,58,61);else c.quadraticCurveTo(50,60.5,58,60);c.stroke();
+ if(older){c.globalAlpha=.38;c.strokeStyle=a.skinShadow;c.lineWidth=.65;c.beginPath();c.moveTo(33,43);c.quadraticCurveTo(37,42,40,43);c.moveTo(60,43);c.quadraticCurveTo(64,42,68,43);c.stroke();c.globalAlpha=1}
+ let light=c.createRadialGradient(35,24,2,35,24,66);light.addColorStop(0,"rgba(255,255,255,.16)");light.addColorStop(1,"rgba(255,255,255,0)");c.fillStyle=light;c.fillRect(0,0,100,100);c.restore();
+}
+// Mature Taiwanese sports-manga portraits. The career avatar seed selects a
+// face independently from the world Seed, while save/load keeps that face.
+const PLAYER_AVATAR_SPRITE_SOURCES=["./basketball-player-portraits-a.webp","./basketball-player-portraits-b.webp"];
+const playerAvatarSpriteImages=PLAYER_AVATAR_SPRITE_SOURCES.map(src=>{const img=new Image();img.decoding="async";img.src=src;return img});
+function playerAvatarSpriteSlot(avatarSeed,pos="PG",age=16){
+ const n=hash(`taiwan-basketball-portrait-v1-${String(avatarSeed||"BL-PLAYER")}-${pos}`)%16;
+ return {sheet:Number(age)>=38?1:0,index:n,col:n%4,row:Math.floor(n/4)};
+}
+function playerAvatarSVG(avatarSeed,pos="PG",age=16,label="球員頭像"){
+ const slot=playerAvatarSpriteSlot(avatarSeed,pos,age),safe=String(label||"球員頭像").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+ const x=(slot.col/3*100).toFixed(4),y=(slot.row/3*100).toFixed(4),veteran=Number(age)>=38?" portraitVeteran":"";
+ return `<span class="avatarPhoto portraitSheet${slot.sheet}${veteran}" role="img" aria-label="${safe}" style="background-position:${x}% ${y}%"></span>`;
+}
+function drawPlayerAvatarCanvas(c,x,y,size,avatarSeed,pos="PG",age=16){
+ const slot=playerAvatarSpriteSlot(avatarSeed,pos,age),img=playerAvatarSpriteImages[slot.sheet];
+ c.save();c.beginPath();c.rect(x,y,size,size);c.clip();c.fillStyle="#0b151c";c.fillRect(x,y,size,size);
+ if(img?.complete&&img.naturalWidth){
+   const sw=img.naturalWidth/4,sh=img.naturalHeight/4;
+   c.drawImage(img,slot.col*sw,slot.row*sh,sw,sh,x,y,size,size);
+   if(Number(age)>=38){c.fillStyle="rgba(20,26,29,.10)";c.fillRect(x,y,size,size)}
+ }else{
+   const g=c.createLinearGradient(x,y,x+size,y+size);g.addColorStop(0,"#25343e");g.addColorStop(1,"#0b1117");c.fillStyle=g;c.fillRect(x,y,size,size);
+   c.fillStyle="#d99252";c.globalAlpha=.75;c.beginPath();c.arc(x+size*.5,y+size*.38,size*.21,0,Math.PI*2);c.fill();c.globalAlpha=1;
+   c.fillStyle="#1a3448";c.beginPath();c.moveTo(x+size*.1,y+size);c.quadraticCurveTo(x+size*.16,y+size*.7,x+size*.5,y+size*.68);c.quadraticCurveTo(x+size*.84,y+size*.7,x+size*.9,y+size);c.closePath();c.fill();
+ }
+ c.restore();
+}
+function preloadPlayerAvatarSprites(){
+ return Promise.all(playerAvatarSpriteImages.map(img=>img.complete&&img.naturalWidth?Promise.resolve():new Promise(resolve=>{const done=()=>resolve();img.addEventListener("load",done,{once:true});img.addEventListener("error",done,{once:true});setTimeout(done,4500)})));
 }
 function cleanSeedInput(value){return String(value||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,8)}
 function setupSeedValue(){return cleanSeedInput(document.getElementById("seed")?.value||"")}
@@ -8310,7 +8358,7 @@ function buildCareerShareCanvas(){
  line(H-92);txt(`SEED ${p.seed}`,50,H-50,17,palette.muted);
  return canvas;
 }
-function careerShareBlob(){return new Promise((resolve,reject)=>buildCareerShareCanvas().toBlob(blob=>blob?resolve(blob):reject(new Error("PNG 產生失敗")),"image/png"))}
+async function careerShareBlob(){await preloadPlayerAvatarSprites();return new Promise((resolve,reject)=>buildCareerShareCanvas().toBlob(blob=>blob?resolve(blob):reject(new Error("PNG 產生失敗")),"image/png"))}
 let careerImagePreviewUrl="";
 function renderCareerImagePreview(blob,message){
  const status=document.getElementById("publicCareerStatus");if(!status)return;
