@@ -7917,7 +7917,20 @@ function careerPublicShareUrl(){
  const url=new URL(location.href);url.search="";url.hash="";url.searchParams.set("career",p.publicCareerId);return url.toString();
 }
 function buildCareerShareCanvas(){
- const canvas=document.createElement("canvas"),W=1200,H=1500;canvas.width=W;canvas.height=H;const c=canvas.getContext("2d");
+ const groups=careerLeagueSummary(),achievements=careerAchievementEntries(),evals=legacyEvaluationLines();
+ const normalizedNational=internationalHistoryForDisplay(p.internationalHistory||[],p.seasonHistory||[]),nationalRows=normalizedNational.rows;
+ const nationalSummary=careerNationalSummary(nationalRows),nationalLevels=["U18","U20","SENIOR"].filter(level=>nationalSummary[level]);
+ const offCourtRows=Array.isArray(p.offCourtHistory)?p.offCourtHistory:[];
+ const titleNames=[...(p.titles||[]),...(p.chainTitles||[])].map(legacyTitleInfo).map(x=>x.name);
+ const hallRows=(p.hallVotes||[]).map(v=>`${v.league}名人堂票選 ${v.vote}%${v.inducted?"（入選）":""}`);
+ const legacyRows=[...hallRows,...(p.jerseyRetired||[]).map(x=>`${x} 球衣退休`)];
+ const fanRows=fanEchoEntries();
+ const honorVisualRows=Math.max(1,Math.ceil(Math.max(1,achievements.length)/2));
+ const nationalVisualRows=Math.max(1,nationalRows.length);
+ const leagueVisualRows=Math.max(1,Object.keys(groups).length);
+ // Leave a real footer gutter after variable-length national, honor and fan sections.
+ const H=Math.max(2660,2250+leagueVisualRows*35+nationalVisualRows*38+honorVisualRows*46+offCourtRows.length*34+Math.ceil(fanRows.length/2)*118);
+ const canvas=document.createElement("canvas"),W=1200;canvas.width=W;canvas.height=H;const c=canvas.getContext("2d");
  const font='system-ui,-apple-system,"Microsoft JhengHei","Noto Sans TC",sans-serif';
  const palette={bg0:"#0a141b",bg1:"#0d1921",bg2:"#101b21",panel:"#111f27",metric:"#081117",line:"#314650",line2:"#354650",text:"#edf0ef",muted:"#8497a2",soft:"#c9d1d5",orange:"#db914c",gold:"#efa758",brown:"#79522f",stamp:"#23180f"};
  const txt=(t,x,y,size=28,color=palette.text,bold=false,align="left")=>{c.fillStyle=color;c.font=`${bold?"800":"500"} ${size}px ${font}`;c.textAlign=align;c.fillText(String(t),x,y)};
@@ -7930,6 +7943,9 @@ function buildCareerShareCanvas(){
    lines.slice(0,maxLines).forEach((s,i)=>txt(i===maxLines-1&&lines.length>maxLines?s.slice(0,-1)+"…":s,x,y+i*lineHeight,size,color,bold));
    return Math.min(lines.length,maxLines)*lineHeight;
  };
+ const section=(label,y)=>{line(y);y+=45;txt(label,50,y,23,"#d8c9b5",true);return y+38};
+ const tableHead=(cols,y)=>{c.fillStyle="#13242d";c.fillRect(50,y-24,1100,32);cols.forEach(col=>txt(col.label,col.x,y,15,palette.muted,true,col.align||"left"));return y+30};
+ const tableRule=y=>{c.strokeStyle="#2d414d";c.lineWidth=1;c.beginPath();c.moveTo(50,y);c.lineTo(1150,y);c.stroke()};
  const bg=c.createLinearGradient(0,0,W,H);bg.addColorStop(0,palette.bg0);bg.addColorStop(.56,palette.bg1);bg.addColorStop(1,palette.bg2);c.fillStyle=bg;c.fillRect(0,0,W,H);
  c.strokeStyle="#304653";c.lineWidth=4;c.strokeRect(18,18,W-36,H-36);
  c.strokeStyle="rgba(225,156,83,.11)";c.lineWidth=2;[92,122,152].forEach(r=>{c.beginPath();c.arc(1125,55,r,0,Math.PI*2);c.stroke()});
@@ -7954,18 +7970,58 @@ function buildCareerShareCanvas(){
    {label:"生涯總薪資",value:moneyText(careerSalary),detail:`總收入 ${moneyText(totalIncome)}`}
  ];
  metrics.forEach((m,i)=>{const col=i%3,row=Math.floor(i/3),x=50+col*370,y=350+row*140;box(x,y,340,116,palette.metric,palette.line,8);txt(m.label,x+18,y+29,17,palette.muted,true);txt(m.value,x+18,y+73,String(m.value).length>10?25:33,palette.text,true);if(m.unit)txt(m.unit,x+315,y+73,15,palette.muted,true,"right");if(m.detail)txt(m.detail,x+18,y+99,14,"#b8a084",true)});
- let y=665;txt("生涯版圖",50,y,23,"#d8c9b5",true);y+=38;
- const leagues=Object.entries(careerLeagueSummary()).map(([name,g])=>`${name} ${g.yrs}季`).join("　·　")||"尚無職業聯盟紀錄";wrap(leagues,50,y,1100,31,2,palette.text,22,true);y+=75;line(y);y+=45;
- txt("歷史地位",50,y,23,"#d8c9b5",true);y+=38;
- const legacy=[...(p.hallOfFame||[]).map(x=>`名人堂｜${x}`),...(p.jerseyRetired||[]).map(x=>`球衣退休｜${x}`)];
- if(!legacy.length)legacy.push(`生涯評價｜${legacyEvaluationLines()[0].replace(/^★\s*/,"")}`);
- legacy.slice(0,4).forEach((s,i)=>{wrap(`★ ${s}`,50+(i%2)*560,y+Math.floor(i/2)*38,520,29,1,palette.gold,21,true)});y+=Math.ceil(legacy.slice(0,4).length/2)*38+25;line(y);y+=45;
- txt("主要榮譽",50,y,23,"#d8c9b5",true);y+=38;
- let awards=groupedCareerAwards(p.careerAwards||[]).slice(0,10).map(a=>`${a.name}${a.count>1?` ×${a.count}`:""}${a.years.length?`（${a.years.join("、")}）`:""}`);
- if(!awards.length)awards=["沒有主要個人獎項"];
- awards.forEach((a,i)=>{const col=i%2,row=Math.floor(i/2);wrap(`・${a}`,50+col*560,y+row*42,520,30,1,"#d5dcdf",20,false)});y+=Math.ceil(awards.length/2)*42+25;line(Math.min(y,1270));
- const reason=String(p.retirementReason||"");if(y<1320){y+=42;txt("生涯落幕",50,y,22,"#d8c9b5",true);y+=35;wrap(reason,50,y,1100,28,2,"#aab8c0",19,false)}
- txt(`SEED ${p.seed}`,50,1440,17,palette.muted);txt("Produced by BasketballLife_K",1150,1440,17,palette.muted,true,"right");
+ let y=665;
+ txt("生涯評價",50,y,23,"#d8c9b5",true);y+=39;
+ evals.forEach(e=>{wrap(e,50,y,1100,31,2,palette.text,20,true);y+=34});
+
+ y=section("各聯盟生涯",y+14);
+ const leagueCols=[{label:"聯盟",x:64},{label:"季",x:410,align:"right"},{label:"GP",x:520,align:"right"},{label:"MPG",x:650,align:"right"},{label:"PTS",x:775,align:"right"},{label:"REB",x:895,align:"right"},{label:"AST",x:1015,align:"right"}];
+ y=tableHead(leagueCols,y);
+ const leagueEntries=Object.entries(groups);
+ if(!leagueEntries.length){txt("尚無職業聯盟紀錄",64,y,18,palette.muted);y+=35}
+ else leagueEntries.forEach(([name,g])=>{txt(name,64,y,18,palette.text,true);txt(g.yrs,410,y,17,palette.soft,true,"right");txt(g.g,520,y,17,palette.soft,true,"right");txt(g.g?(g.mins/g.g).toFixed(1):"—",650,y,17,palette.soft,true,"right");txt(g.g?(g.pts/g.g).toFixed(1):"—",775,y,17,palette.soft,true,"right");txt(g.g?(g.reb/g.g).toFixed(1):"—",895,y,17,palette.soft,true,"right");txt(g.g?(g.ast/g.g).toFixed(1):"—",1015,y,17,palette.soft,true,"right");tableRule(y+12);y+=35});
+
+ y=section("歷史地位",y+8);
+ const statusRows=legacyRows.length?legacyRows:["未入選名人堂／無球衣退休"];
+ statusRows.slice(0,6).forEach((s,i)=>{const col=i%2,row=Math.floor(i/2);wrap(`★ ${s}`,50+col*560,y+row*38,520,29,1,legacyRows.length?palette.gold:palette.muted,20,true)});y+=Math.ceil(statusRows.slice(0,6).length/2)*38+8;
+
+ y=section("國家隊生涯",y+8);
+ if(!nationalRows.length){txt("沒有國家代表隊紀錄。",64,y,18,palette.muted);y+=36}
+ else{
+   nationalLevels.forEach(level=>{const q=nationalSummary[level],recorded=q.recordedEvents>0;box(50,y-24,350,70,palette.metric,palette.line,8);txt(nationalLevelLabel(level),66,y,17,palette.muted,true);txt(recorded?`${q.games} 場｜${q.pts.toFixed(1)} 分｜${q.reb.toFixed(1)} 板｜${q.ast.toFixed(1)} 助`:`${q.events} 屆｜個人數據未保存`,66,y+29,18,palette.text,true);y+=82});
+   const nationalCols=[{label:"年／代表隊",x:64},{label:"賽事／名次",x:290},{label:"GP",x:720,align:"right"},{label:"MPG",x:820,align:"right"},{label:"PTS",x:920,align:"right"},{label:"REB",x:1020,align:"right"},{label:"AST",x:1125,align:"right"}];
+   y=tableHead(nationalCols,y+2);
+   nationalRows.forEach(row=>{const recorded=hasInternationalBoxScore(row);txt(`${Number(row.year)||"—"}｜${nationalLevelLabel(row.level)}`,64,y,16,palette.text,true);wrap(`${row.event||"國際賽"}・${row.finish||"—"}`,290,y,390,25,1,palette.soft,16,false);txt(recorded?row.games:"—",720,y,16,palette.soft,true,"right");txt(recorded?Number(row.mins).toFixed(1):"—",820,y,16,palette.soft,true,"right");txt(recorded?Number(row.pts).toFixed(1):"—",920,y,16,palette.soft,true,"right");txt(recorded?Number(row.reb).toFixed(1):"—",1020,y,16,palette.soft,true,"right");txt(recorded?Number(row.ast).toFixed(1):"—",1125,y,16,palette.soft,true,"right");tableRule(y+12);y+=38});
+   if(normalizedNational.estimatedCount){wrap(`※ ${normalizedNational.estimatedCount} 屆為較早版本紀錄，已依同年度球季實績補算。`,64,y,1080,25,2,palette.muted,15,false);y+=30}
+ }
+
+ y=section(`生涯榮譽（${achievements.length}項）`,y+8);
+ const honorRows=achievements.length?achievements:["沒有主要歷史榮譽"];
+ honorRows.forEach((a,i)=>{const col=i%2,row=Math.floor(i/2);wrap(`・${a}`,50+col*560,y+row*46,520,25,2,achievements.length?"#d5dcdf":palette.muted,18,false)});y+=Math.ceil(honorRows.length/2)*46+6;
+
+ if(offCourtRows.length){
+   y=section("重大場外紀錄",y+8);
+   offCourtRows.forEach(row=>{wrap(`・${Number(row.year)||"—"}｜${row.type||"場外事件"}｜${row.outcome||""}`,50,y,1100,28,2,"#d5dcdf",18,false);y+=34});
+ }
+
+ y=section("家庭、人生與生涯收入",y+8);
+ const relationship=p.married?`伴侶：${p.partnerName}｜子女 ${p.children} 人｜家庭關係 ${p.familyHarmony}`:p.divorced?"婚姻狀態：離婚":"未婚";
+ wrap(`${relationship}｜傷病 ${p.injuryHistory.length} 次｜大傷／重傷 ${p.majorInjuryCount} 次｜手術 ${p.surgeries} 次｜交易 ${p.tradeCount} 次`,50,y,1100,30,2,palette.text,19,true);y+=64;
+ txt(`球員薪資 ${moneyText(careerSalary)}　｜　生涯總收入 ${moneyText(totalIncome)}`,50,y,24,palette.gold,true);y+=38;
+
+ y=section("生涯稱號與隱藏屬性",y+8);
+ wrap(titleNames.length?titleNames.join("　・　"):"無特殊稱號",50,y,1100,30,3,palette.soft,19,true);y+=Math.min(3,Math.max(1,Math.ceil(titleNames.join("　・　").length/38)))*30+12;
+ box(50,y,1100,104,"#20170f",palette.brown,9);txt(`🎴 ${p.seedTierLabel}`,70,y+32,21,palette.gold,true);wrap(p.seedTierDesc,70,y+64,1060,27,2,"#d8c8b4",18,true);y+=126;
+
+ y=section(retirementExitClass()==="ceremony"?"引退之夜":retirementExitClass()==="farewell"?"最後一戰":"生涯落幕",y+8);
+ const lastCareer=legacyLastTeam(),reason=`最後所屬：${lastCareer.team||p.team||"—"}｜${lastCareer.path?leagueDisplay(lastCareer.path):leagueDisplay(p.path)}｜${p.age} 歲｜${p.retirementReason||"球員生涯正式結束"}`;
+ wrap(reason,50,y,1100,29,3,"#aab8c0",19,false);y+=90;
+
+ if(fanRows.length){
+   y=section("球迷回聲",y+4);
+   fanRows.forEach((f,i)=>{const col=i%2,row=Math.floor(i/2),x=50+col*560,yy=y+row*118;box(x,yy-24,530,98,palette.panel,palette.line,9);wrap(`「${f.text}」`,x+18,yy+5,494,24,2,"#d5dcdf",16,false);txt(`— ${f.source}`,x+18,yy+59,14,palette.muted,true)});y+=Math.ceil(fanRows.length/2)*118;
+ }
+ line(H-92);txt(`SEED ${p.seed}`,50,H-50,17,palette.muted);txt("Produced by BasketballLife_K",1150,H-50,17,palette.muted,true,"right");
  return canvas;
 }
 function careerShareBlob(){return new Promise((resolve,reject)=>buildCareerShareCanvas().toBlob(blob=>blob?resolve(blob):reject(new Error("PNG 產生失敗")),"image/png"))}
