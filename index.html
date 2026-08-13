@@ -3893,6 +3893,20 @@ body.retirementMode .legacyTable td{padding:5px 7px!important}
 .die.rolling:nth-child(2n){animation-direction:reverse;animation-duration:.19s}
 .die.rolling:nth-child(3n){animation-duration:.22s}
 .die.revealed{animation:diceLand .24s cubic-bezier(.2,.9,.35,1.25) both}
+.die{position:relative;overflow:hidden}
+.dieValue{display:block;line-height:1}
+.die.used{
+  padding-bottom:10px;box-sizing:border-box;opacity:1!important;
+  color:#65717b!important;background:linear-gradient(145deg,#11171c,#080c10)!important;
+  border-color:#29343d!important;outline:none!important;
+  transform:scale(.94)!important;filter:grayscale(1);animation:none!important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.018),inset 0 8px 16px rgba(0,0,0,.42)!important
+}
+.die.used .dieValue{transform:translateY(1px)}
+.die.used::after{
+  content:"✓ 已用";position:absolute;left:3px;right:3px;bottom:3px;
+  color:#8a969f;font-size:8px;font-weight:950;line-height:1;letter-spacing:.08em;text-align:center
+}
 .dieRollGlyph{display:block;font-size:22px;line-height:1;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}
 .diceRollingNotice{grid-column:1/-1;padding:10px;border:1px dashed #735333;border-radius:9px;color:#d9a266;background:#1d1812;font-size:11px;font-weight:900;text-align:center}
 @keyframes diceTumble{
@@ -7667,7 +7681,9 @@ function renderDice(){
  if(!p.diceRolling)document.getElementById("trainingRevealResolution")?.classList.remove("hidden");
  dicepool.innerHTML=p.dice.map((d,i)=>{
    const revealed=!p.diceRolling||i<revealCount;
-   return `<div class="die ${revealed?"revealed":"rolling"} ${revealed&&d===6?"six":""} ${revealed&&i===current?"sel":""}" style="${p.used[i]?"opacity:.25":""}" aria-label="${revealed?`骰子 ${d}`:"骰子翻滾中"}">${revealed?d:`<span class="dieRollGlyph">🎲</span>`}</div>`;
+   const used=!!p.used[i],active=revealed&&!used&&i===current;
+   const stateLabel=used?"，已使用":active?"，目前待分配":"";
+   return `<div class="die ${revealed?"revealed":"rolling"} ${revealed&&d===6?"six":""} ${used?"used":""} ${active?"sel":""}" aria-label="${revealed?`骰子 ${d}${stateLabel}`:"骰子翻滾中"}">${revealed?`<span class="dieValue">${d}</span>`:`<span class="dieRollGlyph">🎲</span>`}</div>`;
  }).join("");
 
  if(p.diceRolling){
