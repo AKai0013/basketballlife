@@ -9816,11 +9816,14 @@ function showResults(){
  title.textContent="年度賽事與個人成績";
  text.innerHTML=`<div class="seasonResultIntro"><b>${leagueDisplay(p.path)}</b>｜本季賽事結束。</div>${proHeaderHTML()}`;
 
- let injurySeasonHTML=p.injury?`<div class="injuryCard ${p.injury.level==="輕傷"?"light":p.injury.level==="中傷"?"mid":""}">
- <b>🏥 傷病影響本季出賽</b><br>
- 原定賽程 ${scheduledGames} 場｜因 ${p.injury.name} 缺席 ${missedThisSeason} 場｜實際出賽 <b>${games}</b> 場
- ${p.injury.remainingGames>0?`<br><span class="bad">目前仍預估缺席 ${p.injury.remainingGames} 場，傷勢將延續至下一階段。</span>`:""}
- </div>`:"";
+let missReasonLabel = p.injury
+  ? `因 ${p.injury.name} 缺席`
+  : (conductMissed>0 ? `因場外事件遭球團停賽` : "");
+let injurySeasonHTML = missedThisSeason>0 ? `<div class="injuryCard ${p.injury?.level==="輕傷"?"light":p.injury?.level==="中傷"?"mid":""}">
+ <b>${p.injury?"🏥 傷病影響本季出賽":"📰 場外事件影響本季出賽"}</b><br>
+ 原定賽程 ${scheduledGames} 場｜${missReasonLabel} ${missedThisSeason} 場｜實際出賽 <b>${games}</b> 場
+ ${p.injury?.remainingGames>0?`<br><span class="bad">目前仍預估缺席 ${p.injury.remainingGames} 場，傷勢將延續至下一階段。</span>`:""}
+ </div>` : "";
  let veteranMinutesHTML=isProPath()&&p.age>=32?`<div class="notice"><b>⏱️ ${veteranProfile.label}</b><br>${p.age}歲老將本季上場時間上限約 <b>${maxMins} 分鐘</b>；年齡、身體負荷與傷後狀態會優先於球隊信任，避免暮年反而越打越久。</div>`:"";
  special.innerHTML=`
  ${injurySeasonHTML}
