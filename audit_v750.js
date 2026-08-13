@@ -106,6 +106,9 @@ const schedules={
 };
 for(const [path,range] of Object.entries(schedules))assert(JSON.stringify(w.seasonScheduleRange(path))===JSON.stringify(range),`schedule config ${path}`);
 
+const verifiedSPlusSeeds=["K8M2X7QP","7RNP4A2Z","V9T4L2QK","AKAI0000","BLIF0028","TWBL0012","HBLX0009","GOAT0048"];
+for(const seed of verifiedSPlusSeeds)assert(w.seedTierProfile(seed).key==="S+",`expected S+ seed: ${seed}`);
+
 begin("ABCDEFGH","PG",0);
 let p=P();
 p.path="HBL";p.injury={name:"測試ACL",area:"膝蓋",level:"重傷",originalMissedGames:41,remainingGames:41};
@@ -117,10 +120,12 @@ const tickerCases=[
   ["球員入選年度第一隊",{},0],["球員獲得年度MVP",{},5],["球員獲得台灣職籃得分王",{},0],
   ["球員遭遇生涯級重傷",{},0],["球員率隊拿下季後賽冠軍",{type:"championship",league:"台灣職業"},5],
   ["球員率隊拿下HBL高中籃球聯賽冠軍",{type:"championship",league:"HBL"},0],
+  ["球員在22歲前完成潛能覺醒，獲得【天才】",{type:"genius"},0],
   ["球員解鎖稱號【中華隊國手】",{},0],["球員於 39 歲正式退休",{},0],
   ["傳奇生涯｜球員於 41 歲正式退休",{type:"legacy"},5]
 ];
 for(const [message,meta,importance] of tickerCases)assert(w.tickerNewsInfo(message,meta).importance===importance,`ticker filter: ${message}`);
+assert(!w.isHeadlineTickerItem({message:"球員完成潛能覺醒，獲得【天才】",type:"genius"}),"genius awakening should not occupy BL LIVE");
 
 const awardYears=w.groupedCareerAwards([
   {year:2023,name:"台灣職籃 得分王"},{year:2024,name:"台灣職籃 得分王"},
@@ -184,6 +189,19 @@ p.path="台灣職業";p.team="臺北猛獅";p.careerSeason=1;p.contract=w.makeCo
 p.seasonPlan="attack";p.planGrowthMod=.18;p.planStatMod=2.5;
 w.showResults();
 assert(w.document.getElementById("special").textContent.includes("賽季規劃修正"),"season plan growth was not applied");
+
+begin("MARKETRT","PG",0);p=P();
+p.path="台灣職業";p.team="臺北猛獅";p.age=29;p.year=2039;
+const renewal=w.finalizeContract({...w.makeContract("台灣職業",78,"return-base",p.team,true),salary:500,years:3,remaining:3});
+const higher=w.makeContract("CBA",82,"return-higher");
+const same=w.makeContract("台灣職業",78,"return-same","高雄鋼鐵人");
+const validatedReturn=w.marketReturnTerms(renewal,[higher],"台灣職業");
+assert(validatedReturn.mode==="validated","higher-league offer should validate return terms");
+assert(validatedReturn.offer.salary===renewal.salary&&validatedReturn.offer.years===renewal.years&&validatedReturn.offer.role===renewal.role,"higher-league offer should preserve original renewal salary, years and role");
+const discountedReturn=w.marketReturnTerms(renewal,[same],"台灣職業");
+assert(discountedReturn.mode==="discount"&&discountedReturn.offer.salary===Math.round(renewal.salary*.9),"same-league return should receive the small discount");
+const coldReturn=w.marketReturnTerms(renewal,[],"台灣職業");
+assert(coldReturn.mode==="cold"&&coldReturn.offer.salary===Math.round(renewal.salary*.75)&&coldReturn.offer.years===1&&coldReturn.offer.bonus===0,"cold market return should be the reduced one-year fallback");
 
 begin("Z2345678","C",0);p=P();
 p.u18Caps=1;p.u20Caps=2;p.nationalCaps=12;p.careerNationalAwards=2;p.careerGames=500;

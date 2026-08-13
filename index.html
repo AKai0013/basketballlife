@@ -5819,7 +5819,7 @@ function startCareer(){
  conductMarketPenalty:0,conductSuspensionGames:0,nationalTeamBanUntil:0,conductPenaltySetYear:0,offCourtHistory:[],
  specialBonusPoints:0,internationalHistory:[],championshipHistory:[],awardHistoryByLeague:{},lastSeasonAwards:[],hallVotes:[],
     bodyLoad:0,oldInjuries:{},rehabBoost:0,medicalHistory:[],majorInjuryCount:0,careerThreatInjuries:0,recoverySeasons:0,
-    recentEvents:[],feedHistory:[],expandedFeedYear:null,showOlderFeedYears:false,pendingRenewalOffer:null,marketOriginTeam:"",marketOriginLeague:"",marketReturnOffer:null,
+    recentEvents:[],feedHistory:[],expandedFeedYear:null,showOlderFeedYears:false,pendingRenewalOffer:null,marketOriginTeam:"",marketOriginLeague:"",marketReturnOffer:null,marketReturnMode:"",
     medicalProtectionUntilYear:0,medicalProtectionReason:"",medicalProtectedArea:"",postOpCareChosen:false,lastMajorInjuryYear:0,
     lastDanceActive:false,lastDanceUsed:false,retirementDefianceUsed:false,retirementCrisisCount:0,retirementCrisisReason:"",
     leaderboardChoice:null,retirementRankSummary:null,diceRevealCount:0,diceRolling:false,
@@ -6390,6 +6390,21 @@ function showContractExpiryDecision(){
  </div>`;
  choices.innerHTML="";
 }
+function marketReturnTerms(base,offers,originLeague){
+ if(!base)return {offer:null,mode:"none"};
+ const rows=Array.isArray(offers)?offers:[];
+ if(!rows.length){
+   const offer=repriceContract(base,.75,1,"母隊回歸約");offer.bonus=0;finalizeContract(offer);
+   return {offer,mode:"cold"};
+ }
+ const originRank=leagueMarketRank(originLeague),higher=rows.some(c=>leagueMarketRank(c.league)>originRank);
+ if(higher){
+   // A formal offer from a stronger league validates the player's market value.
+   // Returning home is a player choice, so the club honors its original renewal proposal.
+   return {offer:finalizeContract({...base}),mode:"validated"};
+ }
+ return {offer:repriceContract(base,.90,Math.min(2,base.years),"母隊回歸約"),mode:"discount"};
+}
 function listenFreeAgencyMarket(){
  const sc=scoutingScore(),origin=p.marketOriginTeam,originLeague=p.marketOriginLeague,r=RNG(p.seed+"listen-market-"+p.year+"-"+origin);
  const candidates=proOffersForScore(sc,"listen-"+p.year).filter(c=>c.team!==origin);
@@ -6411,25 +6426,21 @@ function listenFreeAgencyMarket(){
  // Offer diversity: not only highest salary; G League can survive because its exposure is valuable.
  offers=offers.sort((a,b)=>(b.salary+b.exposure*90)-(a.salary+a.exposure*90)).slice(0,5);
 
- const base=p.pendingRenewalOffer;
- let back=base?(offers.length
-   ? repriceContract(base,.90,Math.min(2,base.years),"母隊回歸約")
-   : repriceContract(base,.75,1,"母隊回歸約")):null;
- if(back&&!offers.length)back.bonus=0,finalizeContract(back);
- p.marketReturnOffer=back;
+ const base=p.pendingRenewalOffer,returnTerms=marketReturnTerms(base,offers,originLeague),back=returnTerms.offer;
+ p.marketReturnOffer=back;p.marketReturnMode=returnTerms.mode;
 
  p.stage="decision";resetMain();render();flow.innerHTML="";
  chapter.textContent=`${p.year} · ${p.age}歲 · 自由市場`;
  title.textContent=offers.length?"市場報價出爐":"市場遇冷";
  text.innerHTML=offers.length
-   ? `經紀團隊帶回 ${offers.length} 份正式報價。除了薪資與年限，也要比較<b>聯盟層級、角色定位與NBA曝光</b>；老將若仍能打，就可能透過降級聯盟延續生涯。${back?"原隊仍願意讓你回去，但條件已重新調整。":""}`
+   ? `經紀團隊帶回 ${offers.length} 份正式報價。除了薪資與年限，也要比較<b>聯盟層級、角色定位與NBA曝光</b>；老將若仍能打，就可能透過降級聯盟延續生涯。${back?(returnTerms.mode==="validated"?"你已取得更高層級正式報價，原隊認定市場價值獲得證明，因此原續約條件仍然有效。":"外隊報價沒有高於原聯盟，母隊回頭條件會小幅調整。 "):""}`
    : `母隊與其他球隊都沒有提出正式合約。現在還不會直接退休；你將透過公開測試爭取最後的現役資格。`;
 
  let cards=offers.map(proOfferCard).join("");
  special.innerHTML=`<div class="offerGrid">${cards}
    ${back?`<div class="${offers.length?"marketReturn":"marketEmpty"}">
      <b>↩ 回到 ${origin}</b>${contractOfferHTML(back)}
-     <div class="mut" style="margin-top:7px">${offers.length?"測試市場後，母隊把報價降為回歸條件。":"市場沒有正式報價，這是母隊最後的保底機會。"}</div>
+     <div class="mut" style="margin-top:7px">${returnTerms.mode==="validated"?"更高層級球隊的正式邀請已證明你的市場價值；即使選擇回歸，母隊仍維持原續約薪資、年限與角色。":returnTerms.mode==="discount"?"外隊只提供同級或較低層級機會；測試市場後回歸，母隊將原報價小幅下修。":"市場沒有其他正式報價，這是母隊最後的一年保底機會。"}</div>
      <button class="btn" style="margin-top:9px" onclick="acceptContract(p.marketReturnOffer)">接受回歸合約</button>
    </div>`:""}
    ${!offers.length&&!back?`<div class="offerCard"><b>參加公開測試</b><div class="mut">標準合約市場已經關閉。測試通過仍能取得一年證明約；測試失敗才會進入正式退場程序。</div><button class="btn" style="margin-top:9px" onclick="openTryout()">參加最後測試</button></div>`:""}
@@ -6463,7 +6474,7 @@ function acceptContract(c){
  c=finalizeContract({...c});
  c.startYear=p.year;
  const stayedWithTeam=wasPro && c.team===previousTeam && c.league===previousLeague;
- p.pendingRenewalOffer=null;p.marketReturnOffer=null;p.marketOriginTeam="";p.marketOriginLeague="";
+ p.pendingRenewalOffer=null;p.marketReturnOffer=null;p.marketReturnMode="";p.marketOriginTeam="";p.marketOriginLeague="";
  p.contract=c;p.path=c.league;p.team=c.team;p.careerSeason=wasPro?Math.max(1,p.careerSeason):1;p.grade=1;ensureTeamHistory();
  if(c.league==="SBL／半職業"){
    p.developmentSeasons=previousLeague==="SBL／半職業"?developmentSeasonCount():1;
@@ -6879,7 +6890,6 @@ function isHeadlineTickerItem(item){
  const text=String(item?.message||""),type=String(item?.type||item?.event_type||"").toLowerCase();
  const league=String(item?.league||"");
  if(/名人堂|退休.*球衣|球衣退休/.test(text))return true;
- if(/潛能覺醒|【天才】|完成天才覺醒/.test(text))return true;
  if(/NBA/.test(text+league)&&/正式登場|轉正|簽下|加入|雙向合約/.test(text))return true;
  if(/年度MVP|總冠軍賽MVP|最佳防守球員/.test(text))return true;
  if(/成人國家隊|國家代表隊/.test(text)&&(/冠軍|亞軍|金牌/.test(text)||/(世界盃|奧運).*四強/.test(text))&&!/U18|U20/.test(text))return true;
@@ -6899,12 +6909,12 @@ function tickerNewsInfo(msg,meta={}){
  if(/年度MVP|總冠軍賽MVP|最佳防守球員/.test(text)){importance=Math.max(importance,5);type="award";}
  const eliteLeague=/NBA|CBA|台灣職業|台灣職籃|日本職業|日本職籃|韓國職業|韓國職籃/.test(String(meta.league||"")+text);
  if((/季後賽|總冠軍/.test(text)&&/冠軍/.test(text)&&eliteLeague)||/NCAA D1 全國錦標賽.*冠軍/.test(text)){importance=Math.max(importance,5);type="championship";}
- if(/潛能覺醒|【天才】/.test(text)){importance=Math.max(importance,5);type="genius";}
 
  // 明確排除日常私人／普通消息，即使字串裡碰巧有其他關鍵字。
  if(/結婚|家中迎來|婚外緋聞/.test(text)&&!meta.force)importance=0;
  if(/加入 .*籃球人生正式開始/.test(text)&&!meta.force)importance=0;
- if(/解鎖稱號/.test(text)&&!/天才/.test(text)&&!meta.force)importance=Math.min(importance,2);
+ if(/解鎖稱號/.test(text)&&!meta.force)importance=Math.min(importance,2);
+ if(/潛能覺醒|【天才】|完成天才覺醒/.test(text)&&!meta.force)importance=0;
  if(/交易至/.test(text)&&!meta.force)importance=Math.min(importance,2);
  if(/生涯級重傷|遭遇大傷/.test(text)&&!meta.force)importance=0;
  if(/得分王|助攻王|籃板王|明星賽|年度第一隊|年度第二隊/.test(text)&&!meta.force)importance=0;
