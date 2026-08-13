@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BasketballLife｜Online Beta V7.49.7 · Retirement Save Migration</title>
+<title>BasketballLife｜Online Beta V7.49.8 · Ranking Entry & Dice Reveal</title>
 <style>
 :root{--bg:#0b0f15;--card:#131a25;--card2:#182231;--line:#2b394d;--txt:#f5f7fb;--mut:#91a0b6;--gold:#f0b64b;--blue:#5593ff;--green:#49cf88;--red:#e23b3b;--orange:#e88946}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 25% 0,#172238,#0b0f15 38%);color:var(--txt);font-family:system-ui,-apple-system,"Microsoft JhengHei",sans-serif}
@@ -3886,6 +3886,28 @@ body.retirementMode .legacyTable td{padding:5px 7px!important}
 .creatorCredit a{color:#e0a15e;text-decoration:none}
 .creatorCredit a:hover,.creatorCredit a:focus{text-decoration:underline;color:#f1bc7d}
 .creatorCredit span{color:#52636e}
+.die.rolling{
+  color:#e4a15c;background:linear-gradient(145deg,#2b2118,#171d22);border-color:#9a683b;
+  animation:diceTumble .16s steps(2,end) infinite;box-shadow:0 7px 18px rgba(0,0,0,.26)
+}
+.die.rolling:nth-child(2n){animation-direction:reverse;animation-duration:.19s}
+.die.rolling:nth-child(3n){animation-duration:.22s}
+.die.revealed{animation:diceLand .24s cubic-bezier(.2,.9,.35,1.25) both}
+.dieRollGlyph{display:block;font-size:22px;line-height:1;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}
+.diceRollingNotice{grid-column:1/-1;padding:10px;border:1px dashed #735333;border-radius:9px;color:#d9a266;background:#1d1812;font-size:11px;font-weight:900;text-align:center}
+@keyframes diceTumble{
+  0%{transform:translateY(0) rotate(-12deg) scale(.93)}
+  50%{transform:translateY(-5px) rotate(13deg) scale(1.04)}
+  100%{transform:translateY(1px) rotate(-7deg) scale(.96)}
+}
+@keyframes diceLand{
+  0%{transform:translateY(-7px) rotate(9deg) scale(.8);opacity:.45}
+  70%{transform:translateY(1px) rotate(-2deg) scale(1.08);opacity:1}
+  100%{transform:none;opacity:1}
+}
+@media(prefers-reduced-motion:reduce){
+  .die.rolling,.die.revealed{animation:none!important}
+}
 body.retirementMode .wrap{max-width:1240px!important}
 body.retirementMode .legacyPage{
   padding:11px!important;border:1px solid #304653!important;border-radius:15px!important;
@@ -3953,6 +3975,25 @@ body.retirementMode .legacyHero .legacyMeta{margin-top:7px!important;color:#aab8
 .fanEchoCard p{margin:0;color:#d5dcdf;font-size:11.5px;line-height:1.6}
 .fanEchoCard small{display:block;margin-top:6px;color:#8ea0a9;font-size:9.5px;font-weight:850}
 .retirementCredit{margin-top:10px;padding-bottom:2px}
+.retirementRankingDecision{
+  display:grid;grid-template-columns:42px minmax(0,1fr) auto;gap:11px;align-items:center;
+  margin-top:8px;padding:12px;border:1px solid #79532f;border-radius:11px;
+  background:linear-gradient(135deg,rgba(91,55,26,.3),rgba(14,25,32,.95));box-shadow:inset 3px 0 #dc914b
+}
+.retirementRankingDecision.needsDecision{animation:rankingDecisionPulse .45s ease 2}
+.rankingDecisionIcon{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:#e39a50;color:#17110c;font-size:18px;font-weight:950}
+.rankingDecisionCopy small{display:block;color:#c4854b;font-size:8px;font-weight:950;letter-spacing:.16em}
+.rankingDecisionCopy>b{display:block;margin-top:2px;color:#f0eee8;font-size:14px}
+.rankingDecisionCopy p{margin:4px 0 0;color:#aebac0;font-size:10.5px;line-height:1.5}
+.rankingDecisionActions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.rankingDecisionActions .btn{padding:8px 9px!important;font-size:10px!important}
+.rankingDecisionActions .rankingPrimary{border-color:#d68e49;background:linear-gradient(135deg,#bd7136,#e2a157);color:#17110d;font-weight:950}
+.retirementRankingDecision.localOnly{border-color:#445761;box-shadow:inset 3px 0 #718791;background:#101c23}
+.retirementRankingDecision.localOnly .rankingDecisionIcon{background:#526875;color:#e3e8ea}
+.retirementRankingDecision.enrolled{border-color:#39694f;box-shadow:inset 3px 0 #64bd83;background:linear-gradient(135deg,rgba(36,88,57,.3),#0e1b21)}
+.retirementRankingDecision.enrolled .rankingDecisionIcon{background:#68c088;color:#0a1b11}
+.rankingDecisionError{grid-column:2/-1;color:#ef9b88;font-size:10px;font-weight:850}
+@keyframes rankingDecisionPulse{50%{transform:scale(1.01);box-shadow:0 0 0 4px rgba(222,146,75,.13),inset 3px 0 #dc914b}}
 
 @media(max-width:700px){
   .assign{grid-template-columns:repeat(2,minmax(0,1fr))!important}
@@ -3996,6 +4037,8 @@ body.retirementMode .legacyHero .legacyMeta{margin-top:7px!important;color:#aab8
   .legacyHeroStats{grid-template-columns:repeat(2,minmax(0,1fr))}
   .fanEchoGrid{grid-template-columns:1fr}
   .fanEchoIntro{align-items:flex-start;flex-direction:column;gap:3px}
+  .retirementRankingDecision{grid-template-columns:38px minmax(0,1fr)}
+  .rankingDecisionActions{grid-column:1/-1;display:grid;grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -4127,6 +4170,7 @@ window.BL_ONLINE_CONFIG = {
    publishFingerprints:new Set(),
    leaderboardCache:null,
    activeMetric:"power",
+   pendingCareerEnrollment:false,
    returnView:"setup"
  };
 
@@ -4471,7 +4515,8 @@ window.BL_ONLINE_CONFIG = {
    };
  }
 
- async function publishCareer(){
+ async function publishCareer(options={}){
+   const showLink=options.showLink!==false;
    const status=document.getElementById("publicCareerStatus");
    if(!gamePlayer() || !p.retired){
      if(status)status.textContent="只有正式退休後的完整生涯可以發布。";
@@ -4479,11 +4524,14 @@ window.BL_ONLINE_CONFIG = {
    }
    if(!state.client || !state.user || !state.nickname){
      if(status)status.textContent="請先完成 Online 玩家登入。";
-     if(!state.nickname)showNicknameModal();
+     if(!state.nickname){
+       if(options.enrollment)state.pendingCareerEnrollment=true;
+       showNicknameModal();
+     }
      return null;
    }
    if(p.publicCareerId){
-     showPublishedCareerLink(p.publicCareerId);
+     if(showLink)showPublishedCareerLink(p.publicCareerId);
      return p.publicCareerId;
    }
 
@@ -4523,7 +4571,9 @@ window.BL_ONLINE_CONFIG = {
      );
      if(error)throw error;
      p.publicCareerId=data.id;
-     showPublishedCareerLink(data.id);
+     p.leaderboardChoice="public";
+     if(showLink)showPublishedCareerLink(data.id);
+     scheduleCareerAutosave();
      // Clear leaderboard cache so the new career appears immediately.
      state.leaderboardCache=null;
      return data.id;
@@ -4535,6 +4585,59 @@ window.BL_ONLINE_CONFIG = {
    }finally{
      buttons.forEach(b=>{b.disabled=false;b.textContent=p?.publicCareerId?"✓ 已發布公開生涯":"🌐 發布公開生涯"});
    }
+ }
+
+ async function retirementRankSummary(id){
+   try{
+     const records=await loadLeaderboardRecords(true);
+     const powerIndex=rankAllCareers(records,"power").findIndex(r=>r.id===id);
+     const peakIndex=rankAllCareers(records,"peak").findIndex(r=>r.id===id);
+     return {power:powerIndex>=0?powerIndex+1:null,peak:peakIndex>=0?peakIndex+1:null,total:records.length};
+   }catch(_){return {power:null,peak:null,total:null}}
+ }
+
+ function showEnrollmentSuccess(id,ranks={}){
+   const box=document.getElementById("retirementRankingDecision");
+   if(!box)return;
+   const rankBits=[];
+   if(ranks.power)rankBits.push(`BL POWER 第 <b>${ranks.power}</b> 名`);
+   if(ranks.peak)rankBits.push(`巔峰 OVR 第 <b>${ranks.peak}</b> 名`);
+   box.className="retirementRankingDecision enrolled";
+   box.innerHTML=`<div class="rankingDecisionIcon">✓</div><div class="rankingDecisionCopy"><small>GLOBAL RANKING ENTRY</small><b>這支生涯已登錄全球排行榜</b><p>${rankBits.length?rankBits.join("｜"):`BL POWER ${Number(p.careerRating||0).toLocaleString()} 已完成登錄。`}</p></div><div class="rankingDecisionActions"><button class="btn rankingPrimary" onclick="BasketballLifeOnline.openLeaderboardNewTab()">🏆 查看排行榜 ↗</button><button class="btn" onclick="BasketballLifeOnline.shareRetirementCareer()">📤 分享生涯連結 ↗</button></div>`;
+ }
+
+ async function enrollRetirementCareer(){
+   if(!gamePlayer()||!p.retired)return null;
+   if(state.offline||!state.client||!state.user){
+     const box=document.getElementById("retirementRankingDecision");
+     if(box)box.insertAdjacentHTML("beforeend",`<div class="rankingDecisionError">目前為離線模式，暫時無法登錄；生涯仍完整保存在本機。</div>`);
+     return null;
+   }
+   if(!state.nickname){
+     state.pendingCareerEnrollment=true;
+     p.leaderboardChoice="pending";
+     refreshRetirementRankingDecision();
+     showNicknameModal();
+     return null;
+   }
+   p.leaderboardChoice="pending";
+   refreshRetirementRankingDecision("正在登錄並計算排名……");
+   const id=await publishCareer({showLink:false,enrollment:true});
+   if(!id){
+     p.leaderboardChoice=null;
+     refreshRetirementRankingDecision("登錄失敗，請稍後再試；本機生涯不受影響。");
+     return null;
+   }
+   showEnrollmentSuccess(id,await retirementRankSummary(id));
+   scheduleCareerAutosave();
+   return id;
+ }
+
+ function keepRetirementLocal(){
+   if(!gamePlayer()||!p.retired)return;
+   p.leaderboardChoice="local";
+   refreshRetirementRankingDecision();
+   scheduleCareerAutosave();
  }
 
  function showPublishedCareerLink(id){
@@ -4557,6 +4660,14 @@ window.BL_ONLINE_CONFIG = {
    const gp=gamePlayer();
    if(!gp || !gp.retired)return;
 
+   if(!gp.publicCareerId){
+     const box=document.getElementById("retirementRankingDecision");
+     if(box){box.scrollIntoView?.({behavior:"smooth",block:"center"});box.classList.add("needsDecision")}
+     const status=document.getElementById("publicCareerStatus");
+     if(status)status.textContent="請先選擇「登錄全球排行榜」，建立公開生涯後才能分享連結。";
+     return;
+   }
+
    // Open immediately from the click gesture, otherwise browsers may block
    // a new tab after awaiting the Supabase publish request.
    let shareTab=null;
@@ -4569,8 +4680,7 @@ window.BL_ONLINE_CONFIG = {
      }
    }catch(_){}
 
-   let id=gp.publicCareerId||null;
-   if(!id)id=await publishCareer();
+   const id=gp.publicCareerId;
 
    if(!id){
      try{shareTab?.close()}catch(_){}
@@ -4931,6 +5041,10 @@ window.BL_ONLINE_CONFIG = {
      setStartReady();
      startLive();
      routeFromUrl();
+     if(state.pendingCareerEnrollment){
+       state.pendingCareerEnrollment=false;
+       setTimeout(()=>enrollRetirementCareer(),0);
+     }
    }catch(err){
      console.warn("Nickname save failed:",err);
      if(errBox){
@@ -4970,6 +5084,8 @@ window.BL_ONLINE_CONFIG = {
    loadGlobalNews,
    startLive,
    publishCareer,
+   enrollRetirementCareer,
+   keepRetirementLocal,
    copyCareerLink,
    shareRetirementCareer,
    openCareerNewTab,
@@ -5035,6 +5151,7 @@ for(const id of ["dicepool","assign","diceMsg","pointsLeft","pointRows"]){
 }
 
 const seedPool=["K8M2X7QP","7RNP4A2Z","V9T4L2QK","M3X8P6RA","Q7N2K9WV","A4Z8M2TR","P6Q3X9LK","R8V2N5MA","T4K7Q1ZX","W9M3P8LR","B5Q7K2NP","C8R4M9TX","D2V7P6LA","F9K3Q8MW","G4N6X2RP","H7M9T3KA","J2Q8V5LN","L6P4R9XK","N3T7M2QA","P8W5K4ZR","R2L9Q6MX","T7A3N8KP","V4M2X9RQ","X8Q5L3NP","Z2R7K6MV","B9T4P2XA","C3M8Q7LK","D7P2V9RN","F4X6K3MT","G8Q2L7PA","H3N9R5KV","J6M4T8QX","L2P7A9RN","N8V3K5MQ","P4Q9X2LT","R7M5A8KN","T2K6P9QV","V9L3R4MX","X5N8Q2KA","Z7P4M6RT","B2V9L5QK","C7M3X8PA","D4Q6R2VN","F8K5T9LM","G2P7N4RX","H9V3M6QA","J5L8Q2KP","L7R4X9MN","N2K8P5VT","P9M6Q3LA"];
+const SEED_ALPHABET="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const SEED_TIER_DEFS=[
  {key:"S+",label:"👑 S+ 傳奇",start:[4,7],cap:[35,46],growth:[93,99],count:3,desc:"世代級天賦；合理養成可挑戰NBA明星，但傷病與選擇仍可能讓生涯偏離預期。"},
  {key:"S",label:"⭐ S 頂尖",start:[2,5],cap:[32,43],growth:[86,96],count:7,desc:"海外頂級與NBA挑戰級潛力，國家隊王牌的主要來源。"},
@@ -5044,11 +5161,30 @@ const SEED_TIER_DEFS=[
 ];
 function seedTierProfile(seed){
  const idx=seedPool.indexOf(seed);
- if(idx<3)return SEED_TIER_DEFS[0];
- if(idx<10)return SEED_TIER_DEFS[1];
- if(idx<22)return SEED_TIER_DEFS[2];
- if(idx<40)return SEED_TIER_DEFS[3];
+ // Preserve the original tier of every legacy fixed seed.
+ if(idx>=0){
+   if(idx<3)return SEED_TIER_DEFS[0];
+   if(idx<10)return SEED_TIER_DEFS[1];
+   if(idx<22)return SEED_TIER_DEFS[2];
+   if(idx<40)return SEED_TIER_DEFS[3];
+   return SEED_TIER_DEFS[4];
+ }
+ // Procedural seeds use their own stable hash. Distribution mirrors the
+ // original library (6% / 14% / 24% / 36% / 20%) without a finite pool.
+ let hash=2166136261;
+ for(const ch of String(seed||"")){hash^=ch.charCodeAt(0);hash=Math.imul(hash,16777619)}
+ const bucket=(hash>>>0)%10000;
+ if(bucket<600)return SEED_TIER_DEFS[0];
+ if(bucket<2000)return SEED_TIER_DEFS[1];
+ if(bucket<4400)return SEED_TIER_DEFS[2];
+ if(bucket<8000)return SEED_TIER_DEFS[3];
  return SEED_TIER_DEFS[4];
+}
+function proceduralSeed(){
+ const bytes=new Uint8Array(8);
+ if(globalThis.crypto?.getRandomValues)crypto.getRandomValues(bytes);
+ else for(let i=0;i<bytes.length;i++)bytes[i]=Math.floor(Math.random()*256);
+ return [...bytes].map(v=>SEED_ALPHABET[v%SEED_ALPHABET.length]).join("");
 }
 const POSITIONS=["PG","SG","SF","PF","C"];
 const L={shoot:"投射",finish:"終結",handle:"控球",pass:"傳球",defense:"防守",rebound:"籃板",ath:"體能",iq:"球商"};
@@ -5134,7 +5270,7 @@ function saveCareerNow(){
  if(!p||careerSaveRestoring)return false;
  try{
    const save={
-     schema:CAREER_SAVE_SCHEMA,gameVersion:"7.49.7",savedAt:Date.now(),
+     schema:CAREER_SAVE_SCHEMA,gameVersion:"7.49.8",savedAt:Date.now(),
      player:p,chosenPos,selectedDie,screen:currentCareerScreen()
    };
    localStorage.setItem(CAREER_SAVE_KEY,JSON.stringify(save));
@@ -5195,6 +5331,7 @@ function continueCareer(){
      showRetirementSummary();
    }else{
      restoreCareerScreen(save.screen);
+     if(p.stage==="training"&&p.diceRolling)startDiceReveal();
    }
    setCareerSaveStatus("已繼續上次進度");
    window.scrollTo({top:0,behavior:"auto"});
@@ -5218,7 +5355,12 @@ window.addEventListener("DOMContentLoaded",initializeCareerSave);
 function hash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
 function RNG(s){let a=hash(s);return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 function ri(r,a,b){return Math.floor(r()*(b-a+1))+a}
-function newSeed(){document.getElementById("seed").textContent=seedPool[Math.floor(Math.random()*seedPool.length)]}
+function newSeed(){
+ const el=document.getElementById("seed"),previous=el?.textContent||"";
+ let next=proceduralSeed();
+ while(next===previous)next=proceduralSeed();
+ if(el)el.textContent=next;
+}
 function renderPos(){document.getElementById("posgrid").innerHTML=POSITIONS.map(x=>`<button class="pos ${x===chosenPos?"on":""}" onclick="chosenPos='${x}';renderPos()">${x}</button>`).join("")}
 renderPos();newSeed();
 
@@ -5446,6 +5588,7 @@ function startCareer(){
     recentEvents:[],feedHistory:[],expandedFeedYear:null,showOlderFeedYears:false,pendingRenewalOffer:null,marketOriginTeam:"",marketOriginLeague:"",marketReturnOffer:null,
     medicalProtectionUntilYear:0,medicalProtectionReason:"",medicalProtectedArea:"",postOpCareChosen:false,lastMajorInjuryYear:0,
     lastDanceActive:false,lastDanceUsed:false,retirementDefianceUsed:false,retirementCrisisCount:0,retirementCrisisReason:"",
+    leaderboardChoice:null,diceRevealCount:0,diceRolling:false,
     developmentSeasons:0,developmentLastChanceUsed:false,firstFullProAge:null};
 
  p.team=HBL_TEAMS[ri(RNG(p.seed+"hbl-team"),0,HBL_TEAMS.length-1)];
@@ -7091,6 +7234,12 @@ function retirementRestartHTML(){
  </div>`;
 }
 function restartCareer(mode){
+ if(p?.retired&&!p.publicCareerId&&!['local','public'].includes(p.leaderboardChoice)){
+   refreshRetirementRankingDecision("請先選擇登錄排行榜或只保留在本機，再開啟下一段人生。");
+   const decision=document.getElementById("retirementRankingDecision");
+   if(decision){decision.classList.add("needsDecision");decision.scrollIntoView?.({behavior:"smooth",block:"center"})}
+   return;
+ }
  document.getElementById("quickRestartMenu")?.classList.add("hidden");
  document.getElementById("quickRestartBtn")?.classList.add("hidden");
  document.body.classList.remove("retirementMode");
@@ -7109,10 +7258,8 @@ function restartCareer(mode){
  if(mode==="same"){
    document.getElementById("seed").textContent=oldSeed;
  }else{
-   let nextSeed=oldSeed;
-   if(seedPool.length>1){
-     while(nextSeed===oldSeed) nextSeed=seedPool[Math.floor(Math.random()*seedPool.length)];
-   }
+   let nextSeed=proceduralSeed();
+   while(nextSeed===oldSeed)nextSeed=proceduralSeed();
    document.getElementById("seed").textContent=nextSeed;
  }
 
@@ -7275,6 +7422,22 @@ function fanEchoHTML(){
 function creatorCreditHTML(){
  return `<div class="creatorCredit retirementCredit">Produced by <a href="https://www.threads.com/@basketballlife_k?xmt=AQG0tS6gtXrN8CWiBiJqphKuoz5VwtJFONP4svLNEbhjdt0" target="_blank" rel="noopener noreferrer">BasketballLife_K</a></div>`;
 }
+function retirementRankingDecisionHTML(note=""){
+ if(p.publicCareerId){
+   return `<div id="retirementRankingDecision" class="retirementRankingDecision enrolled"><div class="rankingDecisionIcon">✓</div><div class="rankingDecisionCopy"><small>GLOBAL RANKING ENTRY</small><b>這支生涯已登錄全球排行榜</b><p>BL POWER ${Number(p.careerRating||0).toLocaleString()} 已完成登錄；社群分享是額外選項。</p></div><div class="rankingDecisionActions"><button class="btn rankingPrimary" onclick="BasketballLifeOnline.openLeaderboardNewTab()">🏆 查看排行榜 ↗</button><button class="btn" onclick="BasketballLifeOnline.shareRetirementCareer()">📤 分享生涯連結 ↗</button></div></div>`;
+ }
+ if(p.leaderboardChoice==="local"){
+   return `<div id="retirementRankingDecision" class="retirementRankingDecision localOnly"><div class="rankingDecisionIcon">⌂</div><div class="rankingDecisionCopy"><small>LOCAL CAREER</small><b>這支生涯目前只保留在本機</b><p>不會出現在排行榜，也沒有對外分享；之後仍可改為登錄。</p></div><div class="rankingDecisionActions"><button class="btn" onclick="BasketballLifeOnline.enrollRetirementCareer()">改為登錄排行榜</button></div></div>`;
+ }
+ const pending=p.leaderboardChoice==="pending",submitting=pending&&!!note;
+ return `<div id="retirementRankingDecision" class="retirementRankingDecision"><div class="rankingDecisionIcon">🏆</div><div class="rankingDecisionCopy"><small>RETIREMENT DECISION</small><b>${pending?(submitting?"正在登錄全球排行榜":"完成暱稱後將繼續登錄"):"是否將這支生涯登錄全球排行榜？"}</b><p>${escapeFeedText(note||"僅公開玩家暱稱、球員履歷與生涯數據；不會公開個人資料。社群分享會在登錄後另外提供。")}</p></div><div class="rankingDecisionActions"><button class="btn rankingPrimary" onclick="BasketballLifeOnline.enrollRetirementCareer()" ${pending?"disabled":""}>${pending?(submitting?"登錄中…":"等待設定暱稱…"):"🏆 登錄並查看排名"}</button><button class="btn" onclick="BasketballLifeOnline.keepRetirementLocal()" ${submitting?"disabled":""}>只保留在本機</button></div></div>`;
+}
+function refreshRetirementRankingDecision(note=""){
+ const old=document.getElementById("retirementRankingDecision");
+ if(!old)return;
+ const holder=document.createElement("div");holder.innerHTML=retirementRankingDecisionHTML(note);
+ old.replaceWith(holder.firstElementChild);
+}
 
 function legacyTitleInfo(raw){
  const t=typeof raw==="string"?{id:"",name:raw}:raw||{};
@@ -7300,6 +7463,7 @@ function retireCareer(reason){
  special.innerHTML=`<div class="legacyPage"><div class="legacyDashboard">
    ${legacyCareerRailHTML()}<main class="legacyMain">
    ${legacyHeaderHTML()}
+   ${retirementRankingDecisionHTML()}
    <div class="legacySection"><div class="legacySectionTitle">生涯評價</div><div class="legacyEval">${evals.join("<br>")}</div></div>
    <div class="legacySection">${retirementDayNarrative()}</div>
    <div class="legacySection fanEchoSection">${fanEchoHTML()}</div>
@@ -7313,7 +7477,7 @@ function retireCareer(reason){
      <div class="legacySalary">生涯總收入 ${moneyText(p.careerSalary)}</div>
    </div>
    <div class="legacySection"><div class="legacySeed"><b>🎴 隱藏屬性揭曉｜${p.seedTierLabel}</b><br>${p.seedTierDesc}</div></div>
-   <div class="retireBtns"><button class="btn" onclick="showRetirementSummary()">查看完整逐季生涯</button><button class="btn" onclick="showShareCard()">生涯紀念摘要</button><button class="btn onlinePublishBtn" onclick="BasketballLifeOnline.publishCareer()">🌐 發布公開生涯</button><button class="btn shareCareerBtn" onclick="BasketballLifeOnline.shareRetirementCareer()">📤 分享生涯 ↗</button><button class="btn" onclick="BasketballLifeOnline.openLeaderboardNewTab()">🏆 全球排行榜 ↗</button></div><div id="publicCareerStatus" class="publicCareerStatus"></div>
+   <div class="retireBtns"><button class="btn" onclick="showRetirementSummary()">查看完整逐季生涯</button><button class="btn" onclick="showShareCard()">生涯紀念摘要</button><button class="btn" onclick="BasketballLifeOnline.openLeaderboardNewTab()">🏆 全球排行榜 ↗</button></div><div id="publicCareerStatus" class="publicCareerStatus"></div>
    ${retirementRestartHTML()}
    ${creatorCreditHTML()}</main></div></div>`;
  pushNews(`🏁 ${p.name} 於 ${p.age} 歲正式退休｜生涯評價 ${p.careerRating}`); setTimeout(()=>{fitGameToViewport();const cp=document.getElementById("currentPanel");if(cp)cp.scrollTop=0;},0);
@@ -7323,6 +7487,7 @@ function showRetirementSummary(){
  special.innerHTML=`<div class="legacyPage"><div class="legacyDashboard">
    ${legacyCareerRailHTML()}<main class="legacyMain">
    ${legacyHeaderHTML()}
+   ${retirementRankingDecisionHTML()}
    <div class="legacySection"><div class="legacySectionTitle">生涯評價</div><div class="legacyEval">${evals.join("<br>")}</div></div>
    <div class="legacySection"><div class="legacyStoryGrid">
      <div>${retirementDayNarrative()}</div>
@@ -7336,7 +7501,7 @@ function showRetirementSummary(){
    <div class="legacySection"><div class="legacySectionTitle">生涯稱號</div><div class="legacyBadges">${legacyTitleBadgesHTML()}</div></div>
    <div class="legacySection"><div class="legacySectionTitle">逐季數據</div>${legacySeasonTable()}</div>
    <div class="legacySection"><div class="legacySeed"><b>🎴 世界種子｜${p.seedTierLabel}</b><br>${p.seedTierDesc}<br><span class="mut">SEED：${p.seed}</span></div></div>
-   <div class="retireBtns"><button class="btn" onclick="showShareCard()">生涯紀念摘要</button><button class="btn onlinePublishBtn" onclick="BasketballLifeOnline.publishCareer()">🌐 發布公開生涯</button><button class="btn shareCareerBtn" onclick="BasketballLifeOnline.shareRetirementCareer()">📤 分享生涯 ↗</button><button class="btn" onclick="BasketballLifeOnline.openLeaderboardNewTab()">🏆 全球排行榜 ↗</button></div><div id="publicCareerStatus" class="publicCareerStatus"></div>${retirementRestartHTML()}
+   <div class="retireBtns"><button class="btn" onclick="showShareCard()">生涯紀念摘要</button><button class="btn" onclick="BasketballLifeOnline.openLeaderboardNewTab()">🏆 全球排行榜 ↗</button></div><div id="publicCareerStatus" class="publicCareerStatus"></div>${retirementRestartHTML()}
    ${creatorCreditHTML()}</main></div></div>`;
  setTimeout(()=>{fitGameToViewport();const cp=document.getElementById("currentPanel");if(cp)cp.scrollTop=0;},0);
 }
@@ -7348,6 +7513,7 @@ function showShareCard(){
  special.innerHTML=`<div id="shareCard" class="legacyPage"><div class="legacyDashboard">
    ${legacyCareerRailHTML()}<main class="legacyMain">
    ${legacyHeaderHTML()}
+   ${retirementRankingDecisionHTML()}
    <div class="legacySection"><div class="legacySectionTitle">生涯評價</div><div class="legacyEval">${evals.join("<br>")}</div></div>
    <div class="legacySection"><div class="legacySectionTitle">歷史地位</div>
      <div class="legacyNarrative">${p.hallOfFame.length?`⭐ <b>${p.hallOfFame.join("、")}</b>`:"未入選名人堂"}${p.jerseyRetired.length?`<br>🏟️ 球衣退休：<b>${p.jerseyRetired.join("、")}</b>`:""}<br>
@@ -7360,7 +7526,7 @@ function showShareCard(){
    <div class="legacySection"><div class="legacySectionTitle">生涯稱號</div><div class="legacyBadges">${legacyTitleBadgesHTML("無")}</div></div>
    <div class="legacySection"><div class="legacySeed"><b>🎴 ${p.seedTierLabel}</b><br>${p.seedTierDesc}<br><span class="mut">seed：${p.seed}</span></div></div>
    ${creatorCreditHTML()}</main></div></div>
- <div class="retireBtns"><button class="btn downloadBtn" onclick="downloadCareerPNG()">📸 下載生涯結算圖 PNG</button><button class="btn" onclick="showRetirementSummary()">返回完整生涯</button><button class="btn onlinePublishBtn" onclick="BasketballLifeOnline.publishCareer()">🌐 發布公開生涯</button><button class="btn shareCareerBtn" onclick="BasketballLifeOnline.shareRetirementCareer()">📤 分享生涯 ↗</button><button class="btn" onclick="BasketballLifeOnline.openLeaderboardNewTab()">🏆 全球排行榜 ↗</button></div><div id="publicCareerStatus" class="publicCareerStatus"></div>${retirementRestartHTML()}`;
+ <div class="retireBtns"><button class="btn downloadBtn" onclick="downloadCareerPNG()">📸 下載生涯結算圖 PNG</button><button class="btn" onclick="showRetirementSummary()">返回完整生涯</button><button class="btn" onclick="BasketballLifeOnline.openLeaderboardNewTab()">🏆 全球排行榜 ↗</button></div><div id="publicCareerStatus" class="publicCareerStatus"></div>${retirementRestartHTML()}`;
  setTimeout(()=>{fitGameToViewport();const cp=document.getElementById("currentPanel");if(cp)cp.scrollTop=0;},0);
 }
 function downloadCareerPNG(){
@@ -7439,12 +7605,14 @@ function showTraining(){
  let r=RNG(p.seed+"training-"+p.year+"-"+p.path);
  let count=p.age<22?ri(r,4,6):ri(r,3,6);
  p.dice=Array.from({length:count},()=>ri(r,1,6));p.used=Array(count).fill(false);p.trainingUndo=[];selectedDie=null;
+ p.diceRevealCount=0;p.diceRolling=true;
  let sixes=p.age<22?p.dice.filter(x=>x===6).length:0;
  if(!p.genius&&p.age<22&&sixes){
    p.six=Math.min(5,p.six+sixes);
    if(p.six>=5)awaken();
  }
  let highText=(!p.genius&&!p.geniusResolved&&p.age<22&&p.six>0)?` 高標值「6」累計 <b class="gold">${p.six}/5</b> 次。`:"";
+ p.trainingRevealSummary=highText||" 骰子數字已全部揭曉。";
  let resolution="";
  if(p.genius&&!p.geniusAwakeningShown){
    resolution=`<div class="notice awake"><b>✨ 潛能覺醒</b><br>你在22歲前達成高標值「6」5次，隱藏特質 <b class="gold">${p.geniusType}</b> 正式覺醒。之後只會保留上方【天才】稱號，不再重複提示。</div>`;
@@ -7453,8 +7621,8 @@ function showTraining(){
    resolution=`<div class="notice fail"><b>潛能覺醒失敗</b><br>22歲前未能累積5次高標值「6」。這條隱藏成長路線已關閉。</div>`;
    p.geniusFailureShown=true;
  }
- special.innerHTML=`${planNotice}<div class="dicewrap"><div class="trainingTitle">季初特訓</div><div class="trainingSummary">自主訓練擲出 <b class="gold">${count}</b> 顆骰。${highText}</div><div id="dicepool" class="dicepool"></div><div id="assign" class="assign"></div><button id="undoTraining" class="undo" onclick="undoTrainingPoint()" disabled>↶ 返回上一步</button><div id="diceMsg" class="mut" style="font-size:12px;margin-top:8px">選擇本顆骰子要訓練的能力。</div>${abilityPanel()}</div>${resolution}`;
- renderDice();
+ special.innerHTML=`${planNotice}<div class="dicewrap"><div class="trainingTitle">季初特訓</div><div class="trainingSummary">自主訓練擲出 <b class="gold">${count}</b> 顆骰。<span id="diceRevealSummary">骰子翻滾中……</span></div><div id="dicepool" class="dicepool"></div><div id="assign" class="assign"></div><button id="undoTraining" class="undo" onclick="undoTrainingPoint()" disabled>↶ 返回上一步</button><div id="diceMsg" class="mut" style="font-size:12px;margin-top:8px">選擇本顆骰子要訓練的能力。</div>${abilityPanel()}</div>${resolution?`<div id="trainingRevealResolution" class="hidden">${resolution}</div>`:""}`;
+ startDiceReveal();
 }
 function trainingCreditFromDie(val){
  // V7.47: the die face IS the training-point value.
@@ -7467,11 +7635,47 @@ function ensureTrainingProgress(){
    if(!Number.isFinite(p.trainingProgress[k]))p.trainingProgress[k]=0;
  });
 }
+let diceRevealTimer=0;
+function prefersReducedDiceMotion(){
+ try{return !!window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches}catch(_){return false}
+}
+function startDiceReveal(){
+ window.clearTimeout(diceRevealTimer);
+ if(!p?.dice?.length)return;
+ const playerRef=p,diceRef=p.dice;
+ if(prefersReducedDiceMotion()){
+   p.diceRevealCount=p.dice.length;p.diceRolling=false;renderDice();return;
+ }
+ p.diceRevealCount=0;p.diceRolling=true;renderDice();
+ const revealNext=()=>{
+   if(p!==playerRef||p?.dice!==diceRef||p?.stage!=="training")return;
+   p.diceRevealCount=Math.min(p.dice.length,(p.diceRevealCount||0)+1);
+   if(p.diceRevealCount>=p.dice.length){
+     p.diceRolling=false;renderDice();scheduleCareerAutosave();return;
+   }
+   renderDice();diceRevealTimer=window.setTimeout(revealNext,95);
+ };
+ diceRevealTimer=window.setTimeout(revealNext,430);
+}
 function renderDice(){
  ensureTrainingProgress();
  const current=p.used.findIndex(x=>!x);
  const allMax=Object.values(p.stats).every(v=>v>=99);
- dicepool.innerHTML=p.dice.map((d,i)=>`<div class="die ${d===6?"six":""} ${i===current?"sel":""}" style="${p.used[i]?"opacity:.25":""}">${d}</div>`).join("");
+ const revealCount=Number.isFinite(p.diceRevealCount)?p.diceRevealCount:p.dice.length;
+ const revealSummary=document.getElementById("diceRevealSummary");
+ if(revealSummary)revealSummary.innerHTML=p.diceRolling?`正在揭曉 ${revealCount}/${p.dice.length}……`:(p.trainingRevealSummary||"骰子數字已全部揭曉。");
+ if(!p.diceRolling)document.getElementById("trainingRevealResolution")?.classList.remove("hidden");
+ dicepool.innerHTML=p.dice.map((d,i)=>{
+   const revealed=!p.diceRolling||i<revealCount;
+   return `<div class="die ${revealed?"revealed":"rolling"} ${revealed&&d===6?"six":""} ${revealed&&i===current?"sel":""}" style="${p.used[i]?"opacity:.25":""}" aria-label="${revealed?`骰子 ${d}`:"骰子翻滾中"}">${revealed?d:`<span class="dieRollGlyph">🎲</span>`}</div>`;
+ }).join("");
+
+ if(p.diceRolling){
+   assign.innerHTML=`<div class="diceRollingNotice">🎲 骰子落桌中……數字揭曉後即可分配訓練點數</div>`;
+   if(diceMsg)diceMsg.textContent=`已揭曉 ${revealCount}/${p.dice.length} 顆骰子。`;
+   const ub=document.getElementById("undoTraining");if(ub)ub.disabled=true;
+   return;
+ }
 
  if(allMax && current>=0){
    assign.innerHTML=`<div class="trainingMaxNotice">八項能力皆已達 <b>99</b>，剩餘骰子無法再提升能力。</div>`;
