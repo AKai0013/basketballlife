@@ -71,6 +71,12 @@ input{width:100%;background:#0c1119;border:1px solid #36465d;color:#fff;border-r
 .titleBadge{padding:5px 9px;border-radius:8px;background:#1f2938;border:1px solid #3b4a60;color:#dbe4ef;font-size:11px;font-weight:900}
 .titleBadge.rare{border-color:#7b6430;color:#f2c35e;background:#211b10}
 .titleBadge.neg{border-color:#6f3a3d;color:#ff9393;background:#241619}
+.titleBadge.title-common,.legacyBadge.title-common{border-color:#4b5e6b;color:#c8d3da;background:#14212a}
+.titleBadge.title-uncommon,.legacyBadge.title-uncommon{border-color:#34755b;color:#72d7a7;background:#10251d}
+.titleBadge.title-rare,.legacyBadge.title-rare{border-color:#3e7195;color:#7ec6ee;background:#102230}
+.titleBadge.title-epic,.legacyBadge.title-epic{border-color:#76569a;color:#c7a2ef;background:#21182d}
+.titleBadge.title-legendary,.legacyBadge.title-legendary{border-color:#9b692d;color:#f2b45e;background:#2b1d0f;box-shadow:inset 0 0 0 1px #e79b3a22}
+.titleBadge.title-negative,.legacyBadge.title-negative{border-color:#884448;color:#ff9292;background:#2a1518}
 .titleUnlock{margin-top:12px;padding:12px;border:1px solid #6f5b2e;background:#211b10;border-radius:10px}
 
 .strategyTag{display:inline-flex;align-items:center;gap:5px;margin-top:7px;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:950;border:1px solid #40516a}
@@ -4175,7 +4181,7 @@ body.retirementMode .legacyHero .legacyMeta{margin-top:7px!important;color:#aab8
       <button type="button" onclick="quickRestartCareer('random')"><b>🎲 重新抽 Seed</b><small>保留姓名與位置，換一個新的世界</small></button>
     </div>
     <button id="leaderboardBtn" class="topRankBtn" type="button" onclick="BasketballLifeOnline.openLeaderboard()">🏆 排行榜</button>
-    <a class="versionLink" href="https://github.com/AKai0013/basketballlife/blob/main/README.md#-版本更新紀錄" target="_blank" rel="noopener noreferrer" aria-label="查看 V7.50.3 版本更新紀錄"><b>V7.50.3</b><span>更新紀錄</span></a>
+    <a class="versionLink" href="https://github.com/AKai0013/basketballlife/blob/main/README.md#-版本更新紀錄" target="_blank" rel="noopener noreferrer" aria-label="查看 V7.50.4 版本更新紀錄"><b>V7.50.4</b><span>更新紀錄</span></a>
     <div id="onlineStatus" class="onlineStatus connecting"><span class="onlineDot"></span><span id="onlineStatusText">連線中…</span></div>
   </div>
 </div>
@@ -5077,6 +5083,7 @@ window.BL_ONLINE_CONFIG = {
      <div class="publicMetricGrid"><span><small>巔峰OVR</small><b>${r.peak_overall||0}</b></span><span><small>生涯場次</small><b>${Number(r.career_games||0).toLocaleString()}</b></span><span><small>主要冠軍</small><b>${r.championships||0}</b></span><span><small>國家隊</small><b>${r.national_caps||0}</b></span><span><small>生涯收入</small><b>${moneyText(r.career_salary||0)}</b></span></div>
      <div class="legacySection"><div class="legacySectionTitle">歷史地位</div><div class="legacyEval">★ 生涯歷史評價：${tier}（評價 ${publicPower.toLocaleString()}）<br>★ ${hof.length?esc(hof.join("、")):"名人堂：未達入選門檻"}${jersey.length?`｜球衣退休：${esc(jersey.join("、"))}`:""}</div></div>
      <div class="legacySection"><div class="legacySectionTitle">主要榮譽</div><div class="legacyAchievements">${awards.length?awards.map(a=>`<div><b>・${esc(a.name)}${a.count>1?` ×${a.count}`:""}</b>${a.years.length?` <span class="honorYears">（${a.years.join("、")}）</span>`:""}</div>`).join(""):"沒有主要個人獎項"}${r.championships?`<div><b>・主要賽事冠軍 ×${r.championships}</b>${championshipYears.length?` <span class="honorYears">（${championshipYears.join("、")}）</span>`:""}</div>`:""}${r.national_caps?`<div><b>・國家隊資歷 ${r.national_caps} 次</b>${seniorNationalYears.length?` <span class="honorYears">（${seniorNationalYears.join("、")}）</span>`:""}</div>`:""}</div></div>
+     <div class="legacySection"><div class="legacySectionTitle">生涯稱號</div><div class="legacyBadges">${Array.isArray(r.titles)&&r.titles.length?r.titles.map(legacyTitleBadgeHTML).join(""):"無特殊稱號"}</div></div>
      <div class="legacySection"><div class="legacySectionTitle">各聯盟生涯</div>${publicLeagueTable(r.league_summary)}</div>
      <div class="legacySection"><div class="legacySectionTitle">國家隊生涯</div>${publicNationalTable(cd.international_history,r.season_history)}</div>
      <div class="legacySection"><div class="legacySectionTitle">逐季數據</div>${publicSeasonTable(r.season_history)}</div>
@@ -5866,7 +5873,7 @@ function startCareer(){
  let caps={};
  for(let k in s)caps[k]=Math.min(99,s[k]+ri(r,tier.cap[0],tier.cap[1]));
 
- p={name:n,pos:chosenPos,seed,careerVersion:"7.50.3",seedTier:tier.key,seedTierLabel:tier.label,seedTierDesc:tier.desc,
+ p={name:n,pos:chosenPos,seed,careerVersion:"7.50.4",seedTier:tier.key,seedTierLabel:tier.label,seedTierDesc:tier.desc,
  age:16,year:2026,path:"HBL",grade:1,stage:"training",stats:s,caps,growth:ri(r,tier.growth[0],tier.growth[1]),
  durability:ri(r,38,94),clutch:ri(r,35,96),discipline:ri(r,38,94),confidence:50,health:100,fatigue:0,six:0,genius:false,geniusType:"",round:0,eventIndex:0,
  seasonEventCount:ri(r,2,4),dice:[],used:[],trainingUndo:[],trainingProgress:{shoot:0,finish:0,handle:0,pass:0,defense:0,rebound:0,ath:0,iq:0},pointUndo:[],seasonPoints:0,bonusPoints:0,rep:0,injury:null,injuryHistory:[],log:[],seasonStats:null,team:"",geniusResolved:false,geniusFailed:false,transition:null,geniusCostDiscount:0,titles:[],titleHistory:[],seasonPointFocus:[],clutchWins:0,eventSuccesses:0,healthySeasons:0,championships:0,severeInjuryRecovered:false,offers:[],strategyStats:{risk:{pick:0,success:0,streak:0,best:0},balance:{pick:0,success:0,streak:0,best:0},safe:{pick:0,success:0,streak:0,best:0}},seasonEventSuccess:0,geniusFailureShown:false,careerSeason:0,contract:null,seasonPlan:null,planRiskMod:0,planGrowthMod:0,planStatMod:0,nationalCaps:0,relationship:"單身",lifeEventCount:0,news:[],seasonHistory:[],careerAwards:[],careerSalary:0,careerGames:0,careerPtsTotal:0,careerRebTotal:0,careerAstTotal:0,chainTitles:[],retired:false,retirementReason:"",peakOverall:0,ageDeclineStage:0,careerMVP:0,careerFirstTeam:0,careerSecondTeam:0,careerDPOY:0,careerScoringTitles:0,careerAssistTitles:0,
@@ -5902,7 +5909,7 @@ function render(){
  if(injurySummary)injurySummary.innerHTML=p.injury?`目前傷勢：<span class="bad">${p.injury.name}（${p.injury.level}）</span>`:(p.injuryHistory.length?`傷病履歷：${p.injuryHistory.length} 次正式傷勢`:"目前沒有正式傷病紀錄。");
  if(log)log.innerHTML=p.log.map(x=>`<div>• ${x}</div>`).join("");
  const cl=confidenceLabel();
- titleShelf.innerHTML=([...[...p.titles,...p.chainTitles].map(t=>`<span class="titleBadge ${t.negative?"neg":t.rare?"rare":""}" title="${t.effect}">${t.name}</span>`),
+ titleShelf.innerHTML=([...[...p.titles,...p.chainTitles].map(t=>`<span class="titleBadge ${titleRarityClass(t)}" title="${t.effect}">${t.name}</span>`),
  `<span class="mentalBadge ${cl.cls}" title="信心不是八大能力值，會影響事件成功率、賽季臨場表現與市場評價。">心理｜${cl.name} ${p.confidence}</span>`,
  `<span class="mentalBadge" title="球隊評價會影響上場時間、市場價值與部分職涯事件。">球隊信任｜${p.rep>=0?"+":""}${p.rep}</span>`]).join("");
  refreshTicker();
@@ -6616,6 +6623,9 @@ function gLeaguePathwayEligible(score=scoutingScore()){
  if(!resume)return false;
  if(p.seedTier==="S+")return ov>=74&&score>=78;
  if(p.seedTier==="S")return ov>=76&&score>=81;
+ // A 級沒有保送，但在 29 歲前若已累積 NCAA／旅外／完整職業履歷，
+ // 達到實際輪替能力與球探門檻時可取得少量 G League 試訓機會。
+ if(p.seedTier==="A"&&p.age<=29)return ov>=75&&score>=78;
  return false;
 }
 function nbaPathwayOfferKind(score=scoutingScore()){
@@ -6634,8 +6644,12 @@ function nbaPathwayOfferKind(score=scoutingScore()){
  const provedIt=awards>0||(playedEnough&&impact>=11.5);
  if(!provedIt||p.age>31)return "";
  if(p.seedTier==="S+"&&ov>=77&&score>=84)return "two-way";
- if(p.seedTier==="S"&&ov>=79&&score>=87)return "two-way";
- if(ov>=82&&score>=90&&awards>0)return "two-way";
+ if(p.seedTier==="S"){
+   if(ov>=79&&score>=87)return "two-way";
+   // 少一點能力／球探分只限真正打出壓倒性 G League 球季的破格案例。
+   if(ov>=77&&score>=83&&((playedEnough&&impact>=13)||awards>0))return "two-way";
+ }
+ if(p.seedTier==="A"&&ov>=80&&score>=88&&(awards>0||(playedEnough&&impact>=15)))return "two-way";
  return "";
 }
 function makeNBAPathwayContract(score,kind,salt,forcedTeam=null){
@@ -6970,7 +6984,7 @@ function showProSeasonPlan(){
  `;
 }function chooseSeasonPlan(x){
  p.seasonPlan=x;
- if(x==="attack"){p.planRiskMod=15;p.planGrowthMod=.18;p.planStatMod=2.5;}
+ if(x==="attack"){p.planRiskMod=15;p.planGrowthMod=.26;p.planStatMod=3;}
  else if(x==="care"){p.planRiskMod=-10;p.planGrowthMod=-.08;p.planStatMod=-1;}
  else{p.planRiskMod=4;p.planGrowthMod=0;p.planStatMod=0;}
 
@@ -7097,23 +7111,23 @@ function pushNews(msg,meta={}){
 }
 function chainHas(id){return p.chainTitles.some(x=>x.id===id)}
 const CHAIN_TITLES={
- scorer1:{name:"得分機器",effect:"投射／終結季末能力點成本 -1（最低1）。",unlock:"單季場均得分達20分。",next:"scorer2"},
- scorer2:{name:"得分王",effect:"進攻類事件大成功時額外 +1。",unlock:"連續2季場均得分達24分。",next:"scorer3"},
- scorer3:{name:"進攻萬花筒",effect:"投射、終結自然天賦線永久 +3。",unlock:"單季場均26分且FG命中率至少47%。"},
- assist1:{name:"助攻砍將",effect:"傳球、球商自然天賦線永久 +2。",unlock:"單季場均至少18分、7助攻。",next:"assist2"},
- assist2:{name:"進攻發動機",effect:"平衡策略成功率 +5%。",unlock:"單季場均至少20分、9助攻。",next:"assist3"},
- assist3:{name:"球場指揮官",effect:"傳球／球商能力點成本 -1。",unlock:"連續2季場均助攻達9次。"},
- double:{name:"雙十製造機",effect:"記錄高產雙能型賽季，作為生涯特殊成就。",unlock:"單季達14分＋9籃板，或14分＋8助攻。"},
- triple:{name:"三雙威脅",effect:"所有自然天賦線永久 +1。",unlock:"單季達16分、7籃板、7助攻。"},
- lock:{name:"防守大鎖",effect:"防守自然天賦線 +3，受傷風險 -2%。",unlock:"防守能力至少78且單季抄截至少1.6次。"},
- microwave:{name:"板凳暴徒",effect:"球隊評價成長 +25%。",unlock:"單季上場不超過22分鐘仍能場均15分。"},
- clutch2:{name:"關鍵殺手",effect:"關鍵類事件成功率再 +5%。",unlock:"關鍵事件累積成功5次。"},
- national:{name:"國家隊之魂",effect:"國際賽個人獎勵 +2。",unlock:"成人國家隊出賽累積5次。"},
- glasscannon:{name:"玻璃大砲",effect:"進攻天賦線 +2，但受傷率 +5%。",unlock:"單季場均22分且正式傷病史至少3次。",negative:true}
+ scorer1:{name:"得分機器",rarity:"uncommon",effect:"投射／終結季末能力點成本 -1（最低1）。",unlock:"單季場均得分達20分。",next:"scorer2"},
+ scorer2:{name:"得分王",rarity:"rare",effect:"進攻類事件大成功時額外 +1。",unlock:"連續2季場均得分達24分。",next:"scorer3"},
+ scorer3:{name:"進攻萬花筒",rarity:"epic",effect:"投射、終結自然天賦線永久 +3。",unlock:"單季場均26分且FG命中率至少47%。"},
+ assist1:{name:"助攻砍將",rarity:"uncommon",effect:"傳球、球商自然天賦線永久 +2。",unlock:"單季場均至少18分、7助攻。",next:"assist2"},
+ assist2:{name:"進攻發動機",rarity:"rare",effect:"平衡策略成功率 +5%。",unlock:"單季場均至少20分、9助攻。",next:"assist3"},
+ assist3:{name:"球場指揮官",rarity:"epic",effect:"傳球／球商能力點成本 -1。",unlock:"連續2季場均助攻達9次。"},
+ double:{name:"雙十製造機",rarity:"uncommon",effect:"記錄高產雙能型賽季，作為生涯特殊成就。",unlock:"單季達14分＋9籃板，或14分＋8助攻。"},
+ triple:{name:"三雙威脅",rarity:"rare",effect:"所有自然天賦線永久 +1。",unlock:"單季達16分、7籃板、7助攻。"},
+ lock:{name:"防守大鎖",rarity:"rare",effect:"防守自然天賦線 +3，受傷風險 -2%。",unlock:"防守能力至少78且單季抄截至少1.6次。"},
+ microwave:{name:"板凳暴徒",rarity:"uncommon",effect:"球隊評價成長 +25%。",unlock:"單季上場不超過22分鐘仍能場均15分。"},
+ clutch2:{name:"關鍵殺手",rarity:"epic",effect:"關鍵類事件成功率再 +5%。",unlock:"關鍵事件累積成功5次。"},
+ national:{name:"國家隊之魂",rarity:"epic",effect:"國際賽個人獎勵 +2。",unlock:"成人國家隊出賽累積5次。"},
+ glasscannon:{name:"玻璃大砲",rarity:"negative",effect:"進攻天賦線 +2，但受傷率 +5%。",unlock:"單季場均22分且正式傷病史至少3次。",negative:true}
 };
 function unlockChain(id){
  if(chainHas(id)||!CHAIN_TITLES[id])return "";
- const d=CHAIN_TITLES[id],obj={id,name:d.name,effect:d.effect,negative:!!d.negative};
+ const d=CHAIN_TITLES[id],obj={id,name:d.name,effect:d.effect,rarity:d.rarity||"common",negative:!!d.negative};
  p.chainTitles.push(obj);logIt(`🔗 連鎖稱號：${d.name}`);pushNews(`🎉 ${p.name} 解鎖連鎖稱號【${d.name}】`);
  // Immediate permanent effects
  if(id==="scorer3"){p.caps.shoot=Math.min(99,p.caps.shoot+3);p.caps.finish=Math.min(99,p.caps.finish+3);}
@@ -7210,12 +7224,15 @@ function careerPowerModel(data={}){
  const titles=Array.isArray(data.titles)?data.titles:[],chainTitles=Array.isArray(data.chainTitles)?data.chainTitles:[];
  // Ability has real historical weight: 80→85 and 85→90 should matter more than
  // the same five points at replacement level.
- let score=peak*10+Math.pow(Math.max(0,peak-70),2)*5;
+ let score=peak*10+Math.pow(Math.max(0,peak-70),2)*5.5;
  const highestPrestige=seasons.reduce((m,x)=>Math.max(m,careerPowerPrestige(x.path)),0);
  score+=highestPrestige>=2.2?700:highestPrestige>=1.30?300:highestPrestige>=1.12?190:highestPrestige>=1?90:0;
  seasons.forEach(x=>{
    const pr=careerPowerPrestige(x.path);if(!pr)return;
    score+=((Number(x.pts)||0)*1.65+(Number(x.ast)||0)*1.15+(Number(x.reb)||0)*.82+(Number(x.stl)||0)*1.05+(Number(x.blk)||0)*.95)*pr;
+   // NBA 履歷本身是歷史地位的重要訊號；固定球季值與實際出賽並列，
+   // 避免短期低層級獎項堆疊反而壓過真正站上最高舞台的生涯。
+   if(x.path==="NBA")score+=90+(Number(x.games)||0)*.55;
  });
  score+=(Number(data.careerGames)||0)*.16;
 
@@ -7223,7 +7240,8 @@ function careerPowerModel(data={}){
  awards.forEach(raw=>{
    const name=String(raw?.name||raw||""),base=careerPowerAwardBase(name);if(!base)return;
    const pr=Math.max(.72,careerPowerPrestige(name)||1),type=name.replace(/^(NBA G League|NBA|CBA|日本職籃|韓國職籃|台灣職籃|SBL)\s*/,"");
-   const key=`${pr}|${type}`,n=repeats[key]||0,diminish=Math.max(.42,1-n*.11);repeats[key]=n+1;
+   const key=`${pr}|${type}`,n=repeats[key]||0;
+   const diminish=[1,.80,.64,.50,.38,.30,.25,.22][Math.min(n,7)];repeats[key]=n+1;
    score+=base*pr*diminish;
  });
 
@@ -7941,13 +7959,13 @@ function refreshRetirementRankingView(){
 }
 function legacyTitleInfo(raw){
  const t=typeof raw==="string"?{id:"",name:raw}:raw||{};
- const def=TITLE_DEFS[t.id]||CHAIN_TITLES[t.id]||{};
+ const def=titleDefinition(t);
  const unlock=t.id==="genius"?"22 歲前在季初訓練累積擲出 5 顆數字 6。":def.unlock||"在生涯事件中達成對應條件。";
- return {name:t.name||def.name||"未命名稱號",effect:t.effect||def.effect||"作為生涯紀錄保留。",unlock};
+ return {name:t.name||def.name||"未命名稱號",effect:t.effect||def.effect||"作為生涯紀錄保留。",unlock,rarity:titleRarity(t)};
 }
 function legacyTitleBadgeHTML(raw){
  const info=legacyTitleInfo(raw),tip=`效果：${info.effect}\n取得：${info.unlock}`;
- return `<span class="legacyBadge titleInfoBadge" tabindex="0" data-tooltip="${escapeFeedText(tip)}" aria-label="${escapeFeedText(`${info.name}。${tip}`)}">${escapeFeedText(info.name)}</span>`;
+ return `<span class="legacyBadge ${titleRarityClass(raw)} titleInfoBadge" tabindex="0" data-tooltip="${escapeFeedText(tip)}" aria-label="${escapeFeedText(`${info.name}。${tip}`)}">${escapeFeedText(info.name)}</span>`;
 }
 function legacyTitleBadgesHTML(emptyText="無特殊稱號"){
  const all=[...(p.titles||[]),...(p.chainTitles||[])];
@@ -7955,7 +7973,7 @@ function legacyTitleBadgesHTML(emptyText="無特殊稱號"){
 }
 
 function retireCareer(reason){
- p.retired=true;p.retirementReason=reason;p.stage="retired";resetMain();render();flow.innerHTML="";evaluateHallOfFame();
+ p.retired=true;p.retirementReason=reason;p.stage="retired";evaluateCareerLegacyTitles();evaluateHallOfFame();resetMain();render();flow.innerHTML="";
  chapter.textContent="生涯終章";
  title.textContent=retirementExitClass()==="ceremony"?"正式引退":retirementExitClass()==="farewell"?"告別球場":"球員生涯落幕";
  text.textContent=`終場哨聲響起，${p.name} 最後一次走下球場。掌聲、遺憾與一路累積的回憶，都在此刻成為完整的生涯。`;
@@ -7977,6 +7995,7 @@ function retireCareer(reason){
      傷病 ${p.injuryHistory.length} 次｜大傷/重傷 ${p.majorInjuryCount} 次｜手術 ${p.surgeries} 次｜交易 ${p.tradeCount} 次
      <div class="legacySalary">生涯總收入 ${moneyText(p.careerSalary)}</div>
    </div>
+   <div class="legacySection"><div class="legacySectionTitle">生涯稱號</div><div class="legacyBadges">${legacyTitleBadgesHTML()}</div></div>
    <div class="legacySection"><div class="legacySeed"><b>🎴 隱藏屬性揭曉｜${p.seedTierLabel}</b><br>${p.seedTierDesc}</div></div>
    <div class="retireBtns"><button class="btn" onclick="showRetirementSummary()">查看完整逐季生涯</button><span class="retirementRankingActionsHost">${retirementRankingButtonsHTML()}</span></div><div id="publicCareerStatus" class="publicCareerStatus"></div>
    ${retirementRestartHTML()}
@@ -8043,15 +8062,16 @@ function buildCareerShareCanvas(){
  const normalizedNational=internationalHistoryForDisplay(p.internationalHistory||[],p.seasonHistory||[]),nationalRows=normalizedNational.rows;
  const nationalSummary=careerNationalSummary(nationalRows),nationalLevels=["U18","U20","SENIOR"].filter(level=>nationalSummary[level]);
  const offCourtRows=Array.isArray(p.offCourtHistory)?p.offCourtHistory:[];
- const titleNames=[...(p.titles||[]),...(p.chainTitles||[])].map(legacyTitleInfo).map(x=>x.name);
+ const titleInfos=[...(p.titles||[]),...(p.chainTitles||[])].map(legacyTitleInfo),titleNames=titleInfos.map(x=>x.name);
  const hallRows=(p.hallVotes||[]).map(v=>`${v.league}名人堂票選 ${v.vote}%${v.inducted?"（入選）":""}`);
  const legacyRows=[...hallRows,...(p.jerseyRetired||[]).map(x=>`${x} 球衣退休`)];
  const fanRows=fanEchoEntries();
  const honorVisualRows=Math.max(1,Math.ceil(Math.max(1,achievements.length)/2));
  const nationalVisualRows=Math.max(1,nationalRows.length);
  const leagueVisualRows=Math.max(1,Object.keys(groups).length);
+ const titleVisualRows=Math.max(1,Math.ceil(Math.max(1,titleInfos.length)/4));
  // Leave a real footer gutter after variable-length national, honor and fan sections.
- const H=Math.max(2860,2450+leagueVisualRows*35+nationalVisualRows*38+honorVisualRows*46+offCourtRows.length*34+Math.ceil(fanRows.length/2)*118);
+ const H=Math.max(2860,2450+leagueVisualRows*35+nationalVisualRows*38+honorVisualRows*46+offCourtRows.length*34+Math.ceil(fanRows.length/2)*118+Math.max(0,titleVisualRows-2)*42);
  const canvas=document.createElement("canvas"),W=1200;canvas.width=W;canvas.height=H;const c=canvas.getContext("2d");
  const font='system-ui,-apple-system,"Microsoft JhengHei","Noto Sans TC",sans-serif';
  const palette={bg0:"#0a141b",bg1:"#0d1921",bg2:"#101b21",panel:"#111f27",metric:"#081117",line:"#314650",line2:"#354650",text:"#edf0ef",muted:"#8497a2",soft:"#c9d1d5",orange:"#db914c",gold:"#efa758",brown:"#79522f",stamp:"#23180f"};
@@ -8069,6 +8089,14 @@ function buildCareerShareCanvas(){
  const tableHead=(cols,y)=>{c.fillStyle="#13242d";c.fillRect(50,y-24,1100,32);cols.forEach(col=>txt(col.label,col.x,y,15,palette.muted,true,col.align||"left"));return y+30};
  const tableRule=y=>{c.strokeStyle="#2d414d";c.lineWidth=1;c.beginPath();c.moveTo(50,y);c.lineTo(1150,y);c.stroke()};
  const tableStripe=(y,index,height=34)=>{if(index%2===0){c.fillStyle="rgba(255,255,255,.025)";c.fillRect(50,y-24,1100,height)}};
+ const titleCanvasStyle=rarity=>({
+   common:{fill:"#14212a",stroke:"#4b5e6b",text:"#c8d3da"},
+   uncommon:{fill:"#10251d",stroke:"#34755b",text:"#72d7a7"},
+   rare:{fill:"#102230",stroke:"#3e7195",text:"#7ec6ee"},
+   epic:{fill:"#21182d",stroke:"#76569a",text:"#c7a2ef"},
+   legendary:{fill:"#2b1d0f",stroke:"#9b692d",text:"#f2b45e"},
+   negative:{fill:"#2a1518",stroke:"#884448",text:"#ff9292"}
+ }[rarity]||{fill:"#14212a",stroke:"#4b5e6b",text:"#c8d3da"});
  const bg=c.createLinearGradient(0,0,W,H);bg.addColorStop(0,palette.bg0);bg.addColorStop(.56,palette.bg1);bg.addColorStop(1,palette.bg2);c.fillStyle=bg;c.fillRect(0,0,W,H);
  c.strokeStyle="#304653";c.lineWidth=4;c.strokeRect(18,18,W-36,H-36);
  c.fillStyle=palette.orange;c.fillRect(18,18,W-36,7);
@@ -8134,7 +8162,16 @@ function buildCareerShareCanvas(){
  txt(`球員薪資 ${moneyText(careerSalary)}　｜　生涯總收入 ${moneyText(totalIncome)}`,50,y,24,palette.gold,true);y+=38;
 
  y=section("生涯稱號與隱藏屬性",y+8);
- wrap(titleNames.length?titleNames.join("　・　"):"無特殊稱號",50,y,1100,30,3,palette.soft,19,true);y+=Math.min(3,Math.max(1,Math.ceil(titleNames.join("　・　").length/38)))*30+12;
+ if(!titleInfos.length){txt("無特殊稱號",50,y,19,palette.muted,true);y+=42}
+ else{
+   let chipX=50,chipY=y-25;c.font=`800 18px ${font}`;
+   titleInfos.forEach(info=>{
+     const width=Math.min(270,Math.max(92,c.measureText(info.name).width+34));
+     if(chipX+width>1150){chipX=50;chipY+=42}
+     const style=titleCanvasStyle(info.rarity);box(chipX,chipY,width,31,style.fill,style.stroke,15);txt(info.name,chipX+width/2,chipY+22,18,style.text,true,"center");chipX+=width+10;
+   });
+   y=chipY+54;
+ }
  box(50,y,1100,104,"#20170f",palette.brown,9);txt(`🎴 ${p.seedTierLabel}`,70,y+32,21,palette.gold,true);wrap(p.seedTierDesc,70,y+64,1060,27,2,"#d8c8b4",18,true);y+=126;
 
  y=section(retirementExitClass()==="ceremony"?"引退之夜":retirementExitClass()==="farewell"?"最後一戰":"生涯落幕",y+8);
@@ -8406,7 +8443,7 @@ function awaken(){
  p.geniusCostDiscount=1;
  p.geniusResolved=true;
  if(!p.titles.some(t=>t.id==="genius")){
-   p.titles.push({id:"genius",name:"天才",effect:`潛能覺醒：${p.geniusType}`,rare:true,negative:false});
+   p.titles.push({id:"genius",name:"天才",effect:`潛能覺醒：${p.geniusType}`,rarity:"legendary",rare:true,negative:false});
  }
  logIt(`✨ 潛能覺醒：${p.geniusType}`);
  pushNews(`✨ ${p.name} 在22歲前完成潛能覺醒，獲得【天才】`);
@@ -8470,6 +8507,11 @@ function normalEventPool(){
  if(isProPath())return PRO_GENERAL_EVENTS;
  return events;
 }
+function mapEventOption(option){
+ const raw=String(option[2]||"");
+ const typed=raw.includes("|")?raw:`${strategyOf(raw)}|${raw}`;
+ return [option[0],option[1],typed,effectType(typed)];
+}
 function showEvent(){
  p.stage="events";resetMain();render();
  let r=RNG(p.seed+"event-"+p.year+"-"+p.eventIndex),pool=normalEventPool();
@@ -8477,11 +8519,9 @@ function showEvent(){
  let e=candidates[ri(r,0,candidates.length-1)];
  p.recentEvents=p.recentEvents||[];p.recentEvents.push(e.t);p.recentEvents=p.recentEvents.slice(-6);
  chapter.textContent=`${p.year} · ${p.age}歲 · ${p.path} · 事件 ${p.eventIndex+1}/${p.seasonEventCount}`;title.textContent=e.t;text.textContent=e.d;
- const mapped=e.opts.map((o,i)=>{
-   if(String(o[2]).includes("|"))return [o[0],o[1],o[2],effectType(o[2])];
-   let forced=i===0?"risk":i===1?"balance":"safe";
-   return [o[0],o[1],forced+'|'+o[2],o[2]];
- });
+ // 策略由選項本身決定，不再把原始第 1／2／3 項硬套成冒險／平衡／穩健。
+ // 選項即使依 Seed 換位，文字、實際效果、成功率與策略標籤仍會保持一致。
+ const mapped=e.opts.map(mapEventOption);
  // 順序依種子與年份輪替，避免玩家永遠無腦點固定位置。
  let rot=ri(RNG(p.seed+"choice-order-"+p.year+"-"+p.eventIndex),0,2);
  mapped.push(...mapped.splice(0,rot));
@@ -9014,33 +9054,60 @@ function resolveCareerSpecial(action){
 
 
 const TITLE_DEFS={
- specialist:{name:"專精之路",rare:true,effect:"該專精能力的升級成本 -1。",unlock:"連續 3 季將最多能力點投入同一項能力。"},
- ironman:{name:"鐵人",rare:true,effect:"基礎受傷風險 -8%。",unlock:"連續 3 季沒有正式傷病。"},
- clutch:{name:"關鍵先生",rare:true,effect:"關鍵事件成功率 +10%。",unlock:"累積成功處理 3 次關鍵事件。"},
- champion:{name:"冠軍DNA",rare:true,effect:"重大比賽評價獲得加成。",unlock:"累積贏得 2 座主要賽事冠軍。"},
- comeback:{name:"浴火重生",rare:true,effect:"重傷後第一個健康賽季體能 +2、信心 +5，並降低身體負荷。",unlock:"從一次大傷或重傷中完成復出。"},
- glass:{name:"玻璃體質",negative:true,effect:"基礎受傷風險 +10%。",unlock:"生涯累積 3 次正式傷病。"},
- allround:{name:"全能戰士",rare:true,effect:"賽季個人表現獎勵 +2。",unlock:"至少 6 項能力同時達到 75。"},
- youth_taiwan:{name:"青年中華隊國手",rare:true,effect:"曾入選 U18；後續 U20 徵召機率 +8%。",unlock:"至少 1 次 U18 國家代表隊資歷。"},
- u20_core:{name:"青年中華隊主力",rare:true,effect:"成人中華隊徵召機率 +5%。",unlock:"累積 2 次 U20 國家代表隊資歷。"},
- senior_taiwan:{name:"中華隊國手",rare:true,effect:"再次入選成人中華隊的機率 +4%。",unlock:"至少 1 次成人國家隊資歷。"},
- national_ace:{name:"中華隊主力",rare:true,effect:"國際賽球隊競爭分數 +3。",unlock:"累積 8 次成人國家隊資歷。"},
- national_legend:{name:"中華隊傳奇",rare:true,effect:"退役生涯評價額外 +120。",unlock:"成人國家隊 12 次以上，且至少 2 次國際賽四強。"},
- asia_journey:{name:"亞洲征途",rare:true,effect:"職業市場評分 +2。",unlock:"曾在 3 個不同職業聯盟完成賽季。"},
- franchise:{name:"一生一隊",rare:true,effect:"該母隊的球衣退休評估獲得忠誠加成。",unlock:"同一支職業球隊效力至少 6 季。"},
- evergreen:{name:"職業常青樹",rare:true,effect:"退役生涯評價額外 +60。",unlock:"正式成人／職業聯盟累積 500 場出賽。"},
- veteran:{name:"沉著老練",rare:true,effect:"所有策略判定獲得少量經驗加成。",unlock:"生涯累積成功處理 8 次事件。"},
- daredevil:{name:"無畏者",rare:true,effect:"冒險成功率 35% → 45%，大成功門檻更寬。",unlock:"連續 3 次選擇冒險策略且全部成功。"},
- gambler:{name:"豪賭之星",rare:true,effect:"冒險成功率最高提升至 50%，大成功能力獎勵更高；大失敗代價不變。",unlock:"生涯累積 10 次冒險策略成功。"},
- composed:{name:"審時度勢",rare:true,effect:"平衡策略成功率 50% → 60%。",unlock:"連續 4 次平衡策略成功。"},
- steady:{name:"穩如泰山",rare:true,effect:"穩健策略成功率 70% → 80%，事件額外受傷風險 -5%。",unlock:"連續 5 次穩健策略成功。"},
- perfect:{name:"完美賽季",rare:true,effect:"下一季第一次事件成功率 +10%。",unlock:"單季所有生涯事件全部成功。"},
- lockerroom:{name:"休息室毒瘤",negative:true,effect:"合約市場評分 -6、團隊型事件成功率 -8%；老將續留時的上場時間上限更低。",unlock:"球團準備結束你的生涯時，選擇公開施壓並強迫續留。"}
+ specialist:{name:"專精之路",rarity:"rare",effect:"該專精能力的升級成本 -1。",unlock:"連續 3 季將最多能力點投入同一項能力。"},
+ ironman:{name:"鐵人",rarity:"epic",effect:"基礎受傷風險 -8%。",unlock:"連續 3 季沒有正式傷病。"},
+ clutch:{name:"關鍵先生",rarity:"rare",effect:"關鍵事件成功率 +10%。",unlock:"累積成功處理 3 次關鍵事件。"},
+ champion:{name:"冠軍DNA",rarity:"epic",effect:"重大比賽評價獲得加成。",unlock:"累積贏得 2 座主要賽事冠軍。"},
+ comeback:{name:"浴火重生",rarity:"epic",effect:"重傷後第一個健康賽季體能 +2、信心 +5，並降低身體負荷。",unlock:"從一次大傷或重傷中完成復出。"},
+ glass:{name:"玻璃體質",rarity:"negative",negative:true,effect:"基礎受傷風險 +10%。",unlock:"生涯累積 3 次正式傷病。"},
+ allround:{name:"全能戰士",rarity:"rare",effect:"賽季個人表現獎勵 +2。",unlock:"至少 6 項能力同時達到 75。"},
+ youth_taiwan:{name:"青年中華隊國手",rarity:"uncommon",effect:"曾入選 U18；後續 U20 徵召機率 +8%。",unlock:"至少 1 次 U18 國家代表隊資歷。"},
+ u20_core:{name:"青年中華隊主力",rarity:"rare",effect:"成人中華隊徵召機率 +5%。",unlock:"累積 2 次 U20 國家代表隊資歷。"},
+ senior_taiwan:{name:"中華隊國手",rarity:"rare",effect:"再次入選成人中華隊的機率 +4%。",unlock:"至少 1 次成人國家隊資歷。"},
+ national_ace:{name:"中華隊主力",rarity:"epic",effect:"國際賽球隊競爭分數 +3。",unlock:"累積 8 次成人國家隊資歷。"},
+ national_legend:{name:"中華隊傳奇",rarity:"legendary",effect:"退役生涯評價額外 +120。",unlock:"成人國家隊 12 次以上，且至少 2 次國際賽四強。"},
+ asia_journey:{name:"亞洲征途",rarity:"rare",effect:"職業市場評分 +2。",unlock:"曾在 3 個不同職業聯盟完成賽季。"},
+ franchise:{name:"一生一隊",rarity:"epic",effect:"該母隊的球衣退休評估獲得忠誠加成。",unlock:"同一支職業球隊效力至少 6 季。"},
+ evergreen:{name:"職業常青樹",rarity:"epic",effect:"退役生涯評價額外 +60。",unlock:"正式成人／職業聯盟累積 500 場出賽。"},
+ veteran:{name:"沉著老練",rarity:"uncommon",effect:"所有策略判定獲得少量經驗加成。",unlock:"生涯累積成功處理 8 次事件。"},
+ daredevil:{name:"無畏者",rarity:"rare",effect:"冒險成功率 35% → 45%，大成功門檻更寬。",unlock:"連續 3 次選擇冒險策略且全部成功。"},
+ gambler:{name:"豪賭之星",rarity:"epic",effect:"冒險成功率最高提升至 50%，大成功能力獎勵更高；大失敗代價不變。",unlock:"生涯累積 10 次冒險策略成功。"},
+ composed:{name:"審時度勢",rarity:"uncommon",effect:"平衡策略成功率 50% → 60%。",unlock:"連續 4 次平衡策略成功。"},
+ steady:{name:"穩如泰山",rarity:"rare",effect:"穩健策略成功率 70% → 80%，事件額外受傷風險 -5%。",unlock:"連續 5 次穩健策略成功。"},
+ perfect:{name:"完美賽季",rarity:"epic",effect:"下一季第一次事件成功率 +10%。",unlock:"單季所有生涯事件全部成功。"},
+ lockerroom:{name:"休息室毒瘤",rarity:"negative",negative:true,effect:"合約市場評分 -6、團隊型事件成功率 -8%；老將續留時的上場時間上限更低。",unlock:"球團準備結束你的生涯時，選擇公開施壓並強迫續留。"},
+
+ // 退休時依完整履歷結算的故事稱號；只做歷史註記，不在生涯中途暴露 Seed 等級。
+ chosen_one:{name:"天之驕子",rarity:"legendary",effect:"世代級天賦兌現為頂級巔峰的生涯註記。",unlock:"S+ Seed 且巔峰 OVR 至少 85。"},
+ sharpshooter:{name:"神射手",rarity:"rare",effect:"長期高效率外線威脅的生涯註記。",unlock:"至少 3 個職業球季同時達到場均 15 分與三分命中率 40%。"},
+ golden_generation:{name:"黃金世代",rarity:"legendary",effect:"從青年梯隊一路成為成人國家隊核心的世代代表。",unlock:"曾入選 U18、U20，成人國家隊至少 8 次且巔峰 OVR 80。"},
+ popularity_king:{name:"人氣王",rarity:"epic",effect:"明星號召力與商業價值兼具的生涯註記。",unlock:"至少 5 次明星賽，或代言收入累積 800 萬。"},
+ national_hero:{name:"中華隊英雄",rarity:"legendary",effect:"在成人國際賽留下重大成績的國家隊生涯註記。",unlock:"成人國家隊至少 6 次，並取得至少 1 次國際賽主要榮譽。"},
+ taiwan_no1:{name:"台灣第一人",rarity:"legendary",effect:"在 NBA 建立長期實績的台灣籃球歷史註記。",unlock:"至少完成 3 個 NBA 球季且巔峰 OVR 84。"},
+ money_machine:{name:"行走印鈔機",rarity:"epic",effect:"以頂級合約累積巨大球員薪資的生涯註記。",unlock:"球員薪資累積至少 3 億。"},
+ rim_wall:{name:"禁區長城",rarity:"rare",effect:"長期保護籃框與控制禁區的生涯註記。",unlock:"至少 3 個職業球季場均 9 籃板、1.5 阻攻，或曾獲 DPOY。"},
+ ring_collector:{name:"戒指收藏家",rarity:"legendary",effect:"多次站上冠軍舞台頂端的生涯註記。",unlock:"累積至少 4 座主要冠軍。"},
+ wanderer:{name:"浪人",rarity:"rare",effect:"穿越多支球隊與不同城市的漂泊生涯註記。",unlock:"曾效力至少 6 支球隊，或生涯被交易至少 4 次。"},
+ ageless_tree:{name:"不老神木",rarity:"epic",effect:"高齡仍維持長期出賽的長青生涯註記。",unlock:"40 歲以後退休且職業出賽至少 700 場。"},
+ world_stage:{name:"世界舞台",rarity:"epic",effect:"正式站上 NBA 最高舞台的生涯註記。",unlock:"至少完成 1 個 NBA 球季。"},
+ salary_thief:{name:"薪水小偷",rarity:"negative",negative:true,effect:"高額薪資未能換成相應場上產量的負面生涯註記。",unlock:"球員薪資至少 2 億，職業生涯影響力偏低且巔峰 OVR 未達 78。"}
 };
+function titleDefinition(raw){
+ const t=typeof raw==="string"?{id:"",name:raw}:raw||{};
+ if(t.id&&(TITLE_DEFS[t.id]||CHAIN_TITLES[t.id]))return TITLE_DEFS[t.id]||CHAIN_TITLES[t.id];
+ return [...Object.values(TITLE_DEFS),...Object.values(CHAIN_TITLES)].find(d=>d.name===t.name)||{};
+}
+function titleRarity(raw){
+ const t=typeof raw==="string"?{name:raw}:raw||{},def=titleDefinition(t);
+ if(t.negative||def.negative)return "negative";
+ if(t.id==="genius"||t.name==="天才")return "legendary";
+ return t.rarity||def.rarity||(t.rare||def.rare?"rare":"common");
+}
+function titleRarityClass(raw){return `title-${titleRarity(raw)}`}
 function hasTitle(id){return p.titles.some(t=>t.id===id)}
 function unlockTitle(id){
  if(hasTitle(id)||!TITLE_DEFS[id])return "";
- const d=TITLE_DEFS[id],obj={id,name:d.name,effect:d.effect,rare:!!d.rare,negative:!!d.negative};
+ const d=TITLE_DEFS[id],obj={id,name:d.name,effect:d.effect,rarity:d.rarity||"common",rare:!!d.rare,negative:!!d.negative};
  p.titles.push(obj);p.titleHistory.push({year:p.year,id,name:d.name});logIt(`🏷️ 解鎖稱號：${d.name}`);pushNews(`🏷️ ${p.name} 解鎖稱號【${d.name}】`);
  return `<div class="titleUnlock"><b>🏷️ 特殊稱號解鎖｜${d.name}</b><br><span class="mut">${d.effect}</span></div>`;
 }
@@ -9087,10 +9154,33 @@ function titleChecks(){
  if((p.careerGames||0)>=500&&!hasTitle("evergreen"))html+=unlockTitle("evergreen");
  return html;
 }
+function evaluateCareerLegacyTitles(){
+ const pro=(p.seasonHistory||[]).filter(x=>isProfessionalPathValue(x.path));
+ const nba=pro.filter(x=>x.path==="NBA"),proTeams=new Set(pro.map(x=>x.team).filter(Boolean));
+ const shootingSeasons=pro.filter(x=>(x.pts||0)>=15&&(x.three||0)>=40).length;
+ const rimSeasons=pro.filter(x=>(x.reb||0)>=9&&(x.blk||0)>=1.5).length;
+ const games=pro.reduce((sum,x)=>sum+(Number(x.games)||0),0);
+ const weighted=(key)=>games?pro.reduce((sum,x)=>sum+(Number(x[key])||0)*(Number(x.games)||0),0)/games:0;
+ const impact=weighted("pts")+weighted("ast")*.75+weighted("reb")*.38+weighted("stl")*1.6+weighted("blk")*1.3;
+
+ if(p.seedTier==="S+"&&(p.peakOverall||0)>=85)unlockTitle("chosen_one");
+ if(shootingSeasons>=3)unlockTitle("sharpshooter");
+ if((p.u18Caps||0)>=1&&(p.u20Caps||0)>=1&&(p.nationalCaps||0)>=8&&(p.peakOverall||0)>=80)unlockTitle("golden_generation");
+ if((p.careerAllStar||0)>=5||(p.endorsementIncome||0)>=800)unlockTitle("popularity_king");
+ if((p.nationalCaps||0)>=6&&(p.careerNationalAwards||0)>=1)unlockTitle("national_hero");
+ if(nba.length>=3&&(p.peakOverall||0)>=84)unlockTitle("taiwan_no1");
+ if((p.careerBasketballSalary||0)>=30000)unlockTitle("money_machine");
+ if(rimSeasons>=3||(p.careerDPOY||0)>=1)unlockTitle("rim_wall");
+ if((p.championships||0)>=4)unlockTitle("ring_collector");
+ if(proTeams.size>=6||(p.tradeCount||0)>=4)unlockTitle("wanderer");
+ if((p.age||0)>=40&&(p.careerGames||0)>=700)unlockTitle("ageless_tree");
+ if(nba.length>=1)unlockTitle("world_stage");
+ if((p.careerBasketballSalary||0)>=20000&&impact<10&&(p.peakOverall||0)<78)unlockTitle("salary_thief");
+}
 
 function strategyOf(type){
  if(type.includes("|"))return type.split("|")[0];
- if(["risk","injrisk","three","show"].includes(type))return "risk";
+ if(["risk","injrisk","three","show","compete","clutch"].includes(type))return "risk";
  if(["safe","check"].includes(type))return "safe";
  return "balance";
 }
@@ -9249,6 +9339,12 @@ function resolveEvent(type,label){
    pos(bonusKey,1,L[bonusKey]);
    msg+=" 「豪賭之星」讓這次大成功獲得額外成長。";
  }
+ // 冒險策略的成功率最低，因此成功時必須有高於平衡策略的實際報酬，
+ // 否則長程選擇只剩下額外傷病與疲勞，沒有合理的風險交換。
+ if(st==="risk"&&(tier==="great"||tier==="success")){
+   const riskRewardStat={risk:"ath",injrisk:"ath",three:"shoot",shoot:"shoot",finish:"finish",clutch:"finish",handle:"handle",defense:"defense",rebound:"rebound",pass:"pass",iq:"iq",compete:"finish",show:"finish",team:"defense",talk:"iq",ath:"ath"}[etype];
+   if(riskRewardStat)pos(riskRewardStat,tier==="great"?2:1,`${L[riskRewardStat]}（冒險加成）`);
+ }
  let baseRisk=
    1.15+
    (100-p.durability)*.040+
@@ -9261,7 +9357,9 @@ function resolveEvent(type,label){
 
  // V7.43 balance: healthy players generally stay in a modest risk band,
  // while fatigue, age, old injuries and aggressive choices can still matter.
- baseRisk=Math.max(1.0,Math.min(28,baseRisk));
+ // 玩家長程測試的正式傷病略少；只提高觸發頻率，傷勢嚴重度分布仍由
+ // injuryTierChance() 原規則決定，不額外放大大傷與重傷。
+ baseRisk=Math.max(1.0,Math.min(28,baseRisk*1.32));
  let injuryTriggered=false;
  if(!p.injury && r()*100<baseRisk){createInjury(r,baseRisk);injuryTriggered=true;}
 
@@ -9429,7 +9527,8 @@ function showResults(){
  let planGrowthPoints=isProPath()?Math.round(growthBase*(p.planGrowthMod||0)):0;
  if(isProPath()&&growthBase>0&&(p.planGrowthMod||0)>0&&planGrowthPoints===0)planGrowthPoints=1;
  if(isProPath()&&growthBase>1&&(p.planGrowthMod||0)<0&&planGrowthPoints===0)planGrowthPoints=-1;
- let total=Math.max(1,growthBase+planGrowthPoints);
+ const healthyAttackBonus=isProPath()&&p.seasonPlan==="attack"&&!p.injury?1:0;
+ let total=Math.max(1,growthBase+planGrowthPoints+healthyAttackBonus);
  let chainHTML=checkChainTitles(p.seasonStats);
  p.seasonHistory.push({year:p.year,age:p.age,team:p.team,path:p.path,scheduledGames,missedGames:missedThisSeason,games,mins,pts,reb,ast,stl,blk,fg,three});
  updateCareerTotals(p.seasonStats);
@@ -9474,7 +9573,8 @@ function showResults(){
    個人成就：<b class="gold">${awardPoints} 點</b><br>
    國際賽：<b class="gold">${internationalPoints} 點</b><br>
    ${developmentPoints?`青少年／學生發育：<b class="gold">${developmentPoints} 點</b><br>`:""}
-   ${planGrowthPoints?`賽季規劃修正：<b class="${planGrowthPoints>0?"gold":"bad"}">${planGrowthPoints>0?"+":""}${planGrowthPoints} 點</b><br>`:""}
+ ${planGrowthPoints?`賽季規劃修正：<b class="${planGrowthPoints>0?"gold":"bad"}">${planGrowthPoints>0?"+":""}${planGrowthPoints} 點</b><br>`:""}
+ ${healthyAttackBonus?`全力衝刺健康完季：<b class="gold">+1 點</b><br>`:""}
    <hr style="border:0;border-top:1px solid #34465c">
    本季共獲得 <b class="gold">${total} 點能力點</b>。
  </div>`;
