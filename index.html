@@ -4170,7 +4170,7 @@ body.retirementMode .legacyHero .legacyMeta{margin-top:7px!important;color:#aab8
   #game:not(.hidden) .next{min-height:49px}
 }
 
-/* V7.50.7: a career owns its portrait; the world Seed never owns the face. */
+/* V7.50.8: a career owns its portrait; the world Seed never owns the face. */
 .header .who{display:flex;align-items:center;gap:10px;min-width:0}
 .playerAvatar{
   width:54px;height:54px;flex:0 0 54px;overflow:hidden;border:1px solid #725031;border-radius:11px;
@@ -4259,7 +4259,7 @@ body.retirementMode .header .who{gap:6px}
       <button type="button" onclick="quickRestartCareer('random')"><b>🎲 重新抽 Seed</b><small>保留球員設定，只更換新的世界</small></button>
     </div>
     <button id="leaderboardBtn" class="topRankBtn" type="button" onclick="BasketballLifeOnline.openLeaderboard()">🏆 排行榜</button>
-    <a class="versionLink" href="https://github.com/AKai0013/basketballlife/blob/main/README.md#-版本更新紀錄" target="_blank" rel="noopener noreferrer" aria-label="查看 V7.50.7 版本更新紀錄"><b>V7.50.7</b><span>更新紀錄</span></a>
+    <a class="versionLink" href="https://github.com/AKai0013/basketballlife/blob/main/README.md#-版本更新紀錄" target="_blank" rel="noopener noreferrer" aria-label="查看 V7.50.8 版本更新紀錄"><b>V7.50.8</b><span>更新紀錄</span></a>
     <div id="onlineStatus" class="onlineStatus connecting"><span class="onlineDot"></span><span id="onlineStatusText">連線中…</span></div>
   </div>
 </div>
@@ -4704,6 +4704,218 @@ window.BL_ONLINE_CONFIG = {
    return `${location.origin}${location.pathname}?career=${encodeURIComponent(id)}`;
  }
 
+ const CAREER_PUBLISHER_VERSION="7.50.8";
+ const CAREER_INTEGRITY_SCHEMA="v7508-core-1";
+ const INVALID_CAREER_IDS=new Set([
+   "e9040a1c-5dc3-49f6-944c-8172cb8a518d"
+ ]);
+
+ function versionParts(value){
+   const m=String(value||"").match(/^(\d+)\.(\d+)\.(\d+)$/);
+   return m?m.slice(1).map(Number):[0,0,0];
+ }
+
+ function versionAtLeast(value,major,minor,patch){
+   const [a,b,c]=versionParts(value);
+   return a>major||(a===major&&(b>minor||(b===minor&&c>=patch)));
+ }
+
+ function canonicalIntegrityValue(value){
+   if(Array.isArray(value))return value.map(canonicalIntegrityValue);
+   if(value&&typeof value==="object"){
+     return Object.keys(value).sort().reduce((out,key)=>{
+       if(key!=="integrity")out[key]=canonicalIntegrityValue(value[key]);
+       return out;
+     },{});
+   }
+   return Number.isFinite(value)?Math.round(value*10000)/10000:value;
+ }
+
+ function careerIntegrityChecksum(record){
+   const payload={
+     id:record?.id||"",user_id:record?.user_id||"",player_name:record?.player_name||"",
+     position:record?.position||"",seed:record?.seed||"",seed_tier:record?.seed_tier||"",
+     retired_age:Number(record?.retired_age)||0,final_year:Number(record?.final_year)||0,
+     peak_overall:Number(record?.peak_overall)||0,career_rating:Number(record?.career_rating)||0,
+     career_games:Number(record?.career_games)||0,career_salary:Number(record?.career_salary)||0,
+     championships:Number(record?.championships)||0,national_caps:Number(record?.national_caps)||0,
+     awards:record?.awards||[],titles:record?.titles||[],season_history:record?.season_history||[],
+     career_data:record?.career_data||{}
+   };
+   const text=JSON.stringify(canonicalIntegrityValue(payload));
+   let h=2166136261;
+   for(let i=0;i<text.length;i++){h^=text.charCodeAt(i);h=Math.imul(h,16777619)}
+   return (h>>>0).toString(16).padStart(8,"0");
+ }
+
+ function deterministicCareerSixes(record){
+   const seed=String(record?.seed||"").toUpperCase();
+   if(!/^[A-Z0-9]{8}$/.test(seed)||typeof RNG!=="function"||typeof ri!=="function")return null;
+   let total=0;
+   const seasons=(Array.isArray(record?.season_history)?record.season_history:[])
+     .filter(x=>Number(x?.age)<22)
+     .sort((a,b)=>Number(a.year)-Number(b.year));
+   for(const season of seasons){
+     const age=Number(season.age),year=Number(season.year),path=String(season.path||"");
+     if(!Number.isFinite(age)||!Number.isFinite(year)||!path)continue;
+     const r=RNG(`${seed}training-${year}-${path}`);
+     const count=age<22?ri(r,4,6):ri(r,3,6);
+     for(let i=0;i<count;i++)if(ri(r,1,6)===6)total++;
+   }
+   return total;
+ }
+
+ function initialSeasonScoringCeiling(record,firstSeason){
+   const seed=String(record?.seed||"").toUpperCase(),pos=String(record?.position||"");
+   if(!/^[A-Z0-9]{8}$/.test(seed)||!["PG","SG","SF","PF","C"].includes(pos))return null;
+   if(typeof RNG!=="function"||typeof ri!=="function"||typeof seedTierProfile!=="function")return null;
+   const tier=seedTierProfile(seed),r=RNG(seed+pos),tb=()=>ri(r,tier.start[0],tier.start[1]);
+   const stats={
+     shoot:ri(r,31,45)+tb(),finish:ri(r,31,45)+tb(),handle:ri(r,29,45)+tb(),pass:ri(r,29,45)+tb(),
+     defense:ri(r,29,45)+tb(),rebound:ri(r,27,43)+tb(),ath:ri(r,33,48)+tb(),iq:ri(r,30,45)+tb()
+   };
+   if(pos==="PG"){stats.handle+=7;stats.pass+=7}
+   if(pos==="SG"){stats.shoot+=7;stats.finish+=4}
+   if(pos==="SF"){stats.finish+=5;stats.defense+=4}
+   if(pos==="PF"){stats.rebound+=7;stats.defense+=4}
+   if(pos==="C"){stats.rebound+=10;stats.defense+=7}
+   const cd=record?.career_data||{};
+   if(cd.height_cm&&cd.wingspan_cm&&typeof bodyAttributeModifiers==="function"){
+     const mods=bodyAttributeModifiers(pos,Number(cd.height_cm),Number(cd.wingspan_cm));
+     Object.entries(mods||{}).forEach(([key,value])=>{if(key in stats)stats[key]+=Number(value)||0});
+   }
+   Object.keys(stats).forEach(key=>{stats[key]=Math.max(22,Math.min(58,stats[key]))});
+   Object.keys(stats).forEach(key=>ri(r,tier.cap[0],tier.cap[1]));
+   ri(r,tier.growth[0],tier.growth[1]);ri(r,38,94);ri(r,35,96);ri(r,38,94);
+   const eventCount=ri(r,2,4);
+
+   const trainingRng=RNG(`${seed}training-2026-HBL`),diceCount=ri(trainingRng,4,6);
+   let trainingPoints=0;for(let i=0;i<diceCount;i++)trainingPoints+=ri(trainingRng,1,6);
+   const baseSkill=stats.shoot*.43+stats.finish*.42+stats.ath*.15;
+   // This ceiling intentionally overestimates legitimate growth: every training
+   // point is treated as a full attribute level, every event gets the largest
+   // possible scoring gain, and another 30 free levels cover rare special events.
+   const maxSkill=baseSkill+(trainingPoints+eventCount*6+30)*.43;
+   const ptsBias={PG:.85,SG:1.20,SF:1.05,PF:.90,C:.82}[pos]||1;
+   const mins=Math.max(0,Math.min(32,Number(firstSeason?.mins)||0));
+   const scoring36=8+(maxSkill-40)*.43+3;
+   return Math.round(Math.max(3,scoring36)*(mins/36)*ptsBias*10)/10;
+ }
+
+ function careerAwardIntegrityErrors(record){
+   const errors=[],seasons=Array.isArray(record?.season_history)?record.season_history:[];
+   const seasonByYear=new Map(seasons.map(x=>[Number(x?.year),x]));
+   const labels={"SBL／半職業":["SBL",0],"台灣職業":["台灣職籃",1],"韓國職業":["韓國職籃",4],"日本職業":["日本職籃",6],CBA:["CBA",7],"NBA G League":["NBA G League",7],NBA:["NBA",13]};
+   const championships=Array.isArray(record?.career_data?.championship_history)?record.career_data.championship_history:[];
+   const seen=new Set();
+   for(const award of Array.isArray(record?.awards)?record.awards:[]){
+     const year=Number(award?.year),name=String(award?.name||""),season=seasonByYear.get(year),league=labels[String(season?.path||"")];
+     if(!Number.isInteger(year)||!season||!league||!name.startsWith(`${league[0]} `)){errors.push(`獎項資料無法對應賽季 ${year||"?"}`);continue}
+     const key=`${year}|${name}`;if(seen.has(key)){errors.push(`重複獎項 ${year} ${name}`);continue}seen.add(key);
+     const type=name.slice(league[0].length+1),diff=league[1];
+     const pts=Number(season.pts),ast=Number(season.ast),reb=Number(season.reb),stl=Number(season.stl),blk=Number(season.blk||0),fg=Number(season.fg);
+     const star=pts*1.25+ast*1.05+reb*.62+stl*1.8+blk*1.6+(fg-43)*.18;
+     const eligible={
+       "年度MVP":star>=52+diff,"年度第一隊":star>=44+diff,"年度第二隊":star>=37+diff&&star<44+diff,
+       "最佳防守球員":stl+blk>=3,"得分王":pts>=23+diff*.30,"助攻王":ast>=7.8+diff*.10,
+       "籃板王":reb>=10+diff*.08,"明星賽":star>=36+diff,
+       "總冠軍賽MVP":star>=43+diff&&championships.some(x=>Number(x?.year)===year&&String(x?.path||"")===String(season.path)&&String(x?.tournament||"").includes("季後賽"))
+     };
+     if(!(type in eligible)||!eligible[type])errors.push(`${year} ${name} 與該季表現不一致`);
+   }
+   return errors;
+ }
+
+ function careerChampionshipIntegrityErrors(record){
+   const errors=[],seasons=Array.isArray(record?.season_history)?record.season_history:[];
+   const seasonByYear=new Map(seasons.map(x=>[Number(x?.year),x]));
+   const history=Array.isArray(record?.career_data?.championship_history)?record.career_data.championship_history:[];
+   const tournamentByPath={HBL:"HBL高中籃球聯賽",UBA:"UBA公開一級","UBA 強權":"UBA公開一級","日本大學":"全日本大學錦標賽","NCAA D1":"NCAA D1 全國錦標賽","NCAA D2":"NCAA D2 全國錦標賽"};
+   const seen=new Set();
+   if(history.length!==Number(record?.championships||0))errors.push("冠軍數與逐年冠軍紀錄不一致");
+   for(const item of history){
+     const year=Number(item?.year),season=seasonByYear.get(year),expected=tournamentByPath[String(season?.path||"")]||"季後賽";
+     if(!Number.isInteger(year)||seen.has(year)||!season||String(item?.path||"")!==String(season.path)||String(item?.team||"")!==String(season.team||"")||String(item?.tournament||"")!==expected){
+       errors.push(`冠軍紀錄無法對應賽季 ${year||"?"}`);
+     }
+     seen.add(year);
+   }
+   return errors;
+ }
+
+ function careerRecordIntegrity(record,options={}){
+   const errors=[],cd=record?.career_data||{},seasons=Array.isArray(record?.season_history)?record.season_history:[];
+   const sourceVersion=String(cd.game_version||""),publisherVersion=String(cd.publisher_version||"");
+   if(INVALID_CAREER_IDS.has(String(record?.id||"")))errors.push("此公開生涯已確認違反正式版規則");
+   if(!/^[A-Z0-9]{8}$/.test(String(record?.seed||"").toUpperCase()))errors.push("Seed 格式錯誤");
+   if(!["PG","SG","SF","PF","C"].includes(String(record?.position||"")))errors.push("位置資料錯誤");
+   if(!seasons.length)errors.push("缺少逐季生涯資料");
+   if(Number(record?.peak_overall)<0||Number(record?.peak_overall)>99)errors.push("巔峰 OVR 超出範圍");
+   if(Number(record?.retired_age)<16||Number(record?.retired_age)>60)errors.push("退役年齡超出範圍");
+   if(Number(record?.final_year)-Number(record?.retired_age)!==2010)errors.push("年份與年齡不一致");
+
+   let gamesTotal=0;
+   const seasonKeys=new Set();
+   for(const season of seasons){
+     const year=Number(season?.year),age=Number(season?.age),games=Number(season?.games),scheduled=Number(season?.scheduledGames),missed=Number(season?.missedGames||0);
+     const key=`${year}|${age}|${season?.path||""}`;
+     if(seasonKeys.has(key))errors.push(`重複賽季 ${year}`);else seasonKeys.add(key);
+     if(!Number.isInteger(year)||!Number.isInteger(age)||year-age!==2010)errors.push(`賽季年份異常 ${year||"?"}`);
+     if(!Number.isInteger(games)||games<0||games>82)errors.push(`出賽場次異常 ${year||"?"}`);else gamesTotal+=games;
+     if(Number.isFinite(scheduled)){
+       if(!Number.isInteger(scheduled)||scheduled<0||scheduled>82||games+missed!==scheduled)errors.push(`賽程加總異常 ${year||"?"}`);
+       if(versionAtLeast(sourceVersion,7,50,5)&&typeof seasonScheduleRange==="function"){
+         const [lo,hi]=seasonScheduleRange(String(season?.path||""));
+         const expected=lo===hi?lo:ri(RNG(`${String(record.seed).toUpperCase()}-schedule-${year}-${season.path}`),lo,hi);
+         if(scheduled!==expected)errors.push(`Seed 賽程不一致 ${year||"?"}`);
+       }
+     }
+     const ranges={mins:[0,36],pts:[0,60],reb:[0,25],ast:[0,25],stl:[0,8],blk:[0,8],fg:[0,100],three:[0,100]};
+     for(const [field,[min,max]] of Object.entries(ranges)){
+       const raw=season?.[field],value=Number(raw);
+       if(raw===null||raw===""||typeof raw==="boolean"||!Number.isFinite(value)||value<min||value>max)errors.push(`${year||"?"} ${field} 超出範圍`);
+     }
+   }
+   if(gamesTotal!==Number(record?.career_games||0))errors.push("生涯場次與逐季加總不一致");
+
+   const early=seasons.filter(x=>Number(x?.age)>=16&&Number(x?.age)<22);
+   const expectedEarly=Math.max(0,Math.min(21,Number(record?.retired_age||0))-15);
+   const sixes=deterministicCareerSixes(record);
+   const hasGenius=(Array.isArray(record?.titles)?record.titles:[]).some(x=>String(x?.name||x)==="天才");
+   if(versionAtLeast(sourceVersion,7,50,5)&&early.length===expectedEarly&&sixes!==null&&hasGenius!==(sixes>=5)){
+     errors.push(`天才覺醒與固定骰不一致（實際 ${sixes}/5）`);
+   }
+
+   const first=seasons.find(x=>Number(x?.year)===2026&&Number(x?.age)===16&&String(x?.path||"")==="HBL");
+   if(versionAtLeast(sourceVersion,7,50,5)&&first){
+     const ceiling=initialSeasonScoringCeiling(record,first);
+     if(Number.isFinite(ceiling)&&Number(first.pts)>ceiling+.2)errors.push(`高一得分超過合法成長上限（${first.pts} > ${ceiling}）`);
+   }
+
+   const integrity=cd.integrity||{};
+   if(options.requireEnvelope||publisherVersion===CAREER_PUBLISHER_VERSION){
+     errors.push(...careerAwardIntegrityErrors(record));
+     errors.push(...careerChampionshipIntegrityErrors(record));
+     if(integrity.schema!==CAREER_INTEGRITY_SCHEMA||integrity.verdict!=="passed")errors.push("缺少新版完整性封套");
+     if(Number(integrity.deterministic_sixes)!==Number(sixes))errors.push("完整性骰數不一致");
+     if(Number(integrity.season_count)!==seasons.length||Number(integrity.career_games)!==gamesTotal)errors.push("完整性加總不一致");
+     if(integrity.checksum!==careerIntegrityChecksum(record))errors.push("完整性校驗碼不一致");
+     if(options.requireServer&&integrity.server_verified!=="passed")errors.push("尚未通過伺服器驗證");
+   }
+   return {ok:errors.length===0,errors,sixes,gamesTotal,checksum:careerIntegrityChecksum(record)};
+ }
+
+ function attachCareerIntegrity(record,report){
+   record.career_data=record.career_data||{};
+   record.career_data.publisher_version=CAREER_PUBLISHER_VERSION;
+   const checksum=careerIntegrityChecksum(record);
+   record.career_data.integrity={
+     schema:CAREER_INTEGRITY_SCHEMA,verdict:"passed",deterministic_sixes:report.sixes,
+     season_count:(record.season_history||[]).length,career_games:report.gamesTotal,checksum
+   };
+   return record;
+ }
+
  function publicTitles(){
    if(!gamePlayer())return [];
    return [...(p.titles||[]),...(p.chainTitles||[])].map(x=>typeof x==="string"?x:x.name).filter(Boolean);
@@ -4770,7 +4982,7 @@ window.BL_ONLINE_CONFIG = {
  async function findCareerRecord(id){
    if(!id||!state.client)return null;
    const {data,error}=await withTimeout(
-     state.client.from("career_records").select("id,is_public").eq("id",id).eq("is_public",true).maybeSingle(),
+     state.client.from("career_records").select("id,is_public,career_data").eq("id",id).eq("is_public",true).maybeSingle(),
      6000
    );
    if(error)throw error;
@@ -4842,17 +5054,25 @@ window.BL_ONLINE_CONFIG = {
    };
 
    try{
+     const localReport=careerRecordIntegrity(row);
+     if(!localReport.ok)throw new Error(`完整性驗證失敗：${localReport.errors.slice(0,3).join("、")}`);
+     attachCareerIntegrity(row,localReport);
+     const sealedReport=careerRecordIntegrity(row,{requireEnvelope:true});
+     if(!sealedReport.ok)throw new Error(`完整性封套建立失敗：${sealedReport.errors.slice(0,3).join("、")}`);
      const {data,error}=await withTimeout(
-       state.client.from("career_records").insert(row).select("id").single(),
+       state.client.rpc("publish_career_v7508",{p_record:row}).single(),
        12000
      );
      if(error)throw error;
+     if(data?.career_data?.integrity?.server_verified!=="passed"){
+       throw new Error("伺服器完整性驗證尚未啟用，這筆生涯未列入排行榜");
+     }
      return acceptPublishedCareer(data?.id||uploadId,showLink);
    }catch(err){
      // A timeout does not cancel the original HTTP request. Confirm the stable
      // ID before retrying so a late successful insert cannot create a duplicate.
      const confirmed=await findCareerRecord(uploadId).catch(()=>null);
-     if(confirmed?.id)return acceptPublishedCareer(confirmed.id,showLink);
+     if(confirmed?.id&&confirmed?.career_data?.integrity?.server_verified==="passed")return acceptPublishedCareer(confirmed.id,showLink);
      console.warn("Public career publish failed:",err);
      const detail=[err?.message,err?.details,err?.hint].filter(Boolean).join("｜");
      if(status&&!silent)status.textContent=`發布失敗：${detail||"請稍後再試"}`;
@@ -5126,13 +5346,20 @@ window.BL_ONLINE_CONFIG = {
        const ids=new Set(rows.map(x=>x.id));(mine||[]).forEach(x=>{if(!ids.has(x.id)){rows.push(x);ids.add(x.id)}});
      }catch(err){console.warn("Own leaderboard records load failed:",err)}
    }
-   const visibleRows=dedupeLeaderboardRecords(rows);
+   const visibleRows=dedupeLeaderboardRecords(rows).filter(record=>{
+     const requireServer=String(record?.career_data?.publisher_version||"")===CAREER_PUBLISHER_VERSION;
+     const report=careerRecordIntegrity(record,{requireEnvelope:requireServer,requireServer});
+     if(!report.ok)console.warn("Leaderboard record rejected:",record?.id,report.errors);
+     return report.ok;
+   });
    state.leaderboardCache={at:Date.now(),rows:visibleRows};
    return visibleRows;
  }
 
  function isOfficialRankingRecord(record){
-   return String(record?.career_data?.ranking_era||"")==="v750";
+   if(String(record?.career_data?.ranking_era||"")!=="v750")return false;
+   const requireServer=String(record?.career_data?.publisher_version||"")===CAREER_PUBLISHER_VERSION;
+   return careerRecordIntegrity(record,{requireEnvelope:requireServer,requireServer}).ok;
  }
 
  function rankAllCareers(records,metricKey){
@@ -5251,6 +5478,10 @@ window.BL_ONLINE_CONFIG = {
    showCommunityShell("公開生涯");
    const content=document.getElementById("communityContent");if(content)content.innerHTML=`<div class="communityLoading">正在讀取生涯紀錄…</div>`;
    if(pushUrl)history.pushState({bl:"career",id},"",`${location.pathname}?career=${encodeURIComponent(id)}`);
+   if(INVALID_CAREER_IDS.has(String(id))){
+     if(content)content.innerHTML=`<div class="communityError">此公開生涯已因完整性驗證失敗而移除。</div>`;
+     return;
+   }
    try{
      const {data,error}=await withTimeout(
        state.client.from("career_records").select("*").eq("id",id).maybeSingle(),
@@ -5258,6 +5489,9 @@ window.BL_ONLINE_CONFIG = {
      );
      if(error)throw error;
      if(!data)throw new Error("找不到這筆公開生涯");
+     const requireServer=String(data?.career_data?.publisher_version||"")===CAREER_PUBLISHER_VERSION;
+     const report=careerRecordIntegrity(data,{requireEnvelope:requireServer,requireServer});
+     if(!report.ok)throw new Error(`此公開生涯未通過完整性驗證：${report.errors.slice(0,3).join("、")}`);
      renderPublicCareer(data);
    }catch(err){
      if(content)content.innerHTML=`<div class="communityError">公開生涯讀取失敗：${esc(err?.message||"請稍後再試")}</div>`;
@@ -5764,7 +5998,7 @@ function saveCareerNow(){
  if(!p||careerSaveRestoring)return false;
  try{
    const save={
-     schema:CAREER_SAVE_SCHEMA,gameVersion:"7.50.7",savedAt:Date.now(),
+     schema:CAREER_SAVE_SCHEMA,gameVersion:"7.50.8",savedAt:Date.now(),
      player:p,chosenPos,selectedDie,screen:currentCareerScreen()
    };
    localStorage.setItem(CAREER_SAVE_KEY,JSON.stringify(save));
@@ -6373,7 +6607,7 @@ function startCareer(){
 
  const birthplaceChoice=document.getElementById("birthplaceInput")?.value||chosenBirthplace;
  const birthplace=birthplaceChoice==="RANDOM"?TAIWAN_BIRTHPLACES[ri(RNG(`${seed}-birthplace`),0,TAIWAN_BIRTHPLACES.length-1)]:birthplaceChoice;
- p={name:n,pos:chosenPos,seed,avatarSeed:newAvatarSeed(),heightCm:chosenHeight,wingspanCm:chosenWingspan,birthplace,careerVersion:"7.50.7",seedTier:tier.key,seedTierLabel:tier.label,seedTierDesc:tier.desc,
+ p={name:n,pos:chosenPos,seed,avatarSeed:newAvatarSeed(),heightCm:chosenHeight,wingspanCm:chosenWingspan,birthplace,careerVersion:"7.50.8",seedTier:tier.key,seedTierLabel:tier.label,seedTierDesc:tier.desc,
  age:16,year:2026,path:"HBL",grade:1,stage:"training",stats:s,caps,growth:ri(r,tier.growth[0],tier.growth[1]),
  durability:ri(r,38,94),clutch:ri(r,35,96),discipline:ri(r,38,94),confidence:50,health:100,fatigue:0,six:0,genius:false,geniusType:"",round:0,eventIndex:0,
  seasonEventCount:ri(r,2,4),dice:[],used:[],trainingUndo:[],trainingProgress:{shoot:0,finish:0,handle:0,pass:0,defense:0,rebound:0,ath:0,iq:0},pointUndo:[],seasonPoints:0,bonusPoints:0,rep:0,injury:null,injuryHistory:[],log:[],seasonStats:null,team:"",geniusResolved:false,geniusFailed:false,transition:null,geniusCostDiscount:0,titles:[],titleHistory:[],seasonPointFocus:[],clutchWins:0,eventSuccesses:0,healthySeasons:0,championships:0,severeInjuryRecovered:false,offers:[],strategyStats:{risk:{pick:0,success:0,streak:0,best:0},balance:{pick:0,success:0,streak:0,best:0},safe:{pick:0,success:0,streak:0,best:0}},seasonEventSuccess:0,geniusFailureShown:false,careerSeason:0,contract:null,seasonPlan:null,planRiskMod:0,planGrowthMod:0,planStatMod:0,nationalCaps:0,relationship:"單身",lifeEventCount:0,news:[],seasonHistory:[],careerAwards:[],careerSalary:0,careerGames:0,careerPtsTotal:0,careerRebTotal:0,careerAstTotal:0,chainTitles:[],retired:false,retirementReason:"",peakOverall:0,ageDeclineStage:0,careerMVP:0,careerFirstTeam:0,careerSecondTeam:0,careerDPOY:0,careerScoringTitles:0,careerAssistTitles:0,
