@@ -5,7 +5,7 @@
 <title>BasketballLife｜籃球人生模擬器</title>
 <meta name="description" content="從 HBL 出發，經歷升學、職業合約、旅外、國家隊與退休，寫下屬於你的台灣籃球生涯。">
 <meta name="theme-color" content="#0b151e">
-<link rel="canonical" href="https://akai0013.github.io/basketballlife/">
+<link rel="canonical" href="https://basketballlife.pages.dev/">
 <link rel="icon" type="image/svg+xml" href="./basketballlife-icon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
 <meta property="og:locale" content="zh_TW">
@@ -13,9 +13,9 @@
 <meta property="og:site_name" content="BasketballLife">
 <meta property="og:title" content="BasketballLife｜籃球人生模擬器">
 <meta property="og:description" content="從 HBL 出發，挑戰台灣職籃、海外聯盟、國家隊與 NBA，寫下屬於你的球員生涯。">
-<meta property="og:url" content="https://akai0013.github.io/basketballlife/">
-<meta property="og:image" content="https://akai0013.github.io/basketballlife/basketballlife-share.png">
-<meta property="og:image:secure_url" content="https://akai0013.github.io/basketballlife/basketballlife-share.png">
+<meta property="og:url" content="https://basketballlife.pages.dev/">
+<meta property="og:image" content="https://basketballlife.pages.dev/basketballlife-share.png">
+<meta property="og:image:secure_url" content="https://basketballlife.pages.dev/basketballlife-share.png">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -23,7 +23,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="BasketballLife｜籃球人生模擬器">
 <meta name="twitter:description" content="從 HBL 出發，寫下屬於你的台灣籃球生涯。">
-<meta name="twitter:image" content="https://akai0013.github.io/basketballlife/basketballlife-share.png">
+<meta name="twitter:image" content="https://basketballlife.pages.dev/basketballlife-share.png">
 <style>
 /* ===== Consolidated source block 1 ===== */
 :root{--bg:#0b0f15;--card:#131a25;--card2:#182231;--line:#2b394d;--txt:#f5f7fb;--mut:#91a0b6;--gold:#f0b64b;--blue:#5593ff;--green:#49cf88;--red:#e23b3b;--orange:#e88946}
@@ -3749,11 +3749,26 @@ body.onlineModalOpen{
 .continueCareerActions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
 .continueCareerActions .continueBtn{flex:1;min-width:155px;background:linear-gradient(135deg,#bf763b,#e0a55e);color:#17100a;border:0}
 .continueCareerActions .deleteBtn{border-color:#51616c;color:#aeb8bf;background:#111a21}
+.siteMigrationPanel{
+  margin:0 0 14px;padding:13px 14px;border:1px solid #9d652f;border-radius:13px;
+  background:linear-gradient(135deg,rgba(52,32,17,.97),rgba(22,27,31,.97));
+  box-shadow:inset 3px 0 0 #e69749
+}
+.siteMigrationKicker{color:#eaa25a;font-size:9px;font-weight:950;letter-spacing:1.15px;text-transform:uppercase}
+.siteMigrationPanel b{display:block;margin-top:4px;color:#f5d2a4;font-size:14px}
+.siteMigrationPanel p{margin:5px 0 0;color:#b8c3ca;font-size:11px;line-height:1.6}
+.siteMigrationActions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.siteMigrationActions .btn{background:linear-gradient(135deg,#c77a38,#efa457);border:0;color:#17100a}
+.siteMigrationActions a{color:#dfaa6b;font-size:10px;font-weight:850;text-decoration:none}
+.siteMigrationState{margin-top:8px;color:#8fbfa0;font-size:10px;font-weight:850;line-height:1.5}
+.siteMigrationState.error{color:#ee8a7d}
 @media(max-width:700px){
   .quickRestartBtn{width:27px;height:27px;font-size:16px}
   .quickRestartMenu{right:0;top:34px;width:min(235px,78vw)}
   .careerSaveStatus{display:none}
   .continueCareerActions{display:grid;grid-template-columns:1fr}
+  .siteMigrationActions{display:grid;grid-template-columns:1fr}
+  .siteMigrationActions a{text-align:center;padding:5px}
 }
 
 /* =========================================================
@@ -4320,6 +4335,16 @@ body.retirementMode .header .who{gap:6px}
 <div id="liveTicker" class="liveTicker"><div class="liveLabel">BL LIVE</div><div class="liveViewport"><div id="liveTrack" class="liveTrack">新的籃球人生即將開始。</div></div></div>
 
 <section id="setup" class="card setup">
+<div id="siteMigrationPanel" class="siteMigrationPanel hidden" aria-live="polite">
+  <div class="siteMigrationKicker">BasketballLife 網站搬遷</div>
+  <b id="siteMigrationTitle">把舊網址的生涯帶到新主場</b>
+  <p id="siteMigrationText">進行中的生涯、玩家暱稱與原排行榜身分都可以安全轉移。</p>
+  <div class="siteMigrationActions">
+    <button id="siteMigrationBtn" class="btn" type="button" onclick="BasketballLifeMigration.start()">轉移存檔並前往新站</button>
+    <a id="siteMigrationLink" href="https://basketballlife.pages.dev/">直接前往新網址</a>
+  </div>
+  <div id="siteMigrationState" class="siteMigrationState hidden"></div>
+</div>
 <div class="setupIdentity"><div class="setupLogoFrame"><img class="setupLogo" src="./basketballlife-logo.png" alt="BasketballLife 遊戲徽章" onerror="this.remove()"></div><div><div class="setupKicker">BASKETBALL CAREER SIMULATOR</div><h1>你的籃球人生，從 HBL 開始。</h1><p class="mut">16 歲踏進高中球場，走過升學、職業、旅外、國家隊，直到最後一次離開球員通道。Seed 決定天賦與體質；每一次選擇，決定你能把名字帶到多遠。</p><div class="setupPromise"><span>16 歲・高一</span><span>完整生涯模擬</span><span>多聯盟路線</span></div></div></div>
 <label for="playerNameInput">為球員取名</label><input id="playerNameInput" placeholder="例如：林子翔" maxlength="12" autocomplete="off">
 <label>選擇場上位置</label><div id="posgrid" class="posgrid"></div>
@@ -6008,7 +6033,8 @@ window.BL_ONLINE_CONFIG = {
    isLive(){return !!state.liveReady}
  };
 
- window.addEventListener("DOMContentLoaded",()=>{
+ window.addEventListener("DOMContentLoaded",async()=>{
+   try{await window.BasketballLifeMigration?.receiveBeforeOnlineInit?.()}catch(err){console.warn("BasketballLife migration receiver failed:",err)}
    init();
    $("onlineNicknameInput")?.addEventListener("keydown",e=>{
      if(e.key==="Enter")saveNickname();
@@ -6123,7 +6149,8 @@ function bodyImpactText(pos,height,wingspan){
 /* =========================================================
    V7.48 LOCAL CAREER SAVE
    Stores only the career state and the current interactive screen.
-   Online nickname/session keys remain completely independent.
+   Online nickname/session keys remain independent during normal play.
+   The opt-in legacy-site bridge can move them to the new origin.
    ========================================================= */
 const CAREER_SAVE_KEY="basketballlife.career.v1";
 const CAREER_SAVE_SCHEMA=1;
@@ -6367,6 +6394,198 @@ function initializeCareerSave(){
 }
 window.BasketballLifeCareerSave={save:saveCareerNow,read:readCareerSave,clear:clearCareerSave,resume:continueCareer};
 window.addEventListener("DOMContentLoaded",initializeCareerSave);
+
+/* =========================================================
+   V7.50.10 ORIGIN MIGRATION BRIDGE
+   One-time, user-initiated transfer from GitHub Pages to the
+   canonical Cloudflare Pages origin. Payloads never enter a URL
+   or remote database and are accepted only from the exact legacy
+   origin through window.postMessage with a fixed target origin.
+   ========================================================= */
+window.BasketballLifeMigration=(()=>{
+ const PRIMARY_ORIGIN="https://basketballlife.pages.dev";
+ const LEGACY_ORIGIN="https://akai0013.github.io";
+ const LEGACY_PATH="/basketballlife/";
+ const QUERY_KEY="bl_migrate";
+ const PROTOCOL=1;
+ const READY="basketballlife:migration:ready";
+ const PAYLOAD="basketballlife:migration:payload";
+ const ACK="basketballlife:migration:ack";
+ const AUTH_STORAGE_KEY=(()=>{
+   try{
+     const projectRef=new URL(window.BL_ONLINE_CONFIG?.supabaseUrl||"").hostname.split(".")[0];
+     return projectRef?`sb-${projectRef}-auth-token`:"";
+   }catch(_){return ""}
+ })();
+ let receivePromise=null;
+ let sourceTransfer=null;
+
+ function isLegacySite(){return location.origin===LEGACY_ORIGIN&&location.pathname.startsWith(LEGACY_PATH)}
+ function isPrimarySite(){return location.origin===PRIMARY_ORIGIN}
+ function isReceiver(){return isPrimarySite()&&new URLSearchParams(location.search).get(QUERY_KEY)==="1"}
+ function el(id){return document.getElementById(id)}
+ function setPanel({title,text,state="",error=false,button=true}={}){
+   const panel=el("siteMigrationPanel"),titleEl=el("siteMigrationTitle"),textEl=el("siteMigrationText"),stateEl=el("siteMigrationState"),btn=el("siteMigrationBtn"),link=el("siteMigrationLink");
+   if(!panel)return;
+   panel.classList.remove("hidden");
+   if(titleEl&&title)titleEl.textContent=title;
+   if(textEl&&text)textEl.textContent=text;
+   if(btn)btn.classList.toggle("hidden",!button);
+   if(link){link.href=`${PRIMARY_ORIGIN}/`;link.textContent=isLegacySite()?"不轉移，直接前往新站":"前往 BasketballLife 新網址"}
+   if(stateEl){
+     stateEl.textContent=state;
+     stateEl.classList.toggle("hidden",!state);
+     stateEl.classList.toggle("error",!!error);
+   }
+ }
+ function cleanNicknameForTransfer(value){return String(value||"").replace(/\s+/g," ").trim().slice(0,20)}
+ function readSessionRaw(){
+   if(!AUTH_STORAGE_KEY)return "";
+   try{
+     const raw=localStorage.getItem(AUTH_STORAGE_KEY)||"";
+     if(!raw||raw.length>150000)return "";
+     const parsed=JSON.parse(raw);
+     return parsed&&typeof parsed==="object"&&parsed.access_token&&parsed.refresh_token?raw:"";
+   }catch(_){return ""}
+ }
+ function normalizeTransferredCareer(raw){
+   if(!raw)return "";
+   if(typeof raw!=="string"||raw.length>5000000)throw new Error("舊存檔大小異常，已停止轉移");
+   const save=JSON.parse(raw);
+   if(save?.schema!==CAREER_SAVE_SCHEMA||!save.player||!validCareerScreen(save.screen))throw new Error("舊存檔格式無法辨識");
+   save.player=normalizeCareerPlayer(save.player);
+   if(!validCareerPlayer(save.player))throw new Error("舊存檔內容未通過檢查");
+   return JSON.stringify(save);
+ }
+ function validTransferredSession(raw){
+   if(!raw)return "";
+   if(typeof raw!=="string"||raw.length>150000)throw new Error("玩家身分資料大小異常");
+   const parsed=JSON.parse(raw);
+   if(!parsed||typeof parsed!=="object"||!parsed.access_token||!parsed.refresh_token)throw new Error("玩家身分資料格式無法辨識");
+   return raw;
+ }
+ function migrationPayload(){
+   let career="",nickname="";
+   try{career=localStorage.getItem(CAREER_SAVE_KEY)||""}catch(_){}
+   try{nickname=cleanNicknameForTransfer(localStorage.getItem("bl_online_nickname")||"")}catch(_){}
+   return {type:PAYLOAD,protocol:PROTOCOL,career,nickname,session:readSessionRaw()};
+ }
+ function showLegacyPrompt(){
+   if(!isLegacySite())return;
+   let hasCareer=false;
+   try{hasCareer=!!localStorage.getItem(CAREER_SAVE_KEY)}catch(_){}
+   setPanel({
+     title:hasCareer?"把這份生涯帶到新主場":"BasketballLife 已搬到新網址",
+     text:hasCareer?"按一次即可轉移進行中的生涯、玩家暱稱與原排行榜身分；舊存檔仍會保留作為備份。":"可以保留目前玩家暱稱與排行榜身分，之後改從新網址遊玩。"
+   });
+ }
+ function stopLegacySession(){
+   try{window.BasketballLifeOnline?.client?.()?.auth?.stopAutoRefresh?.()}catch(_){}
+   if(AUTH_STORAGE_KEY){try{localStorage.removeItem(AUTH_STORAGE_KEY)}catch(_){}}
+   try{localStorage.setItem("basketballlife.migrated.origin",PRIMARY_ORIGIN)}catch(_){}
+ }
+ function finishSourceTransfer(ok,message,error=false){
+   if(!sourceTransfer)return;
+   clearInterval(sourceTransfer.pingTimer);
+   clearTimeout(sourceTransfer.timeoutTimer);
+   window.removeEventListener("message",sourceTransfer.onMessage);
+   const popup=sourceTransfer.popup;
+   sourceTransfer=null;
+   const btn=el("siteMigrationBtn");
+   if(btn){btn.disabled=false;btn.textContent=ok?"已完成轉移":"重新嘗試轉移"}
+   setPanel({
+     title:ok?"轉移完成，請改用新網址":"轉移尚未完成",
+     text:ok?"新網站已接收生涯與玩家身分。舊生涯仍留在這個瀏覽器作為備份。":"沒有成功連上新網站，舊資料完全沒有被刪除。",
+     state:message,error,button:!ok
+   });
+   if(ok){stopLegacySession();try{popup?.focus()}catch(_){}}
+ }
+ function start(){
+   if(!isLegacySite()){location.href=`${PRIMARY_ORIGIN}/`;return}
+   if(sourceTransfer)return;
+   const payload=migrationPayload();
+   if(!payload.career&&!payload.nickname&&!payload.session){
+     setPanel({title:"這個瀏覽器沒有可轉移的舊資料",text:"你可以直接前往新網址開始遊玩。",state:"若曾在其他手機或瀏覽器遊玩，請改用那台裝置開啟舊網址。",error:true,button:false});
+     return;
+   }
+   const popup=window.open(`${PRIMARY_ORIGIN}/?${QUERY_KEY}=1`,"BasketballLifeMigration");
+   if(!popup){
+     setPanel({title:"瀏覽器封鎖了轉移視窗",text:"請允許這個網站開啟新分頁，再按一次轉移。",state:"舊資料沒有被修改。",error:true});
+     return;
+   }
+   const btn=el("siteMigrationBtn");
+   if(btn){btn.disabled=true;btn.textContent="正在安全轉移…"}
+   setPanel({title:"正在連接 BasketballLife 新站",text:"請保留這個分頁，系統會在新分頁準備完成後傳送資料。",state:"等待新網站回應…"});
+   const send=()=>{try{popup.postMessage(payload,PRIMARY_ORIGIN)}catch(_){}};
+   const onMessage=event=>{
+     if(event.origin!==PRIMARY_ORIGIN||event.source!==popup||event.data?.protocol!==PROTOCOL)return;
+     if(event.data.type===READY){send();return}
+     if(event.data.type===ACK){
+       finishSourceTransfer(!!event.data.ok,event.data.message||"轉移完成。",!event.data.ok);
+     }
+   };
+   window.addEventListener("message",onMessage);
+   sourceTransfer={popup,onMessage,pingTimer:setInterval(send,650),timeoutTimer:setTimeout(()=>finishSourceTransfer(false,"等待逾時，請確認新分頁沒有被關閉後重試。",true),20000)};
+   send();
+ }
+ function receiveBeforeOnlineInit(){
+   if(!isReceiver())return Promise.resolve(false);
+   if(receivePromise)return receivePromise;
+   setPanel({title:"正在接收舊網址存檔",text:"請保留舊網址分頁，完成後會自動恢復原本玩家身分。",state:"安全連線中…",button:false});
+   receivePromise=new Promise(resolve=>{
+     let settled=false;
+     const opener=window.opener;
+     const finish=(ok,message,error=false)=>{
+       if(settled)return;
+       settled=true;
+       clearInterval(readyTimer);
+       clearTimeout(timeoutTimer);
+       window.removeEventListener("message",onMessage);
+       setPanel({title:ok?"舊資料轉移完成":"沒有收到舊網址資料",text:ok?"進行中的生涯、暱稱與排行榜身分已搬到這個網址。":"請回到舊 GitHub 網址，再按一次「轉移存檔並前往新站」。",state:message,error,button:false});
+       resolve(ok);
+     };
+     const sendReady=()=>{try{opener?.postMessage({type:READY,protocol:PROTOCOL},LEGACY_ORIGIN)}catch(_){}};
+     const onMessage=event=>{
+       if(event.origin!==LEGACY_ORIGIN||event.source!==opener||event.data?.type!==PAYLOAD||event.data?.protocol!==PROTOCOL)return;
+       try{
+         const incomingCareer=normalizeTransferredCareer(event.data.career||"");
+         const incomingSession=validTransferredSession(event.data.session||"");
+         const nickname=cleanNicknameForTransfer(event.data.nickname||"");
+         if(!incomingCareer&&!incomingSession&&!nickname)throw new Error("舊網址沒有可轉移的資料");
+         if(incomingCareer){
+           const existing=localStorage.getItem(CAREER_SAVE_KEY)||"";
+           if(existing&&existing!==incomingCareer&&!window.confirm("新網址已有另一份本機生涯。要先備份它，再以舊網址的生涯取代嗎？")){
+             opener?.postMessage({type:ACK,protocol:PROTOCOL,ok:false,message:"你保留了新網址目前的生涯，沒有覆蓋任何資料。"},LEGACY_ORIGIN);
+             finish(false,"已取消覆蓋，新網址原有存檔保持不變。",true);
+             return;
+           }
+           if(existing&&existing!==incomingCareer)localStorage.setItem(`${CAREER_SAVE_KEY}.pre-migration-backup`,existing);
+           localStorage.setItem(CAREER_SAVE_KEY,incomingCareer);
+         }
+         if(nickname)localStorage.setItem("bl_online_nickname",nickname);
+         if(incomingSession&&AUTH_STORAGE_KEY)localStorage.setItem(AUTH_STORAGE_KEY,incomingSession);
+         localStorage.setItem("basketballlife.migrated.from",`${LEGACY_ORIGIN}${LEGACY_PATH}`);
+         history.replaceState({},"",`${location.pathname}${location.hash||""}`);
+         updateContinueCareerPanel();
+         setCareerSaveStatus("舊網址資料已轉移");
+         opener?.postMessage({type:ACK,protocol:PROTOCOL,ok:true,message:"轉移完成；請在新分頁繼續遊戲。"},LEGACY_ORIGIN);
+         finish(true,"資料已保存在這個瀏覽器，正在恢復 Online 身分…");
+       }catch(err){
+         const message=String(err?.message||"存檔轉移失敗").slice(0,160);
+         try{opener?.postMessage({type:ACK,protocol:PROTOCOL,ok:false,message},LEGACY_ORIGIN)}catch(_){}
+         finish(false,message,true);
+       }
+     };
+     window.addEventListener("message",onMessage);
+     const readyTimer=setInterval(sendReady,500);
+     const timeoutTimer=setTimeout(()=>finish(false,"等待逾時；舊網址與新網址的資料都沒有被修改。",true),15000);
+     sendReady();
+   });
+   return receivePromise;
+ }
+ window.addEventListener("DOMContentLoaded",showLegacyPrompt);
+ return {start,receiveBeforeOnlineInit,isLegacySite,isPrimarySite};
+})();
 
 function hash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
 function RNG(s){let a=hash(s);return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
