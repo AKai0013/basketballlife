@@ -3410,9 +3410,16 @@ body.onlineModalOpen{
 .rankTab{flex:none;border:1px solid #304959;border-radius:999px;background:#11202a;color:#9eb0bc;padding:6px 10px;font-size:10px;font-weight:850;cursor:pointer}
 .rankTab.on{border-color:#d58a45;background:#332114;color:#f2ac66}
 .rankNotice{margin-bottom:7px;padding:7px 9px;border-left:2px solid #d78e49;background:#151d22;color:#7f929e;font-size:9.5px;line-height:1.5}
+.rankMineZone{margin:12px 0 15px;padding:11px;border:1px solid #694727;border-left:3px solid #df914a;border-radius:10px;background:linear-gradient(145deg,#1c1712,#111a20)}
+.rankGlobalZone{margin-top:12px;padding-top:13px;border-top:1px solid #39505d}
+.rankSectionHead{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:8px}
+.rankSectionHead>div{min-width:0}.rankSectionHead span{display:block;color:#7892a2;font-size:8px;font-weight:950;letter-spacing:1.25px}.rankSectionHead b{display:block;margin-top:2px;color:#eee9e2;font-size:13px;font-weight:950}.rankSectionHead small{display:block;margin-top:2px;color:#7f929e;font-size:9px;line-height:1.45}
+.rankMineZone .rankSectionHead span,.rankMineZone .rankSectionHead b{color:#eaa35e}.rankSectionCount{flex:none!important;padding:4px 7px;border:1px solid #3b5260;border-radius:999px;color:#8fa7b4!important;background:#111d24;letter-spacing:0!important}.rankMineZone .rankSectionCount{border-color:#6f4d2d;color:#e1a263!important;background:#21170f}
+.rankMineBest{margin-bottom:8px;padding:7px 9px;border:1px solid #4e3927;border-radius:7px;background:#15130f;color:#9ca9b0;font-size:9.5px}.rankMineBest b{color:#e8a15b}.rankMineBest strong{color:#eee8df}
 .rankList{display:flex;flex-direction:column;gap:5px}
 .rankRow{width:100%;display:grid;grid-template-columns:52px minmax(0,1fr) 160px;align-items:center;gap:9px;padding:9px 11px;border:1px solid #2c4351;border-radius:9px;background:#101c25;color:inherit;text-align:left;cursor:pointer}
 .rankRow:hover{border-color:#58758a;background:#13232e}
+.rankRowMine{border-color:#6a4a2d;background:#1b1815}.rankRowMine:hover{border-color:#d18a46;background:#241b14}.rankMinePill{display:inline-block;margin-left:6px;padding:2px 5px;border:1px solid #805833;border-radius:999px;background:#2a1c11;color:#eaa35e;font-size:7.5px;font-style:normal;font-weight:950;vertical-align:2px}
 .rankNo{color:#d99a58;font-size:13px;font-weight:950;text-align:center}
 .rankIdentity b{display:block;color:#f0ece5;font-size:13.5px;font-weight:950}
 .rankIdentity small{display:block;margin-top:2px;color:#8194a2;font-size:9.5px}
@@ -3429,7 +3436,7 @@ body.onlineModalOpen{
 .publicBadgeRow{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}.publicBadgeRow span{padding:4px 7px;border:1px solid #564331;border-radius:999px;color:#e4a05d;background:#1a1511;font-size:9.5px;font-weight:850}
 .publicMetricGrid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:9px}.publicMetricGrid span{padding:8px;border:1px solid #2c424e;border-radius:8px;background:#101c24;text-align:center}.publicMetricGrid small{display:block;color:#778c9a;font-size:8.5px}.publicMetricGrid b{display:block;margin-top:2px;color:#eee9e2;font-size:13px;font-weight:950}
 .publicShareBtns{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}
-@media(max-width:760px){.rankIntro{grid-template-columns:1fr}.rankSummary{grid-template-columns:repeat(2,1fr)}.rankRow{grid-template-columns:42px minmax(0,1fr) 105px}.publicMetricGrid{grid-template-columns:repeat(2,1fr)}.publicLegacyTop{display:block}.powerStamp{margin-top:8px;text-align:left}.brandActions{gap:4px}.topRankBtn{padding:5px 7px;font-size:9.5px}}
+@media(max-width:760px){.rankIntro{grid-template-columns:1fr}.rankSummary{grid-template-columns:repeat(2,1fr)}.rankRow{grid-template-columns:42px minmax(0,1fr) 105px}.rankMineZone{padding:9px}.rankSectionHead{align-items:flex-start}.publicMetricGrid{grid-template-columns:repeat(2,1fr)}.publicLegacyTop{display:block}.powerStamp{margin-top:8px;text-align:left}.brandActions{gap:4px}.topRankBtn{padding:5px 7px;font-size:9.5px}}
 
 /* ===== Consolidated source block 22 ===== */
 /* =========================================================
@@ -5391,7 +5398,7 @@ window.BL_ONLINE_CONFIG = {
    }).sort((a,b)=>def.value(b)-def.value(a)||normalizedPower(b)-normalizedPower(a)||new Date(b.created_at||0)-new Date(a.created_at||0));
  }
 
- function rankRow(record,index,def,metricKey){
+ function rankRow(record,index,def,metricKey,isMine=false){
    const medal=index===0?"🥇":index===1?"🥈":index===2?"🥉":`#${index+1}`;
    const value=def.value(record);
    const hof=(record.hall_of_fame||[]).length,jersey=(record.jersey_retired||[]).length;
@@ -5399,9 +5406,9 @@ window.BL_ONLINE_CONFIG = {
      ? `巔峰 OVR ${Number(record.peak_overall||0)}`
      : `BL POWER ${normalizedPower(record).toLocaleString()}`;
    const legacyBadges=`${hof?` · 名人堂 ×${hof}`:""}${jersey?` · 球衣退休 ×${jersey}`:""}`;
-   return `<button class="rankRow" onclick="BasketballLifeOnline.openCareer('${esc(record.id)}')">
+   return `<button class="rankRow ${isMine?"rankRowMine":""}" onclick="BasketballLifeOnline.openCareer('${esc(record.id)}')">
      <span class="rankNo">${medal}</span>
-     <span class="rankIdentity"><b>${esc(record.nickname)}</b><small>${esc(record.player_name)} · ${esc(record.position||"")} · 退役 ${record.retired_age||"-"} 歲${legacyBadges}</small></span>
+     <span class="rankIdentity"><b>${esc(record.nickname)}${isMine?'<em class="rankMinePill">我的紀錄</em>':""}</b><small>${esc(record.player_name)} · ${esc(record.position||"")} · 退役 ${record.retired_age||"-"} 歲${legacyBadges}</small></span>
      <span class="rankValue"><b>${esc(def.fmt(value))}</b><small>${esc(secondary)}</small></span>
    </button>`;
  }
@@ -5444,10 +5451,16 @@ window.BL_ONLINE_CONFIG = {
        <div class="rankSummary"><span><small>排行榜玩家</small><b>${players}</b></span><span><small>公開生涯</small><b>${scoped.length}</b></span><span><small>最高 POWER</small><b>${topPower.toLocaleString()}</b></span><span><small>最高 OVR</small><b>${topPeak}</b></span></div>
      </div>
      <div class="rankTabs">${Object.entries(leaderboardMetrics).map(([k,m])=>`<button class="rankTab ${k===metricKey?"on":""}" onclick="BasketballLifeOnline.changeRankMetric('${k}')">${esc(m.short)}</button>`).join("")}</div>
-     <div class="rankNotice"><b>${esc(def.label)}：</b>${esc(def.description)} 排行榜顯示前 50 支公開生涯；自己的紀錄即使跌出前 50，仍會保留在下方。</div>
-     ${mine.length?`<div class="rankNotice"><b>我的最佳名次：</b>#${mine[0].index+1}｜${esc(mine[0].record.player_name)}｜${esc(def.fmt(def.value(mine[0].record)))}</div>`:""}
-     ${mineOutsideTop.length?`<div class="legacySection"><div class="legacySectionTitle">我的公開生涯（前 50 名以外）</div><div class="rankList">${mineOutsideTop.slice(0,12).map(x=>rankRow(x.record,x.index,def,metricKey)).join("")}</div></div>`:""}
-     <div class="rankList">${rows.length?rows.slice(0,50).map((r,i)=>rankRow(r,i,def,metricKey)).join(""):`<div class="rankEmpty">這個項目目前還沒有公開紀錄。</div>`}</div>`;
+     <div class="rankNotice"><b>${esc(def.label)}：</b>${esc(def.description)} 全球榜單顯示前 50 支公開生涯；未進入前 50 的本人紀錄會另外收在「我的公開生涯」，不與榜單混排。</div>
+     ${mine.length?`<section class="rankMineZone" aria-label="我的公開生涯">
+       <div class="rankSectionHead"><div><span>MY PUBLIC CAREERS</span><b>我的公開生涯</b><small>${mineOutsideTop.length?`以下為目前未進入全球前 50 名的 ${mineOutsideTop.length} 筆紀錄。你的前 50 名紀錄會在下方以橘色標示。`:"你的公開生涯已進入目前全球前 50 名，請在下方查看橘色標示。"}</small></div><span class="rankSectionCount">${mine.length} 筆公開紀錄</span></div>
+       <div class="rankMineBest"><b>最佳名次</b>　<strong>#${mine[0].index+1}</strong>｜${esc(mine[0].record.player_name)}｜${esc(def.fmt(def.value(mine[0].record)))}</div>
+       ${mineOutsideTop.length?`<div class="rankList">${mineOutsideTop.slice(0,12).map(x=>rankRow(x.record,x.index,def,metricKey,true)).join("")}</div>`:""}
+     </section>`:""}
+     <section class="rankGlobalZone" aria-label="全球排行榜前 50 名">
+       <div class="rankSectionHead"><div><span>GLOBAL TOP 50</span><b>全球排行榜・目前前 50 名</b><small>依 ${esc(def.label)} 排序；點擊任一紀錄可查看完整公開生涯。</small></div><span class="rankSectionCount">${Math.min(50,rows.length)} 筆</span></div>
+       <div class="rankList">${rows.length?rows.slice(0,50).map((r,i)=>rankRow(r,i,def,metricKey,r.user_id===state.user?.id)).join(""):`<div class="rankEmpty">這個項目目前還沒有公開紀錄。</div>`}</div>
+     </section>`;
  }
 
  async function changeRankMetric(metricKey){
