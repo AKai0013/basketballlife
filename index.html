@@ -5,6 +5,7 @@
 <title>BasketballLife</title>
 <link rel="icon" type="image/png" href="./basketballlife-logo.png">
 <style>
+/* ===== Consolidated source block 1 ===== */
 :root{--bg:#0b0f15;--card:#131a25;--card2:#182231;--line:#2b394d;--txt:#f5f7fb;--mut:#91a0b6;--gold:#f0b64b;--blue:#5593ff;--green:#49cf88;--red:#e23b3b;--orange:#e88946}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 25% 0,#172238,#0b0f15 38%);color:var(--txt);font-family:system-ui,-apple-system,"Microsoft JhengHei",sans-serif}
 button,input{font:inherit}button{cursor:pointer}.wrap{max-width:1080px;margin:auto;padding:24px 18px 70px}.brand{font-size:29px;font-weight:950;margin-bottom:20px}.brand span{color:var(--gold)}
@@ -249,8 +250,8 @@ input{width:100%;background:#0c1119;border:1px solid #36465d;color:#fff;border-r
 @media(max-width:760px){.legacyStoryGrid{grid-template-columns:1fr}.legacyAchievements{columns:1}.legacyPage{padding:16px}.legacyName{font-size:30px}}
 
 .liveTrack .tickerMajor{color:#f0aa5c}
-</style>
-<style>
+
+/* ===== Consolidated source block 2 ===== */
 /* =========================================================
    V7.22 ORIGINAL BASKETBALL COURT THEME
    楓木地板 × 深色球館 × 禁區藍 × 球場線米白
@@ -289,8 +290,8 @@ body{
   border-color:#354552;
   box-shadow:0 16px 48px #0007, inset 0 1px 0 rgba(255,255,255,.025);
 }
-.card:has(.story){position:relative;overflow:hidden}
-.card:has(.story):after{
+.card.story{position:relative;overflow:hidden}
+.card.story:after{
   content:"";
   pointer-events:none;
   position:absolute;
@@ -529,8 +530,8 @@ body{
 .section,.legacySectionTitle,.shareSection>b{
   text-decoration-color:rgba(234,219,193,.25);
 }
-</style>
-<style>
+
+/* ===== Consolidated source block 3 ===== */
 /* =========================================================
    V7.24 COMPACT COURT UI
    Common career screens target a 1080p desktop without
@@ -694,8 +695,8 @@ body{
   #pointRows{grid-template-columns:1fr}
   .trainingStats{grid-template-columns:1fr}
 }
-</style>
-<style>
+
+/* ===== Consolidated source block 4 ===== */
 /* =========================================================
    V7.25 SINGLE-COLUMN CAREER FEED
    Original basketball-court UI, simplified into a focused
@@ -1141,8 +1142,8 @@ body{
   .assign{grid-template-columns:repeat(2,1fr)}
   .reportGrid{grid-template-columns:repeat(2,1fr)}
 }
-</style>
-<style>
+
+/* ===== Consolidated source block 5 ===== */
 /* =========================================================
    V7.26 READABLE CAREER TIMELINE
    Larger typography + current-year full cards + old-year rows
@@ -1307,8 +1308,8 @@ body{
   .choice b{font-size:14.5px}
   .choice small{font-size:11.5px}
 }
-</style>
-<style>
+
+/* ===== Consolidated source block 6 ===== */
 /* =========================================================
    V7.27 VIEWPORT BUDGET
    Timeline history can never grow enough to push gameplay
@@ -1370,8 +1371,8 @@ body{
   .wrap{padding-top:8px}
   .feedHistory{max-height:320px}
 }
-</style>
-<style>
+
+/* ===== Consolidated source block 7 ===== */
 /* =========================================================
    V7.28 CLICKABLE HISTORY + FIXED DECISION DOCK
    ========================================================= */
@@ -1485,18 +1486,18 @@ body{
 }
 
 /* Reserve space only when a bottom control is actually present. */
-#game:has(.choices:not(:empty)) .story{
+#game.hasChoices .story{
   padding-bottom:min(41vh,360px)!important;
 }
-#game:has(#next:not(.hidden)) .story{
+#game.hasNext .story{
   padding-bottom:68px!important;
 }
 
 /* While making a decision, reduce old timeline footprint further. */
-#game:has(.choices:not(:empty)) .feedHistory{
+#game.hasChoices .feedHistory{
   max-height:210px;
 }
-#game:has(#next:not(.hidden)) .feedHistory{
+#game.hasNext .feedHistory{
   max-height:245px;
 }
 
@@ -1514,12 +1515,12 @@ body{
   .choices:not(:empty){
     max-height:43vh;
   }
-  #game:has(.choices:not(:empty)) .story{
+  #game.hasChoices .story{
     padding-bottom:min(46vh,390px)!important;
   }
 }
-</style>
-<style>
+
+/* ===== Consolidated source block 8 ===== */
 /* =========================================================
    V7.29 SINGLE-COLUMN TRAINING / POINT ALLOCATION
    恢復參考圖那種「一條一條往下看」的操作節奏，
@@ -1692,9 +1693,8 @@ body{
     font-size:9.5px!important;
   }
 }
-</style>
 
-<style>
+/* ===== Consolidated source block 9 ===== */
 /* V7.30 safety: after removing the old career-log sidebar,
    the main story is now the only card inside .layout. Never hide it. */
 .layout > main.card.story{
@@ -1705,8 +1705,8 @@ body{
 .layout > main.card.story:last-child{
   display:block!important;
 }
-</style>
-<style>
+
+/* ===== Consolidated source block 10 ===== */
 /* =========================================================
    V7.31 NATURAL DECISION FLOW
    選項靠近題目；不再硬貼螢幕最底造成大片空白。
@@ -1784,12 +1784,12 @@ body{
 }
 
 /* 移除舊版為固定底欄預留的巨大空間 */
-#game:has(.choices:not(:empty)) .story,
-#game:has(#next:not(.hidden)) .story{
+#game.hasChoices .story,
+#game.hasNext .story{
   padding-bottom:0!important;
 }
-#game:has(.choices:not(:empty)) .feedHistory,
-#game:has(#next:not(.hidden)) .feedHistory{
+#game.hasChoices .feedHistory,
+#game.hasNext .feedHistory{
   max-height:390px!important;
 }
 
@@ -1841,8 +1841,8 @@ body{
     border-radius:10px!important;
   }
 }
-</style>
-<style>
+
+/* ===== Consolidated source block 11 ===== */
 /* =========================================================
    V7.32 CURRENT EVENT BOTTOM DOCK + TYPOGRAPHY HIERARCHY
    上方＝生涯時間軸
@@ -1961,12 +1961,12 @@ body{
 }
 
 /* Old global fixed-dock reserve must never create dead space */
-#game:has(.choices:not(:empty)) .story,
-#game:has(#next:not(.hidden)) .story{
+#game.hasChoices .story,
+#game.hasNext .story{
   padding-bottom:0!important;
 }
-#game:has(.choices:not(:empty)) .feedHistory,
-#game:has(#next:not(.hidden)) .feedHistory{
+#game.hasChoices .feedHistory,
+#game.hasNext .feedHistory{
   max-height:none!important;
 }
 
@@ -2216,8 +2216,8 @@ body{
   .currentPanel h2{font-size:19px!important}
   .currentPanel .text{font-size:14px!important}
 }
-</style>
-<style>
+
+/* ===== Consolidated source block 12 ===== */
 /* =========================================================
    V7.33 TYPOGRAPHY POLISH
    參考資訊層級，不複製原圖配色：
@@ -2656,8 +2656,8 @@ body{
   .statSummary{grid-template-columns:repeat(3,1fr)}
   .statSummary span{border-right:0;border-bottom:1px solid #2b414f}
 }
-</style>
-<style>
+
+/* ===== Consolidated source block 13 ===== */
 /* =========================================================
    V7.34 TRUE VIEWPORT FIT
    高度由 JS 依瀏覽器實際可視區計算，不再猜固定 232px。
@@ -2802,8 +2802,8 @@ body[data-viewport-band="xs"] [data-stage="training"] .assign button{
 @media(min-width:760px) and (max-width:1199px){
   .wrap{max-width:94vw!important}
 }
-</style>
-<style>
+
+/* ===== Consolidated source block 14 ===== */
 /* =========================================================
    V7.35 RETIREMENT MODE
    生涯終章使用獨立版面：上方縮小、舊紀錄消失、退休頁吃滿可視高度。
@@ -3051,8 +3051,8 @@ body.retirementMode .retireBtns .btn{
     text-align:left;
   }
 }
-</style>
-<style>
+
+/* ===== Consolidated source block 15 ===== */
 /* =========================================================
    V7.36 FINAL SMALL POLISH
    1. 訓練能力「突破 +XX」不再被吃字
@@ -3171,8 +3171,8 @@ body.retirementMode .hofStoryLegacy{
     font-size:9.5px!important;
   }
 }
-</style>
-<style>
+
+/* ===== Consolidated source block 16 ===== */
 /* V7.37 training hard-cap polish */
 .assign button.maxed,
 .assign button:disabled.maxed{
@@ -3207,8 +3207,8 @@ body.retirementMode .hofStoryLegacy{
   color:#efa45a;
   font-size:13px;
 }
-</style>
-<style>
+
+/* ===== Consolidated source block 17 ===== */
 /* V7.38 graduation route polish */
 [data-stage="events"] .offerGrid .offerCard > b{
   font-size:15px!important;
@@ -3217,14 +3217,14 @@ body.retirementMode .hofStoryLegacy{
   font-size:11.5px!important;
   line-height:1.5!important;
 }
-</style>
-<style>
+
+/* ===== Consolidated source block 18 ===== */
 /* V7.50 NCAA D2 to D1 transfer portal */
 .offerCard b + .mut{
   margin-top:3px;
 }
-</style>
-<style>
+
+/* ===== Consolidated source block 19 ===== */
 /* =========================================================
    V7.40 ONLINE ACCOUNT UI
    ========================================================= */
@@ -3360,8 +3360,8 @@ body.onlineModalOpen{
     font-size:9.5px;
   }
 }
-</style>
-<style>
+
+/* ===== Consolidated source block 20 ===== */
 /* V7.41 BL LIVE realtime */
 .onlineStatus.online::after{
   content:"LIVE";
@@ -3374,8 +3374,8 @@ body.onlineModalOpen{
   font-weight:950;
   letter-spacing:.5px;
 }
-</style>
-<style>
+
+/* ===== Consolidated source block 21 ===== */
 /* =========================================================
    V7.42 COMMUNITY / PUBLIC CAREER / LEADERBOARDS
    ========================================================= */
@@ -3430,8 +3430,8 @@ body.onlineModalOpen{
 .publicMetricGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:9px}.publicMetricGrid span{padding:8px;border:1px solid #2c424e;border-radius:8px;background:#101c24;text-align:center}.publicMetricGrid small{display:block;color:#778c9a;font-size:8.5px}.publicMetricGrid b{display:block;margin-top:2px;color:#eee9e2;font-size:13px;font-weight:950}
 .publicShareBtns{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}
 @media(max-width:760px){.rankIntro{grid-template-columns:1fr}.rankSummary{grid-template-columns:repeat(2,1fr)}.rankRow{grid-template-columns:42px minmax(0,1fr) 105px}.publicMetricGrid{grid-template-columns:repeat(2,1fr)}.publicLegacyTop{display:block}.powerStamp{margin-top:8px;text-align:left}.brandActions{gap:4px}.topRankBtn{padding:5px 7px;font-size:9.5px}}
-</style>
-<style>
+
+/* ===== Consolidated source block 22 ===== */
 /* =========================================================
    V7.44 MOBILE FLOW
    On phones we abandon the desktop fixed-viewport dock and
@@ -4036,6 +4036,7 @@ body.retirementMode .legacyHero .legacyMeta{margin-top:7px!important;color:#aab8
 .legacyRankMark{margin-top:7px;padding-top:6px;border-top:1px solid rgba(229,157,82,.24);line-height:1.35}
 .legacyRankMark b{display:block!important;margin:0!important;color:#76d497!important;font-size:8.5px!important;letter-spacing:.04em}
 .legacyRankMark span{display:block!important;margin-top:2px;color:#b8a084!important;font-size:7.5px!important;letter-spacing:0!important}
+.legacyRankMark.pending b{color:#e6b66f!important}.legacyRankMark.retry b{color:#ef8a78!important}
 .retirementRankingActionsHost{display:contents}
 .rankingSyncBtn{opacity:.72;cursor:wait!important}
 
@@ -4206,7 +4207,57 @@ body.retirementMode .header .who{gap:6px}
   .publicPortrait{width:54px;height:54px;flex-basis:54px;border-radius:9px}
   .publicHeroIdentity{gap:8px;align-items:flex-start}
 }
+
+/* Character builder: position-bound body profile, birthplace and portrait. */
+.setupBuilder{display:grid;gap:12px;margin:16px 0}
+.setupSection{border:1px solid #273b49;border-radius:14px;background:linear-gradient(145deg,#0b151d,#101c25);padding:14px}
+.setupSectionHead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px}
+.setupSectionHead b{font-size:14px;color:#f0b16c}.setupSectionHead small{display:block;margin-top:3px;color:#8fa1af;line-height:1.45}
+.bodyChoiceGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.bodyRange{padding:10px;border:1px solid #243744;border-radius:11px;background:#091219}
+.bodyRangeTop{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:7px;font-size:11px;color:#a9bac6}
+.bodyRangeTop b{font-size:16px;color:#f1eee9}.bodyRange input[type="range"]{width:100%;accent-color:#e58b3e}
+.bodyRangeScale{display:flex;justify-content:space-between;margin-top:5px;font-size:9px;color:#667b8b}
+.bodyImpact{margin-top:10px;padding:9px 10px;border-left:3px solid #d8833b;background:#111c24;color:#b8c5ce;font-size:10px;line-height:1.55}
+.birthplaceSelect{width:100%;min-height:43px;border:1px solid #365162;border-radius:10px;background:#0a141b;color:#eef0ed;padding:0 11px;font:inherit}
+.avatarBuilder{display:grid;grid-template-columns:142px minmax(0,1fr);gap:14px;align-items:center}
+.setupAvatarPreview{width:142px;height:142px;border:1px solid #79522f;border-radius:17px;overflow:hidden;background:#0b151c;box-shadow:0 10px 28px rgba(0,0,0,.3)}
+.setupAvatarPreview .avatarComposite{width:100%;height:100%}
+.avatarControls{display:grid;gap:8px}.avatarControl{display:grid;grid-template-columns:76px minmax(0,1fr) 46px;gap:8px;align-items:center}
+.avatarControl label{margin:0;font-size:10px;color:#aebdc7}.avatarControl input[type="range"]{width:100%;accent-color:#e58b3e}
+.avatarControl output{text-align:right;color:#f0b16c;font-size:11px;font-weight:800}
+.avatarButtons{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}.avatarButtons .btn{min-height:38px}
+.setupBuilderNote{font-size:10px;color:#8195a3;line-height:1.55;margin-top:7px}
+@media(max-width:680px){
+  .bodyChoiceGrid{grid-template-columns:1fr}
+  .avatarBuilder{grid-template-columns:96px minmax(0,1fr);align-items:start}
+  .setupAvatarPreview{width:96px;height:96px;border-radius:13px}
+  .avatarControl{grid-template-columns:58px minmax(0,1fr) 38px;gap:5px}
+  .setupSection{padding:12px}
+}
 </style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 </head>
 <body><div class="wrap">
 <div class="brandRow">
@@ -4215,8 +4266,8 @@ body.retirementMode .header .who{gap:6px}
     <span id="careerSaveStatus" class="careerSaveStatus hidden" aria-live="polite">本機自動存檔</span>
     <button id="quickRestartBtn" class="quickRestartBtn hidden" type="button" onclick="toggleQuickRestartMenu(event)" title="重新開始這段生涯" aria-label="重新開始">↻</button>
     <div id="quickRestartMenu" class="quickRestartMenu hidden">
-      <button type="button" onclick="quickRestartCareer('same')"><b>↻ 同 Seed 重玩</b><small>保留球員姓名、位置與世界 Seed</small></button>
-      <button type="button" onclick="quickRestartCareer('random')"><b>🎲 重新抽 Seed</b><small>保留姓名與位置，換一個新的世界</small></button>
+      <button type="button" onclick="quickRestartCareer('same')"><b>↻ 同 Seed 重玩</b><small>保留姓名、位置、身材、出生地與外觀</small></button>
+      <button type="button" onclick="quickRestartCareer('random')"><b>🎲 重新抽 Seed</b><small>保留球員設定，只更換新的世界</small></button>
     </div>
     <button id="leaderboardBtn" class="topRankBtn" type="button" onclick="BasketballLifeOnline.openLeaderboard()">🏆 排行榜</button>
     <a class="versionLink" href="https://github.com/AKai0013/basketballlife/blob/main/README.md#-版本更新紀錄" target="_blank" rel="noopener noreferrer" aria-label="查看 V7.50.5 版本更新紀錄"><b>V7.50.5</b><span>更新紀錄</span></a>
@@ -4229,9 +4280,37 @@ body.retirementMode .header .who{gap:6px}
 <div class="setupIdentity"><div class="setupLogoFrame"><img class="setupLogo" src="./basketballlife-logo.png" alt="BasketballLife 遊戲徽章" onerror="this.remove()"></div><div><div class="setupKicker">BASKETBALL CAREER SIMULATOR</div><h1>你的籃球人生，從 HBL 開始。</h1><p class="mut">16 歲踏進高中球場，走過升學、職業、旅外、國家隊，直到最後一次離開球員通道。Seed 決定天賦與體質；每一次選擇，決定你能把名字帶到多遠。</p><div class="setupPromise"><span>16 歲・高一</span><span>完整生涯模擬</span><span>多聯盟路線</span></div></div></div>
 <label for="playerNameInput">為球員取名</label><input id="playerNameInput" placeholder="例如：林子翔" maxlength="12" autocomplete="off">
 <label>選擇場上位置</label><div id="posgrid" class="posgrid"></div>
+<div class="setupBuilder">
+  <div class="setupSection">
+    <div class="setupSectionHead"><div><b>球員身材</b><small>依位置採 NBA 型態的合理範圍；身高與臂展同時帶來優勢與代價。</small></div></div>
+    <div class="bodyChoiceGrid">
+      <div class="bodyRange"><div class="bodyRangeTop"><span>身高</span><b id="heightValue">188 cm</b></div><input id="heightInput" type="range" oninput="updateSetupHeight(this.value)"><div class="bodyRangeScale"><span id="heightMin"></span><span id="heightMax"></span></div></div>
+      <div class="bodyRange"><div class="bodyRangeTop"><span>臂展</span><b id="wingspanValue">198 cm</b></div><input id="wingspanInput" type="range" oninput="updateSetupWingspan(this.value)"><div class="bodyRangeScale"><span id="wingspanMin"></span><span id="wingspanMax"></span></div></div>
+    </div>
+    <div id="bodyImpact" class="bodyImpact"></div>
+  </div>
+  <div class="setupSection">
+    <div class="setupSectionHead"><div><b>出生地</b><small>台灣 22 縣市皆可選擇，作為生涯背景資料，不提供能力加成。</small></div></div>
+    <select id="birthplaceInput" class="birthplaceSelect" onchange="chosenBirthplace=this.value"></select>
+  </div>
+  <div class="setupSection">
+    <div class="setupSectionHead"><div><b>球員外觀</b><small>自行搭配臉型、髮型與色調；也可以一鍵隨機。</small></div></div>
+    <div class="avatarBuilder">
+      <div id="setupAvatarPreview" class="setupAvatarPreview" aria-live="polite"></div>
+      <div class="avatarControls">
+        <div class="avatarControl"><label for="avatarFaceInput">臉型</label><input id="avatarFaceInput" type="range" min="0" max="15" oninput="updateSetupAvatar('face',this.value)"><output id="avatarFaceValue"></output></div>
+        <div class="avatarControl"><label for="avatarHairInput">髮型</label><input id="avatarHairInput" type="range" min="0" max="15" oninput="updateSetupAvatar('hair',this.value)"><output id="avatarHairValue"></output></div>
+        <div class="avatarControl"><label for="avatarFaceToneInput">膚色</label><input id="avatarFaceToneInput" type="range" min="0" max="4" oninput="updateSetupAvatar('faceTone',this.value)"><output id="avatarFaceToneValue"></output></div>
+        <div class="avatarControl"><label for="avatarHairToneInput">髮色</label><input id="avatarHairToneInput" type="range" min="0" max="2" oninput="updateSetupAvatar('hairTone',this.value)"><output id="avatarHairToneValue"></output></div>
+        <div class="avatarButtons"><button class="btn" type="button" onclick="randomizeSetupAvatar()">🎲 隨機外觀</button><button class="btn" type="button" onclick="toggleSetupAvatarFlip()">↔ 鏡像</button></div>
+      </div>
+    </div>
+    <div class="setupBuilderNote">外觀隸屬這段球員生涯，不會由世界 Seed 固定；老化效果仍會隨年齡呈現。</div>
+  </div>
+</div>
 <label for="seed">世界 Seed（可輸入或隨機抽取）</label><div class="seed"><input id="seed" class="seedcode" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="seedHelp seedError" oninput="normalizeSeedInput()"><button class="btn" type="button" onclick="newSeed()">重新抽取</button></div>
 <div id="seedError" class="seedError" aria-live="polite"></div>
-<p id="seedHelp" class="seedHelp">輸入或貼上 8 碼英文字母／數字。相同 Seed ＋相同位置，會得到相同的先天條件與主要命運分歧；隱藏等級將在退休時揭曉。</p>
+<p id="seedHelp" class="seedHelp">輸入或貼上 8 碼英文字母／數字。相同 Seed ＋位置＋身材，會得到相同的先天條件與主要命運分歧；隱藏等級將在退休時揭曉。</p>
 <button id="startCareerBtn" class="start" onclick="startCareer()" disabled>連線中…</button>
 <div id="continueCareerPanel" class="continueCareerPanel hidden">
   <div class="continueCareerHead">
@@ -4335,6 +4414,7 @@ window.BL_ONLINE_CONFIG = {
    liveReady:false,
    knownNewsIds:new Set(),
    publishFingerprints:new Set(),
+   verifiedCareerIds:new Set(),
    leaderboardCache:null,
    activeMetric:"power",
    pendingCareerEnrollment:false,
@@ -4658,9 +4738,13 @@ window.BL_ONLINE_CONFIG = {
    if(!gamePlayer() || !p.retired)return null;
    return {
      game_version:p.careerVersion||"legacy",
+     upload_id:p.publicCareerUploadId||p.publicCareerId||"",
      ranking_era:String(p.careerVersion||"").startsWith("7.50.")?"v750":"legacy",
      retirement_reason:p.retirementReason||"",
      avatar_seed:p.avatarSeed||"",
+     height_cm:p.heightCm||null,
+     wingspan_cm:p.wingspanCm||null,
+     birthplace:p.birthplace||"未設定",
      career_national_awards:p.careerNationalAwards||0,
      u18_caps:p.u18Caps||0,
      u20_caps:p.u20Caps||0,
@@ -4687,6 +4771,49 @@ window.BL_ONLINE_CONFIG = {
    };
  }
 
+ function createCareerUploadId(){
+   if(globalThis.crypto?.randomUUID)return globalThis.crypto.randomUUID();
+   const bytes=new Uint8Array(16);
+   if(globalThis.crypto?.getRandomValues)globalThis.crypto.getRandomValues(bytes);
+   else for(let i=0;i<bytes.length;i++)bytes[i]=Math.floor(Math.random()*256);
+   bytes[6]=(bytes[6]&15)|64;
+   bytes[8]=(bytes[8]&63)|128;
+   const hex=[...bytes].map(x=>x.toString(16).padStart(2,"0"));
+   return `${hex.slice(0,4).join("")}-${hex.slice(4,6).join("")}-${hex.slice(6,8).join("")}-${hex.slice(8,10).join("")}-${hex.slice(10).join("")}`;
+ }
+
+ function ensureCareerUploadId(){
+   if(p.publicCareerId)return p.publicCareerId;
+   if(!p.publicCareerUploadId){
+     p.publicCareerUploadId=createCareerUploadId();
+     if(typeof saveCareerNow==="function")saveCareerNow();
+     else scheduleCareerAutosave();
+   }
+   return p.publicCareerUploadId;
+ }
+
+ async function findCareerRecord(id){
+   if(!id||!state.client)return null;
+   const {data,error}=await withTimeout(
+     state.client.from("career_records").select("id,is_public").eq("id",id).eq("is_public",true).maybeSingle(),
+     6000
+   );
+   if(error)throw error;
+   return data||null;
+ }
+
+ function acceptPublishedCareer(id,showLink=true){
+   if(!id)return null;
+   p.publicCareerId=id;
+   p.publicCareerUploadId=id;
+   p.leaderboardChoice="public";
+   state.verifiedCareerIds.add(id);
+   if(showLink)showPublishedCareerLink(id);
+   scheduleCareerAutosave();
+   state.leaderboardCache=null;
+   return id;
+ }
+
  async function publishCareer(options={}){
    const showLink=options.showLink!==false;
    const silent=options.silent===true;
@@ -4707,12 +4834,14 @@ window.BL_ONLINE_CONFIG = {
      if(showLink)showPublishedCareerLink(p.publicCareerId);
      return p.publicCareerId;
    }
+   const uploadId=ensureCareerUploadId();
 
    const buttons=document.querySelectorAll(".onlinePublishBtn");
    buttons.forEach(b=>{b.disabled=true;b.textContent="發布中…"});
    if(status&&!silent)status.textContent="正在建立公開生涯紀錄…";
 
    const row={
+     id:uploadId,
      user_id:state.user.id,
      nickname:state.nickname,
      player_name:String(p.name||"球員").slice(0,30),
@@ -4743,14 +4872,12 @@ window.BL_ONLINE_CONFIG = {
        12000
      );
      if(error)throw error;
-     p.publicCareerId=data.id;
-     p.leaderboardChoice="public";
-     if(showLink)showPublishedCareerLink(data.id);
-     scheduleCareerAutosave();
-     // Clear leaderboard cache so the new career appears immediately.
-     state.leaderboardCache=null;
-     return data.id;
+     return acceptPublishedCareer(data?.id||uploadId,showLink);
    }catch(err){
+     // A timeout does not cancel the original HTTP request. Confirm the stable
+     // ID before retrying so a late successful insert cannot create a duplicate.
+     const confirmed=await findCareerRecord(uploadId).catch(()=>null);
+     if(confirmed?.id)return acceptPublishedCareer(confirmed.id,showLink);
      console.warn("Public career publish failed:",err);
      const detail=[err?.message,err?.details,err?.hint].filter(Boolean).join("｜");
      if(status&&!silent)status.textContent=`發布失敗：${detail||"請稍後再試"}`;
@@ -4784,7 +4911,7 @@ window.BL_ONLINE_CONFIG = {
  function scheduleRetirementAutoPublish(delay=100){
    window.clearTimeout(retirementAutoPublishTimer);
    const gp=gamePlayer();
-   if(!gp||!gp.retired||gp.publicCareerId)return;
+   if(!gp||!gp.retired)return;
    retirementAutoPublishTimer=window.setTimeout(()=>autoPublishRetirementCareer(),delay);
  }
 
@@ -4792,16 +4919,27 @@ window.BL_ONLINE_CONFIG = {
    const gp=gamePlayer();
    if(!gp||!gp.retired)return null;
    if(gp.publicCareerId){
-     gp.leaderboardChoice="public";
-     if(!gp.retirementRankSummary?.power)showEnrollmentSuccess(gp.publicCareerId,await retirementRankSummary(gp.publicCareerId));
-     return gp.publicCareerId;
+     if(state.offline||!state.client)return gp.publicCareerId;
+     const known=state.verifiedCareerIds.has(gp.publicCareerId)?{id:gp.publicCareerId}:await findCareerRecord(gp.publicCareerId).catch(()=>null);
+     if(known?.id){
+       state.verifiedCareerIds.add(known.id);gp.leaderboardChoice="public";
+       if(!gp.retirementRankSummary?.power)showEnrollmentSuccess(known.id,await retirementRankSummary(known.id));
+       return known.id;
+     }
+     // A local save can outlive a failed/rolled-back database insert. Reuse the
+     // same stable ID and rebuild the missing public row instead of silently stopping.
+     gp.publicCareerUploadId=gp.publicCareerId;gp.publicCareerId="";gp.leaderboardChoice="retry";
+     state.pendingCareerEnrollment=true;scheduleCareerAutosave();
    }
    if(retirementAutoPublishPromise)return retirementAutoPublishPromise;
    gp.leaderboardChoice="pending";
    state.pendingCareerEnrollment=true;
    refreshRetirementRankingView();
    scheduleCareerAutosave();
-   if(state.offline||!state.client||!state.user||!state.nickname)return null;
+   if(state.offline||!state.client||!state.user||!state.nickname){
+     scheduleRetirementAutoPublish(state.ready?15000:1500);
+     return null;
+   }
 
    retirementAutoPublishPromise=(async()=>{
      const id=await publishCareer({showLink:false,enrollment:true,silent:true});
@@ -4853,7 +4991,7 @@ window.BL_ONLINE_CONFIG = {
      }
    }catch(_){}
 
-   const id=gp.publicCareerId||await autoPublishRetirementCareer();
+   const id=await autoPublishRetirementCareer();
 
    if(!id){
      try{shareTab?.close()}catch(_){}
@@ -4960,20 +5098,62 @@ window.BL_ONLINE_CONFIG = {
    salary:{label:"生涯總收入",short:"總收入",description:"統計球員薪資、簽約金與代言等已記錄收入；金額會自動以「億＋萬」顯示。",value:r=>Number(r.career_salary||0),fmt:v=>moneyText(v)}
  };
 
+ function leaderboardCareerFingerprint(record){
+   const uploadId=String(record?.career_data?.upload_id||"");
+   if(uploadId)return `upload:${uploadId}`;
+   return [
+     record?.user_id||"",record?.seed||"",record?.player_name||"",record?.position||"",
+     record?.retired_age||0,record?.final_year||0,record?.career_rating||0,record?.career_games||0,
+     JSON.stringify(record?.season_history||[]),JSON.stringify(record?.awards||[])
+   ].join("|");
+ }
+
+ function dedupeLeaderboardRecords(rows){
+   const seen=new Map(),windowMs=10*60*1000;
+   return (rows||[]).filter(record=>{
+     const key=leaderboardCareerFingerprint(record);
+     const at=Date.parse(record?.created_at||"")||0;
+     const previous=seen.get(key);
+     if(previous && (key.startsWith("upload:")||Math.abs(previous-at)<=windowMs))return false;
+     seen.set(key,at||Date.now());
+     return true;
+   });
+ }
+
  async function loadLeaderboardRecords(force=false){
    if(!state.client||!state.user)throw new Error("尚未連上 Online");
    if(!force && state.leaderboardCache && Date.now()-state.leaderboardCache.at<60000)return state.leaderboardCache.rows;
-   const {data,error}=await withTimeout(
-     state.client.from("career_records")
-       .select("id,user_id,nickname,player_name,position,seed_tier,retired_age,final_year,peak_overall,career_rating,career_games,career_salary,championships,national_caps,hall_of_fame,jersey_retired,awards,titles,league_summary,season_history,career_data,created_at,is_public")
-       .eq("is_public",true)
-       .order("created_at",{ascending:false})
-       .limit(500),
-     12000
-   );
-   if(error)throw error;
-   state.leaderboardCache={at:Date.now(),rows:data||[]};
-   return data||[];
+   const columns="id,user_id,nickname,player_name,position,seed,seed_tier,retired_age,final_year,peak_overall,career_rating,career_games,career_salary,championships,national_caps,hall_of_fame,jersey_retired,awards,titles,league_summary,season_history,career_data,created_at,is_public";
+   const rows=[],pageSize=500;
+   for(let from=0;from<5000;from+=pageSize){
+     const {data,error}=await withTimeout(
+       state.client.from("career_records")
+         .select(columns)
+         .eq("is_public",true)
+         .order("created_at",{ascending:false})
+         .range(from,from+pageSize-1),
+       12000
+     );
+     if(error)throw error;
+     const page=data||[];
+     rows.push(...page);
+     if(page.length<pageSize)break;
+   }
+   // Always merge the signed-in player's own public careers, even after the
+   // global table grows beyond the pagination ceiling.
+   if(state.user?.id){
+     try{
+       const {data:mine,error:mineError}=await withTimeout(
+         state.client.from("career_records").select(columns).eq("is_public",true).eq("user_id",state.user.id).order("created_at",{ascending:false}).limit(500),
+         12000
+       );
+       if(mineError)throw mineError;
+       const ids=new Set(rows.map(x=>x.id));(mine||[]).forEach(x=>{if(!ids.has(x.id)){rows.push(x);ids.add(x.id)}});
+     }catch(err){console.warn("Own leaderboard records load failed:",err)}
+   }
+   const visibleRows=dedupeLeaderboardRecords(rows);
+   state.leaderboardCache={at:Date.now(),rows:visibleRows};
+   return visibleRows;
  }
 
  function isOfficialRankingRecord(record){
@@ -5031,6 +5211,7 @@ window.BL_ONLINE_CONFIG = {
    const def=leaderboardMetrics[metricKey]||leaderboardMetrics.power;
    const scoped=records.filter(isOfficialRankingRecord);
    const rows=rankAllCareers(scoped,metricKey);
+   const mine=rows.map((record,index)=>({record,index})).filter(x=>x.record.user_id===state.user?.id),mineOutsideTop=mine.filter(x=>x.index>=50);
    const players=new Set(scoped.map(r=>r.user_id||r.nickname)).size;
    const topPower=scoped.length?Math.max(...scoped.map(normalizedPower)):0;
    const topPeak=scoped.length?Math.max(...scoped.map(r=>Number(r.peak_overall||0))):0;
@@ -5040,7 +5221,9 @@ window.BL_ONLINE_CONFIG = {
        <div class="rankSummary"><span><small>排行榜玩家</small><b>${players}</b></span><span><small>公開生涯</small><b>${scoped.length}</b></span><span><small>最高 POWER</small><b>${topPower.toLocaleString()}</b></span><span><small>最高 OVR</small><b>${topPeak}</b></span></div>
      </div>
      <div class="rankTabs">${Object.entries(leaderboardMetrics).map(([k,m])=>`<button class="rankTab ${k===metricKey?"on":""}" onclick="BasketballLifeOnline.changeRankMetric('${k}')">${esc(m.short)}</button>`).join("")}</div>
-     <div class="rankNotice"><b>${esc(def.label)}：</b>${esc(def.description)} 排行榜顯示前 50 支公開生涯。</div>
+     <div class="rankNotice"><b>${esc(def.label)}：</b>${esc(def.description)} 排行榜顯示前 50 支公開生涯；自己的紀錄即使跌出前 50，仍會保留在下方。</div>
+     ${mine.length?`<div class="rankNotice"><b>我的最佳名次：</b>#${mine[0].index+1}｜${esc(mine[0].record.player_name)}｜${esc(def.fmt(def.value(mine[0].record)))}</div>`:""}
+     ${mineOutsideTop.length?`<div class="legacySection"><div class="legacySectionTitle">我的公開生涯（前 50 名以外）</div><div class="rankList">${mineOutsideTop.slice(0,12).map(x=>rankRow(x.record,x.index,def,metricKey)).join("")}</div></div>`:""}
      <div class="rankList">${rows.length?rows.slice(0,50).map((r,i)=>rankRow(r,i,def,metricKey)).join(""):`<div class="rankEmpty">這個項目目前還沒有公開紀錄。</div>`}</div>`;
  }
 
@@ -5063,7 +5246,7 @@ window.BL_ONLINE_CONFIG = {
  function publicSeasonTable(seasons){
    const ss=Array.isArray(seasons)?seasons:[];
    if(!ss.length)return `<div class="rankEmpty">沒有逐季資料。</div>`;
-   return `<div class="legacyTableWrap"><table class="legacyTable"><tr><th>年</th><th>球隊</th><th>聯盟</th><th>GP</th><th>MPG</th><th>PTS</th><th>REB</th><th>AST</th><th>STL</th><th>BLK</th></tr>${ss.map(x=>`<tr><td>${x.year||""}</td><td>${esc(x.team||"")}</td><td>${esc(typeof leagueDisplay==="function"?leagueDisplay(x.path):x.path||"")}</td><td>${x.games||0}</td><td>${x.mins||0}</td><td>${x.pts||0}</td><td>${x.reb||0}</td><td>${x.ast||0}</td><td>${x.stl||0}</td><td>${x.blk||0}</td></tr>`).join("")}</table></div>`;
+   return `<div class="legacyTableWrap"><table class="legacyTable"><tr><th>年</th><th>球隊</th><th>聯盟</th><th>GP/賽程</th><th>缺賽</th><th>MPG</th><th>PTS</th><th>REB</th><th>AST</th><th>STL</th><th>BLK</th></tr>${ss.map(x=>`<tr><td>${x.year||""}</td><td>${esc(x.team||"")}</td><td>${esc(typeof leagueDisplay==="function"?leagueDisplay(x.path):x.path||"")}</td><td>${seasonGamesDisplay(x)}</td><td>${esc(seasonAbsenceDisplay(x))}</td><td>${x.mins||0}</td><td>${x.pts||0}</td><td>${x.reb||0}</td><td>${x.ast||0}</td><td>${x.stl||0}</td><td>${x.blk||0}</td></tr>`).join("")}</table></div>`;
  }
 
  function publicNationalTable(history,seasons=[]){
@@ -5115,7 +5298,7 @@ window.BL_ONLINE_CONFIG = {
    const tier=publicPower>=70000?"歷史級巨星":publicPower>=45000?"聯盟傳奇":publicPower>=28000?"明星級生涯":publicPower>=15000?"優秀職業球員":"職業旅人";
    content.innerHTML=`<div class="publicLegacy">
      <div class="publicLegacyTop">
-       <div class="publicHeroIdentity"><div class="publicPortrait">${playerAvatarSVG(cd.avatar_seed||`PUBLIC-${r.id||r.player_name}`,r.position||"PG",r.retired_age||40,`${r.player_name||"球員"} 的球員頭像`)}</div><div><div class="legacyKicker">BasketballLife · PUBLIC COURT LEGACY</div><div class="legacyName">${esc(r.player_name)}</div><div class="legacyMeta">玩家 <b>${esc(r.nickname)}</b>｜${esc(r.position||"")}｜退役 ${r.retired_age||"-"} 歲｜${r.final_year||"-"} 年</div></div></div>
+       <div class="publicHeroIdentity"><div class="publicPortrait">${playerAvatarSVG(cd.avatar_seed||`PUBLIC-${r.id||r.player_name}`,r.position||"PG",r.retired_age||40,`${r.player_name||"球員"} 的球員頭像`)}</div><div><div class="legacyKicker">BasketballLife · PUBLIC COURT LEGACY</div><div class="legacyName">${esc(r.player_name)}</div><div class="legacyMeta">玩家 <b>${esc(r.nickname)}</b>｜${esc(r.position||"")}${cd.height_cm?`・${cd.height_cm} cm｜臂展 ${cd.wingspan_cm||"—"} cm`:""}${cd.birthplace&&cd.birthplace!=="未設定"?`｜${esc(cd.birthplace)}出身`:""}｜退役 ${r.retired_age||"-"} 歲｜${r.final_year||"-"} 年</div></div></div>
        <div class="powerStamp"><small>BL POWER</small><b>${publicPower.toLocaleString()}</b><span>${tier}</span></div>
      </div>
      <div class="publicBadgeRow">${hof.length?`<span>🏛️ 名人堂 ×${hof.length}</span>`:""}${jersey.length?`<span>🏟️ 球衣退休 ×${jersey.length}</span>`:""}${r.seed_tier?`<span>🎴 ${esc(r.seed_tier)}</span>`:""}</div>
@@ -5203,8 +5386,14 @@ window.BL_ONLINE_CONFIG = {
        }
 
        state.client.auth.onAuthStateChange((_event,session)=>{
-         if(session?.user)state.user=session.user;
+         if(session?.user){
+           state.user=session.user;
+           if(state.pendingCareerEnrollment)setTimeout(()=>autoPublishRetirementCareer(),0);
+         }
        });
+       if(state.pendingCareerEnrollment || (gamePlayer()?.retired&&!gamePlayer()?.publicCareerId)){
+         setTimeout(()=>autoPublishRetirementCareer(),0);
+       }
 
        return state;
      }catch(err){
@@ -5222,6 +5411,15 @@ window.BL_ONLINE_CONFIG = {
    return state.initPromise;
  }
 
+ window.addEventListener("online",()=>{
+   if(!state.pendingCareerEnrollment)return;
+   if(state.offline){
+     state.offline=false;
+     state.initPromise=null;
+     init().then(()=>scheduleRetirementAutoPublish(0)).catch(()=>{});
+   }else scheduleRetirementAutoPublish(0);
+ });
+
  async function saveNickname(){
    const input=$("onlineNicknameInput"),errBox=$("nicknameError"),btn=$("nicknameSaveBtn");
    const nickname=cleanNickname(input?.value);
@@ -5230,7 +5428,7 @@ window.BL_ONLINE_CONFIG = {
      if(errBox)errBox.textContent="暱稱至少需要 2 個字。";
      return;
    }
-   if(!state.client || !state.user){
+   if(!state.client){
      if(errBox)errBox.textContent="目前沒有連上 Supabase，請重新整理後再試。";
      return;
    }
@@ -5239,6 +5437,11 @@ window.BL_ONLINE_CONFIG = {
    if(errBox)errBox.textContent="";
 
    try{
+     const {data:sessionData,error:sessionError}=await withTimeout(state.client.auth.getSession(),8000);
+     if(sessionError)throw sessionError;
+     state.user=sessionData?.session?.user||await ensureAnonymousUser();
+     if(!state.user)throw new Error("尚未取得登入身分");
+
      const {error}=await withTimeout(
        state.client
          .from("profiles")
@@ -5405,7 +5608,30 @@ function proceduralSeed(){
 }
 const POSITIONS=["PG","SG","SF","PF","C"];
 const L={shoot:"投射",finish:"終結",handle:"控球",pass:"傳球",defense:"防守",rebound:"籃板",ath:"體能",iq:"球商"};
-let chosenPos="PG",p=null,selectedDie=null;
+const TAIWAN_BIRTHPLACES=["臺北市","新北市","桃園市","臺中市","臺南市","高雄市","基隆市","新竹市","嘉義市","新竹縣","苗栗縣","彰化縣","南投縣","雲林縣","嘉義縣","屏東縣","宜蘭縣","花蓮縣","臺東縣","澎湖縣","金門縣","連江縣"];
+const POSITION_BODY_RANGES={
+ PG:{height:[175,198],defaultHeight:188,reach:[2,18],defaultReach:10},
+ SG:{height:[183,203],defaultHeight:195,reach:[3,20],defaultReach:11},
+ SF:{height:[190,208],defaultHeight:201,reach:[4,23],defaultReach:13},
+ PF:{height:[196,214],defaultHeight:205,reach:[5,25],defaultReach:15},
+ C:{height:[201,224],defaultHeight:211,reach:[5,29],defaultReach:18}
+};
+let chosenPos="PG",chosenHeight=188,chosenWingspan=198,chosenBirthplace="RANDOM",p=null,selectedDie=null;
+let setupAvatarProfile={face:0,hair:0,hairTone:0,faceTone:0,flip:false,variant:0,shift:0};
+
+function bodyRangeFor(pos=chosenPos){return POSITION_BODY_RANGES[pos]||POSITION_BODY_RANGES.PG}
+function clampNumber(value,min,max){return Math.max(min,Math.min(max,Number(value)||min))}
+function bodyAttributeModifiers(pos,height,wingspan){
+ const cfg=bodyRangeFor(pos),reach=wingspan-height;
+ const h=Math.max(-2,Math.min(2,Math.round((height-cfg.defaultHeight)/5)));
+ const w=Math.max(-2,Math.min(2,Math.round((reach-cfg.defaultReach)/5)));
+ return {shoot:-w,finish:h,handle:-h-w,pass:-h,defense:h+w,rebound:h+w,ath:-h,iq:0};
+}
+function bodyImpactText(pos,height,wingspan){
+ const mods=bodyAttributeModifiers(pos,height,wingspan),up=[],down=[];
+ Object.entries(mods).forEach(([k,v])=>{if(v>0)up.push(`${L[k]} +${v}`);else if(v<0)down.push(`${L[k]} ${v}`)});
+ return `臂展差 +${wingspan-height} cm｜${up.length?`優勢：${up.join("、")}`:"標準身材"}${down.length?`｜代價：${down.join("、")}`:""}`;
+}
 
 /* =========================================================
    V7.48 LOCAL CAREER SAVE
@@ -5429,6 +5655,10 @@ function normalizeCareerPlayer(player){
  if(!player||typeof player!=="object")return player;
  if(typeof player.careerVersion!=="string"||!player.careerVersion)player.careerVersion="legacy";
  if(typeof player.avatarSeed!=="string"||!player.avatarSeed)player.avatarSeed=newAvatarSeed();
+ const bodyCfg=bodyRangeFor(player.pos);
+ player.heightCm=clampNumber(player.heightCm||bodyCfg.defaultHeight,bodyCfg.height[0],bodyCfg.height[1]);
+ player.wingspanCm=clampNumber(player.wingspanCm||player.heightCm+bodyCfg.defaultReach,player.heightCm+bodyCfg.reach[0],player.heightCm+bodyCfg.reach[1]);
+ if(!TAIWAN_BIRTHPLACES.includes(player.birthplace))player.birthplace="未設定";
  const arrayFields=[
    "injuryHistory","log","dice","used","trainingUndo","pointUndo","titles","titleHistory",
    "seasonPointFocus","offers","news","seasonHistory","careerAwards","chainTitles","teamsPlayed",
@@ -5535,7 +5765,7 @@ function updateContinueCareerPanel(save=readCareerSave()){
  const metaEl=document.getElementById("continueCareerMeta");
  const btn=document.getElementById("continueCareerBtn");
  if(titleEl)titleEl.textContent=player.retired?"查看上次退休生涯":"繼續上次生涯";
- if(metaEl)metaEl.textContent=`${player.name}｜${player.pos}｜${player.age}歲｜${player.path}｜${careerStageLabel(player)}｜${formatCareerSaveTime(save.savedAt)} 儲存`;
+ if(metaEl)metaEl.textContent=`${player.name}｜${player.pos}・${player.heightCm||"—"}cm｜${player.birthplace||"未設定"}｜${player.age}歲｜${player.path}｜${careerStageLabel(player)}｜${formatCareerSaveTime(save.savedAt)} 儲存`;
  if(btn)btn.textContent=player.retired?"查看生涯總結":"繼續遊戲";
 }
 function currentCareerScreen(){
@@ -5804,7 +6034,16 @@ const MODULAR_AVATAR_ASSETS={
  face:"./basketball-avatar-face-bases.webp",
  hair:"./basketball-avatar-hair.webp"
 };
+function encodeCustomAvatar(a){
+ return `BLAV:${a.face}:${a.hair}:${a.hairTone}:${a.faceTone}:${a.flip?1:0}:${a.variant}:${Math.round(a.shift||0)}`;
+}
+function decodeCustomAvatar(value){
+ const m=/^BLAV:(\d{1,2}):(\d{1,2}):(\d):(\d):(0|1):(\d):(-?\d+)$/.exec(String(value||""));
+ if(!m)return null;
+ return {face:clampNumber(m[1],0,15),hair:clampNumber(m[2],0,15),hairTone:clampNumber(m[3],0,2),faceTone:clampNumber(m[4],0,4),flip:m[5]==="1",variant:clampNumber(m[6],0,2),shift:clampNumber(m[7],-1,1)*.65};
+}
 function modularAvatarProfile(avatarSeed,pos="PG"){
+ const custom=decodeCustomAvatar(avatarSeed);if(custom)return custom;
  const r=RNG(`taiwan-player-portrait-v4-${String(avatarSeed||"BL-PLAYER")}-${pos}`);
  return {
   face:ri(r,0,15),hair:ri(r,0,15),hairTone:ri(r,0,2),faceTone:ri(r,0,4),
@@ -5884,11 +6123,54 @@ function newSeed(){
  while(next===previous)next=proceduralSeed();
  setSetupSeedValue(next);
 }
+function refreshSetupBody(reset=false){
+ const cfg=bodyRangeFor();
+ if(reset){chosenHeight=cfg.defaultHeight;chosenWingspan=chosenHeight+cfg.defaultReach}
+ chosenHeight=clampNumber(chosenHeight,cfg.height[0],cfg.height[1]);
+ chosenWingspan=clampNumber(chosenWingspan,chosenHeight+cfg.reach[0],chosenHeight+cfg.reach[1]);
+ const height=document.getElementById("heightInput"),wingspan=document.getElementById("wingspanInput");
+ if(height){height.min=cfg.height[0];height.max=cfg.height[1];height.value=chosenHeight}
+ if(wingspan){wingspan.min=chosenHeight+cfg.reach[0];wingspan.max=chosenHeight+cfg.reach[1];wingspan.value=chosenWingspan}
+ const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value};
+ set("heightValue",`${chosenHeight} cm`);set("heightMin",`${cfg.height[0]} cm`);set("heightMax",`${cfg.height[1]} cm`);
+ set("wingspanValue",`${chosenWingspan} cm`);set("wingspanMin",`${chosenHeight+cfg.reach[0]} cm`);set("wingspanMax",`${chosenHeight+cfg.reach[1]} cm`);
+ set("bodyImpact",bodyImpactText(chosenPos,chosenHeight,chosenWingspan));
+}
+function updateSetupHeight(value){
+ const reach=chosenWingspan-chosenHeight;chosenHeight=Number(value);chosenWingspan=chosenHeight+reach;refreshSetupBody(false);
+}
+function updateSetupWingspan(value){chosenWingspan=Number(value);refreshSetupBody(false)}
+function setupAvatarSeed(){return encodeCustomAvatar(setupAvatarProfile)}
+function syncSetupAvatarInputs(){
+ const map={avatarFaceInput:setupAvatarProfile.face,avatarHairInput:setupAvatarProfile.hair,avatarFaceToneInput:setupAvatarProfile.faceTone,avatarHairToneInput:setupAvatarProfile.hairTone};
+ Object.entries(map).forEach(([id,value])=>{const el=document.getElementById(id);if(el)el.value=value});
+ const labels={avatarFaceValue:`${setupAvatarProfile.face+1}/16`,avatarHairValue:`${setupAvatarProfile.hair+1}/16`,avatarFaceToneValue:`${setupAvatarProfile.faceTone+1}/5`,avatarHairToneValue:`${setupAvatarProfile.hairTone+1}/3`};
+ Object.entries(labels).forEach(([id,value])=>{const el=document.getElementById(id);if(el)el.textContent=value});
+ renderPlayerAvatar(document.getElementById("setupAvatarPreview"),setupAvatarSeed(),chosenPos,16,"自訂球員頭像預覽");
+}
+function updateSetupAvatar(key,value){
+ if(!["face","hair","faceTone","hairTone"].includes(key))return;
+ const limits={face:15,hair:15,faceTone:4,hairTone:2};setupAvatarProfile[key]=clampNumber(value,0,limits[key]);syncSetupAvatarInputs();
+}
+function randomizeSetupAvatar(){
+ const r=RNG(`${newAvatarSeed()}-${Date.now()}`);
+ setupAvatarProfile={face:ri(r,0,15),hair:ri(r,0,15),hairTone:ri(r,0,2),faceTone:ri(r,0,4),flip:r()<.5,variant:ri(r,0,2),shift:ri(r,-1,1)};
+ syncSetupAvatarInputs();
+}
+function toggleSetupAvatarFlip(){setupAvatarProfile.flip=!setupAvatarProfile.flip;syncSetupAvatarInputs()}
+function selectSetupPosition(pos){
+ if(!POSITIONS.includes(pos))return;chosenPos=pos;renderPos();refreshSetupBody(true);syncSetupAvatarInputs();
+}
+function initializeCharacterBuilder(){
+ const birthplace=document.getElementById("birthplaceInput");
+ if(birthplace){birthplace.innerHTML=`<option value="RANDOM">🎲 依 Seed 隨機縣市</option>${TAIWAN_BIRTHPLACES.map(x=>`<option value="${x}">${x}</option>`).join("")}`;birthplace.value=chosenBirthplace}
+ refreshSetupBody(true);randomizeSetupAvatar();
+}
 function renderPos(){
  const names={PG:"控球後衛",SG:"得分後衛",SF:"小前鋒",PF:"大前鋒",C:"中鋒"};
- document.getElementById("posgrid").innerHTML=POSITIONS.map(x=>`<button type="button" class="pos ${x===chosenPos?"on":""}" aria-pressed="${x===chosenPos}" onclick="chosenPos='${x}';renderPos()"><b>${x}</b><small>${names[x]}</small></button>`).join("");
+ document.getElementById("posgrid").innerHTML=POSITIONS.map(x=>`<button type="button" class="pos ${x===chosenPos?"on":""}" aria-pressed="${x===chosenPos}" onclick="selectSetupPosition('${x}')"><b>${x}</b><small>${names[x]}</small></button>`).join("");
 }
-renderPos();newSeed();
+renderPos();newSeed();initializeCharacterBuilder();
 
 const events=[
 {t:"飲食與睡眠計畫",d:"最近訓練量上升，防護員提醒你：如果恢復做不好，受傷風險會快速累積。",opts:[
@@ -6133,12 +6415,16 @@ function startCareer(){
  if(chosenPos==="SF"){s.finish+=5;s.defense+=4}
  if(chosenPos==="PF"){s.rebound+=7;s.defense+=4}
  if(chosenPos==="C"){s.rebound+=10;s.defense+=7}
+ const bodyMods=bodyAttributeModifiers(chosenPos,chosenHeight,chosenWingspan);
+ Object.entries(bodyMods).forEach(([k,v])=>{s[k]+=v});
  Object.keys(s).forEach(k=>s[k]=Math.max(22,Math.min(58,s[k])));
 
  let caps={};
  for(let k in s)caps[k]=Math.min(99,s[k]+ri(r,tier.cap[0],tier.cap[1]));
 
- p={name:n,pos:chosenPos,seed,avatarSeed:newAvatarSeed(),careerVersion:"7.50.5",seedTier:tier.key,seedTierLabel:tier.label,seedTierDesc:tier.desc,
+ const birthplaceChoice=document.getElementById("birthplaceInput")?.value||chosenBirthplace;
+ const birthplace=birthplaceChoice==="RANDOM"?TAIWAN_BIRTHPLACES[ri(RNG(`${seed}-birthplace`),0,TAIWAN_BIRTHPLACES.length-1)]:birthplaceChoice;
+ p={name:n,pos:chosenPos,seed,avatarSeed:setupAvatarSeed(),heightCm:chosenHeight,wingspanCm:chosenWingspan,birthplace,careerVersion:"7.50.5",seedTier:tier.key,seedTierLabel:tier.label,seedTierDesc:tier.desc,
  age:16,year:2026,path:"HBL",grade:1,stage:"training",stats:s,caps,growth:ri(r,tier.growth[0],tier.growth[1]),
  durability:ri(r,38,94),clutch:ri(r,35,96),discipline:ri(r,38,94),confidence:50,health:100,fatigue:0,six:0,genius:false,geniusType:"",round:0,eventIndex:0,
  seasonEventCount:ri(r,2,4),dice:[],used:[],trainingUndo:[],trainingProgress:{shoot:0,finish:0,handle:0,pass:0,defense:0,rebound:0,ath:0,iq:0},pointUndo:[],seasonPoints:0,bonusPoints:0,rep:0,injury:null,injuryHistory:[],log:[],seasonStats:null,team:"",geniusResolved:false,geniusFailed:false,transition:null,geniusCostDiscount:0,titles:[],titleHistory:[],seasonPointFocus:[],clutchWins:0,eventSuccesses:0,healthySeasons:0,championships:0,severeInjuryRecovered:false,offers:[],strategyStats:{risk:{pick:0,success:0,streak:0,best:0},balance:{pick:0,success:0,streak:0,best:0},safe:{pick:0,success:0,streak:0,best:0}},seasonEventSuccess:0,geniusFailureShown:false,careerSeason:0,contract:null,seasonPlan:null,planRiskMod:0,planGrowthMod:0,planStatMod:0,nationalCaps:0,relationship:"單身",lifeEventCount:0,news:[],seasonHistory:[],careerAwards:[],careerSalary:0,careerGames:0,careerPtsTotal:0,careerRebTotal:0,careerAstTotal:0,chainTitles:[],retired:false,retirementReason:"",peakOverall:0,ageDeclineStage:0,careerMVP:0,careerFirstTeam:0,careerSecondTeam:0,careerDPOY:0,careerScoringTitles:0,careerAssistTitles:0,
@@ -6169,7 +6455,7 @@ function render(){
  if(quickRestartBtn)quickRestartBtn.classList.toggle("hidden",!p||p.retired);
  renderFeedHistory();
  setTimeout(fitGameToViewport,0);
- pname.textContent=p.name;ppos.textContent=p.pos;teamname.textContent=currentTeam()?`｜${currentTeam()}`:"";
+ pname.textContent=p.name;ppos.textContent=`${p.pos}｜${p.heightCm||"—"}cm`;ppos.title=`臂展 ${p.wingspanCm||"—"} cm｜出生地 ${p.birthplace||"未設定"}`;teamname.textContent=currentTeam()?`｜${currentTeam()}`:"";
  renderPlayerAvatar(document.getElementById("playerAvatar"),p.avatarSeed,p.pos,p.age,`${p.name} 的球員頭像`);
  age.textContent=p.age;year.textContent=p.year;ovr.textContent=overall();path.textContent=p.path;
  if(injurySummary)injurySummary.innerHTML=p.injury?`目前傷勢：<span class="bad">${p.injury.name}（${p.injury.level}）</span>`:(p.injuryHistory.length?`傷病履歷：${p.injuryHistory.length} 次正式傷勢`:"目前沒有正式傷病紀錄。");
@@ -7911,6 +8197,23 @@ function maybeForceRetire(){
  // after expiry, a league-wide market search and a failed tryout.
  return false;
 }
+function seasonScheduleGames(x){
+ const scheduled=Number(x?.scheduledGames||0);
+ return scheduled>0?scheduled:Number(x?.games||0)+Number(x?.missedGames||0);
+}
+function seasonGamesDisplay(x){
+ const games=Number(x?.games||0),scheduled=seasonScheduleGames(x);
+ return scheduled>0?`${games}/${scheduled}`:String(games);
+}
+function seasonAbsenceDisplay(x){
+ const injury=Math.max(0,Number(x?.injuryMissedGames||0));
+ const suspension=Math.max(0,Number(x?.suspensionGames||0));
+ const parts=[];
+ if(injury)parts.push(`傷病 ${injury}`);
+ if(suspension)parts.push(`停賽 ${suspension}`);
+ if(!parts.length&&Number(x?.missedGames||0)>0)parts.push(`缺席 ${Number(x.missedGames)}`);
+ return parts.join("｜")||"—";
+}
 function careerLeagueSummary(){
  const pros=(p.seasonHistory||[]).filter(x=>isProfessionalPathValue(x.path)),groups={};
  pros.forEach(x=>{
@@ -8003,7 +8306,7 @@ document.addEventListener("click",e=>{
 function retirementRestartHTML(){
  return `<div class="restartBox">
    <b>再跑一次人生</b>
-   <div class="mut" style="font-size:11px;margin-top:4px">保留同一 Seed，或重新抽取新的世界。</div>
+   <div class="mut" style="font-size:11px;margin-top:4px">保留球員外觀、身材與出生地，選擇同一 Seed 或重新抽取世界。</div>
    <div class="restartBtns">
      <button class="btn same" onclick="restartCareer('same')">↻ 同種子重新開始</button>
      <button class="btn random" onclick="restartCareer('random')">🎲 隨機種子重新開始</button>
@@ -8017,13 +8320,21 @@ function restartCareer(mode){
  const oldSeed=p?.seed||setupSeedValue();
  const oldName=p?.name||"";
  const oldPos=p?.pos||"PG";
+ const oldHeight=p?.heightCm||bodyRangeFor(oldPos).defaultHeight;
+ const oldWingspan=p?.wingspanCm||oldHeight+bodyRangeFor(oldPos).defaultReach;
+ const oldBirthplace=TAIWAN_BIRTHPLACES.includes(p?.birthplace)?p.birthplace:"RANDOM";
+ const oldAvatar=modularAvatarProfile(p?.avatarSeed||newAvatarSeed(),oldPos);
 
  document.getElementById("game").classList.add("hidden");
  document.getElementById("setup").classList.remove("hidden");
 
  p=null;selectedDie=null;clearCareerSave(false);
  chosenPos=oldPos;
+ chosenHeight=oldHeight;chosenWingspan=oldWingspan;chosenBirthplace=oldBirthplace;
+ setupAvatarProfile={...oldAvatar,shift:Math.round((oldAvatar.shift||0)/.65)};
  renderPos();
+ refreshSetupBody(false);syncSetupAvatarInputs();
+ const birthplace=document.getElementById("birthplaceInput");if(birthplace)birthplace.value=chosenBirthplace;
  document.getElementById("playerNameInput").value=oldName;
 
  if(mode==="same"){
@@ -8117,8 +8428,8 @@ function legacyLeagueTable(groups){
  </table></div>`;
 }
 function legacySeasonTable(){
- return `<div class="legacyTableWrap"><table class="legacyTable"><tr><th>年</th><th>球隊</th><th>聯盟</th><th>GP</th><th>MPG</th><th>PTS</th><th>REB</th><th>AST</th><th>STL</th><th>BLK</th><th>FG%</th><th>3P%</th></tr>
- ${(p.seasonHistory||[]).map(x=>`<tr><td>${x.year}</td><td>${x.team}</td><td>${leagueDisplay(x.path)}</td><td>${x.games||0}</td><td>${x.mins||0}</td><td>${x.pts||0}</td><td>${x.reb||0}</td><td>${x.ast||0}</td><td>${x.stl||0}</td><td>${x.blk||0}</td><td>${x.fg||0}</td><td>${x.three||0}</td></tr>`).join("")}
+ return `<div class="legacyTableWrap"><table class="legacyTable"><tr><th>年</th><th>球隊</th><th>聯盟</th><th>GP/賽程</th><th>缺賽</th><th>MPG</th><th>PTS</th><th>REB</th><th>AST</th><th>STL</th><th>BLK</th><th>FG%</th><th>3P%</th></tr>
+ ${(p.seasonHistory||[]).map(x=>`<tr><td>${x.year}</td><td>${x.team}</td><td>${leagueDisplay(x.path)}</td><td>${seasonGamesDisplay(x)}</td><td>${seasonAbsenceDisplay(x)}</td><td>${x.mins||0}</td><td>${x.pts||0}</td><td>${x.reb||0}</td><td>${x.ast||0}</td><td>${x.stl||0}</td><td>${x.blk||0}</td><td>${x.fg||0}</td><td>${x.three||0}</td></tr>`).join("")}
  </table></div>`;
 }
 function legacyCareerStage(path){
@@ -8178,7 +8489,7 @@ function legacyHeaderHTML(){
      <div class="legacyHeroCopy">
        <div class="legacyHeroKicker"><span>CAREER FINALE</span> ${retirementExitClass()==="ceremony"?"引退之夜":retirementExitClass()==="farewell"?"告別球場":"生涯終章"}</div>
        <div class="legacyName">${escapeFeedText(p.name)}</div>
-       <div class="legacyMeta">${escapeFeedText(p.pos)}｜最後效力 ${escapeFeedText(last.team||p.team||"—")} · ${escapeFeedText(last.path?leagueDisplay(last.path):leagueDisplay(p.path))}｜巔峰 OVR ${p.peakOverall} · 引退總評 ${overall()}</div>
+       <div class="legacyMeta">${escapeFeedText(p.pos)}・${p.heightCm||"—"} cm・臂展 ${p.wingspanCm||"—"} cm｜${escapeFeedText(p.birthplace||"未設定")}出身｜最後效力 ${escapeFeedText(last.team||p.team||"—")} · ${escapeFeedText(last.path?leagueDisplay(last.path):leagueDisplay(p.path))}｜巔峰 OVR ${p.peakOverall} · 引退總評 ${overall()}</div>
        <div class="legacyBadges">${badges.join("")}</div>
      </div>
    </div>
@@ -8219,14 +8530,17 @@ function creatorCreditHTML(){
  return `<div class="creatorCredit retirementCredit">Produced by <a href="https://www.threads.com/@basketballlife_k?xmt=AQG0tS6gtXrN8CWiBiJqphKuoz5VwtJFONP4svLNEbhjdt0" target="_blank" rel="noopener noreferrer">BasketballLife_K</a></div>`;
 }
 function retirementRankMarkHTML(){
- if(!p?.publicCareerId)return "";
+ if(!p?.publicCareerId){
+   if(p?.leaderboardChoice==="retry")return `<div class="legacyRankMark retry"><b>⚠ 排行榜尚未登錄完成</b><span>連線恢復後會以同一筆 ID 自動補傳</span></div>`;
+   return `<div class="legacyRankMark pending"><b>⏳ 正在確認排行榜登錄</b><span>完成後會顯示全球名次</span></div>`;
+ }
  const ranks=p.retirementRankSummary||{},bits=[];
  if(ranks.power)bits.push(`BL POWER #${ranks.power}`);
  if(ranks.peak)bits.push(`巔峰 OVR #${ranks.peak}`);
  return `<div class="legacyRankMark"><b>✓ 已登錄全球排行</b><span>${bits.join("｜")||"公開生涯已建立"}</span></div>`;
 }
 function retirementRankingButtonsHTML(){
- return `<button class="btn" onclick="BasketballLifeOnline.openLeaderboardNewTab()">🏆 查看全球排行榜 ↗</button><button class="btn" onclick="shareCareerImage()">📸 分享生涯紀念圖</button>`;
+ return `${p?.publicCareerId?"":`<button class="btn" onclick="BasketballLifeOnline.scheduleRetirementAutoPublish(0)">↻ 重新確認登錄</button>`}<button class="btn" onclick="BasketballLifeOnline.openLeaderboardNewTab()">🏆 查看全球排行榜 ↗</button><button class="btn" onclick="shareCareerImage()">📸 分享生涯紀念圖</button>`;
 }
 function refreshRetirementRankingView(){
  document.querySelectorAll(".legacyRankMarkHost").forEach(x=>x.innerHTML=retirementRankMarkHTML());
@@ -8498,7 +8812,7 @@ function showCareerChapter(type){
      <div class="chapterYear">${p.year} 年夏天</div>
      <div class="chapterHero">${p.age} 歲的 <b>${p.name}</b> 正式加入<br><span class="chapterTeam">${p.team} 籃球隊</span></div>
      <div class="mut">三年的高中籃球生涯，從今天開始。沒有人知道你最後會走到哪裡。</div>
-     <div class="chapterMeta"><span>${p.pos}</span><span>高一新生</span><span>HBL</span></div>
+     <div class="chapterMeta"><span>${p.pos}・${p.heightCm} cm</span><span>臂展 ${p.wingspanCm} cm</span><span>${escapeFeedText(p.birthplace)}出身</span><span>高一新生</span><span>HBL</span></div>
    </div>`;
    next.textContent="開始高中生涯 →";next.classList.remove("hidden");p.transition="toTraining";
  }else if(type==="newSchoolYear"){
@@ -8784,10 +9098,22 @@ function normalEventPool(){
  if(isProPath())return PRO_GENERAL_EVENTS;
  return events;
 }
-function mapEventOption(option){
- const raw=String(option[2]||"");
- const typed=raw.includes("|")?raw:`${strategyOf(raw)}|${raw}`;
- return [option[0],option[1],typed,effectType(typed)];
+function eventOptionRiskScore(option,index=0){
+ const raw=effectType(String(option?.[2]||"normal"));
+ const weights={risk:100,injrisk:100,three:92,clutch:88,show:86,compete:84,social:76,ath:66,finish:64,shoot:62,handle:60,rebound:58,defense:56,pass:44,iq:42,talk:38,study:36,team:30,normal:25,check:15,safe:0};
+ const words=`${option?.[0]||""} ${option?.[1]||""}`;
+ return (weights[raw]??50)+(/高風險|全力|挑戰|強勢|直接|大量|硬撐/.test(words)?8:0)-(/保守|休息|恢復|穩定|安全|降低/.test(words)?8:0)-index*.001;
+}
+function mapEventOptions(options){
+ const source=Array.isArray(options)?options:[],ranked=source.map((option,index)=>({option,index,score:eventOptionRiskScore(option,index)})).sort((a,b)=>b.score-a.score);
+ const strategyByIndex={};
+ if(ranked.length===1)strategyByIndex[ranked[0].index]="balance";
+ else if(ranked.length===2){strategyByIndex[ranked[0].index]="risk";strategyByIndex[ranked[1].index]="safe"}
+ else ranked.forEach((item,rank)=>{strategyByIndex[item.index]=rank===0?"risk":rank===ranked.length-1?"safe":"balance"});
+ return source.map((option,index)=>{
+   const raw=effectType(String(option[2]||"normal")),typed=`${strategyByIndex[index]||"balance"}|${raw}`;
+   return [option[0],option[1],typed,raw];
+ });
 }
 function showEvent(){
  p.stage="events";resetMain();render();
@@ -8796,9 +9122,9 @@ function showEvent(){
  let e=candidates[ri(r,0,candidates.length-1)];
  p.recentEvents=p.recentEvents||[];p.recentEvents.push(e.t);p.recentEvents=p.recentEvents.slice(-6);
  chapter.textContent=`${p.year} · ${p.age}歲 · ${p.path} · 事件 ${p.eventIndex+1}/${p.seasonEventCount}`;title.textContent=e.t;text.textContent=e.d;
- // 策略由選項本身決定，不再把原始第 1／2／3 項硬套成冒險／平衡／穩健。
- // 選項即使依 Seed 換位，文字、實際效果、成功率與策略標籤仍會保持一致。
- const mapped=e.opts.map(mapEventOption);
+ // Every ordinary event deliberately offers one high, one medium-high and one
+ // medium-low chance. The option's actual effect stays intact after rotation.
+ const mapped=mapEventOptions(e.opts);
  // 順序依種子與年份輪替，避免玩家永遠無腦點固定位置。
  let rot=ri(RNG(p.seed+"choice-order-"+p.year+"-"+p.eventIndex),0,2);
  mapped.push(...mapped.splice(0,rot));
@@ -9347,10 +9673,10 @@ const TITLE_DEFS={
  franchise:{name:"一生一隊",rarity:"epic",effect:"該母隊的球衣退休評估獲得忠誠加成。",unlock:"同一支職業球隊效力至少 6 季。"},
  evergreen:{name:"職業常青樹",rarity:"epic",effect:"退役 BL POWER 額外 +500。",unlock:"正式成人／職業聯盟累積 500 場出賽。"},
  veteran:{name:"沉著老練",rarity:"uncommon",effect:"所有策略判定獲得少量經驗加成。",unlock:"生涯累積成功處理 8 次事件。"},
- daredevil:{name:"無畏者",rarity:"rare",effect:"冒險成功率 35% → 45%，大成功門檻更寬。",unlock:"連續 3 次選擇冒險策略且全部成功。"},
- gambler:{name:"豪賭之星",rarity:"epic",effect:"冒險成功率最高提升至 50%，大成功能力獎勵更高；大失敗代價不變。",unlock:"生涯累積 10 次冒險策略成功。"},
- composed:{name:"審時度勢",rarity:"uncommon",effect:"平衡策略成功率 50% → 60%。",unlock:"連續 4 次平衡策略成功。"},
- steady:{name:"穩如泰山",rarity:"rare",effect:"穩健策略成功率 70% → 80%，事件額外受傷風險 -5%。",unlock:"連續 5 次穩健策略成功。"},
+ daredevil:{name:"無畏者",rarity:"rare",effect:"冒險成功率 50% → 60%，大成功門檻更寬。",unlock:"連續 3 次選擇冒險策略且全部成功。"},
+ gambler:{name:"豪賭之星",rarity:"epic",effect:"冒險成功率最高提升至 66%，大成功能力獎勵更高；大失敗代價不變。",unlock:"生涯累積 10 次冒險策略成功。"},
+ composed:{name:"審時度勢",rarity:"uncommon",effect:"平衡策略成功率 68% → 78%。",unlock:"連續 4 次平衡策略成功。"},
+ steady:{name:"穩如泰山",rarity:"rare",effect:"穩健策略成功率 82% → 90%，事件額外受傷風險 -5%。",unlock:"連續 5 次穩健策略成功。"},
  perfect:{name:"完美賽季",rarity:"epic",effect:"下一季第一次事件成功率 +10%。",unlock:"單季所有生涯事件全部成功。"},
  lockerroom:{name:"休息室毒瘤",rarity:"negative",negative:true,effect:"合約市場評分 -6、團隊型事件成功率 -8%；老將續留時的上場時間上限更低。",unlock:"球團準備結束你的生涯時，選擇公開施壓並強迫續留。"},
 
@@ -9463,7 +9789,7 @@ function strategyOf(type){
 }
 function effectType(type){return type.includes("|")?type.split("|")[1]:type}
 function strategyName(st){return st==="risk"?"🔥 冒險":st==="balance"?"⚖️ 平衡":"🛡️ 穩健"}
-function strategyBase(st){return st==="risk"?35:st==="balance"?50:70}
+function strategyBase(st){return st==="risk"?50:st==="balance"?68:82}
 
 function confidenceLabel(){
  const c=p.confidence??50;
@@ -9479,10 +9805,10 @@ function confidencePerformanceMod(){return Math.max(-1,Math.min(1,((p.confidence
 
 function eventChance(type){
  let st=strategyOf(type),c=strategyBase(st);
- if(st==="risk"&&hasTitle("daredevil"))c=45;
- if(st==="risk"&&hasTitle("gambler"))c=50;
- if(st==="balance"&&hasTitle("composed"))c=60;
- if(st==="safe"&&hasTitle("steady"))c=80;
+ if(st==="risk"&&hasTitle("daredevil"))c=60;
+ if(st==="risk"&&hasTitle("gambler"))c=66;
+ if(st==="balance"&&hasTitle("composed"))c=78;
+ if(st==="safe"&&hasTitle("steady"))c=90;
  if(hasTitle("veteran"))c+=5;
  if(p.perfectSeasonBoost){c+=10;p.perfectSeasonBoost=false;}
  c+=eventChanceModifier(effectType(type))+chainChanceBonus(type)+confidenceChanceMod();
@@ -9490,10 +9816,10 @@ function eventChance(type){
 }
 function previewChance(type){
  let st=strategyOf(type),c=strategyBase(st);
- if(st==="risk"&&hasTitle("daredevil"))c=45;
- if(st==="risk"&&hasTitle("gambler"))c=50;
- if(st==="balance"&&hasTitle("composed"))c=60;
- if(st==="safe"&&hasTitle("steady"))c=80;
+ if(st==="risk"&&hasTitle("daredevil"))c=60;
+ if(st==="risk"&&hasTitle("gambler"))c=66;
+ if(st==="balance"&&hasTitle("composed"))c=78;
+ if(st==="safe"&&hasTitle("steady"))c=90;
  if(hasTitle("veteran"))c+=5;
  if(p.perfectSeasonBoost)c+=10;
  c+=eventChanceModifier(effectType(type))+chainChanceBonus(type)+confidenceChanceMod();
@@ -9708,6 +10034,7 @@ function showResults(){
    p.injury.remainingSeasonShare=Math.max(0,recovery.remainingShare-missedThisSeason/scheduledGames);
    ensureInjuryRecoveryState();
  }
+ const injuryMissed=missedThisSeason;
  const conductMissed=Math.min(Math.max(0,scheduledGames-missedThisSeason),Math.max(0,Math.round(p.conductSuspensionGames||0)));
  missedThisSeason+=conductMissed;
  p.conductSuspensionGames=0;
@@ -9807,7 +10134,13 @@ function showResults(){
  const healthyAttackBonus=isProPath()&&p.seasonPlan==="attack"&&!p.injury?1:0;
  let total=Math.max(1,growthBase+planGrowthPoints+healthyAttackBonus);
  let chainHTML=checkChainTitles(p.seasonStats);
- p.seasonHistory.push({year:p.year,age:p.age,team:p.team,path:p.path,scheduledGames,missedGames:missedThisSeason,games,mins,pts,reb,ast,stl,blk,fg,three});
+ p.seasonHistory.push({
+   year:p.year,age:p.age,team:p.team,path:p.path,
+   scheduledGames,missedGames:missedThisSeason,
+   injuryMissedGames:injuryMissed,injuryName:injuryMissed>0?(p.injury?.name||"傷病"):"",
+   suspensionGames:conductMissed,
+   games,mins,pts,reb,ast,stl,blk,fg,three
+ });
  updateCareerTotals(p.seasonStats);
  let titleHTML=titleChecks();
  p.bonusPoints=total;p.specialBonusPoints=0;
@@ -9816,12 +10149,16 @@ function showResults(){
  title.textContent="年度賽事與個人成績";
  text.innerHTML=`<div class="seasonResultIntro"><b>${leagueDisplay(p.path)}</b>｜本季賽事結束。</div>${proHeaderHTML()}`;
 
-let missReasonLabel = p.injury
-  ? `因 ${p.injury.name} 缺席`
-  : (conductMissed>0 ? `因場外事件遭球團停賽` : "");
-let injurySeasonHTML = missedThisSeason>0 ? `<div class="injuryCard ${p.injury?.level==="輕傷"?"light":p.injury?.level==="中傷"?"mid":""}">
- <b>${p.injury?"🏥 傷病影響本季出賽":"📰 場外事件影響本季出賽"}</b><br>
- 原定賽程 ${scheduledGames} 場｜${missReasonLabel} ${missedThisSeason} 場｜實際出賽 <b>${games}</b> 場
+const missReasonParts=[];
+ if(injuryMissed>0)missReasonParts.push(`因 ${p.injury?.name||"傷病"} 缺席 ${injuryMissed} 場`);
+ if(conductMissed>0)missReasonParts.push(`因場外事件遭球團停賽 ${conductMissed} 場`);
+ if(!missReasonParts.length&&missedThisSeason>0)missReasonParts.push(`缺席 ${missedThisSeason} 場`);
+ const missedHeadline=injuryMissed>0&&conductMissed>0
+   ?"🏥📰 傷病與停賽影響本季出賽"
+   : injuryMissed>0?"🏥 傷病影響本季出賽":"📰 場外事件影響本季出賽";
+ let injurySeasonHTML = missedThisSeason>0 ? `<div class="injuryCard ${p.injury?.level==="輕傷"?"light":p.injury?.level==="中傷"?"mid":""}">
+ <b>${missedHeadline}</b><br>
+ 原定賽程 ${scheduledGames} 場｜${missReasonParts.join("｜")}｜實際出賽 <b>${games}</b> 場
  ${p.injury?.remainingGames>0?`<br><span class="bad">目前仍預估缺席 ${p.injury.remainingGames} 場，傷勢將延續至下一階段。</span>`:""}
  </div>` : "";
  let veteranMinutesHTML=isProPath()&&p.age>=32?`<div class="notice"><b>⏱️ ${veteranProfile.label}</b><br>${p.age}歲老將本季上場時間上限約 <b>${maxMins} 分鐘</b>；年齡、身體負荷與傷後狀態會優先於球隊信任，避免暮年反而越打越久。</div>`:"";
@@ -10163,5 +10500,21 @@ function chooseGraduate(x){
  logIt(`高中畢業去向：${x}｜${p.team}`);
  p.grade=1;p.eventIndex=0;p.seasonEventCount=ri(RNG(p.seed+"events-"+p.year),2,4);showCareerChapter("newTeam");
 }
+(function initGameInteractionClasses(){
+ const gameEl=document.getElementById("game");
+ const choicesEl=document.getElementById("choices");
+ const nextEl=document.getElementById("next");
+ if(!gameEl||!choicesEl||!nextEl)return;
+ const sync=()=>{
+   gameEl.classList.toggle("hasChoices",choicesEl.childNodes.length>0);
+   gameEl.classList.toggle("hasNext",!nextEl.classList.contains("hidden"));
+ };
+ if(globalThis.MutationObserver){
+   new MutationObserver(sync).observe(choicesEl,{childList:true,subtree:true});
+   new MutationObserver(sync).observe(nextEl,{attributes:true,attributeFilter:["class"]});
+ }
+ sync();
+})();
+
 </script>
 </body></html>
