@@ -4013,7 +4013,8 @@ body.retirementMode .legacyHero .legacyMeta{margin-top:7px!important;color:#aab8
 .fanEchoGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
 .fanEchoCard{position:relative;min-height:96px;padding:11px 11px 9px 31px;border:1px solid #344b57;border-radius:10px;background:linear-gradient(145deg,#111e26,#0c171e)}
 .fanEchoCard:before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:3px;border-radius:0 3px 3px 0;background:#6c8491}
-.fanEchoCard.legend:before,.fanEchoCard.farewell:before{background:#df9650}.fanEchoCard.national:before{background:#5e8fc1}.fanEchoCard.mixed:before{background:#c56c5f}.fanEchoCard.spark:before{background:#d6b95d}
+.fanEchoCard.legend:before,.fanEchoCard.farewell:before{background:#df9650}.fanEchoCard.national:before{background:#5e8fc1}.fanEchoCard.mixed:before{background:#c56c5f}.fanEchoCard.spark:before{background:#d6b95d}.fanEchoCard.critical:before{background:#dd8753}.fanEchoCard.mock:before{background:#e35d62}.fanEchoCard.support:before{background:#65af89}
+.fanEchoCard.mock{border-color:#654047;background:linear-gradient(145deg,#24171b,#11171c)}.fanEchoCard.mock p{color:#efc5c6}.fanEchoCard.critical{border-color:#5e493d}
 .fanEchoQuote{position:absolute;left:10px;top:5px;color:#566e7a;font:700 30px/1 Georgia,serif}
 .fanEchoCard p{margin:0;color:#d5dcdf;font-size:11.5px;line-height:1.6}
 .fanEchoCard small{display:block;margin-top:6px;color:#8ea0a9;font-size:9.5px;font-weight:850}
@@ -8975,8 +8976,55 @@ function fanEchoEntries(limit=null){
  const target=limit==null?Math.min(8,Math.max(5,5+Math.floor(r()*4))):Math.max(1,Math.min(Number(limit)||1,shuffled.length));
  return shuffled.slice(0,target);
 }
+function fanEchoEntriesV75010(limit=null){
+ const games=Math.max(0,Number(p.careerGames||0)),points=Math.round(Number(p.careerPtsTotal||0)),avg=games?points/games:0;
+ const rating=Math.max(0,Number(p.careerRating||0)),peak=Math.max(0,Number(p.peakOverall||0));
+ const pro=(p.seasonHistory||[]).filter(x=>isProfessionalPathValue(x.path)),teamCount=new Set(pro.map(x=>x.team).filter(Boolean)).size;
+ const profiles=Object.values(careerLeagueProfiles()),best=[...profiles].sort((a,b)=>b.score-a.score)[0];
+ const offCourt=p.offCourtHistory||[],offCourtTypes=offCourt.map(x=>String(x.type||""));
+ const poor=rating<15000||peak<72||(games>=80&&avg<6),controversial=hasTitle("salary_thief")||hasTitle("lockerroom")||offCourt.length>0;
+ const baseline=fanEchoEntries(8).filter(x=>!poor||["quiet","mixed"].includes(x.tone));
+ const support=[
+   {tone:"support",source:"退休消息下方留言",text:"不必把每個球員都說成巨星才值得道別。能把一段職業生涯真正走完，本身就值得一句辛苦了。"},
+   {tone:"support",source:"球隊工作人員",text:"球迷看到的是比賽，我們也記得那些準時報到、替隊友撿球和沒有上新聞的普通日子。"},
+   {tone:"quiet",source:"老隊友球迷會",text:"照實記住他做過的事就好，不必硬加上傳奇濾鏡，也不用因為不夠耀眼就假裝這段生涯不存在。"}
+ ];
+ const criticism=[],add=(tone,source,text)=>{if(text)criticism.push({tone,source,text})};
+ if(rating<15000||peak<72){
+   add("mock","退休貼文熱門留言","精華剪輯找了半天，最後只好放簽約照、板凳鏡頭和離隊感言。");
+   add("critical","長年數據迷","尊重他完成生涯，但評價不能只看待過幾年。巔峰 OVR "+peak+"，這份履歷離明星仍有明顯距離。");
+ }
+ if(games>=80&&avg<6){
+   add("mock","場邊論壇酸民","生涯場均 "+avg.toFixed(1)+" 分，上場時最穩定的貢獻，大概是讓主力多喘幾口氣。");
+   add("critical","前板凳席球迷","我們一直等他證明自己，後來才發現「還在等」就是這段生涯最準確的摘要。");
+ }
+ if(hasTitle("salary_thief")){
+   add("mock","薪資帽專區球迷","如果薪資單也算單場數據，那他絕對是聯盟頂級得分手。");
+   add("critical","球隊財務討論串","球員可以低潮，但高額合約連續換不到相應角色，球迷當然會把這筆帳記在生涯評價裡。");
+ }
+ if(best&&best.score<40)add("mock","跨聯盟數據版","換過舞台也沒有找到適合他的版本；最高聯盟評分 "+best.score+"，不是少算一個小數點。");
+ const overseas=pro.filter(x=>["NBA","NBA G League","CBA","日本職業","韓國職業"].includes(x.path));
+ const overseasGames=overseas.reduce((s,x)=>s+(Number(x.games)||0),0),overseasPoints=overseas.reduce((s,x)=>s+(Number(x.pts)||0)*(Number(x.games)||0),0);
+ if(overseasGames>=20&&overseasPoints/overseasGames<7)add("mock","旅外球迷社團","出發時是旅外希望，回頭看卻只留下「曾經在名單上」。不是每次出國都能叫突破。");
+ if(teamCount>=6&&rating<18000)add("critical","轉隊新聞下方留言","效力過 "+teamCount+" 支球隊，但多數球迷對他的記憶都停在「好像來過」。");
+ if(hasTitle("lockerroom"))add("mock","前隊友球迷會","最後想靠公開施壓多留一年，結果大家最先記住的反而是更衣室那場加時賽。");
+ if(offCourt.length)add("critical","長期追隊記者","場上表現可以討論，場外犯過的錯也必須留在完整評價裡；退休不是自動清除紀錄。");
+ if(offCourtTypes.some(x=>x.includes("酒駕")))add("mock","退休直播留言","球技有起伏很正常，但酒後開車不是一句「狀態不好」可以帶過的事。");
+ if(offCourtTypes.some(x=>x.includes("博弈")))add("critical","聯盟誠信討論區","球迷可以接受投不進，不會接受球員把比賽資訊當成交易籌碼。");
+ if(offCourtTypes.some(x=>x.includes("緋聞")||x.includes("婚外")))add("mock","娛樂版跑來的球迷","場上數據不一定上頭條，私生活倒是幾次都搶到頭版位置。");
+ const unique=list=>{const seen=new Set();return list.filter(x=>{if(!x?.text||seen.has(x.text))return false;seen.add(x.text);return true})};
+ const r=RNG(String(p.seed)+"-"+String(p.name)+"-"+String(p.year)+"-fan-echo-v75010");
+ const shuffle=list=>list.map(x=>({x,key:r()})).sort((a,b)=>a.key-b.key).map(q=>q.x);
+ const positive=unique([...baseline,...support]),negative=unique(criticism),total=positive.length+negative.length;
+ const target=limit==null?Math.min(8,Math.max(5,5+Math.floor(r()*4))):Math.max(1,Math.min(Number(limit)||1,total));
+ let negativeCount=poor?Math.ceil(target*.58):controversial?Math.max(1,Math.floor(target*.34)):0;
+ negativeCount=Math.min(target,negative.length,negativeCount);
+ let picked=[...shuffle(negative).slice(0,negativeCount),...shuffle(positive).slice(0,target-negativeCount)];
+ if(picked.length<target)picked.push(...shuffle([...negative,...positive].filter(x=>!picked.includes(x))).slice(0,target-picked.length));
+ return shuffle(picked);
+}
 function fanEchoHTML(){
- const echoes=fanEchoEntries();
+ const echoes=fanEchoEntriesV75010();
  return `<div class="fanEchoIntro"><div><b>球迷回聲</b><small>VOICES FROM THE STANDS</small></div><span>球迷記得的，從來不只是一份數據。</span></div>
  <div class="fanEchoGrid">${echoes.map(q=>`<article class="fanEchoCard ${q.tone}"><div class="fanEchoQuote">“</div><p>${escapeFeedText(q.text)}</p><small>— ${escapeFeedText(q.source)}</small></article>`).join("")}</div>`;
 }
@@ -9111,7 +9159,7 @@ function buildCareerShareCanvas(){
  const groups=careerLeagueSummary(),profiles=careerLeagueProfiles(),leagueEntries=Object.entries(groups),seasons=p.seasonHistory||[];
  const achievements=careerAchievementEntries(),titles=featuredLegacyTitles(10).featured.map(legacyTitleInfo);
  const normalizedNational=internationalHistoryForDisplay(p.internationalHistory||[],seasons),nationalSummary=careerNationalSummary(normalizedNational.rows),nationalLevels=["U18","U20","SENIOR"].filter(x=>nationalSummary[x]);
- const offCourtRows=(p.offCourtHistory||[]).slice(-4),fanRows=fanEchoEntries(3);
+ const offCourtRows=(p.offCourtHistory||[]).slice(-4),fanRows=fanEchoEntriesV75010(3);
  const hallRows=(p.hallVotes||[]).map(v=>{const q=hallLeagueContext(v),name=String(v.league||"").includes("名人堂")?v.league:`${v.league}名人堂`;return {text:`${name}・首度票選 ${q.votes}/${q.electorate} 票（${v.vote}%）・${v.inducted?"入選":"未入選"}`,kind:v.inducted?"hallPass":"hallFail"}});
  const honorEntries=[...hallRows,...(p.jerseyRetired||[]).map(x=>({text:`${x}・球衣永久退休`,kind:"jersey"})),...achievements.map(text=>({text,kind:"award"}))];
  const honorVisible=honorEntries.slice(0,30),honorRows=Math.max(1,Math.ceil(Math.max(1,honorVisible.length)/2));
@@ -9167,7 +9215,7 @@ function buildCareerShareCanvas(){
  const relationship=familyRelationshipSummary();wrap(`${relationship}｜傷病 ${p.injuryHistory.length} 次｜手術 ${p.surgeries} 次｜交易 ${p.tradeCount} 次`,617,lifeTop+53,510,21,3,palette.soft,14,true);txt(`生涯總收入 ${moneyText(totalIncome)}`,617,lifeTop+120,15,palette.gold,true);
  offCourtRows.forEach((row,i)=>txt(`・${row.year}｜${short(row.type,10)}｜${short(row.outcome,30)}`,617,lifeTop+150+i*22,12,palette.red));y=lifeTop+lifeVisual+25;
 
- y=section("球迷回聲",y+3);fanRows.forEach((f,i)=>{const col=i%3,row=Math.floor(i/3),x=45+col*370,yy=y+row*100;box(x,yy-18,350,82,palette.panel,palette.line,7);wrap(`「${f.text}」`,x+12,yy+5,326,19,2,palette.soft,13);txt(`— ${f.source}`,x+12,yy+55,11,palette.muted,true)});y+=Math.ceil(fanRows.length/3)*100;
+ y=section("球迷回聲",y+3);fanRows.forEach((f,i)=>{const col=i%3,row=Math.floor(i/3),x=45+col*370,yy=y+row*100,isCritical=["mock","critical"].includes(f.tone),stroke=isCritical?palette.red:palette.line,quoteColor=isCritical?"#efc5c6":palette.soft;box(x,yy-18,350,82,palette.panel,stroke,7);wrap(`「${f.text}」`,x+12,yy+5,326,19,2,quoteColor,13);txt(`— ${f.source}`,x+12,yy+55,11,isCritical?palette.red:palette.muted,true)});y+=Math.ceil(fanRows.length/3)*100;
  line(H-84);txt(`BasketballLife · V7.50.10`,45,H-47,14,palette.gold,true);txt(`SEED ${p.seed}`,1155,H-47,14,palette.muted,false,"right");
  return canvas;
 }
@@ -9607,18 +9655,23 @@ const OFF_COURT_EVENT_DEFS={
  gamblingApproach:{title:"非法博弈接觸",desc:"一名自稱球迷的人透過朋友接觸你，表示只要透露傷勢與輪休消息就能獲得報酬。",kicker:"🎲 誠信紅線",actions:[["reportGambling","立刻通報聯盟","保存訊息並通知球隊與聯盟調查。"],["meetGambler","私下赴約","即使沒有操控比賽，也可能因接觸不當人士遭到重罰。"]]},
  sponsorCrisis:{title:"贊助商形象危機",desc:"合作品牌捲入爭議，輿論要求代言球員表態，品牌則希望你繼續履約。",kicker:"📣 商業形象",actions:[["pauseSponsor","暫停合作並要求說明","承受短期收入損失，保護長期形象。"],["attackSponsorCritics","公開反擊批評者","保住眼前合作，卻可能讓個人形象一起捲入。"]]},
  charityCommitment:{title:"公益承諾撞期",desc:"你承諾出席的青少年公益活動與個人訓練臨時撞期，主辦單位已公開宣傳你的名字。",kicker:"🤝 公益責任",actions:[["honorCharity","履行公益承諾","調整訓練時間，親自完成對孩子們的承諾。"],["skipCharity","臨時取消出席","保留訓練安排，但球迷會質疑你是否只把公益當宣傳。"]]},
- friendLoan:{title:"親友借款請求",desc:"多年好友希望你替新事業擔保，並強調只差你的名字就能取得資金。",kicker:"💳 親友與金錢",actions:[["declineGuarantee","婉拒擔保並提供協助","不讓友情變成無法控制的財務風險。"],["guaranteeLoan","替朋友擔保","保住情面，但事業若失敗，你將承擔損失與後續爭議。"]]}
+ friendLoan:{title:"親友借款請求",desc:"多年好友希望你替新事業擔保，並強調只差你的名字就能取得資金。",kicker:"💳 親友與金錢",actions:[["declineGuarantee","婉拒擔保並提供協助","不讓友情變成無法控制的財務風險。"],["guaranteeLoan","替朋友擔保","保住情面，但事業若失敗，你將承擔損失與後續爭議。"]]},
+ rumorPhoto:{title:"公開同框風波",desc:"活動結束後，你和一名人氣賽事表演者被拍到一起離場。照片只有短短一瞬間，娛樂媒體卻已經寫成曖昧頭條。",kicker:"📸 媒體與隱私",actions:[["clarifyRelationship","說清楚事實與界線","只澄清必要資訊，不消費對方，也不讓球團替你編故事。"],["playAlongRumor","用曖昧回應換取聲量","可能增加短期曝光與商業邀約，也可能傷害現有關係與長期形象。"]]},
+ podcastSlip:{title:"訪談片段提前外流",desc:"一段尚未播出的訪談被剪成短影音，你對教練與隊友的抱怨只剩最尖銳的幾句，球團要求你立刻處理。",kicker:"🎙️ 發言與球隊",actions:[["reviewInterview","公開完整脈絡並私下溝通","承認語氣不當，同時要求節目公開未剪輯內容。"],["doubleDownInterview","上節目繼續開嗆","短期話題拉滿，但教練與更衣室不會把它當成娛樂效果。"]]},
+ partyLeak:{title:"私人聚會影像外流",desc:"休兵日晚間的私人聚會影片被匿名帳號上傳。畫面沒有違法行為，卻足以讓外界質疑你的作息與職業態度。",kicker:"🌙 私生活與紀律",actions:[["providePartyContext","讓球團確認時間與事實","不公開同行者，只提供可驗證資訊並接受內部提醒。"],["threatenPublisher","公開威脅爆料帳號","可能讓影片下架，也可能把原本半天的話題延燒整週。"]]},
+ fanPhoneConflict:{title:"場邊拍攝衝突",desc:"離場通道有人拿手機貼近拍攝並持續挑釁。保全已經靠近，但全程也正被其他鏡頭錄下。",kicker:"📱 球迷互動",actions:[["leaveFanScene","交由保全處理","不碰對方與手機，事後由球團說明。"],["grabFanPhone","伸手搶下手機","即使受到挑釁，動手仍可能引發停賽與民事爭議。"]]}
 };
 function offCourtEventDefinition(kind){return OFF_COURT_EVENT_DEFS[kind]||null}
 function buildOffCourtSpecial(){
  if(!isProPath()||isDevelopmentPath()||p.age<20)return null;
  if(Number(p.lastOffCourtEventYear||0)&&p.year-Number(p.lastOffCourtEventYear)<2)return null;
  const r=RNG(`${p.seed}-off-court-v7509-${p.year}-${p.team}`);
- const rate={NBA:.21,CBA:.18,"日本職業":.17,"韓國職業":.16,"台灣職業":.15,"NBA G League":.15,"SBL／半職業":.12}[p.path]||.14;
+ const rate={NBA:.28,CBA:.25,"日本職業":.23,"韓國職業":.22,"台灣職業":.22,"NBA G League":.23,"SBL／半職業":.18}[p.path]||.20;
  if(r()>=rate)return null;
- let pool=["lateNightRide","nightlifeConflict","socialMediaStorm","teamDiscipline","agentFinance","gamblingApproach","charityCommitment","friendLoan"];
+ let pool=["lateNightRide","nightlifeConflict","socialMediaStorm","teamDiscipline","agentFinance","gamblingApproach","charityCommitment","friendLoan","rumorPhoto","podcastSlip","partyLeak","fanPhoneConflict"];
  if((p.rep||0)>=25||Number(p.endorsementIncome||0)>0)pool.push("sponsorCrisis","socialMediaStorm","charityCommitment");
- if((p.discipline||50)<45)pool.push("teamDiscipline","nightlifeConflict");
+ if((p.discipline||50)<45)pool.push("teamDiscipline","nightlifeConflict","partyLeak","fanPhoneConflict");
+ if((p.rep||0)>=20)pool.push("rumorPhoto","podcastSlip");
  const seen=new Set(p.offCourtEventKinds||[]),fresh=pool.filter(kind=>!seen.has(kind));
  if(fresh.length)pool=fresh;
  const kind=pool[Math.floor(r()*pool.length)],def=offCourtEventDefinition(kind);
@@ -9946,9 +9999,9 @@ function resolveProposal(propose){
  }
  let r=RNG(p.seed+"proposal-"+p.year),accept=r()<.88;
  if(accept){
-   p.married=true;p.divorced=false;p.romanceStage=3;p.confidence=Math.min(100,p.confidence+4);p.familyHarmony=Math.min(100,p.familyHarmony+8);
+   p.married=true;p.divorced=false;p.romanceStage=3;p.confidence=Math.min(100,p.confidence+4);p.familyHarmony=Math.min(100,p.familyHarmony+8);p.fatigue=Math.max(0,p.fatigue-4);p.specialBonusPoints=(p.specialBonusPoints||0)+1;
    pushNews(`💍 ${p.name} 與 ${p.partnerName} 宣布結婚`);
-   finishSpecialEvent(`<div class="specialStage romance"><b>💍 求婚成功</b><br>${p.partnerName} 答應了。你們正式進入婚姻。信心 +4｜家庭關係 +8。</div>`,
+   finishSpecialEvent(`<div class="specialStage romance"><b>💍 求婚成功</b><br>${p.partnerName} 答應了。婚禮與家庭支持讓你重新整理球季節奏。信心 +4｜家庭關係 +8｜疲勞 -4｜季末能力點 +1。</div>`,
    `婚姻事件：與 ${p.partnerName} 結婚`);
  }else{
    p.romanceNextYear=p.year+1;p.confidence=Math.max(0,p.confidence-3);
@@ -10083,6 +10136,31 @@ function resolveOffCourtSpecial(action){
    const r=RNG(`${p.seed}-friend-loan-${p.year}`),failed=r()<.68,loss=failed?ri(r,120,650):0;
    if(failed){p.financialLosses=(p.financialLosses||0)+loss;p.confidence=Math.max(0,p.confidence-4);record("親友借款糾紛",`擔保損失 ${moneyText(loss)}`);html=`<div class="specialStage career"><b class="bad">💸 擔保債務找上門</b><br>朋友的事業失敗，你必須承擔債務。<br><span class="bad">財務損失 ${moneyText(loss)}｜信心 -4</span></div>`;}
    else{p.confidence=Math.min(100,p.confidence+1);html=`<div class="specialStage career"><b>投資暫時順利</b><br>朋友按期還款，但這次結果不代表替人擔保沒有風險。信心 +1。</div>`;}
+ }else if(action==="clarifyRelationship"){
+   p.rep+=2;p.discipline=Math.min(100,p.discipline+1);if(p.partnerName)p.familyHarmony=Math.min(100,(p.familyHarmony||50)+2);
+   html="<div class=\"specialStage career\"><b>📸 說清楚，但不消費任何人</b><br>你只澄清可確認的事實，拒絕拿同行者換流量。球隊評價 +2｜紀律 +1"+(p.partnerName?"｜家庭關係 +2":"")+"。</div>";
+ }else if(action==="playAlongRumor"){
+   const rr=RNG(String(p.seed)+"-rumor-photo-"+p.year),income=ri(rr,40,150);p.scandalCount++;p.rep+=1;p.discipline=Math.max(0,p.discipline-3);p.endorsementIncome=(p.endorsementIncome||0)+income;p.careerSalary=(p.careerSalary||0)+income;p.familyHarmony=Math.max(0,(p.familyHarmony||50)-(p.married?16:4));marketPenalty(3);
+   record("媒體緋聞炒作","以曖昧回應換取曝光｜新增商業收入 "+moneyText(income)+(p.married?"｜婚姻關係受損":""));
+   html="<div class=\"specialStage career\"><b class=\"bad\">📸 話題延燒</b><br>曖昧回應帶來 "+moneyText(income)+" 商業收入，也讓球團與身邊的人開始質疑你的界線。<br><span class=\"bad\">紀律 -3"+(p.married?"｜家庭關係 -16":"｜家庭關係 -4")+"｜未來市場評價下降</span></div>";
+ }else if(action==="reviewInterview"){
+   p.rep+=1;p.discipline=Math.min(100,p.discipline+2);p.confidence=Math.max(0,p.confidence-1);
+   html="<div class=\"specialStage career\"><b>🎙️ 補上完整脈絡</b><br>你私下向隊友道歉，也要求節目公開完整訪談。球隊評價 +1｜紀律 +2｜信心 -1。</div>";
+ }else if(action==="doubleDownInterview"){
+   p.scandalCount++;p.rep=Math.max(-40,p.rep-9);p.discipline=Math.max(0,p.discipline-6);marketPenalty(6,2);record("訪談失言","公開批評教練與隊友｜球團停賽 2 場");
+   html="<div class=\"specialStage career\"><b class=\"bad\">🎙️ 訪談變成公開衝突</b><br>球團宣布內部處分並停賽 2 場。<br><span class=\"bad\">球隊評價 -9｜紀律 -6｜更衣室與合約市場受損</span></div>";
+ }else if(action==="providePartyContext"){
+   p.rep+=1;p.discipline=Math.min(100,p.discipline+1);p.confidence=Math.max(0,p.confidence-1);
+   html="<div class=\"specialStage career\"><b>🌙 交代可驗證事實</b><br>球團確認聚會未違反禁酒與門禁規定，事件沒有繼續升高。球隊評價 +1｜紀律 +1｜信心 -1。</div>";
+ }else if(action==="threatenPublisher"){
+   p.scandalCount++;p.rep=Math.max(-40,p.rep-6);p.discipline=Math.max(0,p.discipline-4);marketPenalty(4);record("私人聚會風波","公開威脅爆料帳號，話題持續延燒");
+   html="<div class=\"specialStage career\"><b class=\"bad\">🌙 原本半天的新聞延燒整週</b><br>爆料帳號雖然刪文，其他媒體卻開始追查更多私人影像。<br><span class=\"bad\">球隊評價 -6｜紀律 -4｜市場評價下降</span></div>";
+ }else if(action==="leaveFanScene"){
+   p.rep+=1;p.discipline=Math.min(100,p.discipline+1);
+   html="<div class=\"specialStage career\"><b>📱 交給保全處理</b><br>完整影片顯示你沒有碰觸對方，球團也替你說明。球隊評價 +1｜紀律 +1。</div>";
+ }else if(action==="grabFanPhone"){
+   p.scandalCount++;p.rep=Math.max(-40,p.rep-9);p.confidence=Math.max(0,p.confidence-3);p.discipline=Math.max(0,p.discipline-7);marketPenalty(7,4);record("球迷拍攝衝突","搶奪手機引發爭議｜球團停賽 4 場");
+   html="<div class=\"specialStage career\"><b class=\"bad\">📱 衝突影片完整曝光</b><br>聯盟認定你受到挑釁仍不該動手，球團停賽 4 場。<br><span class=\"bad\">球隊評價 -9｜信心 -3｜紀律 -7｜市場評價下降</span></div>";
  }
  finishSpecialEvent(html,`場外事件：${action}`);
 }
