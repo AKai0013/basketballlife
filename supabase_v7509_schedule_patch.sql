@@ -1,6 +1,8 @@
--- BasketballLife V7.50.9 schedule-only migration
+-- BasketballLife V7.50.10 schedule compatibility migration
 -- Safe scope: no row deletion, no trigger replacement, no publishing-policy changes.
--- Run once in Supabase SQL Editor after the original V7.50.8 integrity migration.
+-- Re-run this file in Supabase SQL Editor after the original V7.50.8 integrity migration.
+-- It keeps modern careers strict while allowing only historically legal CBA/SBL
+-- schedules for careers whose creation version was V7.50.5 through V7.50.8.
 
 begin;
 
@@ -71,6 +73,7 @@ declare
   v_peak integer := (p_record->>'peak_overall')::integer;
   v_career_games integer := (p_record->>'career_games')::integer;
   v_cd jsonb := p_record->'career_data';
+  v_game_version text := coalesce(p_record->'career_data'->>'game_version','legacy');
   v_integrity jsonb;
   v_seasons jsonb := p_record->'season_history';
   v_season jsonb;
@@ -83,6 +86,10 @@ declare
   v_year integer;
   v_age integer;
   v_path text;
+  v_expected_schedule integer;
+  v_allow_historical_schedule boolean := false;
+  v_historical_schedule_accepted boolean := false;
+  v_historical_schedule_seasons integer := 0;
   v_games_total integer := 0;
   v_sixes integer;
   v_has_genius boolean := false;
@@ -124,6 +131,8 @@ begin
   if jsonb_array_length(coalesce(p_record->'awards','[]'::jsonb)) > jsonb_array_length(v_seasons) * 8 then raise exception 'Too many career awards'; end if;
   if jsonb_array_length(coalesce(v_cd->'championship_history','[]'::jsonb)) <> (p_record->>'championships')::integer then raise exception 'Championship total mismatch'; end if;
   if jsonb_typeof(v_cd) <> 'object' or v_cd->>'publisher_version' <> '7.50.8' then raise exception 'V7.50.8 publisher required'; end if;
+  if jsonb_typeof(v_cd->'game_version') is distinct from 'string' then raise exception 'Missing career creation version'; end if;
+  v_allow_historical_schedule := v_game_version ~ '^7[.]50[.](5|6|7|8)$';
   if v_cd->>'ranking_era' <> 'v750' or v_cd->>'upload_id' <> v_id::text then raise exception 'Invalid publication identity'; end if;
   v_integrity := v_cd->'integrity';
   if jsonb_typeof(v_integrity) <> 'object'
@@ -155,11 +164,23 @@ begin
     if v_games < 0 or v_games > 82 or v_scheduled < 0 or v_scheduled > 82 or v_missed < 0 or v_games + v_missed <> v_scheduled then
       raise exception 'Invalid season games';
     end if;
-    -- V7.50.9 uses the current real schedules: CBA 42, SBL 30. The older
-    -- seed-derived values remain valid only for careers begun before the fix.
-    if v_scheduled <> public.bl_v7508_schedule_expected(v_seed,v_year,v_path)
-       and not (v_path in ('CBA','SBL／半職業') and v_scheduled = public.bl_v7508_legacy_schedule_expected(v_seed,v_year,v_path))
-    then raise exception 'Deterministic schedule mismatch'; end if;
+    -- V7.50.9 fixed CBA at 42 and SBL at 30. Careers created in V7.50.5–V7.50.8
+    -- really used the ranges below, and saves could span several later updates.
+    -- Accept the historical range only when the recorded creation version predates
+    -- the correction. The narrow range is stamped for audit; all newer careers stay exact.
+    v_expected_schedule := public.bl_v7508_schedule_expected(v_seed,v_year,v_path);
+    if v_scheduled <> v_expected_schedule then
+      if v_allow_historical_schedule
+         and ((v_path = 'CBA' and v_scheduled between 42 and 46)
+           or (v_path = 'SBL／半職業' and v_scheduled between 20 and 24))
+      then
+        v_historical_schedule_accepted := true;
+        v_historical_schedule_seasons := v_historical_schedule_seasons + 1;
+      else
+        raise exception 'Deterministic schedule mismatch: year %, league %, got %, expected % (career version %)',
+          v_year, v_path, v_scheduled, v_expected_schedule, v_game_version;
+      end if;
+    end if;
     foreach v_field in array array['mins','pts','reb','ast','stl','blk','fg','three'] loop
       v_value := (v_season->>v_field)::numeric;
       if (v_field = 'mins' and v_value not between 0 and 36)
@@ -261,7 +282,9 @@ begin
 
   v_integrity := jsonb_set(v_integrity,'{server_verified}','"passed"'::jsonb,true);
   v_integrity := jsonb_set(v_integrity,'{server_verified_at}',to_jsonb(v_verified_at),true);
-  v_integrity := jsonb_set(v_integrity,'{server_ruleset}','"v7508-db-1"'::jsonb,true);
+  v_integrity := jsonb_set(v_integrity,'{server_ruleset}','"v7508-db-2"'::jsonb,true);
+  v_integrity := jsonb_set(v_integrity,'{legacy_schedule_accepted}',to_jsonb(v_historical_schedule_accepted),true);
+  v_integrity := jsonb_set(v_integrity,'{legacy_schedule_seasons}',to_jsonb(v_historical_schedule_seasons),true);
   return jsonb_set(v_cd,'{integrity}',v_integrity,true);
 exception
   when invalid_text_representation or numeric_value_out_of_range or null_value_not_allowed then
@@ -276,4 +299,3 @@ commit;
 select
   public.bl_v7508_schedule_expected('S00463LO',2033,'CBA') as cba_games,
   public.bl_v7508_schedule_expected('S00463LO',2033,'SBL／半職業') as sbl_games;
-
