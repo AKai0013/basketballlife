@@ -5484,6 +5484,10 @@ window.BL_ONLINE_CONFIG = {
  }
 
  function normalizedPower(record){
+   // Leaderboard list rows are intentionally lightweight. Their retirement
+   // POWER was sealed with the public career and can be used without pulling
+   // every season-history JSON blob back to the browser.
+   if(record?._leaderboardSummary)return Number(record?.career_rating||0);
    try{
      const cd=record?.career_data||{};
      return careerPowerModel({
@@ -5495,7 +5499,7 @@ window.BL_ONLINE_CONFIG = {
  }
 
  const leaderboardMetrics={
-   power:{label:"BL POWER",short:"總實力",description:"以同一套新版公式重算所有正式生涯；巔峰能力、高層級實績與高層級獎項權重較高，重複低層級獎項會遞減。",value:r=>normalizedPower(r),fmt:v=>Math.round(v).toLocaleString()},
+   power:{label:"BL POWER",short:"總實力",description:"依每支正式生涯退休時封存並通過驗證的 BL POWER 排序；巔峰能力、高層級實績與高層級獎項權重較高。",value:r=>normalizedPower(r),fmt:v=>Math.round(v).toLocaleString()},
    peak:{label:"巔峰 OVR",short:"巔峰OVR",description:"生涯曾到達的最高八項能力平均值；只比較最高能力，不代表生涯累積成就。",value:r=>Number(r.peak_overall||0),fmt:v=>Math.round(v)},
    championships:{label:"主要冠軍",short:"冠軍",description:"統計職業聯盟與主要賽事冠軍總數，同一支生涯可以累積多座。",value:r=>Number(r.championships||0),fmt:v=>`${v} 座`},
    mvp:{label:"年度 MVP",short:"MVP",description:"統計生涯在各聯盟獲得的單季年度 MVP 次數。",value:r=>awardCount(r,"年度MVP"),fmt:v=>`${v} 次`},
@@ -5514,7 +5518,7 @@ window.BL_ONLINE_CONFIG = {
  };
 
  function leaderboardCareerFingerprint(record){
-   const uploadId=String(record?.career_data?.upload_id||"");
+   const uploadId=String(record?.upload_id||record?.career_data?.upload_id||"");
    if(uploadId)return `upload:${uploadId}`;
    return [
      record?.user_id||"",record?.seed||"",record?.player_name||"",record?.position||"",
@@ -5535,50 +5539,71 @@ window.BL_ONLINE_CONFIG = {
    });
  }
 
+ function normalizeLeaderboardSummary(record){
+   const rankingEra=String(record?.ranking_era||"");
+   const publisherVersion=String(record?.publisher_version||"");
+   const uploadId=String(record?.upload_id||"");
+   const serverVerified=String(record?.server_verified||"");
+   return {
+     ...record,_leaderboardSummary:true,
+     career_data:{ranking_era:rankingEra,publisher_version:publisherVersion,upload_id:uploadId,integrity:{server_verified:serverVerified}}
+   };
+ }
+
+ async function queryLeaderboardPage(makeQuery){
+   let lastError=null;
+   for(let attempt=0;attempt<2;attempt++){
+     try{
+       const result=await withTimeout(makeQuery(),attempt===0?15000:25000);
+       if(result?.error)throw result.error;
+       return result?.data||[];
+     }catch(err){
+       lastError=err;
+       if(attempt===0&&/連線逾時|timeout|Failed to fetch|NetworkError|Load failed/i.test(String(err?.message||err)))continue;
+       throw err;
+     }
+   }
+   throw lastError||new Error("排行榜連線失敗");
+ }
+
  async function loadLeaderboardRecords(force=false){
    if(!state.client||!state.user)throw new Error("尚未連上 Online");
    if(!force && state.leaderboardCache && Date.now()-state.leaderboardCache.at<60000)return state.leaderboardCache.rows;
-   const columns="id,user_id,nickname,player_name,position,seed,seed_tier,retired_age,final_year,peak_overall,career_rating,career_games,career_salary,championships,national_caps,hall_of_fame,jersey_retired,awards,titles,league_summary,season_history,career_data,created_at,is_public";
-   const rows=[],pageSize=500;
+   // Do not download complete 20–30 season careers just to draw a ranking row.
+   // Full JSON is fetched only after the player opens one public career.
+   const columns="id,user_id,nickname,player_name,position,seed_tier,retired_age,final_year,peak_overall,career_rating,career_games,career_salary,championships,national_caps,hall_of_fame,jersey_retired,awards,created_at,is_public,ranking_era:career_data->>ranking_era,publisher_version:career_data->>publisher_version,upload_id:career_data->>upload_id,server_verified:career_data->integrity->>server_verified";
+   const rows=[],pageSize=250;
    for(let from=0;from<5000;from+=pageSize){
-     const {data,error}=await withTimeout(
+     const page=await queryLeaderboardPage(()=>
        state.client.from("career_records")
          .select(columns)
          .eq("is_public",true)
          .order("created_at",{ascending:false})
-         .range(from,from+pageSize-1),
-       12000
+         .range(from,from+pageSize-1)
      );
-     if(error)throw error;
-     const page=data||[];
-     rows.push(...page);
+     rows.push(...page.map(normalizeLeaderboardSummary));
      if(page.length<pageSize)break;
    }
    // Always merge the signed-in player's own public careers, even after the
    // global table grows beyond the pagination ceiling.
    if(state.user?.id){
      try{
-       const {data:mine,error:mineError}=await withTimeout(
-         state.client.from("career_records").select(columns).eq("is_public",true).eq("user_id",state.user.id).order("created_at",{ascending:false}).limit(500),
-         12000
+       const mine=await queryLeaderboardPage(() =>
+         state.client.from("career_records").select(columns).eq("is_public",true).eq("user_id",state.user.id).order("created_at",{ascending:false}).limit(500)
        );
-       if(mineError)throw mineError;
-       const ids=new Set(rows.map(x=>x.id));(mine||[]).forEach(x=>{if(!ids.has(x.id)){rows.push(x);ids.add(x.id)}});
+       const ids=new Set(rows.map(x=>x.id));mine.map(normalizeLeaderboardSummary).forEach(x=>{if(!ids.has(x.id)){rows.push(x);ids.add(x.id)}});
      }catch(err){console.warn("Own leaderboard records load failed:",err)}
    }
-   const visibleRows=dedupeLeaderboardRecords(rows).filter(record=>{
-     const requireServer=String(record?.career_data?.publisher_version||"")===CAREER_PUBLISHER_VERSION;
-     const report=careerRecordIntegrity(record,{requireEnvelope:requireServer,requireServer});
-     if(!report.ok)console.warn("Leaderboard record rejected:",record?.id,report.errors);
-     return report.ok;
-   });
+   const visibleRows=dedupeLeaderboardRecords(rows).filter(isOfficialRankingRecord);
    state.leaderboardCache={at:Date.now(),rows:visibleRows};
    return visibleRows;
  }
 
  function isOfficialRankingRecord(record){
+   if(INVALID_CAREER_IDS.has(String(record?.id||"")))return false;
    if(String(record?.career_data?.ranking_era||"")!=="v750")return false;
    const requireServer=String(record?.career_data?.publisher_version||"")===CAREER_PUBLISHER_VERSION;
+   if(record?._leaderboardSummary)return !requireServer||record?.career_data?.integrity?.server_verified==="passed";
    return careerRecordIntegrity(record,{requireEnvelope:requireServer,requireServer}).ok;
  }
 
@@ -5624,7 +5649,7 @@ window.BL_ONLINE_CONFIG = {
      const records=await loadLeaderboardRecords();
      renderLeaderboard(records,state.activeMetric);
    }catch(err){
-     if(content)content.innerHTML=`<div class="communityError">排行榜讀取失敗：${esc(err?.message||"請稍後再試")}</div>`;
+     if(content)content.innerHTML=`<div class="communityError">排行榜讀取失敗：${esc(err?.message||"請稍後再試")}<div class="publishedBtns"><button class="btn" type="button" onclick="BasketballLifeOnline.openLeaderboard('${esc(state.activeMetric)}',false)">重新讀取</button></div></div>`;
    }
  }
 
