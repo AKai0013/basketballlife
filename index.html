@@ -4170,7 +4170,7 @@ body.retirementMode .legacyHero .legacyMeta{margin-top:7px!important;color:#aab8
   #game:not(.hidden) .next{min-height:49px}
 }
 
-/* V7.50.6: a career owns its portrait; the world Seed never owns the face. */
+/* V7.50.7: a career owns its portrait; the world Seed never owns the face. */
 .header .who{display:flex;align-items:center;gap:10px;min-width:0}
 .playerAvatar{
   width:54px;height:54px;flex:0 0 54px;overflow:hidden;border:1px solid #725031;border-radius:11px;
@@ -4208,7 +4208,7 @@ body.retirementMode .header .who{gap:6px}
   .publicHeroIdentity{gap:8px;align-items:flex-start}
 }
 
-/* Character builder: position-bound body profile, birthplace and portrait. */
+/* Character builder: position-bound body profile and birthplace. */
 .setupBuilder{display:grid;gap:12px;margin:16px 0}
 .setupSection{border:1px solid #273b49;border-radius:14px;background:linear-gradient(145deg,#0b151d,#101c25);padding:14px}
 .setupSectionHead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px}
@@ -4220,19 +4220,8 @@ body.retirementMode .header .who{gap:6px}
 .bodyRangeScale{display:flex;justify-content:space-between;margin-top:5px;font-size:9px;color:#667b8b}
 .bodyImpact{margin-top:10px;padding:9px 10px;border-left:3px solid #d8833b;background:#111c24;color:#b8c5ce;font-size:10px;line-height:1.55}
 .birthplaceSelect{width:100%;min-height:43px;border:1px solid #365162;border-radius:10px;background:#0a141b;color:#eef0ed;padding:0 11px;font:inherit}
-.avatarBuilder{display:grid;grid-template-columns:142px minmax(0,1fr);gap:14px;align-items:center}
-.setupAvatarPreview{width:142px;height:142px;border:1px solid #79522f;border-radius:17px;overflow:hidden;background:#0b151c;box-shadow:0 10px 28px rgba(0,0,0,.3)}
-.setupAvatarPreview .avatarComposite{display:block;width:100%;height:100%}
-.avatarControls{display:grid;gap:8px}.avatarControl{display:grid;grid-template-columns:76px minmax(0,1fr) 46px;gap:8px;align-items:center}
-.avatarControl label{margin:0;font-size:10px;color:#aebdc7}.avatarControl input[type="range"]{width:100%;accent-color:#e58b3e}
-.avatarControl output{text-align:right;color:#f0b16c;font-size:11px;font-weight:800}
-.avatarButtons{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}.avatarButtons .btn{min-height:38px}
-.setupBuilderNote{font-size:10px;color:#8195a3;line-height:1.55;margin-top:7px}
 @media(max-width:680px){
   .bodyChoiceGrid{grid-template-columns:1fr}
-  .avatarBuilder{grid-template-columns:96px minmax(0,1fr);align-items:start}
-  .setupAvatarPreview{width:96px;height:96px;border-radius:13px}
-  .avatarControl{grid-template-columns:58px minmax(0,1fr) 38px;gap:5px}
   .setupSection{padding:12px}
 }
 </style>
@@ -4266,11 +4255,11 @@ body.retirementMode .header .who{gap:6px}
     <span id="careerSaveStatus" class="careerSaveStatus hidden" aria-live="polite">本機自動存檔</span>
     <button id="quickRestartBtn" class="quickRestartBtn hidden" type="button" onclick="toggleQuickRestartMenu(event)" title="重新開始這段生涯" aria-label="重新開始">↻</button>
     <div id="quickRestartMenu" class="quickRestartMenu hidden">
-      <button type="button" onclick="quickRestartCareer('same')"><b>↻ 同 Seed 重玩</b><small>保留姓名、位置、身材、出生地與外觀</small></button>
+      <button type="button" onclick="quickRestartCareer('same')"><b>↻ 同 Seed 重玩</b><small>保留姓名、位置、身材與出生地；外觀重新產生</small></button>
       <button type="button" onclick="quickRestartCareer('random')"><b>🎲 重新抽 Seed</b><small>保留球員設定，只更換新的世界</small></button>
     </div>
     <button id="leaderboardBtn" class="topRankBtn" type="button" onclick="BasketballLifeOnline.openLeaderboard()">🏆 排行榜</button>
-    <a class="versionLink" href="https://github.com/AKai0013/basketballlife/blob/main/README.md#-版本更新紀錄" target="_blank" rel="noopener noreferrer" aria-label="查看 V7.50.6 版本更新紀錄"><b>V7.50.6</b><span>更新紀錄</span></a>
+    <a class="versionLink" href="https://github.com/AKai0013/basketballlife/blob/main/README.md#-版本更新紀錄" target="_blank" rel="noopener noreferrer" aria-label="查看 V7.50.7 版本更新紀錄"><b>V7.50.7</b><span>更新紀錄</span></a>
     <div id="onlineStatus" class="onlineStatus connecting"><span class="onlineDot"></span><span id="onlineStatusText">連線中…</span></div>
   </div>
 </div>
@@ -4292,20 +4281,6 @@ body.retirementMode .header .who{gap:6px}
   <div class="setupSection">
     <div class="setupSectionHead"><div><b>出生地</b><small>台灣 22 縣市皆可選擇，作為生涯背景資料，不提供能力加成。</small></div></div>
     <select id="birthplaceInput" class="birthplaceSelect" onchange="chosenBirthplace=this.value"></select>
-  </div>
-  <div class="setupSection">
-    <div class="setupSectionHead"><div><b>球員外觀</b><small>自行搭配臉型、髮型與色調；也可以一鍵隨機。</small></div></div>
-    <div class="avatarBuilder">
-      <div id="setupAvatarPreview" class="setupAvatarPreview" aria-live="polite"></div>
-      <div class="avatarControls">
-        <div class="avatarControl"><label for="avatarFaceInput">臉型</label><input id="avatarFaceInput" type="range" min="0" max="15" oninput="updateSetupAvatar('face',this.value)"><output id="avatarFaceValue"></output></div>
-        <div class="avatarControl"><label for="avatarHairInput">髮型</label><input id="avatarHairInput" type="range" min="0" max="15" oninput="updateSetupAvatar('hair',this.value)"><output id="avatarHairValue"></output></div>
-        <div class="avatarControl"><label for="avatarFaceToneInput">膚色</label><input id="avatarFaceToneInput" type="range" min="0" max="4" oninput="updateSetupAvatar('faceTone',this.value)"><output id="avatarFaceToneValue"></output></div>
-        <div class="avatarControl"><label for="avatarHairToneInput">髮色</label><input id="avatarHairToneInput" type="range" min="0" max="2" oninput="updateSetupAvatar('hairTone',this.value)"><output id="avatarHairToneValue"></output></div>
-        <div class="avatarButtons"><button class="btn" type="button" onclick="randomizeSetupAvatar()">🎲 隨機外觀</button><button class="btn" type="button" onclick="toggleSetupAvatarFlip()">↔ 鏡像</button></div>
-      </div>
-    </div>
-    <div class="setupBuilderNote">外觀隸屬這段球員生涯，不會由世界 Seed 固定；老化效果仍會隨年齡呈現。</div>
   </div>
 </div>
 <label for="seed">世界 Seed（可輸入或隨機抽取）</label><div class="seed"><input id="seed" class="seedcode" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="seedHelp seedError" oninput="normalizeSeedInput()"><button class="btn" type="button" onclick="newSeed()">重新抽取</button></div>
@@ -5617,7 +5592,6 @@ const POSITION_BODY_RANGES={
  C:{height:[201,224],defaultHeight:211,reach:[5,29],defaultReach:18}
 };
 let chosenPos="PG",chosenHeight=188,chosenWingspan=198,chosenBirthplace="RANDOM",p=null,selectedDie=null;
-let setupAvatarProfile={face:0,hair:0,hairTone:0,faceTone:0,flip:false,variant:0,shift:0};
 
 function bodyRangeFor(pos=chosenPos){return POSITION_BODY_RANGES[pos]||POSITION_BODY_RANGES.PG}
 function clampNumber(value,min,max){return Math.max(min,Math.min(max,Number(value)||min))}
@@ -5655,6 +5629,8 @@ function normalizeCareerPlayer(player){
  if(!player||typeof player!=="object")return player;
  if(typeof player.careerVersion!=="string"||!player.careerVersion)player.careerVersion="legacy";
  if(typeof player.avatarSeed!=="string"||!player.avatarSeed)player.avatarSeed=newAvatarSeed();
+ if(typeof player.publicCareerId!=="string")player.publicCareerId="";
+ if(typeof player.publicCareerUploadId!=="string"||!player.publicCareerUploadId)player.publicCareerUploadId=player.publicCareerId||"";
  const bodyCfg=bodyRangeFor(player.pos);
  player.heightCm=clampNumber(player.heightCm||bodyCfg.defaultHeight,bodyCfg.height[0],bodyCfg.height[1]);
  player.wingspanCm=clampNumber(player.wingspanCm||player.heightCm+bodyCfg.defaultReach,player.heightCm+bodyCfg.reach[0],player.heightCm+bodyCfg.reach[1]);
@@ -5788,7 +5764,7 @@ function saveCareerNow(){
  if(!p||careerSaveRestoring)return false;
  try{
    const save={
-     schema:CAREER_SAVE_SCHEMA,gameVersion:"7.50.5",savedAt:Date.now(),
+     schema:CAREER_SAVE_SCHEMA,gameVersion:"7.50.7",savedAt:Date.now(),
      player:p,chosenPos,selectedDie,screen:currentCareerScreen()
    };
    localStorage.setItem(CAREER_SAVE_KEY,JSON.stringify(save));
@@ -6026,7 +6002,7 @@ function drawPlayerAvatarCanvas(c,x,y,size,avatarSeed,pos="PG",age=16){
 }
 function preloadPlayerAvatarSprites(){return p?mangaAvatarImageRecord(p.avatarSeed,p.pos,p.age).promise:Promise.resolve()}
 
-// V7.50.6 modular portrait compositor. Face, hair and facial hair are selected
+// V7.50.5 modular portrait compositor. Face, hair and facial hair are selected
 // independently from a career-owned avatar seed, so a world Seed never implies
 // one fixed face. Mirroring, crop, offset, face-tone and hair-tone variants provide 69,120
 // stable combinations at every age stage.
@@ -6034,16 +6010,7 @@ const MODULAR_AVATAR_ASSETS={
  face:"./basketball-avatar-face-bases.webp",
  hair:"./basketball-avatar-hair.webp"
 };
-function encodeCustomAvatar(a){
- return `BLAV:${a.face}:${a.hair}:${a.hairTone}:${a.faceTone}:${a.flip?1:0}:${a.variant}:${Math.round(a.shift||0)}`;
-}
-function decodeCustomAvatar(value){
- const m=/^BLAV:(\d{1,2}):(\d{1,2}):(\d):(\d):(0|1):(\d):(-?\d+)$/.exec(String(value||""));
- if(!m)return null;
- return {face:clampNumber(m[1],0,15),hair:clampNumber(m[2],0,15),hairTone:clampNumber(m[3],0,2),faceTone:clampNumber(m[4],0,4),flip:m[5]==="1",variant:clampNumber(m[6],0,2),shift:clampNumber(m[7],-1,1)*.65};
-}
 function modularAvatarProfile(avatarSeed,pos="PG"){
- const custom=decodeCustomAvatar(avatarSeed);if(custom)return custom;
  const r=RNG(`taiwan-player-portrait-v4-${String(avatarSeed||"BL-PLAYER")}-${pos}`);
  return {
   face:ri(r,0,15),hair:ri(r,0,15),hairTone:ri(r,0,2),faceTone:ri(r,0,4),
@@ -6140,31 +6107,13 @@ function updateSetupHeight(value){
  const reach=chosenWingspan-chosenHeight;chosenHeight=Number(value);chosenWingspan=chosenHeight+reach;refreshSetupBody(false);
 }
 function updateSetupWingspan(value){chosenWingspan=Number(value);refreshSetupBody(false)}
-function setupAvatarSeed(){return encodeCustomAvatar(setupAvatarProfile)}
-function syncSetupAvatarInputs(){
- const map={avatarFaceInput:setupAvatarProfile.face,avatarHairInput:setupAvatarProfile.hair,avatarFaceToneInput:setupAvatarProfile.faceTone,avatarHairToneInput:setupAvatarProfile.hairTone};
- Object.entries(map).forEach(([id,value])=>{const el=document.getElementById(id);if(el)el.value=value});
- const labels={avatarFaceValue:`${setupAvatarProfile.face+1}/16`,avatarHairValue:`${setupAvatarProfile.hair+1}/16`,avatarFaceToneValue:`${setupAvatarProfile.faceTone+1}/5`,avatarHairToneValue:`${setupAvatarProfile.hairTone+1}/3`};
- Object.entries(labels).forEach(([id,value])=>{const el=document.getElementById(id);if(el)el.textContent=value});
- renderPlayerAvatar(document.getElementById("setupAvatarPreview"),setupAvatarSeed(),chosenPos,16,"自訂球員頭像預覽");
-}
-function updateSetupAvatar(key,value){
- if(!["face","hair","faceTone","hairTone"].includes(key))return;
- const limits={face:15,hair:15,faceTone:4,hairTone:2};setupAvatarProfile[key]=clampNumber(value,0,limits[key]);syncSetupAvatarInputs();
-}
-function randomizeSetupAvatar(){
- const r=RNG(`${newAvatarSeed()}-${Date.now()}`);
- setupAvatarProfile={face:ri(r,0,15),hair:ri(r,0,15),hairTone:ri(r,0,2),faceTone:ri(r,0,4),flip:r()<.5,variant:ri(r,0,2),shift:ri(r,-1,1)};
- syncSetupAvatarInputs();
-}
-function toggleSetupAvatarFlip(){setupAvatarProfile.flip=!setupAvatarProfile.flip;syncSetupAvatarInputs()}
 function selectSetupPosition(pos){
- if(!POSITIONS.includes(pos))return;chosenPos=pos;renderPos();refreshSetupBody(true);syncSetupAvatarInputs();
+ if(!POSITIONS.includes(pos))return;chosenPos=pos;renderPos();refreshSetupBody(true);
 }
 function initializeCharacterBuilder(){
  const birthplace=document.getElementById("birthplaceInput");
  if(birthplace){birthplace.innerHTML=`<option value="RANDOM">🎲 依 Seed 隨機縣市</option>${TAIWAN_BIRTHPLACES.map(x=>`<option value="${x}">${x}</option>`).join("")}`;birthplace.value=chosenBirthplace}
- refreshSetupBody(true);randomizeSetupAvatar();
+ refreshSetupBody(true);
 }
 function renderPos(){
  const names={PG:"控球後衛",SG:"得分後衛",SF:"小前鋒",PF:"大前鋒",C:"中鋒"};
@@ -6424,7 +6373,7 @@ function startCareer(){
 
  const birthplaceChoice=document.getElementById("birthplaceInput")?.value||chosenBirthplace;
  const birthplace=birthplaceChoice==="RANDOM"?TAIWAN_BIRTHPLACES[ri(RNG(`${seed}-birthplace`),0,TAIWAN_BIRTHPLACES.length-1)]:birthplaceChoice;
- p={name:n,pos:chosenPos,seed,avatarSeed:setupAvatarSeed(),heightCm:chosenHeight,wingspanCm:chosenWingspan,birthplace,careerVersion:"7.50.6",seedTier:tier.key,seedTierLabel:tier.label,seedTierDesc:tier.desc,
+ p={name:n,pos:chosenPos,seed,avatarSeed:newAvatarSeed(),heightCm:chosenHeight,wingspanCm:chosenWingspan,birthplace,careerVersion:"7.50.7",seedTier:tier.key,seedTierLabel:tier.label,seedTierDesc:tier.desc,
  age:16,year:2026,path:"HBL",grade:1,stage:"training",stats:s,caps,growth:ri(r,tier.growth[0],tier.growth[1]),
  durability:ri(r,38,94),clutch:ri(r,35,96),discipline:ri(r,38,94),confidence:50,health:100,fatigue:0,six:0,genius:false,geniusType:"",round:0,eventIndex:0,
  seasonEventCount:ri(r,2,4),dice:[],used:[],trainingUndo:[],trainingProgress:{shoot:0,finish:0,handle:0,pass:0,defense:0,rebound:0,ath:0,iq:0},pointUndo:[],seasonPoints:0,bonusPoints:0,rep:0,injury:null,injuryHistory:[],log:[],seasonStats:null,team:"",geniusResolved:false,geniusFailed:false,transition:null,geniusCostDiscount:0,titles:[],titleHistory:[],seasonPointFocus:[],clutchWins:0,eventSuccesses:0,healthySeasons:0,championships:0,severeInjuryRecovered:false,offers:[],strategyStats:{risk:{pick:0,success:0,streak:0,best:0},balance:{pick:0,success:0,streak:0,best:0},safe:{pick:0,success:0,streak:0,best:0}},seasonEventSuccess:0,geniusFailureShown:false,careerSeason:0,contract:null,seasonPlan:null,planRiskMod:0,planGrowthMod:0,planStatMod:0,nationalCaps:0,relationship:"單身",lifeEventCount:0,news:[],seasonHistory:[],careerAwards:[],careerSalary:0,careerGames:0,careerPtsTotal:0,careerRebTotal:0,careerAstTotal:0,chainTitles:[],retired:false,retirementReason:"",peakOverall:0,ageDeclineStage:0,careerMVP:0,careerFirstTeam:0,careerSecondTeam:0,careerDPOY:0,careerScoringTitles:0,careerAssistTitles:0,
@@ -6440,7 +6389,7 @@ function startCareer(){
     recentEvents:[],feedHistory:[],expandedFeedYear:null,showOlderFeedYears:false,pendingRenewalOffer:null,pendingNBAOffer:null,marketOriginTeam:"",marketOriginLeague:"",marketReturnOffer:null,marketReturnMode:"",
     medicalProtectionUntilYear:0,medicalProtectionReason:"",medicalProtectedArea:"",postOpCareChosen:false,lastMajorInjuryYear:0,
     lastDanceActive:false,lastDanceUsed:false,retirementDefianceUsed:false,retirementCrisisCount:0,retirementCrisisReason:"",
-    leaderboardChoice:null,retirementRankSummary:null,diceRevealCount:0,diceRolling:false,
+    publicCareerId:"",publicCareerUploadId:"",leaderboardChoice:null,retirementRankSummary:null,diceRevealCount:0,diceRolling:false,
     developmentSeasons:0,developmentLastChanceUsed:false,firstFullProAge:null,pendingSeasonAdvance:false,franchiseTeam:""};
 
  p.team=HBL_TEAMS[ri(RNG(p.seed+"hbl-team"),0,HBL_TEAMS.length-1)];
@@ -7255,14 +7204,16 @@ function transferNCAAEarly(){transferFromNCAAD2()}
 function showCollegeDecision(){
  p.pendingSeasonAdvance=true;
  p.stage="decision";resetMain();render();flow.innerHTML="";
- let sc=scoutingScore(),max=collegeMaxYears(),offers=proOffersForScore(sc,"college-"+p.grade);
+ let sc=scoutingScore(),max=collegeMaxYears(),offers=proOffersForScore(sc,"college-"+p.grade),collegeComplete=p.grade>=max;
  chapter.textContent=`${p.year} · ${p.age}歲 · ${p.path} · 季末抉擇`;
 
  // ----------------------------------------------------------
  // Normal college season decision
  // ----------------------------------------------------------
- title.textContent="留下，轉換跑道，還是投入職業？";
- text.innerHTML=`本季結束後，球探重新評估你的價值。你可以繼續完成大學生涯，也可能提前接受職業邀約。<br><span class="mut">目前球探評級 <b class="gold">${sc}</b>｜${currentCareerLabel()}</span>`;
+ title.textContent=collegeComplete?"大學生涯完成，選擇你的職業去向":"留下，轉換跑道，還是投入職業？";
+ text.innerHTML=collegeComplete
+  ? `大學生涯已正式完成，球探依據你的完整大學生涯重新評估價值。請從目前收到的職業合約中選擇去向；若沒有正式報價，則可投入公開測試。<br><span class="mut">最終球探評級 <b class="gold">${sc}</b>｜${currentCareerLabel()}</span>`
+  : `本季結束後，球探重新評估你的價值。你可以繼續完成大學生涯，也可能提前接受職業邀約。<br><span class="mut">目前球探評級 <b class="gold">${sc}</b>｜${currentCareerLabel()}</span>`;
 
  let html='<div class="offerGrid">';
  if(p.grade<max){
@@ -7272,7 +7223,7 @@ function showCollegeDecision(){
    html+=`<div class="offerCard"><b>🎓 NCAA D1 轉學邀請</b><div class="mut">D1 球隊注意到你在 ${p.team} 的表現。轉學後保留年級進度，下一季以大${p.grade+1}身分加入更高曝光與更激烈的輪替競爭。</div><div class="offerMeta"><span>D2 → D1</span><span>球探 ${sc}</span></div><button class="btn" style="margin-top:9px" onclick="transferFromNCAAD2()">接受 D1 邀請</button></div>`;
  }
 
- html+=offers.length?offers.map(proOfferCard).join(""):`<div class="offerCard"><b>目前沒有正式職業合約</b><div class="mut">可以留校繼續累積身價；下一季仍會重新評估。</div></div>`;
+ html+=offers.length?offers.map(proOfferCard).join(""):`<div class="offerCard"><b>目前沒有正式職業合約</b><div class="mut">${collegeComplete?"大學生涯已完成，請透過公開測試爭取職業或半職業機會。":"可以留校繼續累積身價；下一季仍會重新評估。"}</div></div>`;
 
  if(p.grade>=max && !offers.length){
    html+=`<div class="offerCard"><b>投入公開測試</b><div class="mut">學籍年限結束，只能從職業測試或半職業重新尋找機會。</div><button class="btn" style="margin-top:9px" onclick="openTryout()">參加測試</button></div>`;
@@ -7809,7 +7760,7 @@ function careerPowerModel(data={}){
  if(data.comeback)score+=75;
  if(data.nationalLegend)score+=100;
  if(data.evergreen)score+=50;
- // V7.50.6 only expands the displayed scale. Relative weights and ranking order stay unchanged.
+ // The display scale is expanded only; relative weights and ranking order stay unchanged.
  return Math.max(0,Math.round(score*10));
 }
 function calcCareerRating(){
@@ -8306,7 +8257,7 @@ document.addEventListener("click",e=>{
 function retirementRestartHTML(){
  return `<div class="restartBox">
    <b>再跑一次人生</b>
-   <div class="mut" style="font-size:11px;margin-top:4px">保留球員外觀、身材與出生地，選擇同一 Seed 或重新抽取世界。</div>
+   <div class="mut" style="font-size:11px;margin-top:4px">保留姓名、位置、身材與出生地，選擇同一 Seed 或重新抽取世界；新生涯會由系統重新產生球員外觀。</div>
    <div class="restartBtns">
      <button class="btn same" onclick="restartCareer('same')">↻ 同種子重新開始</button>
      <button class="btn random" onclick="restartCareer('random')">🎲 隨機種子重新開始</button>
@@ -8323,7 +8274,6 @@ function restartCareer(mode){
  const oldHeight=p?.heightCm||bodyRangeFor(oldPos).defaultHeight;
  const oldWingspan=p?.wingspanCm||oldHeight+bodyRangeFor(oldPos).defaultReach;
  const oldBirthplace=TAIWAN_BIRTHPLACES.includes(p?.birthplace)?p.birthplace:"RANDOM";
- const oldAvatar=modularAvatarProfile(p?.avatarSeed||newAvatarSeed(),oldPos);
 
  document.getElementById("game").classList.add("hidden");
  document.getElementById("setup").classList.remove("hidden");
@@ -8331,9 +8281,8 @@ function restartCareer(mode){
  p=null;selectedDie=null;clearCareerSave(false);
  chosenPos=oldPos;
  chosenHeight=oldHeight;chosenWingspan=oldWingspan;chosenBirthplace=oldBirthplace;
- setupAvatarProfile={...oldAvatar,shift:Math.round((oldAvatar.shift||0)/.65)};
  renderPos();
- refreshSetupBody(false);syncSetupAvatarInputs();
+ refreshSetupBody(false);
  const birthplace=document.getElementById("birthplaceInput");if(birthplace)birthplace.value=chosenBirthplace;
  document.getElementById("playerNameInput").value=oldName;
 
@@ -8540,7 +8489,7 @@ function retirementRankMarkHTML(){
  return `<div class="legacyRankMark"><b>✓ 已登錄全球排行</b><span>${bits.join("｜")||"公開生涯已建立"}</span></div>`;
 }
 function retirementRankingButtonsHTML(){
- return `${p?.publicCareerId?"":`<button class="btn" onclick="BasketballLifeOnline.scheduleRetirementAutoPublish(0)">↻ 重新確認登錄</button>`}<button class="btn" onclick="BasketballLifeOnline.openLeaderboardNewTab()">🏆 查看全球排行榜 ↗</button><button class="btn" onclick="shareCareerImage()">📸 分享生涯紀念圖</button>`;
+ return `${p?.publicCareerId?"":`<button class="btn" onclick="BasketballLifeOnline.scheduleRetirementAutoPublish(0)">↻ 重新確認登錄</button>`}<button class="btn" onclick="BasketballLifeOnline.openLeaderboardNewTab()">🏆 查看全球排行榜 ↗</button><button class="btn" onclick="generateCareerImage()">📸 生成生涯紀念圖</button>`;
 }
 function refreshRetirementRankingView(){
  document.querySelectorAll(".legacyRankMarkHost").forEach(x=>x.innerHTML=retirementRankMarkHTML());
@@ -8638,14 +8587,10 @@ function showShareCard(){
    <div class="legacySection"><div class="legacySectionTitle">生涯稱號</div><div class="legacyBadges">${legacyTitleBadgesHTML("無")}</div></div>
    <div class="legacySection"><div class="legacySeed"><b>🎴 ${p.seedTierLabel}</b><br>${p.seedTierDesc}<br><span class="mut">seed：${p.seed}</span></div></div>
    ${creatorCreditHTML()}</main></div></div>
- <div class="retireBtns"><button class="btn downloadBtn" onclick="shareCareerImage()">📸 分享生涯紀念圖</button><button class="btn" onclick="downloadCareerPNG()">下載 PNG</button><button class="btn" onclick="showRetirementSummary()">返回完整生涯</button><button class="btn" onclick="BasketballLifeOnline.openLeaderboardNewTab()">🏆 查看排行榜 ↗</button></div><div id="publicCareerStatus" class="publicCareerStatus"></div>${retirementRestartHTML()}`;
+ <div class="retireBtns"><button class="btn downloadBtn" onclick="generateCareerImage()">📸 生成生涯紀念圖</button><button class="btn" onclick="downloadCareerPNG()">下載 PNG</button><button class="btn" onclick="showRetirementSummary()">返回完整生涯</button><button class="btn" onclick="BasketballLifeOnline.openLeaderboardNewTab()">🏆 查看排行榜 ↗</button></div><div id="publicCareerStatus" class="publicCareerStatus"></div>${retirementRestartHTML()}`;
  setTimeout(()=>{fitGameToViewport();const cp=document.getElementById("currentPanel");if(cp)cp.scrollTop=0;BasketballLifeOnline.scheduleRetirementAutoPublish();},0);
 }
 function careerShareFileName(){return `BasketballLife_${String(p.name||"Career").replace(/[\\/:*?"<>|]/g,"_")}_${p.year}.png`}
-function careerPublicShareUrl(){
- if(!p?.publicCareerId)return "";
- const url=new URL(location.href);url.search="";url.hash="";url.searchParams.set("career",p.publicCareerId);return url.toString();
-}
 function buildCareerShareCanvas(){
  const groups=careerLeagueSummary(),achievements=careerAchievementEntries(),evals=legacyEvaluationLines();
  const normalizedNational=internationalHistoryForDisplay(p.internationalHistory||[],p.seasonHistory||[]),nationalRows=normalizedNational.rows;
@@ -8789,15 +8734,10 @@ async function copyCareerImage(){
  catch(_){const blob=await careerShareBlob();triggerCareerImageDownload(blob);renderCareerImagePreview(blob,"瀏覽器不支援複製圖片，已改為下載 PNG。")}
 }
 async function downloadCareerPNG(){const blob=await careerShareBlob();triggerCareerImageDownload(blob);renderCareerImagePreview(blob,"✓ 生涯紀念圖 PNG 已下載。")}
-async function shareCareerImage(){
+async function generateCareerImage(){
  try{
-   const blob=await careerShareBlob(),file=new File([blob],careerShareFileName(),{type:"image/png"}),url=careerPublicShareUrl();
-   renderCareerImagePreview(blob,"生涯紀念圖已產生，正在開啟可用的分享方式…");
-   if(navigator.share&&navigator.canShare?.({files:[file]})){
-     try{await navigator.share({files:[file],title:`BasketballLife｜${p.name} 生涯紀念`,text:`${p.name}｜BL POWER ${Number(p.careerRating||0).toLocaleString()}${url?`\n${url}`:""}`});renderCareerImagePreview(blob,"✓ 已完成圖片分享。");return}catch(err){if(err?.name==="AbortError"){renderCareerImagePreview(blob,"分享已取消；仍可在下方複製圖片或下載 PNG。");return}}
-   }
-   if(navigator.clipboard?.write&&window.ClipboardItem){await navigator.clipboard.write([new ClipboardItem({"image/png":blob})]);renderCareerImagePreview(blob,"✓ 生涯紀念圖已複製，可直接貼到 Threads、LINE、Facebook 或聊天室。");return}
-   triggerCareerImageDownload(blob);renderCareerImagePreview(blob,"瀏覽器不支援直接分享圖片，已下載 PNG。");
+   const blob=await careerShareBlob();
+   renderCareerImagePreview(blob,"✓ 生涯紀念圖已產生；可在下方自行複製圖片或下載 PNG。");
  }catch(err){const status=document.getElementById("publicCareerStatus");if(status)status.innerHTML=`<div class="copyHint">圖片產生失敗：${escapeFeedText(err?.message||"請稍後再試")}</div>`}
 }
 function showCareerChapter(type){
