@@ -4277,6 +4277,48 @@ body.retirementMode .header .who{gap:6px}
   .publicHeroIdentity{gap:8px;align-items:flex-start}
 }
 
+/* V7.50.10: keep long player names readable and give identity more room. */
+.playerIdentityName{display:block;min-width:0}
+.playerIdentityName b{
+  display:block;
+  font-size:clamp(16px,1.55vw,19px)!important;
+  line-height:1.12;
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  overflow-wrap:anywhere;
+}
+.playerIdentityMeta{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  min-width:0;
+  margin-top:5px;
+  color:#e6a15c;
+  font-size:10.5px;
+  line-height:1.35;
+  font-weight:850;
+}
+.playerIdentityMeta span{white-space:normal}
+@media(min-width:701px){
+  #game:not(.hidden) .header{
+    grid-template-columns:minmax(295px,2.5fr) repeat(4,minmax(82px,.72fr));
+  }
+  #game:not(.hidden) .header .box:not(.who){padding-left:7px;padding-right:7px}
+  #game:not(.hidden) .header .box:not(.who) b{
+    font-size:14px;
+    white-space:normal;
+    overflow:visible;
+    text-overflow:clip;
+    overflow-wrap:anywhere;
+  }
+}
+@media(max-width:700px){
+  #game:not(.hidden) .header .playerIdentityName b{font-size:16px!important}
+  #game:not(.hidden) .header .playerIdentityMeta{font-size:10px}
+  #game:not(.hidden) .header .box:not(.who) b{font-size:13px!important}
+}
+
 /* Character builder: position-bound body profile and birthplace. */
 .setupBuilder{display:grid;gap:12px;margin:16px 0}
 .setupSection{border:1px solid #273b49;border-radius:14px;background:linear-gradient(145deg,#0b151d,#101c25);padding:14px}
@@ -4404,7 +4446,7 @@ body.retirementMode .header .who{gap:6px}
 
 <section id="game" class="hidden">
 <div class="header">
-<div class="box who"><div id="playerAvatar" class="playerAvatar" aria-hidden="true"></div><div class="playerIdentity"><small>PLAYER</small><div class="playerIdentityName"><b id="pname"></b> <span id="ppos" class="gold"></span></div><span id="teamname" class="teamname"></span></div></div>
+<div class="box who"><div id="playerAvatar" class="playerAvatar" aria-hidden="true"></div><div class="playerIdentity"><small>PLAYER</small><div class="playerIdentityName"><b id="pname"></b></div><div class="playerIdentityMeta"><span id="ppos"></span><span id="teamname"></span></div></div></div>
 <div class="box"><small>AGE</small><b id="age"></b></div>
 <div class="box"><small>YEAR</small><b id="year"></b></div>
 <div class="box"><small>綜合能力</small><b id="ovr"></b></div>
@@ -7140,7 +7182,7 @@ function render(){
  if(quickRestartBtn)quickRestartBtn.classList.toggle("hidden",!p||p.retired);
  renderFeedHistory();
  setTimeout(fitGameToViewport,0);
- pname.textContent=p.name;ppos.textContent=`${p.pos}｜${p.heightCm||"—"}cm`;ppos.title=`臂展 ${p.wingspanCm||"—"} cm｜出生地 ${p.birthplace||"未設定"}`;teamname.textContent=currentTeam()?`｜${currentTeam()}`:"";
+ pname.textContent=p.name;ppos.textContent=`${p.pos}・${p.heightCm||"—"}cm`;ppos.title=`臂展 ${p.wingspanCm||"—"} cm｜出生地 ${p.birthplace||"未設定"}`;teamname.textContent=currentTeam()?`・${currentTeam()}`:"";
  renderPlayerAvatar(document.getElementById("playerAvatar"),p.avatarSeed,p.pos,p.age,`${p.name} 的球員頭像`);
  age.textContent=p.age;year.textContent=p.year;ovr.textContent=overall();path.textContent=p.path;
  if(injurySummary)injurySummary.innerHTML=p.injury?`目前傷勢：<span class="bad">${p.injury.name}（${p.injury.level}）</span>`:(p.injuryHistory.length?`傷病履歷：${p.injuryHistory.length} 次正式傷勢`:"目前沒有正式傷病紀錄。");
