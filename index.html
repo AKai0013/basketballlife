@@ -3435,6 +3435,7 @@ body.onlineModalOpen{
 .careerImagePreview img{display:block;width:min(100%,520px);max-height:68vh;object-fit:contain;margin:auto;border:1px solid #315441;border-radius:8px;background:#07140e;box-shadow:0 16px 40px #0008}
 .careerImagePreviewActions{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:10px}
 .publishedUrl{margin-top:4px;color:#8199a7;font-size:9px;word-break:break-all}.publishedBtns{display:flex;gap:6px;margin-top:7px;flex-wrap:wrap}.copyHint{margin-top:5px;color:#72d49d;font-size:9px}
+.careerUploadIssue{padding:9px 10px;border:1px solid #8b5939;border-radius:8px;background:#281914;color:#eac4aa;font-size:10.5px}.careerUploadIssue b{display:block;color:#f2a45d}.careerUploadIssue span{display:block;margin-top:4px;line-height:1.55}.careerUploadIssue .publishedBtns{margin-top:8px}
 .publicLegacy{padding:14px 16px;border:1px solid #5b4938;border-radius:12px;background:linear-gradient(145deg,#151b20,#0c151c)}
 .publicLegacyTop{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;padding-bottom:10px;border-bottom:1px solid #344853}
 .powerStamp{flex:none;min-width:135px;padding:9px;border:1px solid #65492f;border-radius:9px;background:#1d160f;text-align:right}.powerStamp small{display:block;color:#a9896a;font-size:8.5px;font-weight:900;letter-spacing:1px}.powerStamp b{display:block;color:#eea057;font-size:26px;line-height:1.05;font-weight:950}.powerStamp span{display:block;margin-top:3px;color:#b8c2c7;font-size:9px}
@@ -4426,7 +4427,12 @@ window.BL_ONLINE_CONFIG = {
    leaderboardCache:null,
    activeMetric:"power",
    pendingCareerEnrollment:false,
-   returnView:"setup"
+   returnView:"setup",
+   reconnectPromise:null,
+   sdkLoadPromise:null,
+   authListenerReady:false,
+   lastReconnectAt:0,
+   lastCareerPublishError:""
  };
 
  const $=id=>document.getElementById(id);
@@ -4496,15 +4502,127 @@ window.BL_ONLINE_CONFIG = {
    finally{clearTimeout(timer)}
  }
 
+ async function ensureSupabaseSdk(){
+   if(window.supabase?.createClient)return true;
+   if(state.sdkLoadPromise)return state.sdkLoadPromise;
+   state.sdkLoadPromise=new Promise((resolve,reject)=>{
+     const script=document.createElement("script");
+     const original=document.querySelector('script[src*="@supabase/supabase-js"]');
+     script.src=`${original?.src||"https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"}${(original?.src||"").includes("?")?"&":"?"}retry=${Date.now()}`;
+     script.async=true;
+     script.onload=()=>window.supabase?.createClient?resolve(true):reject(new Error("Supabase SDK 載入失敗"));
+     script.onerror=()=>reject(new Error("Supabase SDK 載入失敗"));
+     (document.head||document.documentElement).appendChild(script);
+     setTimeout(()=>reject(new Error("Supabase SDK 載入逾時")),10000);
+   }).finally(()=>{state.sdkLoadPromise=null});
+   return state.sdkLoadPromise;
+ }
+
+ function ensureOnlineClient(){
+   if(state.client)return state.client;
+   if(!window.supabase?.createClient)throw new Error("Supabase SDK 尚未載入");
+   state.client=window.supabase.createClient(
+     cfg.supabaseUrl,
+     cfg.publishableKey,
+     {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}
+   );
+   return state.client;
+ }
+
+ function bindAuthStateListener(){
+   if(state.authListenerReady||!state.client)return;
+   state.authListenerReady=true;
+   state.client.auth.onAuthStateChange((_event,session)=>{
+     if(session?.user){
+       state.user=session.user;
+       state.offline=false;
+       if(state.pendingCareerEnrollment)setTimeout(()=>autoPublishRetirementCareer(),0);
+     }
+   });
+ }
+
  async function ensureAnonymousUser(){
    const {data:sessionData,error:sessionError}=await withTimeout(state.client.auth.getSession(),8000);
    if(sessionError)throw sessionError;
-   if(sessionData?.session?.user)return sessionData.session.user;
+   const session=sessionData?.session;
+   if(session?.user){
+     const expiresAt=Number(session.expires_at||0);
+     if(expiresAt&&expiresAt<=Math.floor(Date.now()/1000)+90&&state.client.auth.refreshSession){
+       const {data:refreshData,error:refreshError}=await withTimeout(state.client.auth.refreshSession(),8000);
+       if(refreshError)throw refreshError;
+       if(refreshData?.session?.user)return refreshData.session.user;
+     }
+     return session.user;
+   }
 
    const {data,error}=await withTimeout(state.client.auth.signInAnonymously(),10000);
    if(error)throw error;
    if(!data?.user)throw new Error("匿名登入沒有取得使用者資料");
    return data.user;
+ }
+
+ function careerPublishErrorText(err){
+   const raw=[err?.message,err?.details,err?.hint].filter(Boolean).join("｜")||"未知錯誤";
+   if(/Failed to fetch|NetworkError|Load failed|network|連線逾時|timeout/i.test(raw))return "網路或排行榜服務連線逾時，生涯已保留在本機，系統會自動補傳。";
+   if(/JWT|token|Authentication required|auth|401|403/i.test(raw))return "Online 登入憑證已失效，系統正在重新取得匿名登入身分。";
+   if(/publish_career_v7508|function.*not found|PGRST202|server integrity|伺服器完整性驗證尚未啟用/i.test(raw))return "排行榜資料庫尚未完成必要更新，請通知作者檢查 Supabase 補丁。";
+   if(/完整性|Malformed|Invalid|mismatch|exceeds|Duplicate|schedule|season|award|career record/i.test(raw))return `這支生涯未通過排行榜資料驗證：${raw.slice(0,150)}`;
+   return `排行榜回覆：${raw.slice(0,170)}`;
+ }
+
+ function rememberCareerPublishError(err){
+   const message=careerPublishErrorText(err);
+   state.lastCareerPublishError=message;
+   const gp=gamePlayer();
+   if(gp)gp.careerUploadError={message,at:Date.now()};
+   return message;
+ }
+
+ function clearCareerPublishError(){
+   state.lastCareerPublishError="";
+   const gp=gamePlayer();
+   if(gp)gp.careerUploadError=null;
+ }
+
+ function renderCareerUploadIssue(message=""){
+   const status=document.getElementById("publicCareerStatus");
+   if(!status)return;
+   const detail=message||state.lastCareerPublishError||gamePlayer()?.careerUploadError?.message||"公開生涯尚未完成上傳。";
+   status.innerHTML=`<div class="careerUploadIssue"><b>⚠ 公開生涯尚未上傳</b><span>${esc(detail)}</span><div class="publishedBtns"><button class="btn" type="button" onclick="BasketballLifeOnline.retryCareerUpload()">重新連線並上傳</button></div></div>`;
+ }
+
+ async function reconnectOnline(force=false){
+   if(!state.enabled)return false;
+   if(state.reconnectPromise)return state.reconnectPromise;
+   if(!force&&Date.now()-state.lastReconnectAt<3000)return !!(state.client&&state.user&&!state.offline);
+   state.lastReconnectAt=Date.now();
+   state.reconnectPromise=(async()=>{
+     try{
+       if(state.initPromise&&!state.ready){
+         await state.initPromise;
+         if(state.client&&state.user&&!state.offline)return true;
+       }
+       if(typeof navigator!=="undefined"&&navigator.onLine===false)throw new Error("裝置目前處於離線狀態");
+       setStatus("connecting","Online｜重新連線");
+       await ensureSupabaseSdk();
+       ensureOnlineClient();
+       state.user=await ensureAnonymousUser();
+       bindAuthStateListener();
+       const profile=await loadProfile();
+       state.nickname=cleanNickname(profile?.nickname||state.nickname||cachedNickname());
+       state.offline=false;state.ready=true;
+       setStartReady();
+       if(state.nickname){cacheNickname(state.nickname);hideNicknameModal();setStatus("online",`Online｜${state.nickname}`);startLive();}
+       else{setStatus("needsName","Online｜請設定暱稱");showNicknameModal();}
+       return !!state.user;
+     }catch(err){
+       rememberCareerPublishError(err);
+       state.offline=true;
+       setStatus("offline","Online｜重連失敗");
+       return false;
+     }finally{state.reconnectPromise=null}
+   })();
+   return state.reconnectPromise;
  }
 
  async function loadProfile(){
@@ -5031,6 +5149,7 @@ window.BL_ONLINE_CONFIG = {
 
  function acceptPublishedCareer(id,showLink=true){
    if(!id)return null;
+   clearCareerPublishError();
    p.publicCareerId=id;
    p.publicCareerUploadId=id;
    p.leaderboardChoice="public";
@@ -5048,6 +5167,13 @@ window.BL_ONLINE_CONFIG = {
    if(!gamePlayer() || !p.retired){
      if(status&&!silent)status.textContent="只有正式退休後的完整生涯可以發布。";
      return null;
+   }
+   if(state.offline||!state.client||!state.user){
+     const connected=await reconnectOnline(options.manual===true);
+     if(!connected){
+       renderCareerUploadIssue();
+       return null;
+     }
    }
    if(!state.client || !state.user || !state.nickname){
      if(status&&!silent)status.textContent="請先完成 Online 玩家登入。";
@@ -5107,15 +5233,26 @@ window.BL_ONLINE_CONFIG = {
      if(data?.career_data?.integrity?.server_verified!=="passed"){
        throw new Error("伺服器完整性驗證尚未啟用，這筆生涯未列入排行榜");
      }
+     clearCareerPublishError();
      return acceptPublishedCareer(data?.id||uploadId,showLink);
    }catch(err){
      // A timeout does not cancel the original HTTP request. Confirm the stable
      // ID before retrying so a late successful insert cannot create a duplicate.
      const confirmed=await findCareerRecord(uploadId).catch(()=>null);
-     if(confirmed?.id&&confirmed?.career_data?.integrity?.server_verified==="passed")return acceptPublishedCareer(confirmed.id,showLink);
+     if(confirmed?.id&&confirmed?.career_data?.integrity?.server_verified==="passed"){
+       clearCareerPublishError();
+       return acceptPublishedCareer(confirmed.id,showLink);
+     }
+     const raw=[err?.message,err?.details,err?.hint].filter(Boolean).join("｜");
+     if(!options.authRetried&&/JWT|token|Authentication required|auth|401|403/i.test(raw)){
+       state.user=null;
+       const recovered=await reconnectOnline(true);
+       if(recovered)return publishCareer({...options,authRetried:true});
+     }
      console.warn("Public career publish failed:",err);
-     const detail=[err?.message,err?.details,err?.hint].filter(Boolean).join("｜");
-     if(status&&!silent)status.textContent=`發布失敗：${detail||"請稍後再試"}`;
+     const detail=rememberCareerPublishError(err);
+     renderCareerUploadIssue(detail);
+     scheduleCareerAutosave();
      return null;
    }finally{
      buttons.forEach(b=>{b.disabled=false;b.textContent=p?.publicCareerId?"✓ 已發布公開生涯":"🌐 發布公開生涯"});
@@ -5171,7 +5308,20 @@ window.BL_ONLINE_CONFIG = {
    state.pendingCareerEnrollment=true;
    refreshRetirementRankingView();
    scheduleCareerAutosave();
-   if(state.offline||!state.client||!state.user||!state.nickname){
+   if(state.offline||!state.client||!state.user){
+     const connected=await reconnectOnline(false);
+     if(!connected){
+       gp.leaderboardChoice="retry";
+       refreshRetirementRankingView();
+       renderCareerUploadIssue();
+       scheduleCareerAutosave();
+       scheduleRetirementAutoPublish(state.ready?15000:1500);
+       return null;
+     }
+   }
+   if(!state.nickname){
+     state.pendingCareerEnrollment=true;
+     showNicknameModal();
      scheduleRetirementAutoPublish(state.ready?15000:1500);
      return null;
    }
@@ -5192,6 +5342,20 @@ window.BL_ONLINE_CONFIG = {
    })();
    try{return await retirementAutoPublishPromise}
    finally{retirementAutoPublishPromise=null}
+ }
+
+ async function retryCareerUpload(){
+   const gp=gamePlayer();
+   if(!gp||!gp.retired)return null;
+   const status=document.getElementById("publicCareerStatus");
+   if(status)status.textContent="正在重新連線並確認這支生涯…";
+   state.pendingCareerEnrollment=true;
+   const connected=await reconnectOnline(true);
+   if(!connected){renderCareerUploadIssue();return null}
+   if(!state.nickname){showNicknameModal();renderCareerUploadIssue("請先完成 Online 玩家暱稱設定，再重新上傳。");return null}
+   const id=await autoPublishRetirementCareer();
+   if(!id)renderCareerUploadIssue();
+   return id;
  }
 
  function showPublishedCareerLink(id){
@@ -5230,10 +5394,7 @@ window.BL_ONLINE_CONFIG = {
 
    if(!id){
      try{shareTab?.close()}catch(_){}
-     const status=document.getElementById("publicCareerStatus");
-     if(status){
-       status.innerHTML=`<div class="copyHint">目前連線不穩，系統仍會自動補傳這支生涯；連線恢復後再按一次分享即可。</div>`;
-     }
+     renderCareerUploadIssue();
      return;
    }
 
@@ -5597,23 +5758,11 @@ window.BL_ONLINE_CONFIG = {
      }
 
      try{
-       if(!window.supabase?.createClient){
-         throw new Error("Supabase SDK 載入失敗");
-       }
-
-       state.client=window.supabase.createClient(
-         cfg.supabaseUrl,
-         cfg.publishableKey,
-         {
-           auth:{
-             persistSession:true,
-             autoRefreshToken:true,
-             detectSessionInUrl:true
-           }
-         }
-       );
+       await ensureSupabaseSdk();
+       ensureOnlineClient();
 
        state.user=await ensureAnonymousUser();
+       bindAuthStateListener();
 
        const profile=await loadProfile();
        const routeParams=new URLSearchParams(location.search);
@@ -5642,12 +5791,6 @@ window.BL_ONLINE_CONFIG = {
          showNicknameModal();
        }
 
-       state.client.auth.onAuthStateChange((_event,session)=>{
-         if(session?.user){
-           state.user=session.user;
-           if(state.pendingCareerEnrollment)setTimeout(()=>autoPublishRetirementCareer(),0);
-         }
-       });
        if(state.pendingCareerEnrollment || (gamePlayer()?.retired&&!gamePlayer()?.publicCareerId)){
          setTimeout(()=>autoPublishRetirementCareer(),0);
        }
@@ -5670,11 +5813,17 @@ window.BL_ONLINE_CONFIG = {
 
  window.addEventListener("online",()=>{
    if(!state.pendingCareerEnrollment)return;
-   if(state.offline){
-     state.offline=false;
-     state.initPromise=null;
-     init().then(()=>scheduleRetirementAutoPublish(0)).catch(()=>{});
-   }else scheduleRetirementAutoPublish(0);
+   reconnectOnline(true).then(ok=>{if(ok)scheduleRetirementAutoPublish(0)}).catch(()=>{});
+ });
+ window.addEventListener("offline",()=>{
+   state.offline=true;
+   setStatus("offline","Offline｜生涯已保留");
+   if(state.pendingCareerEnrollment)renderCareerUploadIssue("裝置目前離線；退休生涯已保留在本機，恢復連線後會自動補傳。");
+ });
+ document.addEventListener("visibilitychange",()=>{
+   if(document.visibilityState==="visible"&&state.pendingCareerEnrollment){
+     reconnectOnline(false).then(ok=>{if(ok)scheduleRetirementAutoPublish(0)}).catch(()=>{});
+   }
  });
 
  async function saveNickname(){
@@ -5763,6 +5912,8 @@ window.BL_ONLINE_CONFIG = {
    publishCareer,
    autoPublishRetirementCareer,
    scheduleRetirementAutoPublish,
+   retryCareerUpload,
+   reconnectOnline,
    copyCareerLink,
    shareRetirementCareer,
    openCareerNewTab,
@@ -6675,7 +6826,7 @@ function startCareer(){
     recentEvents:[],feedHistory:[],expandedFeedYear:null,showOlderFeedYears:false,pendingRenewalOffer:null,pendingNBAOffer:null,marketOriginTeam:"",marketOriginLeague:"",marketReturnOffer:null,marketReturnMode:"",
     medicalProtectionUntilYear:0,medicalProtectionReason:"",medicalProtectedArea:"",postOpCareChosen:false,lastMajorInjuryYear:0,
     lastDanceActive:false,lastDanceUsed:false,retirementDefianceUsed:false,retirementDefianceSucceeded:false,retirementPressureUsed:false,retirementCrisisCount:0,retirementCrisisReason:"",homecomingTeam:"",homecomingRegion:"",
-    publicCareerId:"",publicCareerUploadId:"",leaderboardChoice:null,retirementRankSummary:null,diceRevealCount:0,diceRolling:false,
+    publicCareerId:"",publicCareerUploadId:"",leaderboardChoice:null,retirementRankSummary:null,careerUploadError:null,diceRevealCount:0,diceRolling:false,
     developmentSeasons:0,developmentLastChanceUsed:false,firstFullProAge:null,pendingSeasonAdvance:false,franchiseTeam:""};
 
  p.team=HBL_TEAMS[ri(RNG(p.seed+"hbl-team"),0,HBL_TEAMS.length-1)];
@@ -9033,7 +9184,7 @@ function creatorCreditHTML(){
 }
 function retirementRankMarkHTML(){
  if(!p?.publicCareerId){
-   if(p?.leaderboardChoice==="retry")return `<div class="legacyRankMark retry"><b>⚠ 排行榜尚未登錄完成</b><span>連線恢復後會以同一筆 ID 自動補傳</span></div>`;
+   if(p?.leaderboardChoice==="retry")return `<div class="legacyRankMark retry"><b>⚠ 公開生涯尚未上傳</b><span>${escapeFeedText(p?.careerUploadError?.message||"系統會保留同一筆 ID 自動補傳，也可按下方按鈕立即重試")}</span></div>`;
    return `<div class="legacyRankMark pending"><b>⏳ 正在確認排行榜登錄</b><span>完成後會顯示全球名次</span></div>`;
  }
  const ranks=p.retirementRankSummary||{},bits=[];
@@ -9042,7 +9193,7 @@ function retirementRankMarkHTML(){
  return `<div class="legacyRankMark"><b>✓ 已登錄全球排行</b><span>${bits.join("｜")||"公開生涯已建立"}</span></div>`;
 }
 function retirementRankingButtonsHTML(){
- return `${p?.publicCareerId?"":`<button class="btn" onclick="BasketballLifeOnline.scheduleRetirementAutoPublish(0)">↻ 重新確認登錄</button>`}<button class="btn" onclick="BasketballLifeOnline.openLeaderboardNewTab()">🏆 查看全球排行榜 ↗</button><button class="btn" onclick="generateCareerImage()">📸 生成生涯紀念圖</button>`;
+ return `${p?.publicCareerId?"":`<button class="btn" onclick="BasketballLifeOnline.retryCareerUpload()">↻ 重新連線並上傳</button>`}<button class="btn" onclick="BasketballLifeOnline.openLeaderboardNewTab()">🏆 查看全球排行榜 ↗</button><button class="btn" onclick="generateCareerImage()">📸 生成生涯紀念圖</button>`;
 }
 function refreshRetirementRankingView(){
  document.querySelectorAll(".legacyRankMarkHost").forEach(x=>x.innerHTML=retirementRankMarkHTML());
