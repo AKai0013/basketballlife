@@ -2,8 +2,28 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BasketballLife</title>
-<link rel="icon" type="image/png" href="./basketballlife-logo.png">
+<title>BasketballLife｜籃球人生模擬器</title>
+<meta name="description" content="從 HBL 出發，經歷升學、職業合約、旅外、國家隊與退休，寫下屬於你的台灣籃球生涯。">
+<meta name="theme-color" content="#0b151e">
+<link rel="canonical" href="https://akai0013.github.io/basketballlife/">
+<link rel="icon" type="image/svg+xml" href="./basketballlife-icon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+<meta property="og:locale" content="zh_TW">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="BasketballLife">
+<meta property="og:title" content="BasketballLife｜籃球人生模擬器">
+<meta property="og:description" content="從 HBL 出發，挑戰台灣職籃、海外聯盟、國家隊與 NBA，寫下屬於你的球員生涯。">
+<meta property="og:url" content="https://akai0013.github.io/basketballlife/">
+<meta property="og:image" content="https://akai0013.github.io/basketballlife/basketballlife-share.png">
+<meta property="og:image:secure_url" content="https://akai0013.github.io/basketballlife/basketballlife-share.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="BasketballLife 台灣籃球人生模擬器">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="BasketballLife｜籃球人生模擬器">
+<meta name="twitter:description" content="從 HBL 出發，寫下屬於你的台灣籃球生涯。">
+<meta name="twitter:image" content="https://akai0013.github.io/basketballlife/basketballlife-share.png">
 <style>
 /* ===== Consolidated source block 1 ===== */
 :root{--bg:#0b0f15;--card:#131a25;--card2:#182231;--line:#2b394d;--txt:#f5f7fb;--mut:#91a0b6;--gold:#f0b64b;--blue:#5593ff;--green:#49cf88;--red:#e23b3b;--orange:#e88946}
@@ -5035,7 +5055,15 @@ window.BL_ONLINE_CONFIG = {
          const path=String(season?.path||"");
          const [lo,hi]=seasonScheduleRange(path);
          const expected=lo===hi?lo:ri(RNG(`${String(record.seed).toUpperCase()}-schedule-${year}-${path}`),lo,hi);
-         const legacyRange=historicalScheduleRange(sourceVersion,path);
+        // Public career rows already stored in Supabase may have been created
+        // before the fixed CBA/SBL schedule correction, even when a later
+        // client republished the save and updated game_version.  Reading an
+        // existing row may therefore use the old legal range; fresh uploads
+        // do not set this option and remain strict on both client and server.
+        const storedLegacyRange=options.allowStoredLegacySchedule
+          ? (path==="CBA"?[42,46]:path==="SBL／半職業"?[20,24]:null)
+          : null;
+        const legacyRange=historicalScheduleRange(sourceVersion,path)||storedLegacyRange;
          const legacyLegal=legacyRange&&scheduled>=legacyRange[0]&&scheduled<=legacyRange[1];
          if(scheduled!==expected&&!legacyLegal){
            const expectedLabel=legacyRange?`${legacyRange[0]}–${legacyRange[1]}`:String(expected);
@@ -5741,8 +5769,16 @@ window.BL_ONLINE_CONFIG = {
      );
      if(error)throw error;
      if(!data)throw new Error("找不到這筆公開生涯");
-     const requireServer=String(data?.career_data?.publisher_version||"")===CAREER_PUBLISHER_VERSION;
-     const report=careerRecordIntegrity(data,{requireEnvelope:requireServer,requireServer});
+     const requireEnvelope=String(data?.career_data?.publisher_version||"")===CAREER_PUBLISHER_VERSION;
+     // Some careers were already public before the server-verdict field was
+     // introduced.  Keep validating their signed client envelope, but do not
+     // hide the whole archive merely because that later audit field is absent.
+     const requireServer=requireEnvelope&&String(data?.career_data?.integrity?.server_verified||"")==="passed";
+     const report=careerRecordIntegrity(data,{
+       requireEnvelope,
+       requireServer,
+       allowStoredLegacySchedule:true
+     });
      if(!report.ok)throw new Error(`此公開生涯未通過完整性驗證：${report.errors.slice(0,3).join("、")}`);
      renderPublicCareer(data);
    }catch(err){
@@ -8807,8 +8843,8 @@ function leagueCareerTitle(league,score){
          : label.includes("韓國")
            ? ["KBL 傳奇外援","KBL 明星外援","KBL 核心外援","KBL 主力外援","旅韓球員"]
            : label.includes("台灣")
-             ? ["台灣職籃傳奇","台灣職籃明星","台灣職籃核心","台灣職籃主力","職籃球員"]
-             : ["SBL 傳奇","SBL 明星球員","SBL 核心球員","SBL 主力球員","成人籃球旅人"];
+            ? ["台灣職籃傳奇","台灣職籃明星","台灣職籃核心","台灣職籃主力","一般球員"]
+            : ["SBL 傳奇","SBL 明星球員","SBL 核心球員","SBL 主力球員","籃球旅人"];
  return names[tier];
 }
 function careerLeagueProfiles(seasons=p?.seasonHistory||[],awards=p?.careerAwards||[],championships=p?.championshipHistory||[]){
