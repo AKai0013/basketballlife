@@ -4563,6 +4563,10 @@ window.BL_ONLINE_CONFIG = {
 
  function careerPublishErrorText(err){
    const raw=[err?.message,err?.details,err?.hint].filter(Boolean).join("｜")||"未知錯誤";
+   if(/Deterministic schedule mismatch/i.test(raw)){
+     const gp=gamePlayer(),seed=String(gp?.seed||"未知"),version=String(gp?.careerVersion||"legacy");
+     return `舊版賽程相容驗證尚未通過。請先更新頁面再按「重新連線並上傳」；若仍失敗，請回報 Seed ${seed}、建立版 ${version}，作者不需要也不應修改你的能力數據。`;
+   }
    if(/Failed to fetch|NetworkError|Load failed|network|連線逾時|timeout/i.test(raw))return "網路或排行榜服務連線逾時，生涯已保留在本機，系統會自動補傳。";
    if(/JWT|token|Authentication required|auth|401|403/i.test(raw))return "Online 登入憑證已失效，系統正在重新取得匿名登入身分。";
    if(/publish_career_v7508|function.*not found|PGRST202|server integrity|伺服器完整性驗證尚未啟用/i.test(raw))return "排行榜資料庫尚未完成必要更新，請通知作者檢查 Supabase 補丁。";
@@ -4873,6 +4877,15 @@ window.BL_ONLINE_CONFIG = {
    return a>major||(a===major&&(b>minor||(b===minor&&c>=patch)));
  }
 
+ function historicalScheduleRange(sourceVersion,path){
+   // CBA/SBL used seed-derived ranges through V7.50.8. From V7.50.9 onward
+   // their schedules are fixed, so modern careers must never use this branch.
+   if(!versionAtLeast(sourceVersion,7,50,5)||versionAtLeast(sourceVersion,7,50,9))return null;
+   if(path==="CBA")return [42,46];
+   if(path==="SBL／半職業")return [20,24];
+   return null;
+ }
+
  function canonicalIntegrityValue(value){
    if(Array.isArray(value))return value.map(canonicalIntegrityValue);
    if(value&&typeof value==="object"){
@@ -5008,6 +5021,7 @@ window.BL_ONLINE_CONFIG = {
    if(Number(record?.final_year)-Number(record?.retired_age)!==2010)errors.push("年份與年齡不一致");
 
    let gamesTotal=0;
+   const legacyScheduleSeasons=[];
    const seasonKeys=new Set();
    for(const season of seasons){
      const year=Number(season?.year),age=Number(season?.age),games=Number(season?.games),scheduled=Number(season?.scheduledGames),missed=Number(season?.missedGames||0);
@@ -5021,11 +5035,14 @@ window.BL_ONLINE_CONFIG = {
          const path=String(season?.path||"");
          const [lo,hi]=seasonScheduleRange(path);
          const expected=lo===hi?lo:ri(RNG(`${String(record.seed).toUpperCase()}-schedule-${year}-${path}`),lo,hi);
-         // V7.50.9 corrected CBA/SBL to their current real schedules. Keep older
-         // deterministic records readable so an existing save is not mislabeled.
-         const legacyRange=path==="CBA"?[42,46]:path==="SBL／半職業"?[20,24]:null;
-         const legacyExpected=legacyRange?ri(RNG(`${String(record.seed).toUpperCase()}-schedule-${year}-${path}`),legacyRange[0],legacyRange[1]):null;
-         if(scheduled!==expected&&scheduled!==legacyExpected)errors.push(`Seed 賽程不一致 ${year||"?"}`);
+         const legacyRange=historicalScheduleRange(sourceVersion,path);
+         const legacyLegal=legacyRange&&scheduled>=legacyRange[0]&&scheduled<=legacyRange[1];
+         if(scheduled!==expected&&!legacyLegal){
+           const expectedLabel=legacyRange?`${legacyRange[0]}–${legacyRange[1]}`:String(expected);
+           errors.push(`Seed 賽程不一致 ${year||"?"} ${path||"?"}（紀錄 ${scheduled}／應為 ${expectedLabel}）`);
+         }else if(scheduled!==expected&&legacyLegal){
+           legacyScheduleSeasons.push({year,path,scheduled});
+         }
        }
      }
      const ranges={mins:[0,36],pts:[0,60],reb:[0,25],ast:[0,25],stl:[0,8],blk:[0,8],fg:[0,100],three:[0,100]};
@@ -5060,7 +5077,7 @@ window.BL_ONLINE_CONFIG = {
      if(integrity.checksum!==careerIntegrityChecksum(record))errors.push("完整性校驗碼不一致");
      if(options.requireServer&&integrity.server_verified!=="passed")errors.push("尚未通過伺服器驗證");
    }
-   return {ok:errors.length===0,errors,sixes,gamesTotal,checksum:careerIntegrityChecksum(record)};
+   return {ok:errors.length===0,errors,sixes,gamesTotal,legacyScheduleSeasons,checksum:careerIntegrityChecksum(record)};
  }
 
  function attachCareerIntegrity(record,report){
@@ -5069,7 +5086,9 @@ window.BL_ONLINE_CONFIG = {
    const checksum=careerIntegrityChecksum(record);
    record.career_data.integrity={
      schema:CAREER_INTEGRITY_SCHEMA,verdict:"passed",deterministic_sixes:report.sixes,
-     season_count:(record.season_history||[]).length,career_games:report.gamesTotal,checksum
+     season_count:(record.season_history||[]).length,career_games:report.gamesTotal,checksum,
+     legacy_schedule_accepted:(report.legacyScheduleSeasons||[]).length>0,
+     legacy_schedule_seasons:(report.legacyScheduleSeasons||[]).length
    };
    return record;
  }
