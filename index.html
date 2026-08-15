@@ -4335,6 +4335,105 @@ body.retirementMode .header .who{gap:6px}
   .bodyChoiceGrid{grid-template-columns:1fr}
   .setupSection{padding:12px}
 }
+
+/* V7.50.10 choice hierarchy: event first, trade-off second, probability revealed after choice. */
+#chapter{font-size:10px!important;letter-spacing:.16em;text-transform:uppercase;color:#8396a8;font-weight:850}
+#story h2,#title{font-size:clamp(25px,4.5vw,34px)!important;line-height:1.14!important;letter-spacing:-.025em;margin-top:7px!important}
+#text{font-size:16px!important;line-height:1.75!important;color:#c2ccd4!important;max-width:66ch}
+.choices{gap:11px!important}
+.choice{position:relative;padding:15px 16px!important;border-radius:14px!important;text-align:left;transition:transform .14s ease,border-color .14s ease,background .14s ease}
+.choice:hover{transform:translateY(-1px)}
+.choice>b{display:block;font-size:18px!important;line-height:1.35!important;letter-spacing:.005em;color:#f4f1eb}
+.choice>small{display:block;margin-top:7px;font-size:13.5px!important;line-height:1.55!important;color:#b5c2cc!important}
+.choice .strategyTag{font-size:10px!important;letter-spacing:.04em;padding:3px 7px!important;opacity:.88}
+.strategyTag.safe{color:#9bc5d8!important;border-color:#3d6577!important;background:#102029!important}
+.eventChoice{min-height:82px;border-left:1px solid #3d5368!important;background:linear-gradient(145deg,#182737,#1b2635)!important}
+.eventChoice:hover{border-color:#657e94!important;background:linear-gradient(145deg,#1c3043,#202d3e)!important}
+.currentPanel .choices:not(:empty){
+  position:static!important;
+  max-height:none!important;
+  overflow:visible!important;
+  margin:15px 0 0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+}
+.currentPanel .choices:not(:empty):before{display:none!important;content:none!important}
+.currentPanel.eventOrdinary{
+  padding:12px 7px 7px!important;
+  border:0!important;
+  border-top:1px solid #294154!important;
+  border-radius:0!important;
+  background:#0a141c!important;
+  box-shadow:none!important;
+}
+.currentPanel.eventOrdinary .text{
+  width:min(100%,760px);
+  margin-top:9px!important;
+  padding:8px 11px!important;
+  border:0!important;
+  border-left:3px solid #69a9cf!important;
+  border-radius:3px!important;
+  background:rgba(28,48,62,.35)!important;
+}
+.currentPanel.eventOrdinary h2{font-size:clamp(27px,4vw,31px)!important;margin-bottom:3px!important}
+.currentPanel.eventMedical{position:relative;border:1px solid #6c363b!important;background:linear-gradient(160deg,#201517,#111a23)!important;box-shadow:inset 4px 0 0 #bd4d52}
+.currentPanel.eventMedical #chapter{color:#dc777b!important}.currentPanel.eventMedical #title{color:#ffd4d1!important}
+.currentPanel.eventRare{position:relative;border:1px solid #7c622e!important;background:radial-gradient(circle at 90% 0,#6e4c1726,transparent 40%),linear-gradient(150deg,#171d25,#18170f)!important;box-shadow:inset 4px 0 0 #d99b3c}
+.currentPanel.eventRare #chapter{color:#d8a64f!important}.currentPanel.eventRare #title{color:#ffe4a7!important}
+.currentPanel.eventOffCourt:before{content:"SPECIAL EVENT";display:inline-block;margin-bottom:8px;padding:3px 7px;border-radius:999px;background:#493411;color:#f0bd62;font-size:9px;font-weight:950;letter-spacing:.14em}
+.specialKicker,.cardLabel,.trainingTitle{font-size:10px!important;letter-spacing:.14em;text-transform:uppercase;font-weight:900}
+.outcomeHead>b{font-size:21px!important;line-height:1.2}
+.outcomeRate{font-size:11px!important;color:#9cabb9}
+.eventMain{font-size:15.5px!important;line-height:1.7!important}
+.fateRoll{display:grid;grid-template-columns:auto 1fr auto;align-items:baseline;gap:10px;margin:8px 0 12px;padding:9px 11px;border:1px solid #34485c;border-radius:11px;background:#0c151f}
+.fateRoll small{font-size:10px;letter-spacing:.12em;color:#8799aa;font-weight:900}
+.fateRoll b{font-size:30px;line-height:1;color:#f0b64b}
+.fateRoll span{font-size:11px;color:#aebbc7}
+.injuryCard>b:first-child{font-size:22px!important;line-height:1.25;color:#ff9797}
+.bodyWarning>b:first-child{font-size:17px!important}
+.riskPct{font-size:11px!important;font-weight:850;letter-spacing:.02em}
+@media(max-width:560px){
+  #text{font-size:15px!important}
+  .choice>b{font-size:17px!important}
+  .choice>small{font-size:13px!important}
+  .fateRoll{grid-template-columns:auto 1fr}.fateRoll span{grid-column:1/-1}
+}
+
+/* Shared screen shell: narrative text is content, not another nested card. */
+#game .currentPanel #text{
+  display:block;
+  width:100%;
+  max-width:none!important;
+  margin:8px 0 14px!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:#c4ced6!important;
+  font-size:15px!important;
+  font-weight:600!important;
+  line-height:1.7!important;
+}
+#game .currentPanel #text:empty{display:none!important}
+#game .currentPanel #text .proHeader{
+  width:100%;
+  margin:0 0 12px!important;
+  padding:0 0 10px!important;
+  border:0!important;
+  border-bottom:1px solid #304554!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#game .currentPanel #text .proMetric:first-child{padding-left:0!important}
+@media(max-width:620px){
+  #game .currentPanel #text{font-size:14px!important;line-height:1.65!important}
+}
 </style>
 
 
@@ -4407,7 +4506,7 @@ body.retirementMode .header .who{gap:6px}
 <label for="seed">世界 Seed（可輸入或隨機抽取）</label><div class="seed"><input id="seed" class="seedcode" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="seedHelp seedError" oninput="normalizeSeedInput()"><button class="btn" type="button" onclick="newSeed()">重新抽取</button></div>
 <div id="seedError" class="seedError" aria-live="polite"></div>
 <p id="seedHelp" class="seedHelp">輸入或貼上 8 碼英文字母／數字。相同 Seed ＋位置＋身材，會得到相同的先天條件與主要命運分歧；隱藏等級將在退休時揭曉。</p>
-<button id="startCareerBtn" class="start" onclick="startCareer()" disabled>連線中…</button>
+<button id="startCareerBtn" class="start" onclick="safeStartCareer()" disabled>連線中…</button>
 <div id="continueCareerPanel" class="continueCareerPanel hidden">
   <div class="continueCareerHead">
     <div><b id="continueCareerTitle">繼續上次生涯</b><div id="continueCareerMeta" class="continueCareerMeta"></div></div>
@@ -5896,6 +5995,17 @@ window.BL_ONLINE_CONFIG = {
      setStartConnecting();
      setStatus("connecting","連線中…");
 
+     // Local/sandbox drafts are for gameplay review and cannot reliably share the
+     // production Supabase origin. Start them immediately in single-player mode.
+     if(location.protocol==="file:"||location.origin==="null"){
+       state.offline=true;
+       state.ready=true;
+       hideNicknameModal();
+       setStatus("offline","Offline｜草稿預覽");
+       setStartReady();
+       return state;
+     }
+
      if(!state.enabled){
        state.offline=true;
        state.ready=true;
@@ -6223,7 +6333,7 @@ function normalizeCareerPlayer(player){
    "injuryHistory","log","dice","used","trainingUndo","pointUndo","titles","titleHistory",
    "seasonPointFocus","offers","news","seasonHistory","careerAwards","chainTitles","teamsPlayed",
    "hallOfFame","jerseyRetired","specialQueue","internationalHistory","offCourtHistory","offCourtEventKinds","championshipHistory","lastSeasonAwards","hallVotes","formerPartners",
-   "medicalHistory","recentEvents","feedHistory"
+   "medicalHistory","medicalPressureHistory","recentEvents","feedHistory"
  ];
  arrayFields.forEach(k=>{if(!Array.isArray(player[k]))player[k]=[]});
  // V7.50 corrects the US college system: both routes are four-year NCAA divisions.
@@ -6260,7 +6370,7 @@ function normalizeCareerPlayer(player){
    lastNationalCallupYear:0,nationalSelectionStreak:0,
    familyHarmony:60,scandalCount:0,conductMarketPenalty:0,conductSuspensionGames:0,nationalTeamBanUntil:0,conductPenaltySetYear:0,lastOffCourtEventYear:0,financialLosses:0,developmentSeasons:0,medicalProtectionUntilYear:0,
    planRiskMod:0,planGrowthMod:0,planStatMod:0,specialBonusPoints:0,seasonEventSuccess:0,
-   eventSuccesses:0,clutchWins:0,tradeCount:0,careerRating:0,peakOverall:0
+   eventSuccesses:0,clutchWins:0,tradeCount:0,careerRating:0,peakOverall:0,seasonInjuryRiskTarget:0,seasonInjurySurvival:1,seasonInjuryChecksDone:0,seasonInjuryExtra:0,lastMedicalPressureYear:0
  };
  Object.entries(numberDefaults).forEach(([k,v])=>{if(!Number.isFinite(Number(player[k])))player[k]=v;else player[k]=Number(player[k])});
  const objectDefaults={
@@ -6273,7 +6383,7 @@ function normalizeCareerPlayer(player){
    player.strategyStats[k]=player.strategyStats[k]||{};
    ["pick","success","streak","best"].forEach(n=>{if(!Number.isFinite(Number(player.strategyStats[k][n])))player.strategyStats[k][n]=0});
  });
- const boolFields=["genius","geniusResolved","geniusFailed","severeInjuryRecovered","retired","married","divorced","developmentLastChanceUsed","pendingSeasonAdvance","usCollegeRouteMigrated","retirementDefianceSucceeded","retirementPressureUsed"];
+ const boolFields=["genius","geniusResolved","geniusFailed","severeInjuryRecovered","retired","married","divorced","developmentLastChanceUsed","pendingSeasonAdvance","usCollegeRouteMigrated","retirementDefianceSucceeded","retirementPressureUsed","seasonMedicalEventShown"];
  boolFields.forEach(k=>player[k]=!!player[k]);
  if(player.injury&&typeof player.injury==="object"){
    const original=Math.max(0,Number(player.injury.originalMissedGames)||0);
@@ -6414,6 +6524,17 @@ function continueCareer(){
      // Old decision screens contain obsolete route buttons; rebuild them with D1/D2 logic.
      p.usCollegeRouteMigrated=false;
      showCollegeDecision();
+   }else if(p.stage==="events"){
+     // Saved screens contain rendered HTML from the version that created them.
+     // Rebuild unresolved event choices so old 50/68/82 answer labels cannot
+     // survive after the event-choice redesign. Remove the saved current title
+     // from recentEvents first, restoring the same deterministic candidate pool.
+     const savedTitle=String(save.screen?.title||"").replace(/<[^>]*>/g,"").trim();
+     if(savedTitle&&p.recentEvents?.[p.recentEvents.length-1]===savedTitle)p.recentEvents.pop();
+     showEvent();
+   }else if(p.stage==="special"&&p.specialQueue?.length){
+     // Special-event choices also receive current copy and visual treatment.
+     showSpecialEvent();
    }else{
      restoreCareerScreen(save.screen);
      if(p.stage==="training"&&p.diceRolling)startDiceReveal();
@@ -6900,30 +7021,30 @@ function renderPos(){
 renderPos();newSeed();initializeCharacterBuilder();
 
 const events=[
-{t:"飲食與睡眠計畫",d:"最近訓練量上升，防護員提醒你：如果恢復做不好，受傷風險會快速累積。",opts:[
-["全力一搏","成長較高，但疲勞與傷病風險明顯增加","risk"],["照常執行","穩定成長與正常恢復","normal"],["保守應對","減少負荷，降低受傷機率","safe"]]},
+{t:"教練公開點名",d:"影片會議上，教練直接點名你最近幾個防守回合不夠專注。全隊都在等你回應。",opts:[
+["當場承諾下一場主防王牌","搶回教練信任，也把最大的防守責任扛到自己身上","defense"],["會後要求逐球檢討","可能改善判斷，但短期內不會得到額外上場時間","iq"],["接受縮減輪替重新競爭","先止住犯錯，卻可能讓替補球員站穩位置","normal"]]},
 {t:"球隊重量訓練",d:"體能教練增加了下肢力量課表，隊友都在抱怨隔天走樓梯很痛苦。",opts:[
-["完整吃下課表","力量與體能成長較高","ath"],["減量完成","成長較低但安全","safe"],["偷偷加練爆發","高報酬、高風險","risk"]]},
+["跟隊上最壯的學長同組","成功跟上就能搶到體能教練注意，掉速則可能整週腿軟","ath"],["把重量換成速度與動作品質","爆發成長較少，但能爭取教練安排更多轉換進攻","iq"],["課表後追加一組極限重量","可能突破身體上限，也可能讓疲勞直接帶進比賽","risk"]]},
 {t:"外線低潮",d:"最近幾場練習賽，你的外線命中率明顯下降。教練沒有責怪你，但開始減少你的持球回合。",opts:[
-["繼續大量出手","投射成長，信心波動較大","shoot"],["增加突破","終結與體能成長","finish"],["先做防守與傳球","穩定評價","team"]]},
+["要求下一場照樣開火","投進能一次打回球權；再失準，教練可能直接收回出手權","three"],["放棄部分外線改攻籃框","有機會用得分找回位置，但對抗與疲勞會增加","finish"],["暫時轉做防守與組織","能維持輪替，外線與個人數據卻可能繼續被忽略","team"]]},
 {t:"同位置競爭",d:"一名學長／隊友近期狀況火熱，你的上場時間受到擠壓。",opts:[
-["直接競爭","成功可提高球隊地位","compete"],["做好自己的角色","穩定成長","team"],["主動找教練談","球商與教練信任可能改變","talk"]]},
+["公開向他約一對一","贏下來可能翻轉順位，輸掉也會讓全隊看見","compete"],["改練他做不到的團隊功能","不爭同一種球權，代價是個人數據更不起眼","team"],["要求教練說清楚競爭標準","可能得到明確機會，也可能聽見自己不想聽的評價","talk"]]},
 {t:"關鍵球權",d:"熱身賽最後 18 秒，比分平手，教練把球交到你手上。",opts:[
-["自己單打","考驗終結與大心臟","clutch"],["叫擋拆後閱讀防守","考驗球商與傳球","iq"],["直接拔三分","高風險高回報","three"]]},
+["清空一側自己決勝","投進就是你的代表畫面，失手也由你一個人承擔","clutch"],["叫擋拆，接受任何正確答案","可能助攻隊友絕殺，也可能因此錯過自己的英雄球","iq"],["趁防守沒站好直接拔三分","最早結束比賽，也最可能讓教練質疑你的選擇","three"]]},
 {t:"腳踝不適",d:"練習結束後，你的腳踝開始有些腫。走路沒問題，但急停時會有刺痛感。",opts:[
-["硬撐繼續練","成長高，受傷風險高","injrisk"],["找防護員檢查","可能需要休息","check"],["休息三天","降低風險","safe"]]},
+["貼紮後照常參加對抗","能保住本週輪替競爭，刺痛也可能變成正式傷勢","injrisk"],["如實接受隊醫檢查","可能只需治療，也可能被醫療團隊強制停練","check"],["主動退出三天訓練","最有利恢復，但競爭對手會完整吃下你的練習時間","safe"]]},
 {t:"隊友邀約",d:"週末晚上，幾名隊友約你出去聚餐。隔天上午有球隊訓練。",opts:[
-["一起去到很晚","心情增加、恢復下降","social"],["吃完就回家","平衡選擇","normal"],["不去，早點睡","恢復最佳","safe"]]},
+["跟到續攤結束","可能真正融入核心小圈圈，隔天狀態則難以保證","social"],["只參加第一攤","能維持關係，但兩邊都未必覺得你完全投入","normal"],["婉拒並提早到球館","身體狀態最好，卻可能錯過更衣室真正交換消息的場合","safe"]]},
 {t:"球探觀察",d:"看台上出現陌生面孔。學長說，那幾個人是其他層級球隊的球探。",opts:[
-["積極表現進攻","提高曝光，失誤風險增加","show"],["照自己的節奏","穩定評價","normal"],["拼防守與團隊","教練評價增加","team"]]},
+["主動接管最多球權","數據爆發就會被記住，勉強出手也全部會被記住","show"],["完全照原本打法","維持教練信任，但球探可能看不見你更高的上限","normal"],["專挑對方王牌做髒活","能證明職業價值，個人得分與精華畫面會被犧牲","team"]]},
 {t:"戰術調整",d:"教練準備把球隊改成更快的攻守轉換體系，你需要重新適應場上角色。",opts:[
-["練快攻終結","終結與體能成長","finish"],["研究戰術","球商與傳球成長","iq"],["維持原打法","成長較少但穩定","normal"]]},
+["搶當第一波快攻箭頭","成功會增加得分與上場時間，也必須承擔更高體能消耗","finish"],["爭取成為推進與分球者","球權增加，但任何失誤都可能讓教練改找別人控場","pass"],["留在後場負責平衡防守","能取得特殊角色，數據與鏡頭卻會明顯減少","defense"]]},
 {t:"學業壓力",d:"段考將近，最近幾次作業都沒有交。老師已經提醒教練。",opts:[
-["熬夜補完","學業過關但恢復下降","study"],["跟老師協調","球商／溝通事件","talk"],["先顧籃球","可能影響球隊紀律","risk"]]},
+["連續熬夜把進度補完","能保住出賽資格，身體與下一場狀態要付代價","study"],["向老師提出補交與球隊服務方案","可能換到時間，也可能被認為是在要求特權","talk"],["把考試押後、先打關鍵賽事","有機會成為球隊英雄，失去資格時也沒有退路","risk"]]},
 {t:"核心隊友受傷",d:"球隊主力在練習中受傷，教練宣布接下來幾場需要有人補上更多上場時間。",opts:[
-["主動要求更多責任","出賽與曝光增加","show"],["維持角色","穩定","normal"],["協助隊友恢復","團隊評價增加","team"]]},
+["要求接手他的球權與先發","這可能是生涯跳板，也會把輸球責任一起交到你手上","show"],["只接下最熟悉的部分","比較容易守住效率，教練也可能把最大機會交給別人","normal"],["主動串聯全隊填補缺口","有機會建立領袖形象，個人數據不一定因此上升","team"]]},
 {t:"社群討論",d:"一段你的比賽片段突然在社群上被轉發，留言有人稱讚，也有人酸你的動作太多。",opts:[
-["回覆網友","人氣波動大","social"],["不理會","保持專注","normal"],["把它當動力加練","成長增加、疲勞增加","risk"]]}
+["親自剪片回應質疑","可能把流量變成個人品牌，也可能讓爭論全面失控","social"],["把帳號暫時交給經紀人","能隔離雜音，但熱度與商業機會可能一起消失","normal"],["公開宣告下一場用表現回答","若兌現會形成話題；若失常，嘲諷會加倍回來","show"]]}
 ];
 
 
@@ -6949,15 +7070,15 @@ events.push(
  {t:"左手終結",d:"對手開始刻意封鎖你的慣用手，助教要求你把弱側手練到能在比賽中使用。",opts:[
   ["大量弱手對抗","終結成長高、疲勞也高","finish"],["腳步拆解","穩定終結成長","finish"],["先用拋投代替","投射型折衷","shoot"]]},
  {t:"教練公開點名",d:"影片會議上，教練直接點名你最近幾個防守回合不夠專注。",opts:[
-  ["當場回應會修正","溝通與球隊信任","talk"],["下課後自己加練","防守成長","defense"],["沉默接受","低風險但成長有限","safe"]]},
+  ["要求下一場直接主防王牌","最快搶回教練信任；若再次被打爆，輪替可能直接縮減","defense"],["拿影片逐球向教練辯論","可能證明是戰術溝通問題，也可能被認為不肯承擔","talk"],["接受替補並從零打回來","先離開輿論中心，代價是競爭者取得你的上場時間","normal"]]},
  {t:"隊友摩擦",d:"練習賽一次傳球失誤後，隊友在場上對你大聲抱怨，氣氛瞬間變僵。",opts:[
-  ["當場回嗆","高風險人際事件","risk"],["賽後私下談開","溝通與團隊","talk"],["先把球打完","穩定處理","team"]]},
+  ["當場要求再打一次同樣戰術","成功能證明問題不在你，也可能讓衝突在全隊面前炸開","risk"],["賽後交換彼此真正的不滿","可能修好搭檔關係，也可能聽到教練準備換人的消息","talk"],["下一球主動替他製造機會","能用比賽重新建立默契，但你得暫時讓出球權與表現機會","team"]]},
  {t:"全場壓迫考驗",d:"對手在練習賽全場壓迫，你連續兩次差點被抄球。",opts:[
-  ["自己帶球破解","控球成長","handle"],["提早叫掩護","球商與傳球","iq"],["交給隊友處理","降低失誤","safe"]]},
+  ["繼續自己運過半場","破解後能保住主要持球權；再失誤，教練會換控球人","handle"],["要求中鋒提早上來接應","能建立新的破壓迫戰術，但你的個人持球戲份會下降","iq"],["改打無球、交給隊友推進","立即降低失誤，也可能永久失去這套陣容的控球資格","safe"]]},
  {t:"弱側協防",d:"球隊最近禁區失分偏高，教練要求外圍球員更積極收縮協防。",opts:[
   ["直接挑戰封阻","防守與體能","defense"],["先把站位走熟","防守穩定成長","defense"],["研究輪轉路線","球商成長","iq"]]},
  {t:"連敗後的練習",d:"球隊吞下連敗，訓練氣氛明顯低迷。每個人都在等有人先站出來。",opts:[
-  ["主動帶頭加練","體能與球隊評價","ath"],["召集隊友溝通","團隊與信心","talk"],["先把自己做好","穩健處理","normal"]]}
+  ["宣布全隊留下加練","可能建立領袖威信，也可能讓疲勞與不滿一起升高","ath"],["召開沒有教練的球員會議","可能挖出真正矛盾，也可能讓派系正式浮上檯面","talk"],["下一場主動要求扛最多球權","贏球就能終止低潮；失敗時責任也沒有別人能分擔","show"]]}
 );
 
 const HBL_TOURNAMENTS=[
@@ -7119,7 +7240,8 @@ const injuryTypes=[
 ];
 
 function startCareer(){
- if(window.BasketballLifeOnline?.requiresNickname?.())return;
+ // Production requires an online nickname; local drafts must remain directly playable.
+ if(location.protocol!=="file:"&&location.origin!=="null"&&window.BasketballLifeOnline?.requiresNickname?.())return;
  const seed=setupSeedValue();
  if(!/^[A-Z0-9]{8}$/.test(seed)){
    normalizeSeedInput();
@@ -7163,7 +7285,7 @@ function startCareer(){
  specialQueue:[],specialIndex:0,romanceStage:0,romanceNextYear:0,romanceLastResult:"",nationalCallups:0,u18Caps:0,u20Caps:0,youthNationalAwards:0,lastNationalCallupYear:0,nationalSelectionStreak:0,familyHarmony:60,scandalCount:0,divorced:false,
  conductMarketPenalty:0,conductSuspensionGames:0,nationalTeamBanUntil:0,conductPenaltySetYear:0,offCourtHistory:[],offCourtEventKinds:[],lastOffCourtEventYear:0,financialLosses:0,
  specialBonusPoints:0,internationalHistory:[],championshipHistory:[],awardHistoryByLeague:{},lastSeasonAwards:[],hallVotes:[],
-    bodyLoad:0,oldInjuries:{},rehabBoost:0,medicalHistory:[],majorInjuryCount:0,careerThreatInjuries:0,recoverySeasons:0,
+    bodyLoad:0,oldInjuries:{},rehabBoost:0,medicalHistory:[],medicalPressureHistory:[],lastMedicalPressureYear:0,majorInjuryCount:0,careerThreatInjuries:0,recoverySeasons:0,seasonInjuryRiskTarget:0,seasonInjurySurvival:1,seasonInjuryChecksDone:0,seasonInjuryExtra:0,seasonMedicalEventShown:false,
     recentEvents:[],feedHistory:[],expandedFeedYear:null,showOlderFeedYears:false,pendingRenewalOffer:null,pendingNBAOffer:null,marketOriginTeam:"",marketOriginLeague:"",marketReturnOffer:null,marketReturnMode:"",
     medicalProtectionUntilYear:0,medicalProtectionReason:"",medicalProtectedArea:"",postOpCareChosen:false,lastMajorInjuryYear:0,
     lastDanceActive:false,lastDanceUsed:false,retirementDefianceUsed:false,retirementDefianceSucceeded:false,retirementPressureUsed:false,retirementCrisisCount:0,retirementCrisisReason:"",homecomingTeam:"",homecomingRegion:"",
@@ -7173,6 +7295,16 @@ function startCareer(){
  p.team=HBL_TEAMS[ri(RNG(p.seed+"hbl-team"),0,HBL_TEAMS.length-1)];
  document.getElementById("setup").classList.add("hidden");document.getElementById("game").classList.remove("hidden");
  logIt(`16歲，加入 ${p.team} 籃球隊。`);ensureTeamHistory();pushNews(`🆕 ${p.name} 加入 ${p.team}，籃球人生正式開始`);showCareerChapter("highschoolStart");saveCareerNow();
+}
+function safeStartCareer(){
+ try{return startCareer()}
+ catch(err){
+   console.error("BasketballLife start failed:",err);
+   const box=document.getElementById("seedError"),btn=document.getElementById("startCareerBtn");
+   if(box)box.textContent=`開局失敗：${err?.message||"未知錯誤"}`;
+   if(btn){btn.disabled=false;btn.textContent="重新踏上球場"}
+   return false;
+ }
 }
 function overall(){return Math.round(Object.values(p.stats).reduce((a,b)=>a+b,0)/8)}
 function logIt(x){p.log.unshift(`${p.year}｜${x}`);p.log=p.log.slice(0,50)}
@@ -7468,6 +7600,7 @@ if(window.visualViewport)window.visualViewport.addEventListener("resize",fitGame
 function resetMain(){
  archiveCurrentFeedCard();
  renderFeedHistory();
+ document.getElementById("currentPanel")?.classList.remove("eventOrdinary","eventRare","eventMedical","eventOffCourt");
  if(special)special.innerHTML="";
  if(choices)choices.innerHTML="";
  if(next)next.classList.add("hidden");
@@ -7741,13 +7874,13 @@ function showContractExpiryDecision(){
  if(nbaOffer){
    title.textContent="NBA 正式徵召｜雙向合約";
    text.innerHTML=`你在 <b>${p.team}</b> 的 G League 球季已達到 NBA 徵召標準。這不是只有名稱的曝光合約；接受後，生涯聯盟會正式進入 <b class="gold">NBA</b>，並以雙向球員身分競爭輪替。`;
-   special.innerHTML=`<div class="offerGrid"><div class="offerCard"><b>${nbaOffer.team}｜NBA</b>${contractOfferHTML(nbaOffer)}<button class="btn" style="margin-top:10px" onclick="acceptContract(p.pendingNBAOffer)">接受 NBA 雙向合約</button></div>${offer?`<div class="offerCard"><b>留在 ${offer.team}</b>${contractOfferHTML(offer)}<button class="btn" style="margin-top:10px" onclick="acceptContract(p.pendingRenewalOffer)">續留 G League</button></div>`:""}<div class="offerCard"><b>比較完整自由市場</b><div class="mut">查看其他職業聯盟與 NBA 報價；原隊回歸條件會依市場結果調整。</div><button class="btn" style="margin-top:10px" onclick="listenFreeAgencyMarket()">聆聽其他球隊報價</button></div></div>`;
+   special.innerHTML=`<div class="offerGrid"><div class="offerCard"><b>${nbaOffer.team}｜NBA</b>${contractOfferHTML(nbaOffer)}<button class="btn" style="margin-top:10px" onclick="acceptContract(p.pendingNBAOffer)">接受 NBA 雙向合約</button></div>${offer?`<div class="offerCard"><b>留在 ${offer.team}</b>${contractOfferHTML(offer)}<button class="btn" style="margin-top:10px" onclick="acceptContract(p.pendingRenewalOffer)">續留 G League</button></div>`:""}<div class="offerCard"><b>比較完整自由市場</b><div class="mut">查看其他職業聯盟與 NBA 報價；原隊回歸條件會依市場結果調整。</div><button class="btn" style="margin-top:10px" onclick="listenFreeAgencyMarket()">聆聽其他球隊報價</button></div>${voluntaryRetirementCardHTML()}</div>`;
    choices.innerHTML="";return;
  }
  if(!offer){
    title.textContent=dismissed?"球團解約｜職業市場重新評估":"母隊不續約｜重新尋找下一站";
    text.innerHTML=dismissed?`<b>${p.team}</b> 已因重大場外違紀終止合約。母隊不會提出續約；其他球隊仍會依能力、紀律紀錄與市場風險決定是否接觸。`:`與 <b>${p.team}</b> 的合約正式到期。球團評估目前能力、身體狀況與名單後，決定不提出續約；這不等於立刻退休，你仍會完整測試其他聯盟與較低層級市場。`;
-   special.innerHTML=`<div class="marketEmpty"><b>${dismissed?"球團正式終止合約":"球隊正式通知不續約"}</b><div class="mut">目前總評 ${overall()}｜職涯評價 ${scoutingScore()}${dismissed?"｜場外紀律紀錄將影響報價":""}｜接下來將尋找願意提供正式角色的球隊。</div><button class="btn" style="margin-top:10px" onclick="listenFreeAgencyMarket()">進入自由市場</button></div>`;
+   special.innerHTML=`<div class="marketEmpty"><b>${dismissed?"球團正式終止合約":"球隊正式通知不續約"}</b><div class="mut">目前總評 ${overall()}｜職涯評價 ${scoutingScore()}${dismissed?"｜場外紀律紀錄將影響報價":""}｜接下來將尋找願意提供正式角色的球隊。</div><button class="btn" style="margin-top:10px" onclick="listenFreeAgencyMarket()">進入自由市場</button></div><div class="offerGrid">${voluntaryRetirementCardHTML()}</div>`;
    choices.innerHTML="";
    return;
  }
@@ -7760,8 +7893,17 @@ function showContractExpiryDecision(){
  <div class="choices">
    <button class="choice" onclick="acceptContract(p.pendingRenewalOffer)"><b>接受母隊續約</b><small>${offer.type}｜直接續留，不進入自由市場。</small></button>
    <button class="choice" onclick="listenFreeAgencyMarket()"><b>聆聽其他球隊報價</b><small>比較聯盟、薪資、年限、球隊角色與 NBA 機會；若市場冷清，原本的母隊報價可能降低。</small></button>
+   <button class="choice" onclick="chooseVoluntaryRetirement()"><b>在合約到期後退休</b><small>不進入自由市場，以現在累積的成績與故事結束球員生涯。</small></button>
  </div>`;
  choices.innerHTML="";
+}
+function voluntaryRetirementCardHTML(){
+ return `<div class="offerCard retirementOffer"><b>自己決定終點</b><div class="mut">合約已經結束，你可以不再等待市場決定去留，直接以目前履歷正式退休。</div><button class="btn" style="margin-top:10px" onclick="chooseVoluntaryRetirement()">宣布退休</button></div>`;
+}
+function chooseVoluntaryRetirement(){
+ if(!isProPath()||p.retired)return;
+ if(!window.confirm("確定要結束這段球員生涯嗎？退休後會直接進入生涯總結。"))return;
+ retireCareer(`合約到期後，你選擇不再進入自由市場，主動結束球員生涯`);
 }
 function marketReturnTerms(base,offers,originLeague){
  if(!base)return {offer:null,mode:"none"};
@@ -8111,17 +8253,17 @@ function medicalProtectionText(){
  return `${p.medicalProtectionReason||"完整復健"}｜保護期至 ${p.medicalProtectionUntilYear} 年`;
 }
 function injuryTierChance(){
- let load=p.bodyLoad||0,age=Math.max(0,p.age-28);
+ let load=p.bodyLoad||0,fatigue=p.fatigue||0,age=Math.max(0,p.age-28);
  let recent=(p.injuryHistory||[]).filter(x=>p.year-(x.year||0)<=3).length;
  let oldCount=Object.values(p.oldInjuries||{}).reduce((a,b)=>a+Math.min(2,b||0),0);
- let plan=p.seasonPlan==="attack"?12:p.seasonPlan==="care"?-12:0;
+ let plan=p.seasonPlan==="attack"?20:p.seasonPlan==="care"?-12:0;
 
  // 只看近三年的傷病與舊傷，不再讓「生涯累積傷病次數」永久把風險越疊越高。
- let severeBias=load*.34+age*1.45+recent*2.1+oldCount*1.15+plan;
+ let severeBias=load*.42+fatigue*.12+age*1.55+recent*2.4+oldCount*1.35+plan;
 
- let heavy=Math.max(.45,Math.min(10,.85+severeBias*.060));
- let major=Math.max(1.7,Math.min(16,4.1+severeBias*.110));
- let medium=Math.max(18,Math.min(44,28.5+severeBias*.070));
+ let heavy=Math.max(.45,Math.min(12,.75+severeBias*.070));
+ let major=Math.max(1.7,Math.min(24,3.5+severeBias*.160));
+ let medium=Math.max(18,Math.min(44,27+severeBias*.080));
 
  // 手術＋完整復健後進入保護期：大傷/重傷率大幅下降，但不是完全無敵。
  if(medicalProtectionActive()){
@@ -8193,6 +8335,14 @@ function injuryDescription(x,missedGames,changes,recur){
 function createInjury(r,risk){
  let tier=pickInjuryTier(r);
 
+ // 全力衝刺＋紅線負荷下，連續的小傷會累積成結構性傷勢；避免玩家
+ // 長年 100 疲勞仍永遠只抽到挫傷或普通扭傷。
+ const recentMinor=(p.injuryHistory||[]).filter(x=>p.year-(x.year||0)<=3&&["輕傷","中傷"].includes(x.level)).length;
+ if(p.seasonPlan==="attack"&&(p.bodyLoad||0)>=75&&(p.fatigue||0)>=75&&recentMinor>=2){
+   if(tier==="輕傷")tier="中傷";
+   else if(tier==="中傷"&&r()<.48)tier="大傷";
+ }
+
  // 低整體風險時不直接跳到毀滅性傷勢。
  if(risk<10&&tier==="重傷")tier="大傷";
  if(risk<5&&tier==="大傷")tier="中傷";
@@ -8258,11 +8408,22 @@ function seasonBodyAssessment(){
 }
 function estimatedPlanRisk(plan){
  let recent=(p.injuryHistory||[]).filter(x=>p.year-(x.year||0)<=3).length;
- let base=3+(100-p.durability)*.06+(p.bodyLoad||0)*.10+recent*1.3+(p.age>=30?(p.age-29)*.55:0);
- base+=plan==="attack"?11:plan==="normal"?2:-7;
+ let oldCount=Object.values(p.oldInjuries||{}).reduce((a,b)=>a+Math.min(2,Number(b)||0),0);
+ let base=4+(100-p.durability)*.08+(p.bodyLoad||0)*.14+(p.fatigue||0)*.04+recent*1.5+oldCount*.75+(p.age>=30?(p.age-29)*.65:0);
+ base+=plan==="attack"?10:plan==="normal"?2:-6;
  if(medicalProtectionActive())base-=7;
- base+=chainInjuryMod()*.40+injuryRiskModifier()*.40+(hasTitle("steady")?-3:0);
- return Math.max(1,Math.min(45,Math.round(base)));
+ base+=chainInjuryMod()*.50+injuryRiskModifier()*.55+(hasTitle("steady")?-3:0);
+ return Math.max(2,Math.min(52,Math.round(base)));
+}
+function eventInjuryRollChance(extraRisk=0){
+ const annual=Math.max(1,Math.min(95,Number(p.seasonInjuryRiskTarget)||estimatedPlanRisk(p.seasonPlan||"normal")))/100;
+ const checks=Math.max(1,Number(p.seasonEventCount)||1);
+ const base=(1-Math.pow(1-annual,1/checks))*100;
+ return Math.max(.5,Math.min(48,base+Math.max(0,Number(extraRisk)||0)*.25));
+}
+function injuryRiskBand(value){
+ const v=Number(value)||0;
+ return v>=36?"極高":v>=25?"高":v>=15?"中等":v>=8?"偏低":"低";
 }
 function showProSeasonPlan(){
  p.stage="plan";resetMain();render();flow.innerHTML="";
@@ -8272,9 +8433,9 @@ function showProSeasonPlan(){
  text.innerHTML=`${proHeaderHTML()}職業賽季開始前，你要決定今年的身體與出賽策略。這次選擇會直接改變整季傷病風險、訓練成長與比賽數據。`;
  special.innerHTML=`<div class="bodyWarning ${body.cls}"><b>🩺 季前身體回報</b><br>${body.note}<br><span class="mut">身體負荷 ${Math.round(p.bodyLoad||0)}/100｜醫療風險：${medicalRiskLabel()}</span>${medicalProtectionActive()?`<br><span class="mandatory">🛡️ 術後／完整休養保護期｜${medicalProtectionText()}</span>`:""}<div class="bodyLoadBar"><div class="bodyLoadFill" style="width:${Math.round(p.bodyLoad||0)}%"></div></div><div style="margin-top:8px">${oldInjuryHTML()}</div></div>`;
  choices.innerHTML=`
- <button class="choice" onclick="chooseSeasonPlan('attack')"><b>🔥 全力衝刺</b><small>追求數據與成長。若已有舊傷或身體警訊，中重傷風險會明顯升高。</small><span class="strategyTag risk">高負荷</span><span class="riskPct">估計季傷風險 ${ra}%</span></button>
- <button class="choice" onclick="chooseSeasonPlan('normal')"><b>⚖️ 標準賽季</b><small>維持正常訓練與輪替，風險和成長保持中間值。</small><span class="strategyTag balance">標準</span><span class="riskPct">估計季傷風險 ${rn}%</span></button>
- <button class="choice" onclick="chooseSeasonPlan('care')"><b>🛡️ 身體優先</b><small>控制負荷與上場時間，會犧牲一些成長與數據，但更適合有舊傷或高齡球員。</small><span class="strategyTag safe">保養</span><span class="riskPct">估計季傷風險 ${rc}%</span></button>
+ <button class="choice" onclick="chooseSeasonPlan('attack')"><b>🔥 全力衝刺</b><small>數據與成長上限最高，也最容易搶到合約與獎項；身體警訊可能在關鍵時刻爆開。</small><span class="strategyTag risk">高負荷</span><span class="riskPct">季傷風險 ${ra}%・${injuryRiskBand(ra)}</span></button>
+ <button class="choice" onclick="chooseSeasonPlan('normal')"><b>⚖️ 維持主力節奏</b><small>不主動降載，也不額外加操；保留完整數據機會，讓臨場事件決定風險。</small><span class="strategyTag balance">正常輪替</span><span class="riskPct">季傷風險 ${rn}%・${injuryRiskBand(rn)}</span></button>
+ <button class="choice" onclick="chooseSeasonPlan('care')"><b>🛡️ 負荷管理</b><small>降低上場與訓練量，能保護身體；但合約年、先發競爭與個人獎項都可能因此受損。</small><span class="strategyTag safe">降載</span><span class="riskPct">季傷風險 ${rc}%・${injuryRiskBand(rc)}</span></button>
  `;
 }function chooseSeasonPlan(x){
  p.seasonPlan=x;
@@ -8282,18 +8443,9 @@ function showProSeasonPlan(){
  else if(x==="care"){p.planRiskMod=-10;p.planGrowthMod=-.08;p.planStatMod=-1;}
  else{p.planRiskMod=4;p.planGrowthMod=0;p.planStatMod=0;}
 
- const risk=estimatedPlanRisk(x),r=RNG(p.seed+"preseason-plan-"+p.year+"-"+x);
- let notice=`${x==="attack"?"你決定把身體推到極限。":x==="care"?"你決定把健康放在數據之前。":"你採取標準負荷。"} 估計整季傷病風險 ${risk}%。`;
-
- // Plan selection itself can reveal an early strain; full-attack is much more dangerous.
- let preseasonTrigger=(x==="attack"?risk*.30:x==="normal"?risk*.075:risk*.018);
- if(!p.injury && r()*100<preseasonTrigger){
-   let before=p.injuryHistory.length;
-   createInjury(r, x==="attack"?Math.max(46,risk):Math.max(25,risk));
-   if(p.injuryHistory.length>before){
-     notice+=` ⚠️ 季前高負荷已造成 ${p.injury.name}（${p.injury.level}）。`;
-   }
- }
+ const risk=estimatedPlanRisk(x);
+ p.seasonInjuryRiskTarget=risk;p.seasonInjurySurvival=1;p.seasonInjuryChecksDone=0;p.seasonInjuryExtra=0;p.seasonMedicalEventShown=false;
+ let notice=`${x==="attack"?"你決定把身體推到極限。":x==="care"?"你接受負荷管理，也接受數據與角色可能受損。":"你維持主力節奏，把取捨留給球季中的事件。"} 季初基礎傷病風險 ${risk}%（${injuryRiskBand(risk)}）。`;
  p.preseasonPlanNotice=notice;
  logIt(`開季規劃：${x==="attack"?"全力衝刺":x==="care"?"身體優先":"標準賽季"}｜風險 ${risk}%`);
  showTraining();
@@ -8986,7 +9138,7 @@ function startVeteranExtension(contract,kind,resultHTML=""){
  p.contract=contract;p.path=contract.league;p.team=contract.team;ensureTeamHistory();
  p.lastDanceActive=kind==="lastDance";
  p.year++;p.age++;p.careerSeason++;p.round++;p.eventIndex=0;
- p.seasonEventCount=ri(RNG(p.seed+"events-"+p.year),2,4);p.seasonPlan=null;p.planRiskMod=0;p.planGrowthMod=0;p.planStatMod=0;
+ p.seasonEventCount=ri(RNG(p.seed+"events-"+p.year),2,4);p.seasonPlan=null;p.planRiskMod=0;p.planGrowthMod=0;p.planStatMod=0;p.seasonInjuryRiskTarget=0;p.seasonInjurySurvival=1;p.seasonInjuryChecksDone=0;p.seasonInjuryExtra=0;p.seasonMedicalEventShown=false;
  showCareerChapter(oldTeam===p.team?"renewal":"newTeam");
  if(agingHTML||resultHTML)special.insertAdjacentHTML("beforeend",agingHTML+resultHTML);
 }
@@ -10024,13 +10176,48 @@ PRO_GENERAL_EVENTS.push(
   ["完全接受數據建議","投射成長","shoot"],["保留自己習慣","一般調整","normal"],["增加持球突破","終結成長","finish"]]}
 );
 
+const INJURY_PRESSURE_EVENTS=[
+ {t:"季後賽前的止痛針",d:"系列賽來到最關鍵的一戰，舊傷與疲勞讓你連熱身都不順。隊醫可以替你止痛，但無法保證身體撐得完整場。",opts:[
+  ["打針先發，拚完整場","可能守住先發、合約與系列賽；一旦惡化，缺賽時間會大幅增加","playhurt"],
+  ["只打關鍵時段","仍有機會成為勝負手，也能降低一部分負荷","minuteslimit"],
+  ["本場休戰","保護長期健康，但球隊可能輸球、輪替位置也可能被隊友搶走","sitout"]]},
+ {t:"合約年的膝蓋警訊",d:"經紀人提醒你，這是決定下一份合約的球季；同一時間，膝蓋在連續出賽後開始腫脹。",opts:[
+  ["隱瞞不適繼續刷數據","保住數據與市場熱度，但舊傷可能一次爆開","playhurt"],
+  ["告知球隊並限時上場","數據略降，仍保留出賽與談約籌碼","minuteslimit"],
+  ["接受完整檢查與輪休","最能降低傷勢惡化，卻可能失去部分合約行情","sitout"]]},
+ {t:"背靠背最後一戰",d:"球隊只差一場就能卡進季後賽，但你在前一晚打了四十分鐘，腿後側已經出現拉扯感。",opts:[
+  ["要求照常打滿","贏球與英雄時刻都在眼前，身體也可能付出最大代價","playhurt"],
+  ["替補出發、決勝期再上","犧牲部分數據，把體力留給最後幾分鐘","minuteslimit"],
+  ["交給隊友完成比賽","避免把警訊變成正式傷勢，但你只能在場邊看結果","sitout"]]},
+ {t:"客場之旅的足底警報",d:"連續客場讓你的前腳掌每次落地都刺痛。今晚有全國轉播，教練也準備讓你主攻對手換防。",opts:[
+  ["換鞋墊照原計畫主攻","保住曝光與進攻角色，但落地負荷可能讓警訊惡化","playhurt"],
+  ["減少切入、改打外圍","仍能留在場上，代價是攻框數據與侵略性下降","minuteslimit"],
+  ["停賽接受影像檢查","能及早確認是否為應力傷勢，但會錯過轉播舞台","sitout"]]},
+ {t:"熱身時的腿後側緊繃",d:"賽前最後一次衝刺，你的腿後側突然拉緊。這場勝負可能改變季後賽對戰，也會影響球隊對你的定位。",opts:[
+  ["纏貼後照常先發","保留原本角色與關鍵戰機會，爆發加速時風險最高","playhurt"],
+  ["取消快攻、限制上場時間","少打一部分回合，但仍能在半場戰提供價值","minuteslimit"],
+  ["臨時退出名單","避免小警訊變成拉傷，卻可能讓替補打出代表作","sitout"]]},
+ {t:"下背痙攣的轉播大戰",d:"聯盟焦點戰前，你彎腰時下背突然鎖住。止痛能讓你活動，但卡位與對抗是否撐得住沒人敢保證。",opts:[
+  ["接受止痛處置照常上場","焦點戰與球隊責任都保住，碰撞後惡化機率也最高","playhurt"],
+  ["改打短時間小陣容","避開長時間肉搏，數據與輪替份量會同步下降","minuteslimit"],
+  ["讓醫療團隊接管","優先處理痙攣來源，但焦點戰只能坐在場邊","sitout"]]},
+ {t:"投籃肩的麻痛",d:"關鍵賽週，你的投籃肩一路麻到手指。隊醫認為可以觀察，但每次出手都可能改變症狀。",opts:[
+  ["繼續擔任主要終結點","保住球權與關鍵球舞台，也可能讓投籃肩真正受傷","playhurt"],
+  ["改做組織與防守","維持上場價值，主動犧牲出手與得分行情","minuteslimit"],
+  ["休戰做神經檢查","最能避免未知風險，卻會把進攻位置讓給隊友","sitout"]]},
+ {t:"舊腳踝在決勝期腫起",d:"球隊進入最後衝刺，曾受傷的腳踝卻在訓練後明顯腫起。輪替競爭者正好連續打出好表現。",opts:[
+  ["戴護具繼續守住先發","有機會穩住位置與戰績，舊傷復發會帶來更長缺席","playhurt"],
+  ["只打先發與決勝五分鐘","保留名義上的位置，但數據與比賽影響力都會縮水","minuteslimit"],
+  ["完整休養一個賽週","讓腫脹退去，復出時先發席可能已經換人","sitout"]]}
+];
+
 function normalEventPool(){
  if(isProPath())return PRO_GENERAL_EVENTS;
  return events;
 }
 function eventOptionRiskScore(option,index=0){
  const raw=effectType(String(option?.[2]||"normal"));
- const weights={risk:100,injrisk:100,three:92,clutch:88,show:86,compete:84,social:76,ath:66,finish:64,shoot:62,handle:60,rebound:58,defense:56,pass:44,iq:42,talk:38,study:36,team:30,normal:25,check:15,safe:0};
+ const weights={playhurt:110,risk:100,injrisk:100,three:92,clutch:88,show:86,compete:84,social:76,ath:66,finish:64,shoot:62,handle:60,rebound:58,defense:56,minuteslimit:52,pass:44,iq:42,talk:38,study:36,team:30,normal:25,check:15,sitout:5,safe:0};
  const words=`${option?.[0]||""} ${option?.[1]||""}`;
  return (weights[raw]??50)+(/高風險|全力|挑戰|強勢|直接|大量|硬撐/.test(words)?8:0)-(/保守|休息|恢復|穩定|安全|降低/.test(words)?8:0)-index*.001;
 }
@@ -10050,6 +10237,37 @@ function showEvent(){
  let r=RNG(p.seed+"event-"+p.year+"-"+p.eventIndex),pool=normalEventPool();
  let candidates=pool.filter(x=>!(p.recentEvents||[]).includes(x.t));if(!candidates.length)candidates=pool;
  let e=candidates[ri(r,0,candidates.length-1)];
+ // 高負荷、滿疲勞、現有傷勢或全力衝刺會把醫療抉擇拉到主流程，
+ // 不再把三個帶傷事件丟進二十多個普通事件中碰運氣。
+ const medicalEligible=isProPath()&&(p.injury||(p.bodyLoad||0)>=55||(p.fatigue||0)>=80||p.seasonPlan==="attack");
+ const medicalCritical=p.injury||(p.bodyLoad||0)>=72||(p.fatigue||0)>=90;
+ // 不使用固定隔年冷卻。上一季才發生過會降低機率，但傷勢與負荷夠高時仍可能連兩季出現。
+ const yearsSinceMedical=p.lastMedicalPressureYear?p.year-p.lastMedicalPressureYear:99;
+ const lastEventOfSeason=p.eventIndex===Math.max(0,p.seasonEventCount-1);
+ const medicalRecencyFactor=yearsSinceMedical<=1?.30:yearsSinceMedical===2?.65:1;
+ const medicalBaseChance=medicalCritical?(lastEventOfSeason?.72:.24):.16;
+ const medicalDue=medicalEligible&&!p.seasonMedicalEventShown&&r()<medicalBaseChance*medicalRecencyFactor;
+ if(medicalDue){
+   const medicalR=RNG(`${p.seed}-medical-pressure-${p.year}-${p.eventIndex}`);
+   const recentMedicalTitles=(p.medicalPressureHistory||[]).slice(-4).map(x=>typeof x==="string"?x:x?.title).reverse();
+   const weightedMedical=INJURY_PRESSURE_EVENTS.map(event=>{
+     const recentIndex=recentMedicalTitles.indexOf(event.t);
+     // 同題可以再次出現，但剛出現過時只保留極低權重；越久以前，權重逐步恢復。
+     const weight=recentIndex<0?1:recentIndex===0?.08:recentIndex===1?.25:.55;
+     return {event,weight};
+   });
+   const medicalWeightTotal=weightedMedical.reduce((sum,item)=>sum+item.weight,0);
+   let medicalPick=medicalR()*medicalWeightTotal;
+   e=weightedMedical[weightedMedical.length-1].event;
+   for(const item of weightedMedical){medicalPick-=item.weight;if(medicalPick<=0){e=item.event;break}}
+   p.seasonMedicalEventShown=true;
+   p.lastMedicalPressureYear=p.year;
+   p.medicalPressureHistory=p.medicalPressureHistory||[];
+   p.medicalPressureHistory.push({year:p.year,title:e.t});
+   p.medicalPressureHistory=p.medicalPressureHistory.slice(-8);
+ }
+ const panel=document.getElementById("currentPanel"),medical=INJURY_PRESSURE_EVENTS.includes(e)||/傷|止痛|膝蓋|腳踝/.test(e.t);
+ panel?.classList.add(medical?"eventMedical":"eventOrdinary");
  p.recentEvents=p.recentEvents||[];p.recentEvents.push(e.t);p.recentEvents=p.recentEvents.slice(-6);
  chapter.textContent=`${p.year} · ${p.age}歲 · ${p.path} · 事件 ${p.eventIndex+1}/${p.seasonEventCount}`;title.textContent=e.t;text.textContent=e.d;
  // Every ordinary event deliberately offers one high, one medium-high and one
@@ -10059,8 +10277,7 @@ function showEvent(){
  let rot=ri(RNG(p.seed+"choice-order-"+p.year+"-"+p.eventIndex),0,2);
  mapped.push(...mapped.splice(0,rot));
  choices.innerHTML=mapped.map(o=>{
-   const risk=optionRisk(o[2]),st=strategyOf(o[2]),cls=st==="risk"?"risk":st==="balance"?"balance":"safe";
-   return `<button class="choice" onclick="resolveEvent('${o[2]}','${o[0]}')"><b>${o[0]}</b><small>${o[1]}</small><span class="strategyTag ${cls}">${risk}</span></button>`;
+   return `<button class="choice eventChoice" onclick="resolveEvent('${o[2]}','${o[0]}')"><b>${o[0]}</b><small>${o[1]}</small></button>`;
  }).join("");
 }
 
@@ -10139,6 +10356,9 @@ function nationalTeamOpportunity(){
  return null;
 }
 const OFF_COURT_EVENT_DEFS={
+ teammateScandal:{title:"隊友桃色風波爆發",desc:"主力隊友被娛樂媒體拍到捲入桃色風波，今天缺席訓練。記者堵在球館門口，直接問你是否早就知情。",kicker:"📰 更衣室風暴",actions:[["defendTeammate","替隊友擋下問題","可能換到更衣室信任；若後續爆出更多證據，你也會一起被質疑。"],["neutralOnTeammate","只談今天的比賽","保護個人形象，但隊友可能認為你在最需要他的時候切割。"],["criticizeTeammate","要求球隊嚴肅處理","可能得到教練與媒體支持，也可能讓更衣室正式分裂。"]]},
+ importWalkout:{title:"洋將突然離隊",desc:"球隊洋將在客場賽前失聯，經紀公司只留下一句『合約問題尚未解決』。今晚空出的球權與責任必須有人接手。",kicker:"✈️ 突發離隊",actions:[["takeVacantUsage","要求接手全部球權","可能一戰打成新核心；體能、失誤與輸球責任也會全部落到你身上。"],["shareVacantUsage","召集全隊平分任務","比較能維持團隊運轉，但你可能錯過生涯最大的一次上位機會。"],["pressureFrontOffice","公開要求球團補強","可能迫使管理層行動，也可能被視為越權干涉。"]]},
+ lockerRoomFaction:{title:"更衣室分成兩派",desc:"老將與年輕球員因訓練方式爆發爭執，兩邊私下都來問你站誰。沉默也會被解讀成一種選擇。",kicker:"🚪 更衣室派系",actions:[["sideVeterans","站到老將這邊","能得到場上照顧與傳統秩序，也可能失去年輕隊友的支持。"],["sideYouth","支持年輕球員改革","可能成為新核心，卻會直接挑戰現有領袖。"],["mediateLockerRoom","出面談判共同方案","成功會建立領袖地位；失敗時兩邊都可能不再信任你。"]]},
  lateNightRide:{title:"深夜聚會後的返家選擇",desc:"球隊休兵日聚餐結束後，你已經喝酒。媒體與球迷仍在附近，任何決定都可能成為隔天頭條。",kicker:"🚨 安全與紀律",actions:[["callRide","叫車返家","把車留在原地，安全結束這一晚。"],["driveAfterDrinking","自行開車","酒駕一旦遭查獲，將直接面對法律、球團與國家隊處分。"]]},
  nightlifeConflict:{title:"場外衝突風波",desc:"深夜公開場所裡，有人不斷挑釁並拿手機拍攝。隊友勸你立刻離開，現場氣氛卻持續升高。",kicker:"📰 公開場所",actions:[["leaveScene","跟隊友離開","不回應挑釁，讓球團公關處理後續。"],["confrontScene","留下來對峙","衝突影片可能登上新聞並引來停賽。"]]},
  socialMediaStorm:{title:"社群貼文風波",desc:"一篇情緒化貼文被大量轉發，球迷、媒體與隊友都在等你的下一步。",kicker:"📱 社群媒體",actions:[["clarifyPost","刪文並完整說明","承認表達不當，主動和隊友及球迷說清楚。"],["argueOnline","繼續和網友對罵","短期聲量提高，但形象與更衣室關係可能受損。"]]},
@@ -10155,12 +10375,19 @@ const OFF_COURT_EVENT_DEFS={
 };
 function offCourtEventDefinition(kind){return OFF_COURT_EVENT_DEFS[kind]||null}
 function buildOffCourtSpecial(){
- if(!isProPath()||isDevelopmentPath()||p.age<20)return null;
- if(Number(p.lastOffCourtEventYear||0)&&p.year-Number(p.lastOffCourtEventYear)<2)return null;
+ if(p.age<20||(!isProPath()&&!isCollegePath()))return null;
+ // 場外人生是職業生涯的主菜之一，但同一年仍只出現一件，避免壓過球場事件。
+ // 不再強制隔年冷卻；事件種類會優先抽未看過的內容。
  const r=RNG(`${p.seed}-off-court-v7509-${p.year}-${p.team}`);
- const rate={NBA:.28,CBA:.25,"日本職業":.23,"韓國職業":.22,"台灣職業":.22,"NBA G League":.23,"SBL／半職業":.18}[p.path]||.20;
+ let rate={NBA:.48,CBA:.45,"日本職業":.43,"韓國職業":.42,"台灣職業":.45,"NBA G League":.41,"SBL／半職業":.42,"NCAA D1":.38,"NCAA D2":.36,"日本大學":.35,"UBA 強權":.34,UBA:.32}[p.path]||.36;
+ const yearsSinceOffCourt=Number(p.lastOffCourtEventYear||0)?p.year-Number(p.lastOffCourtEventYear):99;
+ if(yearsSinceOffCourt>=3)rate=Math.max(rate,.82);
+ else if(yearsSinceOffCourt>=2)rate=Math.max(rate,.64);
  if(r()>=rate)return null;
- let pool=["lateNightRide","nightlifeConflict","socialMediaStorm","teamDiscipline","agentFinance","gamblingApproach","charityCommitment","friendLoan","rumorPhoto","podcastSlip","partyLeak","fanPhoneConflict"];
+ // 犯罪／自毀選項不放進常態池；主池改成「事情已經發生，玩家決定如何應對」。
+ let pool=isCollegePath()
+   ? ["teammateScandal","lockerRoomFaction","socialMediaStorm","teamDiscipline","charityCommitment","rumorPhoto","podcastSlip","partyLeak","fanPhoneConflict"]
+   : ["teammateScandal","importWalkout","lockerRoomFaction","socialMediaStorm","teamDiscipline","agentFinance","charityCommitment","friendLoan","rumorPhoto","podcastSlip","partyLeak","fanPhoneConflict"];
  if((p.rep||0)>=25||Number(p.endorsementIncome||0)>0)pool.push("sponsorCrisis","socialMediaStorm","charityCommitment");
  if((p.discipline||50)<45)pool.push("teamDiscipline","nightlifeConflict","partyLeak","fanPhoneConflict");
  if((p.rep||0)>=20)pool.push("rumorPhoto","podcastSlip");
@@ -10244,13 +10471,13 @@ function showSpecialEvent(){
    const level=e.nationalLevel||"SENIOR";
    const profile=e.nationalCompetition||nationalCompetitionById(level),label=nationalLevelLabel(level);
    const typeLabel=profile.kind==="qualifier"?"資格賽窗口":profile.kind==="invitation"?"國際邀請賽":"正式錦標賽";
-   special.innerHTML=`<div class="specialStage national"><div class="specialKicker">🇹🇼 ${level==="SENIOR"?"NATIONAL TEAM":"DEVELOPMENT TEAM"}</div><b>${label}｜${profile.event}</b><br>${typeLabel}<br><span class="mut">入選考量：${profile.selectionNote}。</span></div>`;
+   special.innerHTML=`<div class="specialStage national"><div class="specialKicker">🇹🇼 ${level==="SENIOR"?"NATIONAL TEAM":"DEVELOPMENT TEAM"}</div><span class="mut">${typeLabel}</span></div>`;
    choices.innerHTML=`<button class="choice" onclick="resolveNationalCallup('${level}','${profile.id}')"><b>前往報到</b><small>參加集訓與賽事，成績與個人數據會獨立記錄。</small></button>`;
    return;
  }
  if(e.kind==="romanceFirst"){
    const candidate=ensureRomanceCandidate();
-   special.innerHTML=`<div class="specialStage romance"><div class="specialKicker">❤️ PERSONAL LIFE</div><b>${candidate.name}｜${candidate.role}</b><br>${candidate.trait}<br><span class="mut">可能影響：${candidate.bonus}。感情選擇不使用一般事件成功率。</span></div>`;
+   special.innerHTML=`<div class="specialStage romance"><div class="specialKicker">❤️ PERSONAL LIFE</div><b>${candidate.name}</b>｜${candidate.trait}</div>`;
    choices.innerHTML=`<div class="twoChoices">
     <button class="choice" onclick="resolveRomanceFirst(true)"><b>回覆訊息</b><small>看看對方怎麼回應。</small></button>
     <button class="choice" onclick="resolveRomanceFirst(false)"><b>不回應</b><small>把注意力留在球場，這條關係暫時結束。</small></button>
@@ -10303,7 +10530,8 @@ function showSpecialEvent(){
  }
  if(e.offCourt){
    const def=offCourtEventDefinition(e.kind);
-   special.innerHTML=`<div class="specialStage career"><div class="specialKicker">${def?.kicker||"📰 場外事件"}</div>場外選擇不使用一般事件成功率；後果會依你的決定直接寫進生涯。</div>`;
+   document.getElementById("currentPanel")?.classList.add("eventRare","eventOffCourt");
+   special.innerHTML=`<div class="specialStage career"><div class="specialKicker">${def?.kicker||"📰 場外事件"}</div></div>`;
    choices.innerHTML=`<div class="twoChoices">${(def?.actions||[]).map(a=>`<button class="choice" onclick="resolveOffCourtSpecial('${a[0]}')"><b>${a[1]}</b><small>${a[2]}</small></button>`).join("")}</div>`;
    return;
  }
@@ -10322,7 +10550,7 @@ function showSpecialEvent(){
    </div>`;return;
  }
  if(e.kind==="tradeChoice"){
-   special.innerHTML=`<div class="specialStage career"><div class="specialKicker">🔁 CAREER</div>交易屬於職涯事件，不占用一般事件回合。</div>`;
+   special.innerHTML=`<div class="specialStage career"><div class="specialKicker">🔁 CAREER</div></div>`;
    choices.innerHTML=`<div class="twoChoices">
     <button class="choice" onclick="resolveCareerSpecial('tradeOpen')"><b>接受球團聆聽報價</b><small>可能被交易到同聯盟其他球隊。</small></button>
     <button class="choice" onclick="resolveCareerSpecial('tradeStay')"><b>表態想留下</b><small>降低交易機率，維持目前球隊。</small></button>
@@ -10558,7 +10786,37 @@ function resolveOffCourtSpecial(action){
    p.conductMarketPenalty=Math.max(p.conductMarketPenalty||0,value);p.conductPenaltySetYear=p.year;
    if(suspension)p.conductSuspensionGames=Math.max(p.conductSuspensionGames||0,suspension);
  };
- if(action==="callRide"){
+ if(action==="defendTeammate"){
+   const r=RNG(`${p.seed}-teammate-scandal-${p.year}`),backfire=r()<.42;
+   if(backfire){p.rep-=4;p.confidence=Math.max(0,p.confidence-2);record("隊友桃色風波","替隊友發言後遭新證據打臉");html=`<div class="specialStage career"><b class="bad">📰 新證據讓發言反噬</b><br>隊友記住你曾替他擋下媒體，但外界開始質疑你是否協助隱瞞。球隊評價 -4｜信心 -2。</div>`;}
+   else{p.rep+=3;p.confidence=Math.min(100,p.confidence+2);html=`<div class="specialStage career"><b>🤝 更衣室記住你的力挺</b><br>後續沒有出現更嚴重內容，你替隊友守住空間。球隊評價 +3｜信心 +2。</div>`;}
+ }else if(action==="neutralOnTeammate"){
+   p.rep+=1;p.confidence=Math.max(0,p.confidence-1);html=`<div class="specialStage career"><b>🎙️ 只談比賽</b><br>媒體沒有抓到破口，你的形象保持乾淨；涉事隊友卻覺得你刻意保持距離。球隊評價 +1｜信心 -1。</div>`;
+ }else if(action==="criticizeTeammate"){
+   const r=RNG(`${p.seed}-criticize-teammate-${p.year}`),supported=r()<.48;
+   if(supported){p.rep+=4;p.discipline=Math.min(100,p.discipline+2);html=`<div class="specialStage career"><b>📣 球團接受你的立場</b><br>管理層宣布調查，你被視為敢說真話的人。球隊評價 +4｜紀律 +2。</div>`;}
+   else{p.rep-=3;p.confidence=Math.max(0,p.confidence-3);html=`<div class="specialStage career"><b class="bad">🚪 更衣室開始選邊</b><br>部分隊友認為你不該公開審判自己人。球隊評價 -3｜信心 -3。</div>`;}
+ }else if(action==="takeVacantUsage"){
+   const r=RNG(`${p.seed}-vacant-usage-${p.year}`),hit=r()<.55;p.fatigue=Math.min(100,p.fatigue+12);p.planStatMod=(p.planStatMod||0)+2;
+   if(hit){p.rep+=5;p.confidence=Math.min(100,p.confidence+5);html=`<div class="specialStage career"><b>🔥 空缺變成你的舞台</b><br>你接手大量球權並打出代表作。球隊評價 +5｜信心 +5｜本季數據機會上升｜疲勞 +12。</div>`;}
+   else{p.rep-=3;p.confidence=Math.max(0,p.confidence-4);html=`<div class="specialStage career"><b class="bad">球權增加，效率卻撐不住</b><br>你仍得到更多數據機會，但失誤與輸球責任同步增加。球隊評價 -3｜信心 -4｜疲勞 +12。</div>`;}
+ }else if(action==="shareVacantUsage"){
+   p.rep+=2;p.stats.pass=Math.min(99,p.stats.pass+1);p.planStatMod=(p.planStatMod||0)-1;html=`<div class="specialStage career"><b>🤲 全隊一起填補空缺</b><br>球隊沒有把壓力壓在一人身上。傳球 +1｜球隊評價 +2；你的個人數據機會略降。</div>`;
+ }else if(action==="pressureFrontOffice"){
+   const r=RNG(`${p.seed}-pressure-front-office-${p.year}`),works=r()<.38;
+   if(works){p.rep+=3;p.confidence=Math.min(100,p.confidence+2);html=`<div class="specialStage career"><b>📋 管理層承諾補強</b><br>你的公開壓力奏效，也讓球迷把你當成球隊門面。球隊評價 +3｜信心 +2。</div>`;}
+   else{p.rep-=5;marketPenalty(3);html=`<div class="specialStage career"><b class="bad">管理層認定你公開越權</b><br>補強沒有立刻發生，球團關係先惡化。球隊評價 -5｜市場評價下降。</div>`;}
+ }else if(action==="sideVeterans"){
+   p.rep+=2;p.stats.iq=Math.min(99,p.stats.iq+1);p.confidence=Math.max(0,p.confidence-2);html=`<div class="specialStage career"><b>站到老將陣營</b><br>你得到老將在場上的照顧與經驗。球商 +1｜球隊評價 +2；年輕隊友開始與你保持距離。</div>`;
+ }else if(action==="sideYouth"){
+   const r=RNG(`${p.seed}-side-youth-${p.year}`),shift=r()<.5;
+   if(shift){p.rep+=4;p.confidence=Math.min(100,p.confidence+3);html=`<div class="specialStage career"><b>⚡ 新勢力取得話語權</b><br>教練採納更快的打法，你成為改革核心。球隊評價 +4｜信心 +3。</div>`;}
+   else{p.rep-=4;p.confidence=Math.max(0,p.confidence-2);html=`<div class="specialStage career"><b class="bad">老將守住了更衣室</b><br>改革沒有成功，你的輪替也受到既有領袖影響。球隊評價 -4｜信心 -2。</div>`;}
+ }else if(action==="mediateLockerRoom"){
+   const r=RNG(`${p.seed}-mediate-locker-${p.year}`),works=r()<.58;
+   if(works){p.rep+=5;p.stats.iq=Math.min(99,p.stats.iq+1);html=`<div class="specialStage career"><b>🗣️ 兩派接受共同方案</b><br>你第一次真正被視為球隊領袖。球隊評價 +5｜球商 +1。</div>`;}
+   else{p.rep-=2;p.confidence=Math.max(0,p.confidence-3);html=`<div class="specialStage career"><b class="bad">兩邊都認為你沒有表態</b><br>談判失敗，你暫時失去兩派信任。球隊評價 -2｜信心 -3。</div>`;}
+ }else if(action==="callRide"){
    p.discipline=Math.min(100,p.discipline+1);
    html=`<div class="specialStage career"><b>🚕 安全返家</b><br>你把車留在原地並叫車回家。這一晚沒有變成新聞，紀律 +1。</div>`;
  }else if(action==="driveAfterDrinking"){
@@ -10733,10 +10991,10 @@ const TITLE_DEFS={
  franchise:{name:"一生一隊",rarity:"epic",effect:"該母隊的球衣退休評估獲得忠誠加成。",unlock:"同一支職業球隊效力至少 6 季。"},
  evergreen:{name:"職業常青樹",rarity:"epic",effect:"退役 BL POWER 額外 +500。",unlock:"正式成人／職業聯盟累積 700 場出賽。"},
  veteran:{name:"沉著老練",rarity:"uncommon",effect:"所有策略判定獲得少量經驗加成。",unlock:"生涯累積成功處理 8 次事件。"},
- daredevil:{name:"無畏者",rarity:"rare",effect:"冒險成功率 50% → 60%，大成功門檻更寬。",unlock:"連續 3 次選擇冒險策略且全部成功。"},
+ daredevil:{name:"無畏者",rarity:"rare",effect:"冒險成功率 54% → 60%，大成功門檻更寬。",unlock:"連續 3 次選擇冒險策略且全部成功。"},
  gambler:{name:"豪賭之星",rarity:"epic",effect:"冒險成功率最高提升至 66%，大成功能力獎勵更高；大失敗代價不變。",unlock:"生涯累積 10 次冒險策略成功。"},
- composed:{name:"審時度勢",rarity:"uncommon",effect:"平衡策略成功率 68% → 78%。",unlock:"連續 4 次平衡策略成功。"},
- steady:{name:"穩如泰山",rarity:"rare",effect:"穩健策略成功率 82% → 90%，事件額外受傷風險 -5%。",unlock:"連續 5 次穩健策略成功。"},
+ composed:{name:"審時度勢",rarity:"uncommon",effect:"平衡策略成功率 66% → 78%。",unlock:"連續 4 次平衡策略成功。"},
+ steady:{name:"穩如泰山",rarity:"rare",effect:"穩健策略成功率 74% → 90%，事件額外受傷風險 -5%。",unlock:"連續 5 次穩健策略成功。"},
  perfect:{name:"完美賽季",rarity:"epic",effect:"下一季第一次事件成功率 +10%。",unlock:"單季所有生涯事件全部成功。"},
  lockerroom:{name:"休息室毒瘤",rarity:"negative",negative:true,effect:"合約市場評分 -6、團隊型事件成功率 -8%；老將續留時的上場時間上限更低。",unlock:"球團準備結束你的生涯時，選擇公開施壓並強迫續留。"},
 
@@ -10868,13 +11126,13 @@ function evaluateCareerLegacyTitles(){
 
 function strategyOf(type){
  if(type.includes("|"))return type.split("|")[0];
- if(["risk","injrisk","three","show","compete","clutch"].includes(type))return "risk";
- if(["safe","check"].includes(type))return "safe";
+ if(["risk","injrisk","three","show","compete","clutch","playhurt"].includes(type))return "risk";
+ if(["safe","check","sitout"].includes(type))return "safe";
  return "balance";
 }
 function effectType(type){return type.includes("|")?type.split("|")[1]:type}
 function strategyName(st){return st==="risk"?"🔥 冒險":st==="balance"?"⚖️ 平衡":"🛡️ 穩健"}
-function strategyBase(st){return st==="risk"?50:st==="balance"?68:82}
+function strategyBase(st){return st==="risk"?54:st==="balance"?66:74}
 
 function confidenceLabel(){
  const c=p.confidence??50;
@@ -10911,8 +11169,8 @@ function previewChance(type){
  return Math.max(10,Math.min(95,Math.round(c)));
 }
 function optionRisk(type){
- let st=strategyOf(type),c=previewChance(type);
- return `${strategyName(st)}｜${c}%`;
+ let st=strategyOf(type);
+ return st==="risk"?"🔥 豪賭｜高波動":st==="balance"?"⚖️ 應變｜中波動":"🛡️ 保守｜低波動";
 }
 function applyDelta(changes,key,delta,label){
  if(!delta)return;
@@ -10931,6 +11189,18 @@ function applyDelta(changes,key,delta,label){
 function resultLabel(tier){
  return {great:"大成功",success:"成功",fail:"失敗",disaster:"大失敗"}[tier];
 }
+function aggravateActiveInjury(r,severe=false){
+ if(!p.injury)return "";
+ ensureInjuryRecoveryState();
+ const before=p.injury.level,extra=severe?ri(r,12,24):ri(r,5,12);
+ adjustInjuryRecoveryGames(extra);p.bodyLoad=Math.min(100,(p.bodyLoad||0)+(severe?16:8));p.health=Math.max(20,(p.health||100)-(severe?10:5));
+ if(severe){
+   const order=["輕傷","中傷","大傷","重傷"],i=order.indexOf(p.injury.level);
+   if(i>=0&&i<2){p.injury.level=order[i+1];p.injury.severity=tierWeight(p.injury.level);if(p.injury.level==="大傷")p.majorInjuryCount=(p.majorInjuryCount||0)+1;}
+ }
+ p.medicalHistory.push({year:p.year,name:p.injury.name,area:p.injury.area,tier:p.injury.level,missedGames:extra,recovery:p.injury.recovery,recur:true,note:"帶傷硬打後惡化"});
+ return `${p.injury.name} 復原期再增加約 ${extra} 場${before!==p.injury.level?`，傷勢由${before}升為${p.injury.level}`:""}`;
+}
 
 function resolveEvent(type,label){
  let st=strategyOf(type),etype=effectType(type),r=RNG(p.seed+"resolve-"+p.year+"-"+p.eventIndex+"-"+type),chance=eventChance(type),roll=Math.floor(r()*100)+1;
@@ -10945,15 +11215,33 @@ function resolveEvent(type,label){
  const pos=(k,n,l)=>applyDelta(changes,k,n,l);
  const neg=(k,n,l)=>applyDelta(changes,k,-Math.abs(n),l);
 
- if(etype==="risk"||etype==="injrisk"){
+ if(etype==="playhurt"){
+   if(tier==="great"){pos("confidence",6,"信心");pos("rep",6,"球隊評價");pos("finish",2);p.planStatMod=(p.planStatMod||0)+2;pos("fatigue",14,"疲勞");injBoost=36;msg="止痛效果撐完整場，你在最需要得分的時刻接管比賽，這一晚直接改變球隊與市場對你的評價。"}
+   else if(tier==="success"){pos("confidence",3,"信心");pos("rep",3,"球隊評價");p.planStatMod=(p.planStatMod||0)+1;pos("fatigue",17,"疲勞");injBoost=42;msg="你帶著疼痛完成任務，數據與球隊地位都保住了，但身體沒有因此變健康。"}
+   else if(tier==="fail"){pos("rep",1,"球隊評價");neg("confidence",3,"信心");pos("fatigue",22,"疲勞");injBoost=55;const worse=aggravateActiveInjury(r,false);msg=`你撐到下半場後動作開始變形，球隊沒有等到英雄時刻。${worse?` ${worse}。`:"身體警訊明顯升高。"}`}
+   else{neg("confidence",7,"信心");neg("rep",3,"球隊評價");pos("fatigue",28,"疲勞");injBoost=72;const worse=aggravateActiveInjury(r,true);msg=`硬撐徹底失敗，疼痛在一次急停後爆開。${worse?` ${worse}。`:"這次選擇可能直接改寫後續球季。"}`}
+ }else if(etype==="minuteslimit"){
+   if(tier==="great"){pos("confidence",4,"信心");pos("rep",4,"球隊評價");pos("iq",2);p.planStatMod=(p.planStatMod||0)+1;injBoost=8;msg="你把有限的上場時間全部用在刀口上，既成為勝負手，也沒有讓身體完全失控。"}
+   else if(tier==="success"){pos("confidence",2,"信心");pos("rep",2,"球隊評價");injBoost=10;msg="限時上場奏效，你保留了關鍵貢獻與大部分健康。"}
+   else if(tier==="fail"){neg("rep",1,"球隊評價");pos("fatigue",5,"疲勞");injBoost=14;msg="節奏被切得太碎，你沒有在有限時間內改變比賽。"}
+   else{neg("confidence",3,"信心");neg("rep",2,"球隊評價");pos("fatigue",8,"疲勞");injBoost=20;msg="你上場後狀態不對，教練很快再次換下你，球隊也沒能守住比賽。"}
+ }else if(etype==="sitout"){
+   neg("fatigue",12,"疲勞");p.bodyLoad=Math.max(0,(p.bodyLoad||0)-8);p.planStatMod=(p.planStatMod||0)-2;
+   if(tier==="great"){pos("confidence",2,"信心");pos("iq",1);msg="隊友守住了比賽，你也獲得完整治療時間；下一戰仍保有原本的輪替位置。"}
+   else if(tier==="success"){neg("rep",1,"球隊評價");msg="你避開傷勢惡化，但缺席讓數據與球隊角色略受影響。"}
+   else{neg("rep",3,"球隊評價");neg("confidence",2,"信心");msg="替補球員把握機會打出代表作。你的身體比較安全，原本的位置卻不再穩固。"}
+ }else if(etype==="risk"||etype==="injrisk"){
    if(tier==="great"){pos("ath",3);pos("confidence",3,"信心");pos("rep",2,"球隊評價");pos("fatigue",10,"疲勞");msg="高強度加練完全奏效，你的爆發力甚至讓教練注意到變化。"}
    else if(tier==="success"){pos("ath",2);pos("confidence",1,"信心");pos("fatigue",12,"疲勞");msg="你撐過高負荷訓練，得到不錯的成長。"}
    else if(tier==="fail"){neg("confidence",3,"信心");neg("rep",2,"球隊評價");pos("fatigue",16,"疲勞");injBoost=18;msg="判定未通過，沒有獲得能力成長；動作品質反而因疲勞下降。"}
    else{neg("confidence",5,"信心");neg("rep",3,"球隊評價");pos("fatigue",20,"疲勞");injBoost=38;msg="過度勉強讓訓練徹底失控，身體也亮起警訊。"}
  }else if(etype==="safe"||etype==="check"){
-   if(tier==="success"){neg("fatigue",10,"疲勞");pos("confidence",1,"信心");msg="你控制負荷並完成恢復，身體狀態穩定下來。"}
-   else if(tier==="fail"){neg("fatigue",3,"疲勞");msg="恢復效果有限，但至少沒有讓狀況惡化。"}
-   else{neg("fatigue",2,"疲勞");neg("confidence",1,"信心");msg="恢復效果不如預期，但至少沒有把問題擴大。"}
+   // 保守不是免費答案：健康收益確實存在，但會犧牲本季數據、曝光或輪替競爭。
+   p.planStatMod=(p.planStatMod||0)-1;
+   if(tier==="great"){neg("fatigue",11,"疲勞");pos("confidence",1,"信心");msg="身體警訊被控制住了；同時，競爭對手完整吃下這段練習與出賽機會，你本季的數據上限因此下降。"}
+   else if(tier==="success"){neg("fatigue",8,"疲勞");neg("rep",1,"球隊評價");msg="你換到需要的恢復時間，但輪替順位與曝光略微讓給了別人。"}
+   else if(tier==="fail"){neg("fatigue",3,"疲勞");neg("rep",2,"球隊評價");msg="恢復效果有限，缺席的練習時間卻已經讓競爭者取得優勢。"}
+   else{neg("fatigue",2,"疲勞");neg("confidence",2,"信心");neg("rep",2,"球隊評價");msg="你既沒有完全消除不適，也失去一部分證明自己的機會。"}
  }else if(etype==="shoot"||etype==="three"){
    if(tier==="great"){pos("shoot",3);pos("confidence",4,"信心");pos("rep",2,"球隊評價");msg="手感徹底打開，你連續命中高難度投籃。"}
    else if(tier==="success"){pos("shoot",2);pos("confidence",2,"信心");msg="投籃調整奏效，命中率明顯回升。"}
@@ -11033,21 +11321,12 @@ function resolveEvent(type,label){
    const riskRewardStat={risk:"ath",injrisk:"ath",three:"shoot",shoot:"shoot",finish:"finish",clutch:"finish",handle:"handle",defense:"defense",rebound:"rebound",pass:"pass",iq:"iq",compete:"finish",show:"finish",team:"defense",talk:"iq",ath:"ath"}[etype];
    if(riskRewardStat)pos(riskRewardStat,tier==="great"?2:1,`${L[riskRewardStat]}（冒險加成）`);
  }
- let baseRisk=
-   1.15+
-   (100-p.durability)*.040+
-   p.fatigue*.035+
-   injBoost*.25+
-   injuryRiskModifier()*.45+
-   (hasTitle("steady")?-2.5:0)+
-   (p.planRiskMod||0)*.28+
-   chainInjuryMod()*.45;
-
- // V7.43 balance: healthy players generally stay in a modest risk band,
- // while fatigue, age, old injuries and aggressive choices can still matter.
- // 玩家長程測試的正式傷病略少；只提高觸發頻率，傷勢嚴重度分布仍由
- // injuryTierChance() 原規則決定，不額外放大大傷與重傷。
- baseRisk=Math.max(1.0,Math.min(28,baseRisk*1.32));
+ // 季初顯示與事件實際判定共用同一個年度風險來源；將年度機率平均拆到
+ // 本季 2～4 次一般事件，再疊加玩家本次硬撐造成的額外風險。
+ let baseRisk=eventInjuryRollChance(injBoost);
+ p.seasonInjurySurvival=(Number.isFinite(Number(p.seasonInjurySurvival))?Number(p.seasonInjurySurvival):1)*(1-baseRisk/100);
+ p.seasonInjuryChecksDone=(p.seasonInjuryChecksDone||0)+1;
+ p.seasonInjuryExtra=(p.seasonInjuryExtra||0)+Math.max(0,injBoost||0)*.25;
  let injuryTriggered=false;
  if(!p.injury && r()*100<baseRisk){createInjury(r,baseRisk);injuryTriggered=true;}
 
@@ -11055,7 +11334,8 @@ function resolveEvent(type,label){
  let titleHTML=titleChecks();
  let specialExtra=applySpecialEffect(etype,tier);
  special.innerHTML=`<div class="outcome ${cls}">
-   <div class="outcomeHead"><b>事件結果｜${resultLabel(tier)}</b><span class="outcomeRate">${strategyName(st)}｜成功率 ${chance}%</span></div>
+   <div class="outcomeHead"><b>事件結果｜${resultLabel(tier)}</b><span class="outcomeRate">${strategyName(st)}</span></div>
+   <div class="fateRoll" aria-label="命運判定 ${roll}，成功門檻 ${chance}"><small>命運判定</small><b>${roll}</b><span>成功門檻 ${chance}</span></div>
    <div class="eventMain">${msg}</div>
    <div class="changes">${deltaHTML}${injuryTriggered?`<span class="change neg">🏥 ${p.injury.name}｜${p.injury.level}</span>`:""}</div>
    ${injuryTriggered&&p.lastInjurySummary?`<div class="injuryCard ${p.injury.level==="輕傷"?"light":p.injury.level==="中傷"?"mid":""}">${p.lastInjurySummary}</div>`:""}
@@ -11079,6 +11359,7 @@ function showHealth(){
    ensureInjuryRecoveryState();
    const original=p.injury.originalMissedGames??0;
    const remaining=Math.max(0,p.injury.remainingGames??original);
+   const actualRisk=Math.round((1-Math.max(0,Math.min(1,Number(p.seasonInjurySurvival)||0)))*100);
    special.innerHTML=`<div class="injuryCard ${p.injury.level==="輕傷"?"light":p.injury.level==="中傷"?"mid":""}">
      <b>🏥 ${p.injury.name}</b><br>${p.lastInjurySummary||""}
      <div class="medicalGrid">
@@ -11088,17 +11369,16 @@ function showHealth(){
        <div class="medicalCell"><small>恢復時間</small><b>${p.injury.recovery||"依復健進度"}</b></div>
        <div class="medicalCell"><small>目前預估剩餘</small><b>${remaining>0?remaining+" 場":"可望復出"}</b></div>
      </div>
-   </div>
+   </div><div class="medicalPanel"><div class="cardLabel">本季風險如何累積</div><b class="medicalValue">季初基礎 ${Math.round(p.seasonInjuryRiskTarget||estimatedPlanRisk(p.seasonPlan||"normal"))}%｜事件判定累積至 ${actualRisk}%</b><div class="mut" style="margin-top:6px">身體負荷、舊傷、年齡與開季策略先形成基礎風險；硬撐與高負荷事件會再追加本次判定。</div></div>
    <div class="medicalPanel"><div class="cardLabel">舊傷紀錄</div><div class="medicalHistory">${oldInjuryHTML()}</div></div>`;
  }else{
    p.healthySeasons++;
    p.bodyLoad=Math.round(Math.max(0,(p.bodyLoad||0)-14-(p.seasonPlan==="care"?8:0)));
    let ironHTML=(p.healthySeasons>=3&&!hasTitle("ironman"))?unlockTitle("ironman"):"";
    let comebackHTML=rehabSeasonEffect();
-   let risk=Math.round(Math.max(2,Math.min(38,
-     3+(100-p.durability)*.07+(p.bodyLoad||0)*.10+injuryRiskModifier()*.45
-   )));
-   special.innerHTML=`<div class="healthok"><div class="healthHeadline">本季平安出賽</div><div class="healthSub">醫療團隊估計下一階段受傷風險約 <b>${risk}%</b>。</div></div>
+   let baseRisk=Math.round(p.seasonInjuryRiskTarget||estimatedPlanRisk(p.seasonPlan||"normal"));
+   let actualRisk=Math.round((1-Math.max(0,Math.min(1,Number(p.seasonInjurySurvival)||1)))*100);
+   special.innerHTML=`<div class="healthok"><div class="healthHeadline">本季平安出賽</div><div class="healthSub">季初基礎風險 <b>${baseRisk}%</b>｜納入本季所有事件後，實際累積判定 <b>${actualRisk}%</b>，本次沒有抽中傷病。</div></div>
    <div class="medicalPanel"><div class="cardLabel">身體負荷</div><b class="medicalValue">${p.bodyLoad}/100｜${medicalRiskLabel()}</b>
    <div class="bodyLoadBar"><div class="bodyLoadFill" style="width:${Math.round(p.bodyLoad||0)}%"></div></div>
    <div style="margin-top:8px">${oldInjuryHTML()}</div></div>${ironHTML}${comebackHTML}`;
@@ -11477,7 +11757,7 @@ function finishSeason(){
        showContractExpiryDecision();return;
      }
    }
-   p.seasonEventCount=ri(RNG(p.seed+"events-"+p.year),2,4);p.seasonPlan=null;p.planRiskMod=0;p.planGrowthMod=0;p.planStatMod=0;
+   p.seasonEventCount=ri(RNG(p.seed+"events-"+p.year),2,4);p.seasonPlan=null;p.planRiskMod=0;p.planGrowthMod=0;p.planStatMod=0;p.seasonInjuryRiskTarget=0;p.seasonInjurySurvival=1;p.seasonInjuryChecksDone=0;p.seasonInjuryExtra=0;p.seasonMedicalEventShown=false;
    render();showCareerChapter("newSchoolYear");return;
  }
 
