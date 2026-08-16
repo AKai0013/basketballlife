@@ -4740,7 +4740,7 @@ body.retirementMode .retirementFeatureMoments>b{display:block;margin-bottom:10px
     </div>
     <button id="leaderboardBtn" class="topRankBtn" type="button" onclick="BasketballLifeOnline.openLeaderboard()">🏆 排行榜</button>
     <a class="versionLink" href="https://github.com/AKai0013/basketballlife/blob/main/README.md#v80-正式更新" target="_blank" rel="noopener noreferrer" aria-label="查看 V8.0 正式版更新紀錄"><b>V8.0</b><span>正式版</span></a>
-    <div id="onlineStatus" class="onlineStatus connecting"><span class="onlineDot"></span><span id="onlineStatusText">連線中…</span></div>
+    <div id="onlineStatus" class="onlineStatus offline"><span class="onlineDot"></span><span id="onlineStatusText">單機可玩｜Online 背景連線</span></div>
   </div>
 </div>
 <div id="liveTicker" class="liveTicker"><div class="liveLabel">BL LIVE</div><div class="liveViewport"><div id="liveTrack" class="liveTrack">新的籃球人生即將開始。</div></div></div>
@@ -6336,7 +6336,11 @@ window.BL_ONLINE_CONFIG = {
 
    state.initPromise=(async()=>{
      setStartReady();
-     setStatus("connecting","連線中…");
+     // Gameplay is available immediately. Supabase is an optional background
+     // service and must never leave the start screen looking blocked.
+     state.offline=true;
+     state.ready=true;
+     setStatus("offline","單機可玩｜Online 背景連線");
 
      // A browser can report the offline state before any request is attempted.
      // Enter single-player mode immediately instead of waiting for an SDK URL.
@@ -6376,6 +6380,7 @@ window.BL_ONLINE_CONFIG = {
        bindAuthStateListener();
 
        const profile=await loadProfile();
+       state.offline=false;
        const routeParams=new URLSearchParams(location.search);
        const communityRoute=routeParams.has("career")||routeParams.has("leaderboard");
        if(profile?.nickname){
@@ -9819,9 +9824,8 @@ const ROMANCE_PROFILE_POOL=[
  {id:"designer",role:"運動品牌設計師",type:"business",trait:"重視長期形象，不喜歡只看短期熱度",bonus:"商業合作與個人形象更穩定",names:["曾映蓉","宋語彤","傅子晴"]},
  {id:"community_coach",role:"社區籃球教練",type:"stability",trait:"把承諾看得比聲量重要",bonus:"家庭關係與紀律更容易維持",names:["郭品妍","洪詩涵","杜佳穎"]},
  {id:"editor",role:"體育內容編輯",type:"creative",trait:"喜歡完整故事，不會只用一場球定義球員",bonus:"低潮期的信心損失較少",names:["賴昀希","柯芮安","彭書妍"]},
- {id:"data_analyst",role:"運動數據分析師",type:"strategy",trait:"看得懂數字，也知道數字解釋不了全部",bonus:"球商與生涯規劃判斷更成熟",names:["游家寧","鍾羽薇","范宜真"]},
- {id:"alumni",role:"大學校友會企劃",type:"stability",trait:"從學生時期就看過你最普通的一面",bonus:"家庭關係較不易因名氣起伏",names:["劉書
-... 7939 bytes omitted ...
+ {id:"data_analyst",role:"運動數據分析師",type:"strategy",trait:"看得懂數字，也知道數字解釋不了全部",b
+... 8202 bytes omitted ...
 all())*2.2;
  pressure+=Math.max(0,(p.bodyLoad||0)-35)*.28;
  if(p.injuryHistory.length>=3)pressure+=6;
