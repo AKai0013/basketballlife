@@ -8,7 +8,27 @@ function publicReadPatchScript() {
     const state = bl.state;
     const methodNames = ["openLeaderboard", "changeLeaderboardEra", "changeRankMetric", "openCareer"];
 
-    function wrapPublicRead(fn) {
+    function hidePublicSeedTier() {
+      document.querySelectorAll(".publicBadgeRow span").forEach((el) => {
+        if (/^🎴\s*/.test(String(el.textContent || "").trim())) el.remove();
+      });
+
+      const seedBox = document.querySelector(".legacySeed");
+      const seedValue = seedBox?.querySelector("b");
+      if (seedValue) {
+        let node = seedValue.nextSibling;
+        while (node) {
+          if (node.nodeType === Node.TEXT_NODE) {
+            node.nodeValue = String(node.nodeValue || "").replace(/^\s*｜[^\r\n]*/, "");
+            break;
+          }
+          if (node.nodeName === "BR") break;
+          node = node.nextSibling;
+        }
+      }
+    }
+
+    function wrapPublicRead(fn, methodName) {
       if (typeof fn !== "function" || fn.__blPublicReadWrapper) return fn;
       const wrapped = async function (...args) {
         const previous = {
@@ -32,7 +52,9 @@ function publicReadPatchScript() {
         if (clearedOffline) state.offline = false;
 
         try {
-          return await fn.apply(this, args);
+          const result = await fn.apply(this, args);
+          if (methodName === "openCareer") hidePublicSeedTier();
+          return result;
         } finally {
           if (injectedClient && state.client === publicClient) state.client = previous.client;
           if (injectedUser && state.user === publicUser) state.user = previous.user;
@@ -46,7 +68,7 @@ function publicReadPatchScript() {
     }
 
     for (const name of methodNames) {
-      if (typeof bl[name] === "function") bl[name] = wrapPublicRead(bl[name]);
+      if (typeof bl[name] === "function") bl[name] = wrapPublicRead(bl[name], name);
     }
 
     bl.__publicReadPatched = true;
