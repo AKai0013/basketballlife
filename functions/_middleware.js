@@ -122,7 +122,7 @@ body.retirementMode .fanEchoGrid{min-width:0!important}
 
     function sanitizePublicCareerView() {
       document.querySelectorAll(".publicBadgeRow span").forEach((el) => {
-        if (/^🎴\\s*/.test(String(el.textContent || "").trim())) el.remove();
+        if (/^🎴\s*/.test(String(el.textContent || "").trim())) el.remove();
       });
 
       const seedBox = document.querySelector(".legacySeed");
@@ -132,7 +132,7 @@ body.retirementMode .fanEchoGrid{min-width:0!important}
         let node = seedValue.nextSibling;
         while (node) {
           if (node.nodeType === Node.TEXT_NODE) {
-            node.nodeValue = String(node.nodeValue || "").replace(/^\\s*｜[^\\r\\n]*/, "");
+            node.nodeValue = String(node.nodeValue || "").replace(/^\s*｜[^\r\n]*/, "");
             break;
           }
           if (node.nodeName === "BR") break;
@@ -144,7 +144,7 @@ body.retirementMode .fanEchoGrid{min-width:0!important}
     function sanitizeRetirementSeedTier() {
       document.querySelectorAll(".legacySeed > b").forEach((el) => {
         const text = String(el.textContent || "").trim();
-        if (/^🎴\\s*世界種子\\s*｜/.test(text)) el.textContent = "🎴 世界種子";
+        if (/^🎴\s*世界種子\s*｜/.test(text)) el.textContent = "🎴 世界種子";
       });
     }
 
