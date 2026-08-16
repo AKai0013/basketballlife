@@ -6,7 +6,7 @@ function cacheablePath(url) {
 
 function cacheKey(url) {
   const keyUrl = new URL(url.toString());
-  keyUrl.searchParams.set("_bl_cache", "v2");
+  keyUrl.searchParams.set("_bl_cache", "v3");
   return new Request(keyUrl.toString(), { method: "GET" });
 }
 
@@ -17,7 +17,7 @@ function maskSeed(value) {
   return `${seed.slice(0, 3)}${"•".repeat(Math.max(3, seed.length - 5))}${seed.slice(-2)}`;
 }
 
-function sanitizeCareer(row) {
+function sanitizeCareerSummary(row) {
   if (!row || typeof row !== "object" || Array.isArray(row)) return row;
   const out = { ...row };
   delete out.seed_tier;
@@ -25,10 +25,22 @@ function sanitizeCareer(row) {
   return out;
 }
 
+function sanitizeCareerDetail(row) {
+  if (!row || typeof row !== "object" || Array.isArray(row)) return row;
+  const out = { ...row };
+  // Public-career integrity checks deterministically reproduce schedule and
+  // other Seed-derived values in the browser. Keep the real Seed in the detail
+  // payload so those checks remain valid, but never expose the hidden tier.
+  delete out.seed_tier;
+  return out;
+}
+
 function sanitizePayload(payload, url) {
-  if (url.pathname !== "/api/careers" && !url.pathname.startsWith("/api/careers/")) return payload;
-  if (Array.isArray(payload?.rows)) return { ...payload, rows: payload.rows.map(sanitizeCareer) };
-  if (payload && typeof payload === "object" && ("seed" in payload || "seed_tier" in payload)) return sanitizeCareer(payload);
+  if (url.pathname === "/api/careers") {
+    if (Array.isArray(payload?.rows)) return { ...payload, rows: payload.rows.map(sanitizeCareerSummary) };
+    return payload;
+  }
+  if (url.pathname.startsWith("/api/careers/")) return sanitizeCareerDetail(payload);
   return payload;
 }
 
