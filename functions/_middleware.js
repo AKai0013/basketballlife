@@ -3,6 +3,11 @@ function publicReadPatchScript() {
 /* Mobile interaction: keep fast repeated gameplay taps from triggering browser double-tap zoom. */
 html,body,#game,#game button,#game a,#game .btn,#game .choice{touch-action:manipulation}
 
+/* Retirement-night fan reactions are core career content. The source stylesheet currently
+   hides this section in retirement mode, so restore it here without changing its data logic. */
+body.retirementMode .fanEchoSection{display:block!important}
+body.retirementMode .fanEchoGrid{min-width:0!important}
+
 /* The source stylesheet has a later mobile override that forces the retirement dashboard
    back to a 224px + content desktop grid. Keep retirement genuinely responsive on phones. */
 @media(max-width:760px){
@@ -77,6 +82,16 @@ html,body,#game,#game button,#game a,#game .btn,#game .choice{touch-action:manip
   body.retirementMode .retirementFeature{
     overflow-wrap:anywhere;
     word-break:normal;
+  }
+  body.retirementMode .fanEchoGrid{
+    grid-template-columns:1fr!important;
+    width:100%!important;
+    max-width:100%!important;
+  }
+  body.retirementMode .fanEchoCard{
+    min-width:0!important;
+    width:100%!important;
+    box-sizing:border-box!important;
   }
 }
 
