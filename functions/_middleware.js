@@ -8,7 +8,15 @@ function publicReadPatchScript() {
     const state = bl.state;
     const methodNames = ["openLeaderboard", "changeLeaderboardEra", "changeRankMetric", "openCareer"];
 
-    function hidePublicSeedTier() {
+    function maskSeed(value) {
+      const seed = String(value || "");
+      if (!seed) return seed;
+      if (seed.includes("•")) return seed;
+      if (seed.length <= 5) return `${seed.slice(0, 1)}${"•".repeat(Math.max(1, seed.length - 2))}${seed.slice(-1)}`;
+      return `${seed.slice(0, 3)}${"•".repeat(Math.max(3, seed.length - 5))}${seed.slice(-2)}`;
+    }
+
+    function sanitizePublicCareerView() {
       document.querySelectorAll(".publicBadgeRow span").forEach((el) => {
         if (/^🎴\s*/.test(String(el.textContent || "").trim())) el.remove();
       });
@@ -16,6 +24,7 @@ function publicReadPatchScript() {
       const seedBox = document.querySelector(".legacySeed");
       const seedValue = seedBox?.querySelector("b");
       if (seedValue) {
+        seedValue.textContent = maskSeed(String(seedValue.textContent || "").trim());
         let node = seedValue.nextSibling;
         while (node) {
           if (node.nodeType === Node.TEXT_NODE) {
@@ -53,7 +62,7 @@ function publicReadPatchScript() {
 
         try {
           const result = await fn.apply(this, args);
-          if (methodName === "openCareer") hidePublicSeedTier();
+          if (methodName === "openCareer") sanitizePublicCareerView();
           return result;
         } finally {
           if (injectedClient && state.client === publicClient) state.client = previous.client;
