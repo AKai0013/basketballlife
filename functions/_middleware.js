@@ -39,6 +39,17 @@ function publicReadPatchScript() {
       }
     }
 
+    function sanitizeRetirementSeedTier() {
+      document.querySelectorAll(".legacySeed > b").forEach((el) => {
+        const text = String(el.textContent || "").trim();
+        if (/^🎴\s*世界種子\s*｜/.test(text)) el.textContent = "🎴 世界種子";
+      });
+    }
+
+    sanitizeRetirementSeedTier();
+    const retirementObserver = new MutationObserver(() => sanitizeRetirementSeedTier());
+    retirementObserver.observe(document.documentElement, { childList: true, subtree: true });
+
     function wrapPublicRead(fn, methodName) {
       if (typeof fn !== "function" || fn.__blPublicReadWrapper) return fn;
       const wrapped = async function (...args) {
@@ -65,6 +76,7 @@ function publicReadPatchScript() {
         try {
           const result = await fn.apply(this, args);
           if (methodName === "openCareer") sanitizePublicCareerView();
+          sanitizeRetirementSeedTier();
           return result;
         } finally {
           if (injectedClient && state.client === publicClient) state.client = previous.client;
@@ -111,7 +123,7 @@ export async function onRequest(context) {
   if (html.includes("__publicReadPatched")) return response;
 
   const patch = publicReadPatchScript();
-  const output = html.includes("</body>") ? html.replace("</body>", `${patch}</body>`) : `${html}${patch}`;
+  const output = html.includes("</body>") ? html.replace("</body>", patch + "</body>") : html + patch;
   const headers = new Headers(response.headers);
   headers.delete("content-length");
   headers.set("cache-control", "no-cache");
