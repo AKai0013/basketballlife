@@ -21,6 +21,7 @@
 - **每週 Seed 挑戰榜**：官方固定 Seed、位置、身高與臂展；同一玩家每週只保留 BL POWER 最高的一支生涯。
 - **V7 傳奇榜**：永久保留既有 V7.50 公開生涯。
 - 每週挑戰結束後，冠軍及代表生涯會保留在歷屆紀錄。
+- 免費方案省流量：BL LIVE 不再建立常駐 Realtime 連線；新聞採 20 筆快照與 5 分鐘工作階段快取。排行榜只回傳前 50 名及本人最多 4 筆摘要，點開個別生涯時才讀取完整資料。
 
 部署 V8 前，請先在 Supabase SQL Editor 執行 [supabase_v8_release.sql](./supabase_v8_release.sql)，再部署 `index.html`、`assets/` 與其餘靜態檔案。
 
