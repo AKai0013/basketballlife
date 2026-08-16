@@ -1,6 +1,20 @@
 -- BasketballLife V8.0 production migration
 -- Run once in the Supabase SQL editor before publishing index.html.
 
+-- Emergency free-plan guard. The game now polls a small news snapshot instead
+-- of opening one Realtime subscription per visitor. Removing this table from
+-- the publication also stops the old deployed clients from receiving fan-out.
+do $$
+begin
+  if exists (
+    select 1 from pg_publication_tables
+    where pubname='supabase_realtime' and schemaname='public' and tablename='global_news'
+  ) then
+    alter publication supabase_realtime drop table public.global_news;
+  end if;
+end;
+$$;
+
 create index if not exists career_records_ranking_era_idx
   on public.career_records ((career_data->>'ranking_era'))
   where is_public = true;
@@ -149,3 +163,138 @@ revoke all on function public.publish_career_v8(jsonb) from public;
 grant execute on function public.publish_career_v8(jsonb) to authenticated;
 revoke insert,update,delete on public.career_records from anon,authenticated;
 grant select on public.career_records to anon,authenticated;
+
+-- Free-plan traffic guard: leaderboard screens receive compact summaries only.
+-- Full career_data / season_history are fetched solely when a player opens one career.
+create or replace function public.bl_v8_award_count(p_awards jsonb, p_keyword text)
+returns integer
+language sql
+immutable
+parallel safe
+as $$
+  select count(*)::integer
+  from jsonb_array_elements(coalesce(p_awards,'[]'::jsonb)) item
+  where item::text ilike ('%' || p_keyword || '%');
+$$;
+
+create or replace function public.bl_v8_leaderboard(
+  p_era text default 'v8',
+  p_metric text default 'power',
+  p_weekly_id text default null,
+  p_limit integer default 50
+)
+returns jsonb
+language sql
+stable
+security definer
+set search_path = public
+as $$
+with eligible as (
+  select
+    r.id,r.user_id,r.nickname,r.player_name,r.position,r.seed_tier,r.retired_age,r.final_year,
+    r.peak_overall,r.career_rating,r.career_games,r.career_salary,r.championships,r.national_caps,
+    r.hall_of_fame,r.jersey_retired,r.awards,r.created_at,r.is_public,
+    coalesce(r.career_data->>'ranking_era','v750') as ranking_era,
+    coalesce(r.career_data->>'publisher_version','') as publisher_version,
+    coalesce(r.career_data->>'upload_id','') as upload_id,
+    coalesce((r.career_data->'weekly_challenge'->>'active')::boolean,false) as weekly_active,
+    coalesce(r.career_data->'weekly_challenge'->>'id','') as weekly_id,
+    coalesce(r.career_data->'weekly_challenge'->>'label','') as weekly_label,
+    coalesce(r.career_data->'integrity'->>'server_verified','') as server_verified,
+    case p_metric
+      when 'peak' then coalesce(r.peak_overall,0)::bigint
+      when 'championships' then coalesce(r.championships,0)::bigint
+      when 'mvp' then public.bl_v8_award_count(r.awards,'年度MVP')::bigint
+      when 'fmvp' then public.bl_v8_award_count(r.awards,'總冠軍賽MVP')::bigint
+      when 'dpoy' then public.bl_v8_award_count(r.awards,'最佳防守球員')::bigint
+      when 'first' then public.bl_v8_award_count(r.awards,'年度第一隊')::bigint
+      when 'allstar' then public.bl_v8_award_count(r.awards,'明星賽')::bigint
+      when 'scoring' then public.bl_v8_award_count(r.awards,'得分王')::bigint
+      when 'assists' then public.bl_v8_award_count(r.awards,'助攻王')::bigint
+      when 'rebounds' then public.bl_v8_award_count(r.awards,'籃板王')::bigint
+      when 'hof' then jsonb_array_length(coalesce(r.hall_of_fame,'[]'::jsonb))::bigint
+      when 'jersey' then jsonb_array_length(coalesce(r.jersey_retired,'[]'::jsonb))::bigint
+      when 'national' then coalesce(r.national_caps,0)::bigint
+      when 'games' then coalesce(r.career_games,0)::bigint
+      when 'salary' then coalesce(r.career_salary,0)::bigint
+      else coalesce(r.career_rating,0)::bigint
+    end as metric_value
+  from public.career_records r
+  where r.is_public=true
+    and (p_era='v7' or coalesce(r.career_data->>'publisher_version','')<>'8.0.0'
+      or r.career_data->'integrity'->>'server_verified'='passed')
+    and case
+      when p_era='v7' then coalesce(r.career_data->>'ranking_era','v750')='v750'
+      when p_era='weekly' then r.career_data->>'ranking_era'='v8'
+        and coalesce((r.career_data->'weekly_challenge'->>'active')::boolean,false)
+        and r.career_data->'weekly_challenge'->>'id'=coalesce(p_weekly_id,'')
+      else r.career_data->>'ranking_era'='v8'
+        and not coalesce((r.career_data->'weekly_challenge'->>'active')::boolean,false)
+    end
+), top_rows as (
+  select * from eligible
+  order by metric_value desc,career_rating desc,created_at desc
+  limit least(greatest(p_limit,1),50)
+), own_rows as (
+  select * from eligible
+  where auth.uid() is not null and user_id=auth.uid()
+    and id not in (select id from top_rows)
+  order by metric_value desc,career_rating desc,created_at desc
+  limit 4
+), visible as (
+  select * from top_rows union all select * from own_rows
+)
+select jsonb_build_object(
+  'rows',coalesce((select jsonb_agg(to_jsonb(v)-'metric_value' order by v.metric_value desc,v.career_rating desc,v.created_at desc) from visible v),'[]'::jsonb),
+  'stats',jsonb_build_object(
+    'players',(select count(distinct user_id) from eligible),
+    'careers',(select count(*) from eligible),
+    'top_power',coalesce((select max(career_rating) from eligible),0),
+    'top_peak',coalesce((select max(peak_overall) from eligible),0)
+  )
+);
+$$;
+
+create or replace function public.bl_v8_weekly_archive(p_limit_weeks integer default 24)
+returns jsonb
+language sql
+stable
+security definer
+set search_path = public
+as $$
+with eligible as (
+  select
+    r.id,r.user_id,r.nickname,r.player_name,r.position,r.seed_tier,r.retired_age,r.final_year,
+    r.peak_overall,r.career_rating,r.career_games,r.career_salary,r.championships,r.national_caps,
+    r.hall_of_fame,r.jersey_retired,r.awards,r.created_at,r.is_public,
+    'v8'::text as ranking_era,
+    coalesce(r.career_data->>'publisher_version','') as publisher_version,
+    coalesce(r.career_data->>'upload_id','') as upload_id,
+    true as weekly_active,
+    coalesce(r.career_data->'weekly_challenge'->>'id','') as weekly_id,
+    coalesce(r.career_data->'weekly_challenge'->>'label','') as weekly_label,
+    coalesce(r.career_data->'integrity'->>'server_verified','') as server_verified,
+    row_number() over (
+      partition by r.career_data->'weekly_challenge'->>'id'
+      order by r.career_rating desc,r.created_at desc
+    ) as weekly_rank
+  from public.career_records r
+  where r.is_public=true and r.career_data->>'ranking_era'='v8'
+    and (coalesce(r.career_data->>'publisher_version','')<>'8.0.0'
+      or r.career_data->'integrity'->>'server_verified'='passed')
+    and coalesce((r.career_data->'weekly_challenge'->>'active')::boolean,false)
+), recent_weeks as (
+  select weekly_id from eligible group by weekly_id order by weekly_id desc
+  limit least(greatest(p_limit_weeks,1),24)
+), visible as (
+  select e.* from eligible e join recent_weeks w using(weekly_id) where e.weekly_rank<=3
+)
+select coalesce(jsonb_agg(to_jsonb(v)-'weekly_rank' order by v.weekly_id desc,v.weekly_rank),'[]'::jsonb)
+from visible v;
+$$;
+
+revoke all on function public.bl_v8_award_count(jsonb,text) from public;
+revoke all on function public.bl_v8_leaderboard(text,text,text,integer) from public;
+revoke all on function public.bl_v8_weekly_archive(integer) from public;
+grant execute on function public.bl_v8_leaderboard(text,text,text,integer) to anon,authenticated;
+grant execute on function public.bl_v8_weekly_archive(integer) to anon,authenticated;
