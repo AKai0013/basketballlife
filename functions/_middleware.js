@@ -3,8 +3,7 @@ function publicReadPatchScript() {
 /* Mobile interaction: keep fast repeated gameplay taps from triggering browser double-tap zoom. */
 html,body,#game,#game button,#game a,#game .btn,#game .choice{touch-action:manipulation}
 
-/* Retirement-night fan reactions are core career content. The source stylesheet currently
-   hides this section in retirement mode, so restore it here without changing its data logic. */
+/* Retirement-night fan reactions are core career content. */
 body.retirementMode .fanEchoSection{display:block!important}
 body.retirementMode .fanEchoGrid{min-width:0!important}
 
@@ -123,7 +122,7 @@ body.retirementMode .fanEchoGrid{min-width:0!important}
 
     function sanitizePublicCareerView() {
       document.querySelectorAll(".publicBadgeRow span").forEach((el) => {
-        if (/^🎴\s*/.test(String(el.textContent || "").trim())) el.remove();
+        if (/^🎴\\s*/.test(String(el.textContent || "").trim())) el.remove();
       });
 
       const seedBox = document.querySelector(".legacySeed");
@@ -133,7 +132,7 @@ body.retirementMode .fanEchoGrid{min-width:0!important}
         let node = seedValue.nextSibling;
         while (node) {
           if (node.nodeType === Node.TEXT_NODE) {
-            node.nodeValue = String(node.nodeValue || "").replace(/^\s*｜[^\r\n]*/, "");
+            node.nodeValue = String(node.nodeValue || "").replace(/^\\s*｜[^\\r\\n]*/, "");
             break;
           }
           if (node.nodeName === "BR") break;
@@ -145,12 +144,38 @@ body.retirementMode .fanEchoGrid{min-width:0!important}
     function sanitizeRetirementSeedTier() {
       document.querySelectorAll(".legacySeed > b").forEach((el) => {
         const text = String(el.textContent || "").trim();
-        if (/^🎴\s*世界種子\s*｜/.test(text)) el.textContent = "🎴 世界種子";
+        if (/^🎴\\s*世界種子\\s*｜/.test(text)) el.textContent = "🎴 世界種子";
       });
     }
 
-    sanitizeRetirementSeedTier();
-    const retirementObserver = new MutationObserver(() => sanitizeRetirementSeedTier());
+    function ensureRetirementFanEcho() {
+      if (!document.body.classList.contains("retirementMode")) return;
+      const main = document.querySelector(".legacyMain");
+      if (!main || main.querySelector(".fanEchoIntro")) return;
+
+      let html = "";
+      try {
+        if (typeof window.fanEchoHTML === "function") html = window.fanEchoHTML();
+        else if (typeof fanEchoHTML === "function") html = fanEchoHTML();
+      } catch (_) {
+        return;
+      }
+      if (!html) return;
+
+      const section = document.createElement("section");
+      section.className = "legacySection fanEchoSection";
+      section.setAttribute("data-bl-restored-fan-echo", "1");
+      section.innerHTML = html;
+      main.appendChild(section);
+    }
+
+    function syncRetirementPatches() {
+      sanitizeRetirementSeedTier();
+      ensureRetirementFanEcho();
+    }
+
+    syncRetirementPatches();
+    const retirementObserver = new MutationObserver(() => syncRetirementPatches());
     retirementObserver.observe(document.documentElement, { childList: true, subtree: true });
 
     function wrapPublicRead(fn, methodName) {
@@ -179,7 +204,7 @@ body.retirementMode .fanEchoGrid{min-width:0!important}
         try {
           const result = await fn.apply(this, args);
           if (methodName === "openCareer") sanitizePublicCareerView();
-          sanitizeRetirementSeedTier();
+          syncRetirementPatches();
           return result;
         } finally {
           if (injectedClient && state.client === publicClient) state.client = previous.client;
