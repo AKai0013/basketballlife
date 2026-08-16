@@ -12,8 +12,10 @@ function publicReadPatchScript() {
       const seed = String(value || "");
       if (!seed) return seed;
       if (seed.includes("•")) return seed;
-      if (seed.length <= 5) return `${seed.slice(0, 1)}${"•".repeat(Math.max(1, seed.length - 2))}${seed.slice(-1)}`;
-      return `${seed.slice(0, 3)}${"•".repeat(Math.max(3, seed.length - 5))}${seed.slice(-2)}`;
+      if (seed.length <= 5) {
+        return seed.slice(0, 1) + "•".repeat(Math.max(1, seed.length - 2)) + seed.slice(-1);
+      }
+      return seed.slice(0, 3) + "•".repeat(Math.max(3, seed.length - 5)) + seed.slice(-2);
     }
 
     function sanitizePublicCareerView() {
