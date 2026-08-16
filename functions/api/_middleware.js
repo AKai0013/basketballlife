@@ -6,7 +6,7 @@ function cacheablePath(url) {
 
 function cacheKey(url) {
   const keyUrl = new URL(url.toString());
-  keyUrl.searchParams.set("_bl_cache", "v5");
+  keyUrl.searchParams.set("_bl_cache", "v6");
   return new Request(keyUrl.toString(), { method: "GET" });
 }
 
@@ -27,17 +27,11 @@ function sanitizeCareerSummary(row) {
 
 function sanitizeCareerDetail(row) {
   if (!row || typeof row !== "object" || Array.isArray(row)) return row;
-  const out = { ...row };
-  const era = String(out.ranking_era || out.career_data?.ranking_era || "");
-  if (era === "v750") {
-    if ("seed" in out) out.seed = maskSeed(out.seed);
-    delete out.seed_tier;
-    return out;
-  }
-  // V8 integrity checks include both the original Seed and seed_tier in the
-  // checksum. They must stay in the detail payload until the browser finishes
-  // verification. The presentation layer hides both after validation.
-  return out;
+  // Detail payloads keep the original Seed until the browser finishes the
+  // existing integrity validation. This is required for both archived V7
+  // careers and V8/weekly careers. The HTML middleware masks the Seed after a
+  // successful render, so the public page never displays the reusable code.
+  return { ...row };
 }
 
 function sanitizePayload(payload, url) {
