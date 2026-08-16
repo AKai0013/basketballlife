@@ -4865,8 +4865,7 @@ body.retirementMode .retirementFeatureMoments>b{display:block;margin-bottom:10px
  */
 window.BL_ONLINE_CONFIG = {
   enabled:true,
-  supabaseUrl:"https://qqzdrcfxypdnfisroamm.supabase.co",
-  publishableKey:"sb_publishable_DVxBcp9oPaCkd9d5KrJmHA_Py2Ii_ar"
+  backend:"cloudflare-d1"
 };
 
 
@@ -4945,6 +4944,23 @@ window.BL_ONLINE_CONFIG = {
    try{localStorage.setItem("bl_online_nickname",v)}catch(_){}
  }
 
+ function deviceIdentity(){
+   try{
+     let id=localStorage.getItem("bl_d1_client_id")||"",token=localStorage.getItem("bl_d1_client_token")||"";
+     if(!/^[0-9a-f-]{36}$/i.test(id)){id=globalThis.crypto?.randomUUID?.()||createCareerUploadId();localStorage.setItem("bl_d1_client_id",id)}
+     if(token.length<32){const bytes=new Uint8Array(32);globalThis.crypto?.getRandomValues?.(bytes);token=[...bytes].map(x=>x.toString(16).padStart(2,"0")).join("");localStorage.setItem("bl_d1_client_token",token)}
+     return {id,token};
+   }catch(_){return {id:createCareerUploadId(),token:createCareerUploadId()+createCareerUploadId()}}
+ }
+
+ async function apiRequest(path,{method="GET",body,timeout=10000}={}){
+   const identity=deviceIdentity();
+   const response=await withTimeout(fetch(`/api/${path}`,{method,headers:{"content-type":"application/json","x-bl-client-id":identity.id,"x-bl-client-token":identity.token},body:body===undefined?undefined:JSON.stringify(body)}),timeout);
+   const payload=await response.json().catch(()=>({}));
+   if(!response.ok){const err=new Error(payload?.error||`Online API ${response.status}`);err.status=response.status;throw err}
+   return payload;
+ }
+
  function showNicknameModal(){
    const modal=$("nicknameModal"),input=$("onlineNicknameInput"),err=$("nicknameError");
    if(!modal)return;
@@ -4973,62 +4989,19 @@ window.BL_ONLINE_CONFIG = {
  }
 
  async function ensureSupabaseSdk(){
-   if(window.supabase?.createClient)return true;
-   if(state.sdkLoadPromise)return state.sdkLoadPromise;
-   state.sdkLoadPromise=new Promise((resolve,reject)=>{
-     const script=document.createElement("script");
-     const original=document.querySelector('script[src*="@supabase/supabase-js"]');
-     script.src=`${original?.src||"https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"}${(original?.src||"").includes("?")?"&":"?"}retry=${Date.now()}`;
-     script.async=true;
-     script.onload=()=>window.supabase?.createClient?resolve(true):reject(new Error("Supabase SDK 載入失敗"));
-     script.onerror=()=>reject(new Error("Supabase SDK 載入失敗"));
-     (document.head||document.documentElement).appendChild(script);
-     setTimeout(()=>reject(new Error("Supabase SDK 載入逾時")),3000);
-   }).finally(()=>{state.sdkLoadPromise=null});
-   return state.sdkLoadPromise;
+   return true;
  }
 
  function ensureOnlineClient(){
    if(state.client)return state.client;
-   if(!window.supabase?.createClient)throw new Error("Supabase SDK 尚未載入");
-   state.client=window.supabase.createClient(
-     cfg.supabaseUrl,
-     cfg.publishableKey,
-     {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}
-   );
+   state.client={backend:"cloudflare-d1"};
    return state.client;
  }
 
- function bindAuthStateListener(){
-   if(state.authListenerReady||!state.client)return;
-   state.authListenerReady=true;
-   state.client.auth.onAuthStateChange((_event,session)=>{
-     if(session?.user){
-       state.user=session.user;
-       state.offline=false;
-       if(state.pendingCareerEnrollment)setTimeout(()=>autoPublishRetirementCareer(),0);
-     }
-   });
- }
+ function bindAuthStateListener(){state.authListenerReady=true}
 
  async function ensureAnonymousUser(){
-   const {data:sessionData,error:sessionError}=await withTimeout(state.client.auth.getSession(),8000);
-   if(sessionError)throw sessionError;
-   const session=sessionData?.session;
-   if(session?.user){
-     const expiresAt=Number(session.expires_at||0);
-     if(expiresAt&&expiresAt<=Math.floor(Date.now()/1000)+90&&state.client.auth.refreshSession){
-       const {data:refreshData,error:refreshError}=await withTimeout(state.client.auth.refreshSession(),8000);
-       if(refreshError)throw refreshError;
-       if(refreshData?.session?.user)return refreshData.session.user;
-     }
-     return session.user;
-   }
-
-   const {data,error}=await withTimeout(state.client.auth.signInAnonymously(),10000);
-   if(error)throw error;
-   if(!data?.user)throw new Error("匿名登入沒有取得使用者資料");
-   return data.user;
+   return {id:deviceIdentity().id};
  }
 
  function careerPublishErrorText(err){
@@ -5100,16 +5073,8 @@ window.BL_ONLINE_CONFIG = {
  }
 
  async function loadProfile(){
-   const {data,error}=await withTimeout(
-     state.client
-       .from("profiles")
-       .select("nickname")
-       .eq("user_id",state.user.id)
-       .maybeSingle(),
-     8000
-   );
-   if(error)throw error;
-   return data||null;
+   try{return await apiRequest("session",{timeout:8000})}
+   catch(err){if(err.status===401)return null;throw err}
  }
 
  function normalizeDbNews(row){
@@ -5155,15 +5120,7 @@ window.BL_ONLINE_CONFIG = {
      }
    }catch(_){ }
    try{
-     const {data,error}=await withTimeout(
-       state.client
-         .from("global_news")
-         .select("id,user_id,nickname,player_name,event_type,importance,message,league,career_year,created_at")
-         .order("created_at",{ascending:false})
-         .limit(20),
-       8000
-     );
-     if(error)throw error;
+     const data=await apiRequest("news",{timeout:8000});
 
      const rows=(data||[]).map(normalizeDbNews).filter(Boolean);
      state.knownNewsIds=new Set((data||[]).map(x=>x.id).filter(Boolean));
@@ -5178,9 +5135,7 @@ window.BL_ONLINE_CONFIG = {
    const channel=state.liveChannel;
    state.liveChannel=null;
    state.liveReady=false;
-   if(channel&&state.client?.removeChannel){
-     try{await state.client.removeChannel(channel)}catch(_){ }
-   }
+   void channel;
  }
 
  async function startLive(){
@@ -5305,15 +5260,7 @@ window.BL_ONLINE_CONFIG = {
        career_year:Number.isFinite(Number(item.year))?Number(item.year):null
      };
 
-     const {data,error}=await withTimeout(
-       state.client
-         .from("global_news")
-         .insert(row)
-         .select("id,user_id,nickname,player_name,event_type,importance,message,league,career_year,created_at")
-         .single(),
-       8000
-     );
-     if(error)throw error;
+     const data=await apiRequest("news",{method:"POST",body:row,timeout:8000});
 
      // Show immediately for the sender; other browsers refresh the small cached feed later.
      addGlobalRow(data);
@@ -5643,12 +5590,8 @@ window.BL_ONLINE_CONFIG = {
 
  async function findCareerRecord(id){
    if(!id||!state.client)return null;
-   const {data,error}=await withTimeout(
-     state.client.from("career_records").select("id,is_public,career_data").eq("id",id).eq("is_public",true).maybeSingle(),
-     6000
-   );
-   if(error)throw error;
-   return data||null;
+   try{return await apiRequest(`careers/${encodeURIComponent(id)}`,{timeout:6000})}
+   catch(err){if(err.status===404)return null;throw err}
  }
 
  function acceptPublishedCareer(id,showLink=true){
@@ -5731,11 +5674,7 @@ window.BL_ONLINE_CONFIG = {
      attachCareerIntegrity(row,localReport);
      const sealedReport=careerRecordIntegrity(row,{requireEnvelope:true});
      if(!sealedReport.ok)throw new Error(`完整性封套建立失敗：${sealedReport.errors.slice(0,3).join("、")}`);
-     const {data,error}=await withTimeout(
-       state.client.rpc("publish_career_v8",{p_record:row}).single(),
-       12000
-     );
-     if(error)throw error;
+     const data=await apiRequest("careers",{method:"POST",body:row,timeout:12000});
      if(data?.career_data?.integrity?.server_verified!=="passed"){
        throw new Error("伺服器完整性驗證尚未啟用，這筆生涯未列入排行榜");
      }
@@ -6054,38 +5993,16 @@ window.BL_ONLINE_CONFIG = {
      return cached.rows;
    }
 
-   let {data,error}=await withTimeout(
-     state.client.rpc("bl_v8_leaderboard",{
-       p_era:rankingEra,
-       p_metric:metric,
-       p_weekly_id:weeklyId||null,
-       p_limit:50
-     }),
-     15000
-   );
-   if(error){
-     // Safe rollout fallback: keep the public site usable before the compact
-     // SQL RPC is installed, while still avoiding the former 5,000-row dump.
-     const orderColumn={power:"career_rating",peak:"peak_overall",championships:"championships",national:"national_caps",games:"career_games",salary:"career_salary"}[metric]||"career_rating";
-     let query=state.client.from("career_records")
-       .select("id,user_id,nickname,player_name,position,seed_tier,retired_age,final_year,peak_overall,career_rating,career_games,career_salary,championships,national_caps,hall_of_fame,jersey_retired,awards,created_at,is_public")
-       .eq("is_public",true);
-     if(rankingEra==="v7")query=query.eq("career_data->>ranking_era","v750");
-     else if(rankingEra==="weekly")query=query.eq("career_data->>ranking_era","v8").eq("career_data->weekly_challenge->>active","true").eq("career_data->weekly_challenge->>id",weeklyId);
-     else query=query.eq("career_data->>ranking_era","v8").neq("career_data->weekly_challenge->>active","true");
-     const fallback=await withTimeout(query.order(orderColumn,{ascending:false}).order("career_rating",{ascending:false}).limit(50),15000);
-     if(fallback?.error)throw new Error("排行榜讀取失敗，請稍後重新整理。");
-     const fallbackRows=(fallback?.data||[]).map(row=>({...row,ranking_era:rankingEra==="v7"?"v750":"v8",publisher_version:"fallback-summary",weekly_active:rankingEra==="weekly",weekly_id:weeklyId,weekly_label:rankingEra==="weekly"?weeklyChallengeProfile().label:"",server_verified:"passed"}));
-     data={rows:fallbackRows,stats:{players:new Set(fallbackRows.map(x=>x.user_id)).size,careers:fallbackRows.length,top_power:Math.max(0,...fallbackRows.map(x=>Number(x.career_rating||0))),top_peak:Math.max(0,...fallbackRows.map(x=>Number(x.peak_overall||0)))}};
-   }
+   const query=new URLSearchParams({era:rankingEra,metric,weekly_id:weeklyId});
+   const data=await apiRequest(`careers?${query.toString()}`,{timeout:15000});
    const rows=(Array.isArray(data?.rows)?data.rows:[]).map(normalizeLeaderboardSummary);
    const visibleRows=dedupeLeaderboardRecords(rows).filter(isOfficialRankingRecord);
    state.leaderboardStats=data?.stats||null;
 
    if(rankingEra==="weekly"&&!state.weeklyArchiveRows){
      try{
-       const archive=await withTimeout(state.client.rpc("bl_v8_weekly_archive",{p_limit_weeks:24}),12000);
-       if(!archive?.error)state.weeklyArchiveRows=(Array.isArray(archive?.data)?archive.data:[]).map(normalizeLeaderboardSummary);
+       const archive=await apiRequest(`careers?era=weekly&metric=power&weekly_id=${encodeURIComponent(weeklyId)}&archive=1`,{timeout:12000});
+       state.weeklyArchiveRows=(archive?.rows||[]).map(normalizeLeaderboardSummary);
      }catch(_){state.weeklyArchiveRows=[]}
    }
    if(!(state.leaderboardCache instanceof Map))state.leaderboardCache=new Map();
@@ -6171,6 +6088,10 @@ window.BL_ONLINE_CONFIG = {
    if(content)content.innerHTML=`<div class="communityLoading">正在讀取公開生涯…</div>`;
    if(pushUrl)history.pushState({bl:"leaderboard"},"",`${location.pathname}?leaderboard=${encodeURIComponent(state.activeMetric)}&era=${encodeURIComponent(state.activeLeaderboardEra)}`);
    try{
+     if(!state.client||!state.user||state.offline){
+       const connected=await reconnectOnline(true);
+       if(!connected)throw new Error("排行榜服務目前無法連線，請稍後再試。");
+     }
      const records=await loadLeaderboardRecords(false,state.activeMetric,state.activeLeaderboardEra);
      renderLeaderboard(records,state.activeMetric);
    }catch(err){
@@ -6272,11 +6193,11 @@ window.BL_ONLINE_CONFIG = {
      return;
    }
    try{
-     const {data,error}=await withTimeout(
-       state.client.from("career_records").select("*").eq("id",id).maybeSingle(),
-       12000
-     );
-     if(error)throw error;
+     if(!state.client||!state.user||state.offline){
+       const connected=await reconnectOnline(true);
+       if(!connected)throw new Error("公開生涯服務目前無法連線，請稍後再試。");
+     }
+     const data=await apiRequest(`careers/${encodeURIComponent(id)}`,{timeout:12000});
      if(!data)throw new Error("找不到這筆公開生涯");
      const requireEnvelope=String(data?.career_data?.publisher_version||"")===CAREER_PUBLISHER_VERSION;
      // Some careers were already public before the server-verdict field was
@@ -6342,6 +6263,7 @@ window.BL_ONLINE_CONFIG = {
      state.ready=true;
      setStatus("offline","單機可玩｜Online 背景連線");
 
+
      // A browser can report the offline state before any request is attempted.
      // Enter single-player mode immediately instead of waiting for an SDK URL.
      if(navigator.onLine===false){
@@ -6375,6 +6297,7 @@ window.BL_ONLINE_CONFIG = {
      try{
        await ensureSupabaseSdk();
        ensureOnlineClient();
+       await apiRequest("health",{timeout:5000});
 
        state.user=await ensureAnonymousUser();
        bindAuthStateListener();
@@ -6463,22 +6386,9 @@ window.BL_ONLINE_CONFIG = {
    if(errBox)errBox.textContent="";
 
    try{
-     const {data:sessionData,error:sessionError}=await withTimeout(state.client.auth.getSession(),8000);
-     if(sessionError)throw sessionError;
-     state.user=sessionData?.session?.user||await ensureAnonymousUser();
+     state.user=await ensureAnonymousUser();
      if(!state.user)throw new Error("尚未取得登入身分");
-
-     const {error}=await withTimeout(
-       state.client
-         .from("profiles")
-         .upsert(
-           {user_id:state.user.id,nickname},
-           {onConflict:"user_id"}
-         ),
-       8000
-     );
-
-     if(error)throw error;
+     await apiRequest("session",{method:"PUT",body:{nickname},timeout:8000});
 
      state.nickname=nickname;
      cacheNickname(nickname);
@@ -6495,7 +6405,7 @@ window.BL_ONLINE_CONFIG = {
      console.warn("Nickname save failed:",err);
      if(errBox){
        errBox.textContent=
-         err?.code==="23505"
+         err?.status===409
            ?"這個玩家暱稱已經有人使用，請換一個。"
            :"暱稱儲存失敗，請稍後再試。";
      }
@@ -7099,12 +7009,9 @@ window.BasketballLifeMigration=(()=>{
  const READY="basketballlife:migration:ready";
  const PAYLOAD="basketballlife:migration:payload";
  const ACK="basketballlife:migration:ack";
- const AUTH_STORAGE_KEY=(()=>{
-   try{
-     const projectRef=new URL(window.BL_ONLINE_CONFIG?.supabaseUrl||"").hostname.split(".")[0];
-     return projectRef?`sb-${projectRef}-auth-token`:"";
-   }catch(_){return ""}
- })();
+ // Supabase auth is intentionally not migrated. Cloudflare D1 creates a new,
+ // device-local publisher identity while the career save itself is preserved.
+ const AUTH_STORAGE_KEY="";
  let receivePromise=null;
  let sourceTransfer=null;
 
@@ -10540,7 +10447,7 @@ function creatorCreditHTML(){
  return `<div class="creatorCredit retirementCredit">製作：<a href="https://www.threads.com/@basketballlife_k?xmt=AQG0tS6gtXrN8CWiBiJqphKuoz5VwtJFONP4svLNEbhjdt0" target="_blank" rel="noopener noreferrer">BasketballLife_K</a></div>`;
 }
 function retirementRankMarkHTML(){
- if(p?.weeklyChallenge?.active)return `<div class="legacyRankMark pending"><b>🎴 本週挑戰</b><span>僅列入本週排行榜；同一玩家只保留最高 BL POWER。</span></div>`;
+ if(p?.weeklyChallenge?.active)return `<div class="legacyRankMark pending"><b>🎴 本週挑戰</b><span>只會送進本週挑戰榜；同一玩家只保留最高 BL POWER。</span></div>`;
  if(!p?.publicCareerId){
    if(p?.leaderboardChoice==="retry")return `<div class="legacyRankMark retry"><b>⚠ 公開生涯尚未上傳</b><span>${escapeFeedText(p?.careerUploadError?.message||"系統會保留同一筆 ID 自動補傳，也可按下方按鈕立即重試")}</span></div>`;
    return `<div class="legacyRankMark pending"><b>⏳ 正在確認排行榜登錄</b><span>完成後會顯示全球名次</span></div>`;
