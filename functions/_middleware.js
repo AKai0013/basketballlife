@@ -1,5 +1,93 @@
 function publicReadPatchScript() {
-  return String.raw`<script>
+  return String.raw`<style id="bl-mobile-retirement-fix">
+/* Mobile interaction: keep fast repeated gameplay taps from triggering browser double-tap zoom. */
+html,body,#game,#game button,#game a,#game .btn,#game .choice{touch-action:manipulation}
+
+/* The source stylesheet has a later mobile override that forces the retirement dashboard
+   back to a 224px + content desktop grid. Keep retirement genuinely responsive on phones. */
+@media(max-width:760px){
+  body.retirementMode .legacyPage{
+    width:100%!important;
+    max-width:100%!important;
+    padding:0!important;
+    overflow:visible!important;
+    border-radius:12px!important;
+  }
+  body.retirementMode .legacyDashboard{
+    display:block!important;
+    grid-template-columns:none!important;
+    width:100%!important;
+    min-width:0!important;
+  }
+  body.retirementMode .legacyCareerRail{
+    display:block!important;
+    position:static!important;
+    top:auto!important;
+    width:100%!important;
+    max-width:100%!important;
+    max-height:none!important;
+    margin:0 0 10px!important;
+    padding:10px!important;
+    overflow:hidden!important;
+  }
+  body.retirementMode .legacyRailScroll{
+    display:flex!important;
+    gap:8px!important;
+    width:100%!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    padding:4px 0 7px!important;
+    -webkit-overflow-scrolling:touch;
+    scroll-snap-type:x proximity;
+  }
+  body.retirementMode .legacyRailGroup{
+    flex:0 0 min(72vw,240px)!important;
+    min-width:0!important;
+    scroll-snap-align:start;
+  }
+  body.retirementMode .legacyRailFinish{
+    margin-top:4px!important;
+  }
+  body.retirementMode .legacyMain{
+    display:block!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    padding:8px!important;
+  }
+  body.retirementMode .legacyHero,
+  body.retirementMode .legacySection,
+  body.retirementMode .retirementFeature{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+  }
+  body.retirementMode .legacyMoment{
+    display:grid!important;
+    grid-template-columns:88px minmax(0,1fr)!important;
+    gap:10px!important;
+    width:100%!important;
+    min-width:0!important;
+  }
+  body.retirementMode .legacyMoment>*{min-width:0!important}
+  body.retirementMode .legacyMeta,
+  body.retirementMode .legacyMoment,
+  body.retirementMode .legacySection,
+  body.retirementMode .retirementFeature{
+    overflow-wrap:anywhere;
+    word-break:normal;
+  }
+}
+
+@media(max-width:430px){
+  body.retirementMode .legacyMain{padding:6px!important}
+  body.retirementMode .legacyHero{padding:12px 10px 10px!important}
+  body.retirementMode .legacyCareerRail{padding:9px!important}
+  body.retirementMode .legacySection{padding:13px!important}
+  body.retirementMode .legacyMoment{grid-template-columns:76px minmax(0,1fr)!important;gap:8px!important}
+}
+</style><script>
 (() => {
   function installPublicReadPatch() {
     const bl = window.BasketballLifeOnline;
