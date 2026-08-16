@@ -75,7 +75,13 @@ async function session(request,env){
   return fail("Method not allowed",405);
 }
 
-const orderColumn={power:"career_rating",peak:"peak_overall",championships:"championships",national:"national_caps",games:"career_games",salary:"career_salary"};
+const awardOrder=keyword=>`(SELECT COUNT(*) FROM json_each(career_records.awards) WHERE CAST(json_each.value AS TEXT) LIKE '%${keyword}%')`;
+const orderColumn={
+  power:"career_rating",peak:"peak_overall",championships:"championships",national:"national_caps",games:"career_games",salary:"career_salary",
+  mvp:awardOrder("年度MVP"),fmvp:awardOrder("總冠軍賽MVP"),dpoy:awardOrder("最佳防守球員"),first:awardOrder("年度第一隊"),
+  allstar:awardOrder("明星賽"),scoring:awardOrder("得分王"),assists:awardOrder("助攻王"),rebounds:awardOrder("籃板王"),
+  hof:"json_array_length(hall_of_fame)",jersey:"json_array_length(jersey_retired)"
+};
 const summaryColumns="id,user_id,nickname,player_name,position,seed,seed_tier,retired_age,final_year,peak_overall,career_rating,career_games,career_salary,championships,national_caps,hall_of_fame,jersey_retired,awards,titles,ranking_era,publisher_version,upload_id,weekly_active,weekly_id,weekly_label,server_verified,created_at,updated_at,is_public";
 
 async function careers(request,env,path){
@@ -92,8 +98,12 @@ async function careers(request,env,path){
     }
     const clause=era==="v7"?"ranking_era='v750'":era==="weekly"?"ranking_era='v8' AND weekly_active=1 AND weekly_id=?":"ranking_era='v8' AND weekly_active=0";
     const statement=env.DB.prepare(`SELECT ${summaryColumns} FROM career_records WHERE is_public=1 AND ${clause} ORDER BY ${orderColumn[metric]} DESC,career_rating DESC LIMIT 50`);
-    const filtered=(await (era==="weekly"?statement.bind(weeklyId):statement).all()).results.map(x=>hydrate(x,true));
-    return json({rows:filtered,stats:{players:new Set(filtered.map(x=>x.user_id)).size,careers:filtered.length,top_power:Math.max(0,...filtered.map(x=>number(x.career_rating))),top_peak:Math.max(0,...filtered.map(x=>number(x.peak_overall)))}});
+    const totalsStatement=env.DB.prepare(`SELECT COUNT(DISTINCT user_id) AS players,COUNT(*) AS careers,COALESCE(MAX(career_rating),0) AS top_power,COALESCE(MAX(peak_overall),0) AS top_peak FROM career_records WHERE is_public=1 AND ${clause}`);
+    const [rowsResult,totals]=era==="weekly"
+      ? await Promise.all([statement.bind(weeklyId).all(),totalsStatement.bind(weeklyId).first()])
+      : await Promise.all([statement.all(),totalsStatement.first()]);
+    const filtered=(rowsResult.results||[]).map(x=>hydrate(x,true));
+    return json({rows:filtered,stats:{players:number(totals?.players),careers:number(totals?.careers),top_power:number(totals?.top_power),top_peak:number(totals?.top_peak)}});
   }
   if(request.method==="POST"){
     const auth=await authenticate(request,env);if(auth.error)return auth.error;
@@ -133,7 +143,27 @@ async function adminImport(request,env){
 }
 
 async function news(request,env){
-  if(request.method==="GET")return json((await env.DB.prepare("SELECT * FROM global_news ORDER BY created_at DESC LIMIT 20").all()).results);
+  if(request.method==="GET"){
+    const live=(await env.DB.prepare("SELECT * FROM global_news ORDER BY created_at DESC LIMIT 20").all()).results||[];
+    // The Supabase migration preserves public careers, but the old realtime news
+    // table may be empty. Fill the ticker with real career highlights instead of
+    // leaving every visitor on the generic BL LIVE placeholder.
+    const needed=Math.max(0,20-live.length);
+    let highlights=[];
+    if(needed){
+      const careers=(await env.DB.prepare("SELECT id,nickname,player_name,career_rating,peak_overall,championships,national_caps,hall_of_fame,jersey_retired,final_year,updated_at FROM career_records WHERE is_public=1 ORDER BY career_rating DESC, updated_at DESC LIMIT ?").bind(Math.min(needed,16)).all()).results||[];
+      highlights=careers.map(row=>{
+        const hof=parse(row.hall_of_fame,[]),jersey=parse(row.jersey_retired,[]);
+        let event_type="history",importance=4,message=`完成生涯總評 ${number(row.career_rating)} 的代表生涯`;
+        if(hof.length){event_type="hof";importance=5;message="入選籃球名人堂"}
+        else if(jersey.length){event_type="jersey";importance=5;message="生涯背號獲球隊正式退休"}
+        else if(number(row.championships)>0){event_type="championship";importance=5;message=`生涯累積 ${number(row.championships)} 座冠軍`}
+        else if(number(row.national_caps)>0){event_type="national";message=`成人國家隊累積出賽／徵召 ${number(row.national_caps)} 次`}
+        return {id:`career-${row.id}`,user_id:"career-archive",nickname:row.nickname||"匿名玩家",player_name:row.player_name||"無名球員",event_type,importance,message,league:"生涯紀錄",career_year:row.final_year||null,created_at:row.updated_at||new Date().toISOString()};
+      });
+    }
+    return json([...live,...highlights].slice(0,20));
+  }
   if(request.method==="POST"){
     const auth=await authenticate(request,env);if(auth.error)return auth.error;
     const b=await request.json().catch(()=>({})),id=uuid();
