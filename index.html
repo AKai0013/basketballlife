@@ -5039,7 +5039,7 @@ window.BL_ONLINE_CONFIG = {
    }
    if(/Failed to fetch|NetworkError|Load failed|network|連線逾時|timeout/i.test(raw))return "網路或排行榜服務連線逾時，生涯已保留在本機，系統會自動補傳。";
    if(/JWT|token|Authentication required|auth|401|403/i.test(raw))return "Online 登入憑證已失效，系統正在重新取得匿名登入身分。";
-   if(/publish_career_v7508|function.*not found|PGRST202|server integrity|伺服器完整性驗證尚未啟用/i.test(raw))return "排行榜服務目前尚未完成更新。生涯已保留在本機，請稍後再按「重新連線並上傳」。";
+   if(/V7\.50\.8 publisher required|publish_career_v7508|function.*not found|PGRST202|server integrity|伺服器完整性驗證尚未啟用/i.test(raw))return "排行榜仍連到舊版發布驗證，這支生涯已保留在本機；管理端完成 V8 上傳修正後，再按「重新連線並上傳」即可。";
    if(/完整性|Malformed|Invalid|mismatch|exceeds|Duplicate|schedule|season|award|career record/i.test(raw))return `這支生涯未通過排行榜資料驗證：${raw.slice(0,150)}`;
    return `排行榜回覆：${raw.slice(0,170)}`;
  }
@@ -10540,7 +10540,7 @@ function creatorCreditHTML(){
  return `<div class="creatorCredit retirementCredit">製作：<a href="https://www.threads.com/@basketballlife_k?xmt=AQG0tS6gtXrN8CWiBiJqphKuoz5VwtJFONP4svLNEbhjdt0" target="_blank" rel="noopener noreferrer">BasketballLife_K</a></div>`;
 }
 function retirementRankMarkHTML(){
- if(p?.weeklyChallenge?.active)return `<div class="legacyRankMark pending"><b>🎴 本週 Seed 挑戰生涯</b><span>只會送進本週挑戰榜，不會混入 V8 現役榜；同一玩家只保留最高 BL POWER。</span></div>`;
+ if(p?.weeklyChallenge?.active)return `<div class="legacyRankMark pending"><b>🎴 本週挑戰</b><span>僅列入本週排行榜；同一玩家只保留最高 BL POWER。</span></div>`;
  if(!p?.publicCareerId){
    if(p?.leaderboardChoice==="retry")return `<div class="legacyRankMark retry"><b>⚠ 公開生涯尚未上傳</b><span>${escapeFeedText(p?.careerUploadError?.message||"系統會保留同一筆 ID 自動補傳，也可按下方按鈕立即重試")}</span></div>`;
    return `<div class="legacyRankMark pending"><b>⏳ 正在確認排行榜登錄</b><span>完成後會顯示全球名次</span></div>`;
