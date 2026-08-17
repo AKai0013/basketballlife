@@ -5,6 +5,7 @@
   const SESSION_KEY = "bl_growth_funnel_session_v1";
   const STAGES = ["home_view", "player_create", "career_start", "major_event", "retirement", "share"];
   let syncFrame = 0;
+  let liveWrapFrame = 0;
   let boundaryTimer = 0;
 
   const nowIso = () => new Date().toISOString();
@@ -111,6 +112,26 @@
     return style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && rect.height > 0;
   }
 
+  /* The original moving node grows with long BL LIVE headlines. Keep that node
+     inside a fixed-width clipping layer so its animation cannot widen the page. */
+  function ensureLiveMarquee() {
+    liveWrapFrame = 0;
+    const track = document.getElementById("liveTrack");
+    if (!track) return;
+    const alreadyWrapped = track.childNodes.length === 1
+      && track.firstElementChild?.classList.contains("blLiveMarquee");
+    if (alreadyWrapped) return;
+
+    const marquee = document.createElement("span");
+    marquee.className = "blLiveMarquee";
+    while (track.firstChild) marquee.appendChild(track.firstChild);
+    track.appendChild(marquee);
+  }
+
+  function scheduleLiveMarquee() {
+    if (!liveWrapFrame) liveWrapFrame = requestAnimationFrame(ensureLiveMarquee);
+  }
+
   function syncMilestones() {
     syncFrame = 0;
     if (visible(document.getElementById("setup"))) record("home_view");
@@ -161,7 +182,10 @@
     setTimeout(scheduleSync, 0);
   }, true);
 
-  const observer = new MutationObserver(scheduleSync);
+  const observer = new MutationObserver(() => {
+    scheduleSync();
+    scheduleLiveMarquee();
+  });
   observer.observe(document.documentElement, {
     childList: true,
     subtree: true,
@@ -170,6 +194,7 @@
   });
 
   syncMilestones();
+  ensureLiveMarquee();
   if (!installCareerStartWrapper()) {
     let attempts = 0;
     const timer = setInterval(() => {
@@ -249,6 +274,7 @@
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) {
       syncWeeklyTiming();
+      scheduleLiveMarquee();
       scheduleSync();
     }
   });
