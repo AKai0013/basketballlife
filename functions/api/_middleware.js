@@ -178,7 +178,10 @@ function metricCounts(row) {
   const awards = Array.isArray(row?.awards) ? row.awards : parseJson(row?.awards, []);
   const hof = Array.isArray(row?.hall_of_fame) ? row.hall_of_fame : parseJson(row?.hall_of_fame, []);
   const jersey = Array.isArray(row?.jersey_retired) ? row.jersey_retired : parseJson(row?.jersey_retired, []);
-  const count = (keyword) => awards.reduce((sum, award) => sum + (String(award).includes(keyword) ? 1 : 0), 0);
+  const count = (keyword) => awards.reduce((sum, award) => {
+    const label = typeof award === "string" ? award : String(award?.name || award?.title || "");
+    return sum + (label.includes(keyword) ? Math.max(1, toNumber(award?.count || 1)) : 0);
+  }, 0);
   return {
     mvp: count("年度MVP"),
     fmvp: count("總冠軍賽MVP"),
