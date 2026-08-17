@@ -1,4 +1,4 @@
-const PREVIEW_ASSET_REV = "growth-ui-v1-20260817i";
+const PREVIEW_ASSET_REV = "growth-ui-v1-20260817j";
 
 function previewAssets() {
   return [
