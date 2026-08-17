@@ -23,18 +23,19 @@
       });
 
       const seedBox = document.querySelector(".legacySeed");
-      const seedValue = seedBox?.querySelector("b");
-      if (!seedValue) return;
+      if (!seedBox) return;
 
-      seedValue.textContent = maskSeed(seedValue.textContent);
-      let node = seedValue.nextSibling;
-      while (node) {
-        if (node.nodeType === Node.TEXT_NODE) {
-          node.nodeValue = String(node.nodeValue || "").replace(/^\s*｜[^\r\n]*/, "");
-          break;
-        }
-        if (node.nodeName === "BR") break;
-        node = node.nextSibling;
+      const seedTitle = seedBox.querySelector("b");
+      if (seedTitle && /^🎴\s*世界種子(?:\s*｜.*)?$/.test(String(seedTitle.textContent || "").trim())) {
+        seedTitle.textContent = "🎴 世界種子";
+      }
+
+      const walker = document.createTreeWalker(seedBox, NodeFilter.SHOW_TEXT);
+      const nodes = [];
+      while (walker.nextNode()) nodes.push(walker.currentNode);
+      for (const node of nodes) {
+        const text = String(node.nodeValue || "");
+        node.nodeValue = text.replace(/(SEED\s*[：:]\s*)([A-Z0-9]{4,})/gi, (_, prefix, rawSeed) => `${prefix}${maskSeed(rawSeed)}`);
       }
     }
 
