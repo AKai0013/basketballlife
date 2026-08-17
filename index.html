@@ -5652,7 +5652,7 @@ window.BL_ONLINE_CONFIG = {
      id:uploadId,
      user_id:state.user.id,
      nickname:state.nickname,
-     player_name:String(p.name||"球員").slice(0,30),
+     player_name:String(displayPlayerName(p.name)||"球員").slice(0,30),
      position:p.pos||"",
      seed:p.seed||"",
      seed_tier:p.seedTierLabel||p.seedTier||"",
