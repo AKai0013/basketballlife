@@ -3467,6 +3467,7 @@ body.onlineModalOpen{
 .careerImagePreview{margin-top:10px;padding:12px;border:1px solid #345c47;border-radius:12px;background:#081711;color:#b9d8c6}
 .careerImagePreview>div:first-child{font-size:12px;font-weight:850;margin-bottom:9px}
 .careerImagePreview img{display:block;width:min(100%,520px);max-height:68vh;object-fit:contain;margin:auto;border:1px solid #315441;border-radius:8px;background:#07140e;box-shadow:0 16px 40px #0008}
+.careerImagePreview[data-image-kind="page"] img{width:min(100%,760px);max-height:none}
 .careerImagePreviewActions{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:10px}
 .publishedUrl{margin-top:4px;color:#8199a7;font-size:9px;word-break:break-all}.publishedBtns{display:flex;gap:6px;margin-top:7px;flex-wrap:wrap}.copyHint{margin-top:5px;color:#72d49d;font-size:9px}
 .careerUploadIssue{padding:9px 10px;border:1px solid #8b5939;border-radius:8px;background:#281914;color:#eac4aa;font-size:10.5px}.careerUploadIssue b{display:block;color:#f2a45d}.careerUploadIssue span{display:block;margin-top:4px;line-height:1.55}.careerUploadIssue .publishedBtns{margin-top:8px}
@@ -6224,12 +6225,13 @@ window.BL_ONLINE_CONFIG = {
    const publicPower=normalizedPower(r);
    const publicPoints=Math.round(Number(cd?.stats?.career_pts_total||0)),publicGames=Math.max(0,Number(r.career_games||0)),publicPpg=publicGames?publicPoints/publicGames:0;
    const tier=publicPower>=70000?"歷史級巨星":publicPower>=45000?"聯盟傳奇":publicPower>=28000?"明星級生涯":publicPower>=15000?"優秀職業球員":"職業旅人";
+   const publicSeed=maskPublicSeed(r.seed);
    content.innerHTML=`<div class="publicLegacy">
      <div class="publicLegacyTop">
        <div class="publicHeroIdentity"><div class="publicPortrait">${playerAvatarSVG(cd.avatar_seed||`PUBLIC-${r.id||r.player_name}`,r.position||"PG",r.retired_age||40,`${r.player_name||"球員"} 的球員頭像`)}</div><div><div class="legacyKicker">BasketballLife · PUBLIC COURT LEGACY</div><div class="legacyName">${esc(r.player_name)}</div><div class="legacyMeta">玩家 <b>${esc(r.nickname)}</b>｜${esc(r.position||"")}${cd.height_cm?`・${cd.height_cm} cm｜臂展 ${cd.wingspan_cm||"—"} cm`:""}${cd.birthplace&&cd.birthplace!=="未設定"?`｜${esc(cd.birthplace)}出身`:""}｜退役 ${r.retired_age||"-"} 歲｜${r.final_year||"-"} 年</div></div></div>
        <div class="powerStamp"><small>BL POWER</small><b>${publicPower.toLocaleString()}</b><span>${tier}</span></div>
      </div>
-     <div class="publicBadgeRow">${hof.length?`<span>🏛️ 名人堂 ×${hof.length}</span>`:""}${jersey.length?`<span>🏟️ 球衣退休 ×${jersey.length}</span>`:""}${r.seed_tier?`<span>🎴 ${esc(r.seed_tier)}</span>`:""}</div>
+     <div class="publicBadgeRow">${hof.length?`<span>🏛️ 名人堂 ×${hof.length}</span>`:""}${jersey.length?`<span>🏟️ 球衣退休 ×${jersey.length}</span>`:""}</div>
      <div class="publicMetricGrid"><span><small>職業出賽</small><b>${publicGames.toLocaleString()}</b></span><span><small>生涯總得分</small><b>${publicPoints.toLocaleString()}</b></span><span><small>生涯場均</small><b>${publicPpg.toFixed(1)}</b></span><span><small>巔峰 OVR</small><b>${r.peak_overall||0}</b></span><span><small>主要冠軍</small><b>${r.championships||0}</b></span><span><small>生涯收入</small><b>${moneyText(r.career_salary||0)}</b></span></div>
      <div class="legacySection"><div class="legacySectionTitle">歷史地位</div><div class="legacyEval">★ 生涯歷史評價：${tier}（評價 ${publicPower.toLocaleString()}）<br>★ ${hof.length?esc(hof.join("、")):"名人堂：未達入選門檻"}${jersey.length?`｜球衣退休：${esc(jersey.join("、"))}`:""}</div></div>
      <div class="legacySection"><div class="legacySectionTitle">主要榮譽</div><div class="legacyAchievements">${awards.length?awards.map(a=>`<div><b>・${esc(a.name)}${a.count>1?` ×${a.count}`:""}</b>${a.years.length?` <span class="honorYears">（${a.years.join("、")}）</span>`:""}</div>`).join(""):"沒有主要個人獎項"}${r.championships?`<div><b>・主要賽事冠軍 ×${r.championships}</b>${championshipYears.length?` <span class="honorYears">（${championshipYears.join("、")}）</span>`:""}</div>`:""}${r.national_caps?`<div><b>・國家隊資歷 ${r.national_caps} 次</b>${seniorNationalYears.length?` <span class="honorYears">（${seniorNationalYears.join("、")}）</span>`:""}</div>`:""}</div></div>
@@ -6238,9 +6240,17 @@ window.BL_ONLINE_CONFIG = {
      <div class="legacySection"><div class="legacySectionTitle">國家隊生涯</div>${publicNationalTable(cd.international_history,r.season_history)}</div>
      <div class="legacySection"><div class="legacySectionTitle">逐季數據</div>${publicSeasonTable(r.season_history)}</div>
      ${publicOffCourtHistory(cd.off_court_history)}
-     <div class="legacySection"><div class="legacySectionTitle">生涯註記</div><div class="legacySeed">世界種子：<b>${esc(r.seed||"未公開")}</b>${r.seed_tier?`｜${esc(r.seed_tier)}`:""}<br><span class="mut">${esc(cd.retirement_reason||"")}</span></div></div>
+     <div class="legacySection"><div class="legacySectionTitle">生涯註記</div><div class="legacySeed">世界種子：<b>${esc(publicSeed||"未公開")}</b><br><span class="mut">${esc(cd.retirement_reason||"")}</span></div></div>
      <div class="publicShareBtns"><button class="btn" onclick="BasketballLifeOnline.copyCareerLink('${esc(r.id)}')">🔗 複製這頁網址</button><button class="btn" onclick="BasketballLifeOnline.openLeaderboard()">🏆 查看全球排行榜</button></div>
    </div>`;
+ }
+
+ function maskPublicSeed(value){
+   const seed=String(value||"").trim();
+   if(!seed||seed.includes("•"))return seed;
+   if(seed.length<=2)return "•".repeat(seed.length);
+   if(seed.length<=6)return `${seed.slice(0,1)}${"•".repeat(seed.length-2)}${seed.slice(-1)}`;
+   return `${seed.slice(0,2)}${"•".repeat(seed.length-4)}${seed.slice(-2)}`;
  }
 
  async function routeFromUrl(){
@@ -10459,7 +10469,7 @@ function retirementRankMarkHTML(){
 }
 function retirementRankingButtonsHTML(){
  const canPublish=true;
- return `${canPublish&&!p?.publicCareerId?`<button class="btn" onclick="BasketballLifeOnline.retryCareerUpload()">↻ 重新連線並上傳</button>`:""}<button class="btn" onclick="BasketballLifeOnline.openLeaderboardNewTab()">🏆 查看全球排行榜 ↗</button><button class="btn" onclick="generateCareerImage()">📸 生成生涯紀念圖</button>`;
+ return `${canPublish&&!p?.publicCareerId?`<button class="btn" onclick="BasketballLifeOnline.retryCareerUpload()">↻ 重新連線並上傳</button>`:""}<button class="btn" onclick="BasketballLifeOnline.openLeaderboardNewTab()">🏆 查看全球排行榜 ↗</button><button class="btn" onclick="generateRetirementPageImage()">📄 生成正式引退頁圖片</button><button class="btn" onclick="generateCareerImage()">📊 生成生涯數據海報</button>`;
 }
 function refreshRetirementRankingView(){
  document.querySelectorAll(".legacyRankMarkHost").forEach(x=>x.innerHTML=retirementRankMarkHTML());
@@ -10609,10 +10619,10 @@ function showShareCard(){
  special.innerHTML=`<div id="shareCard" class="legacyPage"><div class="legacyDashboard">${legacyCareerRailHTML()}<main class="legacyMain">
    ${legacyRetirementBodyHTML(false)}
    ${creatorCreditHTML()}</main></div></div>
- <div class="retireBtns"><button class="btn downloadBtn" onclick="generateCareerImage()">📸 生成生涯紀念圖</button><button class="btn" onclick="downloadCareerPNG()">下載 PNG</button><button class="btn" onclick="showRetirementSummary()">返回完整生涯</button><button class="btn" onclick="BasketballLifeOnline.openLeaderboardNewTab()">🏆 查看排行榜 ↗</button></div><div id="publicCareerStatus" class="publicCareerStatus"></div>${retirementRestartHTML()}`;
+ <div class="retireBtns"><button class="btn downloadBtn" onclick="generateRetirementPageImage()">📄 生成正式引退頁圖片</button><button class="btn" onclick="generateCareerImage()">📊 生成生涯數據海報</button><button class="btn" onclick="showRetirementSummary()">返回完整生涯</button><button class="btn" onclick="BasketballLifeOnline.openLeaderboardNewTab()">🏆 查看排行榜 ↗</button></div><div id="publicCareerStatus" class="publicCareerStatus"></div>${retirementRestartHTML()}`;
  setTimeout(()=>{fitGameToViewport();const cp=document.getElementById("currentPanel");if(cp)cp.scrollTop=0;BasketballLifeOnline.scheduleRetirementAutoPublish();},0);
 }
-function careerShareFileName(){return `BasketballLife_${String(p.name||"Career").replace(/[\\/:*?"<>|]/g,"_")}_${p.year}.png`}
+function careerShareFileName(kind="poster"){const base=`BasketballLife_${String(p.name||"Career").replace(/[\\/:*?"<>|]/g,"_")}_${p.year}`;return kind==="page"?`${base}_Retirement.png`:`${base}.png`}
 function buildCareerShareCanvas(){
  const groups=careerLeagueSummary(),profiles=careerLeagueProfiles(),leagueEntries=Object.entries(groups),seasons=p.seasonHistory||[];
  const achievements=careerAchievementEntries(),titles=featuredLegacyTitles(10).featured.map(legacyTitleInfo);
@@ -10903,23 +10913,36 @@ function buildCareerSharePosterV8(){
  txt("生涯總薪資",1254,744,13,gold,true);txt(moneyText(Number(p.careerBasketballSalary??p.careerSalary??0)),1254,785,30,gold,true);rule(1254,807,1518,807);wrap(`「${posterRetirementQuote()}」`,1254,836,264,12,18,3,"#eee8dc",true);txt(`世界種子 ${p.seed}`,1518,886,10,muted,false,"right");
  return canvas;
 }
-async function careerShareBlob(){if(document.fonts?.load)await document.fonts.load('900 48px "BL Retirement Slab"').catch(()=>{});await Promise.all([preloadPlayerAvatarSprites(),retirementArenaAsset().promise]);return new Promise((resolve,reject)=>buildCareerSharePosterV8().toBlob(blob=>blob?resolve(blob):reject(new Error("PNG 產生失敗")),"image/png"))}
+async function careerShareBlob(kind="poster"){
+ if(document.fonts?.load)await document.fonts.load('900 48px "BL Retirement Slab"').catch(()=>{});
+ await preloadPlayerAvatarSprites();
+ if(kind==="poster")await retirementArenaAsset().promise;
+ const canvas=kind==="page"?buildCareerShareCanvas():buildCareerSharePosterV8();
+ return new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error("PNG 產生失敗")),"image/png"));
+}
 let careerImagePreviewUrl="";
-function renderCareerImagePreview(blob,message){
+function renderCareerImagePreview(blob,message,kind="poster"){
  const status=document.getElementById("publicCareerStatus");if(!status)return;
  if(careerImagePreviewUrl)URL.revokeObjectURL(careerImagePreviewUrl);careerImagePreviewUrl=URL.createObjectURL(blob);
- status.innerHTML=`<div class="careerImagePreview"><div>${escapeFeedText(message)}</div><img src="${careerImagePreviewUrl}" alt="${escapeFeedText(p.name)} 的 BasketballLife 生涯紀念圖"><div class="careerImagePreviewActions"><button class="btn" onclick="copyCareerImage()">複製圖片</button><button class="btn" onclick="downloadCareerPNG()">下載 PNG</button></div></div>`;
+ const label=kind==="page"?"正式引退頁圖片":"生涯數據海報";
+ status.innerHTML=`<div class="careerImagePreview" data-image-kind="${kind}"><div>${escapeFeedText(message)}</div><img src="${careerImagePreviewUrl}" alt="${escapeFeedText(p.name)} 的 BasketballLife ${label}"><div class="careerImagePreviewActions"><button class="btn" onclick="copyCareerImage('${kind}')">複製圖片</button><button class="btn" onclick="downloadCareerPNG('${kind}')">下載 PNG</button></div></div>`;
 }
-function triggerCareerImageDownload(blob){const a=document.createElement("a");a.download=careerShareFileName();a.href=URL.createObjectURL(blob);a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1500)}
-async function copyCareerImage(){
- try{const blob=await careerShareBlob();if(!navigator.clipboard?.write||!window.ClipboardItem)throw new Error("clipboard unavailable");await navigator.clipboard.write([new ClipboardItem({"image/png":blob})]);renderCareerImagePreview(blob,"✓ 生涯紀念圖已複製，可直接貼到貼文或聊天室。")}
- catch(_){const blob=await careerShareBlob();triggerCareerImageDownload(blob);renderCareerImagePreview(blob,"瀏覽器不支援複製圖片，已改為下載 PNG。")}
+function triggerCareerImageDownload(blob,kind="poster"){const a=document.createElement("a");a.download=careerShareFileName(kind);a.href=URL.createObjectURL(blob);a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1500)}
+async function copyCareerImage(kind="poster"){
+ try{const blob=await careerShareBlob(kind);if(!navigator.clipboard?.write||!window.ClipboardItem)throw new Error("clipboard unavailable");await navigator.clipboard.write([new ClipboardItem({"image/png":blob})]);renderCareerImagePreview(blob,`✓ ${kind==="page"?"正式引退頁圖片":"生涯數據海報"}已複製，可直接貼到貼文或聊天室。`,kind)}
+ catch(_){const blob=await careerShareBlob(kind);triggerCareerImageDownload(blob,kind);renderCareerImagePreview(blob,"瀏覽器不支援複製圖片，已改為下載 PNG。",kind)}
 }
-async function downloadCareerPNG(){const blob=await careerShareBlob();triggerCareerImageDownload(blob);renderCareerImagePreview(blob,"✓ 生涯紀念圖 PNG 已下載。")}
+async function downloadCareerPNG(kind="poster"){const blob=await careerShareBlob(kind);triggerCareerImageDownload(blob,kind);renderCareerImagePreview(blob,`✓ ${kind==="page"?"正式引退頁圖片":"生涯數據海報"} PNG 已下載。`,kind)}
+async function generateRetirementPageImage(){
+ try{
+   const blob=await careerShareBlob("page");
+   renderCareerImagePreview(blob,"✓ 正式引退頁圖片已產生；可在下方複製圖片或下載 PNG。","page");
+ }catch(err){const status=document.getElementById("publicCareerStatus");if(status)status.innerHTML=`<div class="copyHint">圖片產生失敗：${escapeFeedText(err?.message||"請稍後再試")}</div>`}
+}
 async function generateCareerImage(){
  try{
-   const blob=await careerShareBlob();
-   renderCareerImagePreview(blob,"✓ 生涯紀念圖已產生；可在下方自行複製圖片或下載 PNG。");
+   const blob=await careerShareBlob("poster");
+   renderCareerImagePreview(blob,"✓ 生涯數據海報已產生；可在下方複製圖片或下載 PNG。","poster");
  }catch(err){const status=document.getElementById("publicCareerStatus");if(status)status.innerHTML=`<div class="copyHint">圖片產生失敗：${escapeFeedText(err?.message||"請稍後再試")}</div>`}
 }
 function showCareerChapter(type){

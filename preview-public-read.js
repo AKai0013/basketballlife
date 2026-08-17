@@ -11,10 +11,9 @@
     function maskSeed(value) {
       const seed = String(value || "").trim();
       if (!seed || seed.includes("•")) return seed;
-      if (seed.length <= 5) {
-        return seed.slice(0, 1) + "•".repeat(Math.max(1, seed.length - 2)) + seed.slice(-1);
-      }
-      return seed.slice(0, 3) + "•".repeat(Math.max(3, seed.length - 5)) + seed.slice(-2);
+      if (seed.length <= 2) return "•".repeat(seed.length);
+      if (seed.length <= 6) return seed.slice(0, 1) + "•".repeat(seed.length - 2) + seed.slice(-1);
+      return seed.slice(0, 2) + "•".repeat(seed.length - 4) + seed.slice(-2);
     }
 
     function sanitizePublicCareerView() {
@@ -35,7 +34,7 @@
       while (walker.nextNode()) nodes.push(walker.currentNode);
       for (const node of nodes) {
         const text = String(node.nodeValue || "");
-        node.nodeValue = text.replace(/(SEED\s*[：:]\s*)([A-Z0-9]{4,})/gi, (_, prefix, rawSeed) => `${prefix}${maskSeed(rawSeed)}`);
+        node.nodeValue = text.replace(/((?:SEED|世界種子)\s*[：:]\s*)([A-Z0-9]{3,})/gi, (_, prefix, rawSeed) => `${prefix}${maskSeed(rawSeed)}`);
       }
     }
 
