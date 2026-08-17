@@ -12,16 +12,30 @@ html,body{
 }
 
 /* BL LIVE is visually clipped, but its nowrap track must not expand the document. */
+.liveTicker{
+  min-width:0!important;
+  max-width:100%!important;
+  overflow:hidden!important;
+}
 .liveViewport{
+  position:relative!important;
   flex:1 1 0!important;
   min-width:0!important;
   width:0!important;
   max-width:100%!important;
+  height:100%!important;
   overflow:hidden!important;
   contain:inline-size;
 }
 .liveTrack{
+  position:absolute!important;
+  inset:0 auto 0 0!important;
+  display:flex!important;
+  align-items:center!important;
+  width:max-content!important;
   max-width:none!important;
+  height:100%!important;
+  box-sizing:content-box!important;
   white-space:nowrap!important;
 }
 
@@ -52,6 +66,21 @@ body.retirementMode .fanEchoSection{
 body.retirementMode .fanEchoGrid{
   min-width:0!important;
 }
+body.retirementMode .legacyTableWrap{
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  contain:inline-size;
+  -webkit-overflow-scrolling:touch;
+}
+body.retirementMode .legacyDetails{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+}
 
 @media(max-width:760px){
   /* The source card was width:100% plus 8px margins, causing a real 16px overflow. */
@@ -68,15 +97,19 @@ body.retirementMode .fanEchoGrid{
   body.retirementMode .legacyPage{
     width:100%!important;
     max-width:100%!important;
+    min-width:0!important;
     padding:0!important;
-    overflow:visible!important;
+    overflow:hidden!important;
     border-radius:12px!important;
+    box-sizing:border-box!important;
   }
   body.retirementMode .legacyDashboard{
     display:block!important;
     grid-template-columns:none!important;
     width:100%!important;
+    max-width:100%!important;
     min-width:0!important;
+    overflow:hidden!important;
   }
   body.retirementMode .legacyCareerRail{
     display:block!important;
@@ -88,11 +121,14 @@ body.retirementMode .fanEchoGrid{
     margin:0 0 10px!important;
     padding:10px!important;
     overflow:hidden!important;
+    box-sizing:border-box!important;
   }
   body.retirementMode .legacyRailScroll{
     display:flex!important;
     gap:8px!important;
     width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
     overflow-x:auto!important;
     overflow-y:hidden!important;
     padding:4px 0 7px!important;
@@ -113,6 +149,8 @@ body.retirementMode .fanEchoGrid{
     max-width:100%!important;
     min-width:0!important;
     padding:8px!important;
+    overflow-x:hidden!important;
+    box-sizing:border-box!important;
   }
   body.retirementMode .legacyHero,
   body.retirementMode .legacySection,
