@@ -1,12 +1,16 @@
 const CACHE_TTL_SECONDS = 300;
+const CACHE_VERSION = "v8.2";
 
 function cacheablePath(url) {
-  return url.pathname === "/api/careers" || url.pathname === "/api/news";
+  // Career summaries and details must always reflect the same sealed record.
+  // News can tolerate a short cache, but leaderboards cannot: a cached summary
+  // can disagree with a freshly loaded public-career detail after publishing.
+  return url.pathname === "/api/news";
 }
 
 function cacheKey(url) {
   const keyUrl = new URL(url.toString());
-  keyUrl.searchParams.set("_bl_cache", "v7");
+  keyUrl.searchParams.set("_bl_cache", CACHE_VERSION);
   return new Request(keyUrl.toString(), { method: "GET" });
 }
 
@@ -288,6 +292,30 @@ async function handleCachedGet(context, url) {
   return cacheable;
 }
 
+async function handleCareerGet(context, url) {
+  let response;
+  try {
+    const payload = await optimizedLeaderboard(context.request, context.env);
+    response = new Response(JSON.stringify(payload), {
+      status: 200,
+      headers: { "content-type": "application/json; charset=utf-8" },
+    });
+  } catch (error) {
+    console.warn("BL optimized leaderboard fallback", error);
+    response = await context.next();
+  }
+
+  if (!response.ok) return response;
+  const sanitized = await sanitizeResponse(response, url, "BYPASS");
+  const headers = new Headers(sanitized.headers);
+  headers.set("cache-control", "no-store");
+  return new Response(sanitized.body, {
+    status: sanitized.status,
+    statusText: sanitized.statusText,
+    headers,
+  });
+}
+
 export async function onRequest(context) {
   const request = context.request;
   const url = new URL(request.url);
@@ -295,6 +323,7 @@ export async function onRequest(context) {
     (url.pathname === "/api/careers" || url.pathname.startsWith("/api/careers/"));
 
   if (request.method === "GET") {
+    if (url.pathname === "/api/careers") return handleCareerGet(context, url);
     if (!cacheablePath(url) && !isCareerGet) return context.next();
 
     if (cacheablePath(url)) return handleCachedGet(context, url);
