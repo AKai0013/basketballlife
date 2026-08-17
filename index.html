@@ -6224,6 +6224,7 @@ window.BL_ONLINE_CONFIG = {
  }
 
  function renderPublicCareer(r){
+ const publicPlayerName=displayPlayerName(r.player_name);
    const content=document.getElementById("communityContent");if(!content)return;
    const awards=recordAwardSummary(r),hof=r.hall_of_fame||[],jersey=r.jersey_retired||[],cd=r.career_data||{};
    const championshipYears=uniqueHonorYears(cd.championship_history||[]);
@@ -6609,6 +6610,7 @@ function validCareerPlayer(player){
 }
 function normalizeCareerPlayer(player){
  if(!player||typeof player!=="object")return player;
+ if(!player.name||player.name==="無名球員"||player.name==="這名球員")player.name="籃球癡漢";
  if(typeof player.careerVersion!=="string"||!player.careerVersion)player.careerVersion="legacy";
  if(typeof player.avatarSeed!=="string"||!player.avatarSeed)player.avatarSeed=newAvatarSeed();
  if(typeof player.publicCareerId!=="string")player.publicCareerId="";
