@@ -4852,7 +4852,7 @@ body.retirementMode .retirementFeatureMoments>b{display:block;margin-bottom:10px
 </section>
 </div>
 
-<script>
+<script>\nwindow.displayPlayerName=window.displayPlayerName||function(value){const name=String(value??"").trim();return !name||name==="無名球員"||name==="這名球員"?"籃球癡漢":name;};
 /*
  * BasketballLife Online hook
  * ------------------------------------------------------------
@@ -6224,7 +6224,7 @@ window.BL_ONLINE_CONFIG = {
  }
 
  function renderPublicCareer(r){
- const publicPlayerName=displayPlayerName(r.player_name);
+ const publicPlayerName=window.displayPlayerName(r.player_name);
    const content=document.getElementById("communityContent");if(!content)return;
    const awards=recordAwardSummary(r),hof=r.hall_of_fame||[],jersey=r.jersey_retired||[],cd=r.career_data||{};
    const championshipYears=uniqueHonorYears(cd.championship_history||[]);
