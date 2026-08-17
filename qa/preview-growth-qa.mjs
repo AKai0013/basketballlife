@@ -73,6 +73,15 @@ async function diagnostics(page) {
       const rect = el.getBoundingClientRect();
       return style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity || 1) > 0 && rect.width > 0 && rect.height > 0;
     };
+    const hasHorizontalOverflowGuard = (el) => {
+      let parent = el.parentElement;
+      while (parent && parent !== document.body && parent !== document.documentElement) {
+        const overflowX = getComputedStyle(parent).overflowX;
+        if (['hidden', 'clip', 'auto', 'scroll'].includes(overflowX)) return true;
+        parent = parent.parentElement;
+      }
+      return false;
+    };
     const overflowOffenders = Array.from(document.querySelectorAll('body *'))
       .filter(visible)
       .map((el) => {
@@ -86,11 +95,13 @@ async function diagnostics(page) {
           right: Math.round(rect.right * 10) / 10,
           width: Math.round(rect.width * 10) / 10,
           parentOverflowX: el.parentElement ? getComputedStyle(el.parentElement).overflowX : '',
+          contained: hasHorizontalOverflowGuard(el),
         };
       })
       .filter((item) => item.left < -2 || item.right > viewportWidth + 2)
       .sort((a, b) => b.width - a.width)
       .slice(0, 80);
+    const uncontainedOverflowOffenders = overflowOffenders.filter((item) => !item.contained);
 
     let funnel = null;
     try { funnel = window.BasketballLifeFunnel?.snapshot?.() || JSON.parse(localStorage.getItem('bl_growth_funnel_v1') || 'null'); } catch (_) {}
@@ -109,8 +120,9 @@ async function diagnostics(page) {
       viewportWidth,
       htmlScrollWidth: document.documentElement.scrollWidth,
       bodyScrollWidth: document.body.scrollWidth,
-      horizontalOverflow: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) > viewportWidth + 1,
+      horizontalOverflow: document.documentElement.scrollWidth > viewportWidth + 1 || uncontainedOverflowOffenders.length > 0,
       overflowOffenders,
+      uncontainedOverflowOffenders,
       touchAction: {
         html: getComputedStyle(document.documentElement).touchAction,
         body: getComputedStyle(document.body).touchAction,
