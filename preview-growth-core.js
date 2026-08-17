@@ -255,6 +255,72 @@
     })[char]);
   }
 
+  function retirementStoryText(player, honors = []) {
+    const history = Array.isArray(player.seasonHistory) ? player.seasonHistory.filter(Boolean) : [];
+    const name = String(player.name || "這名球員").trim();
+    if (!history.length) return `${name} 完成了屬於自己的球員生涯，最後一次走下球場時，留下的不只是一份數據。`;
+
+    const first = history[0] || {};
+    const last = history[history.length - 1] || {};
+    const teamRows = history.filter((season) => String(season.team || "").trim());
+    const teamCounts = new Map();
+    teamRows.forEach((season) => {
+      const team = String(season.team).trim();
+      teamCounts.set(team, (teamCounts.get(team) || 0) + 1);
+    });
+    const teams = [...teamCounts.keys()];
+    const adultCounts = new Map();
+    teamRows.filter((season) => !/^(HBL|UBA|UBA 強權|NCAA D1|NCAA D2|日本大學)$/.test(String(season.path || ""))).forEach((season) => {
+      const team = String(season.team).trim();
+      adultCounts.set(team, (adultCounts.get(team) || 0) + 1);
+    });
+    const longest = [...(adultCounts.size ? adultCounts : teamCounts).entries()].sort((a, b) => b[1] - a[1])[0] || [];
+    const peak = [...history].sort((a, b) => Number(b.ovr || 0) - Number(a.ovr || 0) || Number(b.pts || 0) - Number(a.pts || 0))[0] || last;
+    const firstTeam = String(first.team || "高中球場").trim();
+    const finalTeam = String(last.team || player.team || "最後一支球隊").trim();
+    const peakTeam = String(peak.team || longest[0] || finalTeam).trim();
+    const peakAge = Number(peak.age || (Number(peak.year || 0) - 2010) || 0);
+    const peakOvr = Number(peak.ovr || player.peakOverall || 0);
+    const seasons = history.length;
+
+    const opening = `${name}從${firstTeam}出發，${seasons} 個球季一路走過 ${Math.max(1, teams.length)} 支球隊。`;
+    const meaningfulBeat = [...(player.storyBeats || [])]
+      .filter((item) => {
+        const text = String(item?.text || "");
+        const narrativeType = ["event", "life"].includes(String(item?.type || ""));
+        const flagged = item?.chain || item?.worldShift || item?.major || item?.international || item?.offCourt;
+        return text && (narrativeType || flagged) && !/本季獲得|取得.*你繳出|年度第一隊|得分王|籃板王|助攻王/.test(text);
+      })
+      .sort((a, b) => Number(b.importance || 0) - Number(a.importance || 0))[0];
+
+    let middle = "";
+    if (meaningfulBeat) {
+      const beatText = String(meaningfulBeat.text).trim().replace(/[。；]+$/, "");
+      middle = `${meaningfulBeat.year ? `${meaningfulBeat.year} 年，` : "生涯途中，"}${beatText}；那次轉折，改變了他往後的路。`;
+    } else if (longest[0] && longest[1] >= 2) {
+      middle = `生涯最長的 ${longest[1]} 年留在${longest[0]}，${peakAge ? `${peakAge} 歲` : "巔峰時"}效力${peakTeam}時攀上 OVR ${peakOvr}。`;
+    } else {
+      middle = `${peakAge ? `${peakAge} 歲` : "巔峰時"}效力${peakTeam}時，他把能力推到 OVR ${peakOvr}，終於在輪替與競爭中站穩自己的位置。`;
+    }
+
+    const topHonor = String(honors[0] || "");
+    if (!meaningfulBeat && topHonor) {
+      const counted = topHonor.match(/^(.*) ×(\d+)$/);
+      if (counted && /明星賽/.test(counted[1])) middle = middle.replace(/。$/, `，並 ${counted[2]} 度入選${counted[1]}。`);
+      else if (counted && /年度第一隊/.test(counted[1])) middle = middle.replace(/。$/, `，也 ${counted[2]} 度站上年度第一隊。`);
+      else if (Number(player.championships || 0) > 0) middle = middle.replace(/。$/, `，並帶走 ${Number(player.championships)} 座主要冠軍。`);
+    }
+
+    const age = Number(player.age || last.age || 0);
+    const reason = String(player.retirementReason || "");
+    let ending = `${age ? `${age} 歲那年` : "最後"}，他穿著${finalTeam}的球衣打完最後一季，正式走下球場。`;
+    if (/合約到期|自由市場|沒有合適|沒有新合約|市場/.test(reason)) ending = `${age ? `${age} 歲那年` : "最後"}，${finalTeam}成了最後一站；合約市場沒有再打開，他選擇把球衣留在那裡。`;
+    else if (/大傷|重傷|傷勢|醫療|手術/.test(reason)) ending = `${age ? `${age} 歲那年` : "最後"}，傷勢替他在${finalTeam}的最後一章畫下句點。`;
+    else if (player.hallOfFame?.length || player.jerseyRetired?.length) ending = `${age ? `${age} 歲那年` : "最後"}，他在${finalTeam}告別球場；掌聲散去後，名字仍留在球館裡。`;
+
+    return `${opening}${middle}${ending}`;
+  }
+
   function retirementPublicProfile(player) {
     const power = Math.max(0, Number(player.careerRating || 0));
     const tier = power >= 70000 ? "歷史級巨星"
@@ -273,10 +339,6 @@
       .map(([name, count]) => count > 1 ? `${name} ×${count}` : name);
     if (Number(player.championships || 0) > 0) honors.push(`主要冠軍 ×${Number(player.championships)}`);
     if (Number(player.nationalCaps || 0) > 0) honors.push(`國家隊資歷 ${Number(player.nationalCaps)} 次`);
-    const noise = /在簽約時承諾|角色由「|一般事件|自主訓練|角色承諾/;
-    const beat = [...(player.storyBeats || [])]
-      .filter((item) => item?.text && !noise.test(String(item.text)))
-      .sort((a, b) => Number(b.importance || 0) - Number(a.importance || 0))[0];
     const status = [];
     if (player.hallOfFame?.length) status.push(`名人堂：${player.hallOfFame.join("、")}`);
     if (player.jerseyRetired?.length) status.push(`球衣退休：${player.jerseyRetired.join("、")}`);
@@ -285,7 +347,7 @@
       tier,
       honors: honors.slice(0, 6),
       status: status.join("｜") || "完成一段正式球員生涯",
-      beat: String(beat?.text || player.retirementReason || "正式告別球員舞台。"),
+      beat: retirementStoryText(player, honors),
     };
   }
 
@@ -305,7 +367,7 @@
     const points = Math.max(0, Math.round(Number(player.careerPtsTotal || 0)));
     const summary = document.createElement("section");
     summary.className = "blRetirementPublicSummary";
-    summary.innerHTML = `<div class="blRetirementEvaluation"><small>生涯歷史評價</small><b>${safeText(profile.tier)}</b><span>評價 ${profile.power.toLocaleString()}｜${safeText(profile.status)}</span></div><div class="blRetirementPublicMetrics"><span><small>職業出賽</small><b>${games.toLocaleString()}</b></span><span><small>生涯總得分</small><b>${points.toLocaleString()}</b></span><span><small>巔峰 OVR</small><b>${Number(player.peakOverall || 0).toLocaleString()}</b></span></div><div class="blRetirementPublicSplit"><div><small>主要榮譽</small><div class="blRetirementHonorList">${profile.honors.length ? profile.honors.map((honor) => `<span>${safeText(honor)}</span>`).join("") : "<span>沒有主要個人獎項</span>"}</div></div><div><small>生涯故事</small><p>「${safeText(profile.beat)}」</p></div></div>`;
+    summary.innerHTML = `<div class="blRetirementEvaluation"><small>生涯歷史評價</small><b>${safeText(profile.tier)}</b><span>評價 ${profile.power.toLocaleString()}｜${safeText(profile.status)}</span></div><div class="blRetirementPublicMetrics"><span><small>職業出賽</small><b>${games.toLocaleString()}</b></span><span><small>生涯總得分</small><b>${points.toLocaleString()}</b></span><span><small>巔峰 OVR</small><b>${Number(player.peakOverall || 0).toLocaleString()}</b></span></div><div class="blRetirementPublicSplit"><div><small>主要榮譽</small><div class="blRetirementHonorList">${profile.honors.length ? profile.honors.map((honor) => `<span>${safeText(honor)}</span>`).join("") : "<span>沒有主要個人獎項</span>"}</div></div><div><small>生涯故事</small><p>${safeText(profile.beat)}</p></div></div>`;
     hero.append(summary);
   }
 
@@ -413,7 +475,7 @@
     if (!control) return;
     if (control.closest("#setup") && !control.closest("#weeklyChallenge")) record("player_create");
     const label = String(control.textContent || "").replace(/\s+/g, " ").trim();
-    if (/生成.*生涯紀念圖|下載\s*PNG|複製圖片|分享.*(?:生涯|退休|紀念)/.test(label)) record("share");
+    if (/生成.*生涯紀念圖|製作.*(?:引退故事圖|生涯紀錄長圖)|下載\s*PNG|複製圖片|分享.*(?:生涯|退休|紀念)/.test(label)) record("share");
     setTimeout(scheduleSync, 0);
   }, true);
 

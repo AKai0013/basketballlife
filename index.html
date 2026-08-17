@@ -10467,13 +10467,12 @@ function retirementRankMarkHTML(){
  if(ranks.peak)bits.push(`巔峰能力第 ${ranks.peak} 名`);
  return `<div class="legacyRankMark"><b>✓ 已登錄全球排行</b><span>${bits.join("｜")||"公開生涯已建立"}</span></div>`;
 }
-function retirementRankingButtonsHTML(){
- const canPublish=true;
- return `${canPublish&&!p?.publicCareerId?`<button class="btn" onclick="BasketballLifeOnline.retryCareerUpload()">↻ 重新連線並上傳</button>`:""}<button class="btn" onclick="BasketballLifeOnline.openLeaderboardNewTab()">🏆 查看全球排行榜 ↗</button><button class="btn" onclick="generateRetirementPageImage()">📄 生成正式引退頁圖片</button><button class="btn" onclick="generateCareerImage()">📊 生成生涯數據海報</button>`;
+function retirementActionsHTML(){
+ return `<div class="retirementShareCta"><div class="retirementShareCtaCopy"><b>分享這段生涯</b><span>把結局與世界 Seed 留成一張圖。</span></div><div class="retirementShareCtaButtons"><button class="btn retirementShareBtn primary" type="button" onclick="generateRetirementPageImage()"><span>製作我的引退故事圖</span><small>適合直接貼文分享</small></button><button class="btn retirementShareBtn" type="button" onclick="generateCareerImage()"><span>製作完整生涯紀錄長圖</span><small>完整數據、榮譽與逐季紀錄</small></button></div></div>`;
 }
 function refreshRetirementRankingView(){
  document.querySelectorAll(".legacyRankMarkHost").forEach(x=>x.innerHTML=retirementRankMarkHTML());
- document.querySelectorAll(".retirementRankingActionsHost").forEach(x=>x.innerHTML=retirementRankingButtonsHTML());
+ document.querySelectorAll(".retirementRankingActionsHost").forEach(x=>x.innerHTML=retirementActionsHTML());
 }
 function legacyTitleInfo(raw){
  const t=typeof raw==="string"?{id:"",name:raw}:raw||{};
@@ -10598,7 +10597,7 @@ function retireCareer(reason){
  text.textContent=`終場哨聲響起，${p.name} 最後一次走下球場。掌聲、遺憾與一路累積的回憶，都在此刻成為完整的生涯。`;
  special.innerHTML=`<div class="legacyPage"><div class="legacyDashboard">${legacyCareerRailHTML()}<main class="legacyMain">
    ${legacyRetirementBodyHTML(false)}
-   <div class="retireBtns"><button class="btn" onclick="showRetirementSummary()">查看完整逐季生涯</button><span class="retirementRankingActionsHost">${retirementRankingButtonsHTML()}</span></div><div id="publicCareerStatus" class="publicCareerStatus"></div>
+   <div class="retireBtns"><button class="btn" onclick="showRetirementSummary()">查看完整逐季生涯</button><div class="retirementRankingActionsHost">${retirementActionsHTML()}</div></div><div id="publicCareerStatus" class="publicCareerStatus"></div>
    ${retirementRestartHTML()}
    ${creatorCreditHTML()}</main></div></div>`;
  const legendaryRetirement=p.careerRating>=32000||(p.hallOfFame?.length||0)>0||(p.jerseyRetired?.length||0)>0;
@@ -10608,7 +10607,7 @@ function retireCareer(reason){
 function showRetirementSummary(){
  special.innerHTML=`<div class="legacyPage"><div class="legacyDashboard">${legacyCareerRailHTML()}<main class="legacyMain">
    ${legacyRetirementBodyHTML(true)}
-   <div class="retireBtns"><span class="retirementRankingActionsHost">${retirementRankingButtonsHTML()}</span></div><div id="publicCareerStatus" class="publicCareerStatus"></div>${retirementRestartHTML()}
+   <div class="retireBtns"><div class="retirementRankingActionsHost">${retirementActionsHTML()}</div></div><div id="publicCareerStatus" class="publicCareerStatus"></div>${retirementRestartHTML()}
    ${creatorCreditHTML()}</main></div></div>`;
  setTimeout(()=>{fitGameToViewport();const cp=document.getElementById("currentPanel");if(cp)cp.scrollTop=0;BasketballLifeOnline.scheduleRetirementAutoPublish();},0);
 }
@@ -10619,7 +10618,7 @@ function showShareCard(){
  special.innerHTML=`<div id="shareCard" class="legacyPage"><div class="legacyDashboard">${legacyCareerRailHTML()}<main class="legacyMain">
    ${legacyRetirementBodyHTML(false)}
    ${creatorCreditHTML()}</main></div></div>
- <div class="retireBtns"><button class="btn downloadBtn" onclick="generateRetirementPageImage()">📄 生成正式引退頁圖片</button><button class="btn" onclick="generateCareerImage()">📊 生成生涯數據海報</button><button class="btn" onclick="showRetirementSummary()">返回完整生涯</button><button class="btn" onclick="BasketballLifeOnline.openLeaderboardNewTab()">🏆 查看排行榜 ↗</button></div><div id="publicCareerStatus" class="publicCareerStatus"></div>${retirementRestartHTML()}`;
+ <div class="retireBtns"><button class="btn" onclick="showRetirementSummary()">返回完整生涯</button><div class="retirementRankingActionsHost">${retirementActionsHTML()}</div></div><div id="publicCareerStatus" class="publicCareerStatus"></div>${retirementRestartHTML()}`;
  setTimeout(()=>{fitGameToViewport();const cp=document.getElementById("currentPanel");if(cp)cp.scrollTop=0;BasketballLifeOnline.scheduleRetirementAutoPublish();},0);
 }
 function careerShareFileName(kind="poster"){const base=`BasketballLife_${String(p.name||"Career").replace(/[\\/:*?"<>|]/g,"_")}_${p.year}`;return kind==="page"?`${base}_Retirement.png`:`${base}.png`}
@@ -10928,25 +10927,25 @@ let careerImagePreviewUrl="";
 function renderCareerImagePreview(blob,message,kind="poster"){
  const status=document.getElementById("publicCareerStatus");if(!status)return;
  if(careerImagePreviewUrl)URL.revokeObjectURL(careerImagePreviewUrl);careerImagePreviewUrl=URL.createObjectURL(blob);
- const label=kind==="page"?"正式引退頁圖片":"生涯數據海報";
+ const label=kind==="page"?"引退故事圖":"完整生涯紀錄長圖";
  status.innerHTML=`<div class="careerImagePreview" data-image-kind="${kind}"><div>${escapeFeedText(message)}</div><img src="${careerImagePreviewUrl}" alt="${escapeFeedText(p.name)} 的 BasketballLife ${label}"><div class="careerImagePreviewActions"><button class="btn" onclick="copyCareerImage('${kind}')">複製圖片</button><button class="btn" onclick="downloadCareerPNG('${kind}')">下載 PNG</button></div></div>`;
 }
 function triggerCareerImageDownload(blob,kind="poster"){const a=document.createElement("a");a.download=careerShareFileName(kind);a.href=URL.createObjectURL(blob);a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1500)}
 async function copyCareerImage(kind="poster"){
- try{const blob=await careerShareBlob(kind);if(!navigator.clipboard?.write||!window.ClipboardItem)throw new Error("clipboard unavailable");await navigator.clipboard.write([new ClipboardItem({"image/png":blob})]);renderCareerImagePreview(blob,`✓ ${kind==="page"?"正式引退頁圖片":"生涯數據海報"}已複製，可直接貼到貼文或聊天室。`,kind)}
+ try{const blob=await careerShareBlob(kind);if(!navigator.clipboard?.write||!window.ClipboardItem)throw new Error("clipboard unavailable");await navigator.clipboard.write([new ClipboardItem({"image/png":blob})]);renderCareerImagePreview(blob,`✓ ${kind==="page"?"引退故事圖":"完整生涯紀錄長圖"}已複製，可直接貼到貼文或聊天室。`,kind)}
  catch(_){const blob=await careerShareBlob(kind);triggerCareerImageDownload(blob,kind);renderCareerImagePreview(blob,"瀏覽器不支援複製圖片，已改為下載 PNG。",kind)}
 }
-async function downloadCareerPNG(kind="poster"){const blob=await careerShareBlob(kind);triggerCareerImageDownload(blob,kind);renderCareerImagePreview(blob,`✓ ${kind==="page"?"正式引退頁圖片":"生涯數據海報"} PNG 已下載。`,kind)}
+async function downloadCareerPNG(kind="poster"){const blob=await careerShareBlob(kind);triggerCareerImageDownload(blob,kind);renderCareerImagePreview(blob,`✓ ${kind==="page"?"引退故事圖":"完整生涯紀錄長圖"} PNG 已下載。`,kind)}
 async function generateRetirementPageImage(){
  try{
    const blob=await careerShareBlob("page");
-   renderCareerImagePreview(blob,"✓ 正式引退頁圖片已產生；可在下方複製圖片或下載 PNG。","page");
+   renderCareerImagePreview(blob,"✓ 引退故事圖已產生；可在下方複製圖片或下載 PNG。","page");
  }catch(err){const status=document.getElementById("publicCareerStatus");if(status)status.innerHTML=`<div class="copyHint">圖片產生失敗：${escapeFeedText(err?.message||"請稍後再試")}</div>`}
 }
 async function generateCareerImage(){
  try{
    const blob=await careerShareBlob("poster");
-   renderCareerImagePreview(blob,"✓ 生涯數據海報已產生；可在下方複製圖片或下載 PNG。","poster");
+   renderCareerImagePreview(blob,"✓ 完整生涯紀錄長圖已產生；可在下方複製圖片或下載 PNG。","poster");
  }catch(err){const status=document.getElementById("publicCareerStatus");if(status)status.innerHTML=`<div class="copyHint">圖片產生失敗：${escapeFeedText(err?.message||"請稍後再試")}</div>`}
 }
 function showCareerChapter(type){
