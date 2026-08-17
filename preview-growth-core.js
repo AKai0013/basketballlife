@@ -255,6 +255,217 @@
     })[char]);
   }
 
+  function stableStoryIndex(key, length) {
+    if (!length) return 0;
+    let hash = 2166136261;
+    for (const char of String(key || "basketballlife")) {
+      hash ^= char.charCodeAt(0);
+      hash = Math.imul(hash, 16777619);
+    }
+    return (hash >>> 0) % length;
+  }
+
+  function stableStoryPick(items, key) {
+    return items[stableStoryIndex(key, items.length)] || items[0] || "";
+  }
+
+  function seasonStorySentence(value) {
+    return String(value || "")
+      .replace(/^[•・\-\s]+/, "")
+      .replace(/[。；;\s]+$/, "")
+      .trim();
+  }
+
+  function seasonStoryBeatParts(value) {
+    const raw = seasonStorySentence(value);
+    const match = raw.match(/^(.+?)｜(.+?)：(大成功|成功|大失敗|失敗)$/);
+    return match
+      ? { raw, title: match[1].trim(), choice: match[2].trim(), result: match[3] }
+      : { raw, title: "", choice: "", result: "" };
+  }
+
+  function seasonStoryMoment(value) {
+    const beat = seasonStoryBeatParts(value);
+    return beat.title ? `${beat.title}｜${beat.choice}，${beat.result}` : beat.raw;
+  }
+
+  function seasonStoryContext(player, season) {
+    const stats = player.seasonStats || season || {};
+    const tournaments = Array.isArray(stats.tourneys) ? stats.tourneys : [];
+    const bestTournament = [...tournaments]
+      .sort((a, b) => Number(b?.reward || 0) - Number(a?.reward || 0))[0] || null;
+    const beats = (Array.isArray(season.storySummary) ? season.storySummary : [])
+      .filter((item) => seasonStorySentence(item?.text));
+    const meaningfulBeat = beats.find((item) => {
+      const type = String(item?.type || "");
+      return item?.chain || item?.worldShift || item?.major || item?.international || item?.offCourt
+        || type === "event" || type === "life";
+    }) || null;
+    const awards = beats.filter((item) => /MVP|年度|得分王|助攻王|籃板王|最佳防守/.test(String(item?.text || "")));
+    return {
+      stats,
+      tournaments,
+      bestTournament,
+      beats,
+      meaningfulBeat,
+      awards,
+      name: String(player.name || "這名球員").trim(),
+      team: String(season.team || player.team || "球隊").trim(),
+      year: Number(season.year || player.year || 0),
+      games: Math.max(0, Number(season.games ?? stats.games ?? 0)),
+      mins: Math.max(0, Number(season.mins ?? stats.mins ?? 0)),
+      pts: Math.max(0, Number(season.pts ?? stats.pts ?? 0)),
+      reb: Math.max(0, Number(season.reb ?? stats.reb ?? 0)),
+      ast: Math.max(0, Number(season.ast ?? stats.ast ?? 0)),
+      stl: Math.max(0, Number(season.stl ?? stats.stl ?? 0)),
+      blk: Math.max(0, Number(season.blk ?? stats.blk ?? 0)),
+      injuryMissed: Math.max(0, Number(season.injuryMissedGames || 0)),
+      suspensionGames: Math.max(0, Number(season.suspensionGames || 0)),
+    };
+  }
+
+  function buildSeasonHeadline(context) {
+    const {
+      year, name, team, meaningfulBeat, injuryMissed, suspensionGames,
+      bestTournament, awards, games, mins, pts, reb, ast, stl, blk,
+    } = context;
+    const prefix = year ? `${year} 年，` : "這一季，";
+    if (meaningfulBeat) {
+      const beat = seasonStoryBeatParts(meaningfulBeat.text);
+      if (beat.title) {
+        if (beat.result === "大成功") return `${prefix}${name}在${team}把「${beat.choice}」押到底；這次${beat.title}的大成功，成了整季最亮的一次突破。`;
+        if (beat.result === "成功") return `${prefix}${name}在${team}選擇「${beat.choice}」，也在${beat.title}這道考驗中穩穩站住。`;
+        return `${prefix}${name}在${team}選擇「${beat.choice}」，卻在${beat.title}付出代價；這成了整季最難忘的一課。`;
+      }
+      return `${prefix}${name}在${team}遇上真正的轉折：${beat.raw}。`;
+    }
+    if (injuryMissed > 0 && suspensionGames > 0) {
+      return `${prefix}傷勢與場外代價同時襲來，${name}在${team}的球季被迫斷成好幾段。`;
+    }
+    if (injuryMissed > 0) {
+      return `${prefix}${name}少打了 ${injuryMissed} 場；這一年在${team}留下的，不只是數據，還有一次和身體的拉扯。`;
+    }
+    if (suspensionGames > 0) {
+      return `${prefix}${name}因場外事件缺席 ${suspensionGames} 場，${team}的這一季也因此換了方向。`;
+    }
+    if (bestTournament?.finish === "冠軍") {
+      return `${prefix}${name}和${team}把${bestTournament.name || "最重要的賽事"}冠軍留了下來，這成了整季最值得重播的一幕。`;
+    }
+    if (awards.length) {
+      return `${prefix}${name}在${team}把穩定表現打成了肯定：${seasonStorySentence(awards[0].text)}。`;
+    }
+    if (pts >= 20 || ast >= 7 || reb >= 10 || stl + blk >= 3) {
+      const signature = pts >= 20 ? `場均 ${pts} 分`
+        : ast >= 7 ? `場均 ${ast} 次助攻`
+          : reb >= 10 ? `場均 ${reb} 個籃板`
+            : `場均 ${(stl + blk).toFixed(1)} 次抄截與阻攻`;
+      return `${prefix}${name}在${team}找到自己的代表方式，靠${signature}讓這一年有了清楚的名字。`;
+    }
+    if (games > 0 && mins < 10) {
+      return `${prefix}${name}仍在${team}等待真正的上場機會；這不是突破的一年，卻可能是下一次選擇的起點。`;
+    }
+    return `${prefix}${name}在${team}打完 ${games} 場比賽；沒有煙火般的結局，卻讓下一次選擇有了重量。`;
+  }
+
+  function buildSeasonFanReactions(context, headline) {
+    const {
+      name, team, year, meaningfulBeat, injuryMissed, suspensionGames,
+      bestTournament, games, mins, pts, reb, ast, stl, blk,
+    } = context;
+    const rows = [];
+    const add = (tone, source, text) => {
+      const clean = String(text || "").trim();
+      if (!clean || rows.some((item) => item.text === clean)) return;
+      rows.push({ tone, source, text: clean });
+    };
+    const key = `${context.name}-${context.year}-${context.team}`;
+
+    if (meaningfulBeat) {
+      const beat = seasonStoryBeatParts(meaningfulBeat.text);
+      const reaction = beat.title
+        ? ["大成功", "成功"].includes(beat.result)
+          ? `他真的敢選「${beat.choice}」，而且做成了。這種畫面才會讓人記一整季。`
+          : `選「${beat.choice}」的代價不小，但至少這一季不是一張沒有溫度的成績單。`
+        : `這季最後被記住的果然不是場均數字，而是「${beat.raw}」。`;
+      add(
+        meaningfulBeat.offCourt ? "critical" : "story",
+        meaningfulBeat.international ? "國家隊球迷" : meaningfulBeat.offCourt ? "賽後討論區" : "主場看台",
+        reaction
+      );
+    }
+    if (bestTournament?.finish === "冠軍") {
+      add("spark", `${team} 球迷`, stableStoryPick([
+        `冠軍到手那一刻，前面所有低潮都值得了。這就是我們會一直重播的球季。`,
+        `${bestTournament.name || "這座冠軍"}不是履歷上的一行而已，現場的人都知道這一季有多難。`,
+      ], `${key}-champion`));
+    }
+    if (injuryMissed > 0) {
+      add("support", "傷病討論區", stableStoryPick([
+        `少打的 ${injuryMissed} 場比任何數據都刺眼。先健康回來，故事才有下一章。`,
+        `這季最難看的不是成績，是每次名單上找不到他的名字。希望下季能完整回來。`,
+      ], `${key}-injury`));
+    }
+    if (suspensionGames > 0) {
+      add("critical", "球迷社群", `球迷可以接受投不進，但不能把缺席 ${suspensionGames} 場的場外代價當作沒發生。`);
+    }
+    if (pts >= 20) {
+      add("spark", "進攻組球迷", stableStoryPick([
+        `比分咬住的時候，我們第一個想到的就是把球交給 ${name}。`,
+        `${pts} 分不是刷出來的，很多晚上都是他把球隊從失速邊緣拉回來。`,
+      ], `${key}-scoring`));
+    } else if (ast >= 7) {
+      add("spark", "戰術版球迷", `${ast} 次助攻只是表面，真正好看的是 ${name} 把整隊的進攻帶活了。`);
+    } else if (reb >= 10 || stl + blk >= 3) {
+      add("spark", "防守組球迷", `有人先看得分，我只記得每個關鍵防守回合都能找到 ${name}。`);
+    }
+    if (games > 0 && mins < 10) {
+      add("quiet", "板凳席旁的球迷", `這季不像結局，比較像 ${name} 還沒拿到真正證明自己的機會。`);
+    }
+
+    const fallbacks = [
+      { tone: "support", source: `${team}球迷`, text: `不是每一季都要成為傳奇；願意把普通的晚上也打完，才有完整的生涯。` },
+      { tone: "story", source: "賽後留言", text: `${year ? `${year} 年` : "今年"}最值得留下的不是一張數據表，而是這一季終於能被一句話講完。` },
+      { tone: "quiet", source: "客場看台", text: `${games || "這些"} 場比賽或許不完美，但至少讓下一季還有值得等待的理由。` },
+      { tone: "support", source: "球隊跟隊記者", text: `如果只看結果會錯過很多東西；平凡球季裡做過的選擇，也會決定下一次站上場時還剩多少人相信他。` },
+    ];
+    const offset = stableStoryIndex(`${key}-fallback`, fallbacks.length);
+    for (let index = 0; rows.length < 3 && index < fallbacks.length; index += 1) {
+      const item = fallbacks[(offset + index) % fallbacks.length];
+      add(item.tone, item.source, item.text);
+    }
+    return rows.slice(0, 3);
+  }
+
+  function syncSeasonStoryCard() {
+    const player = currentPlayer();
+    const special = document.getElementById("special");
+    const screenTitle = String(document.getElementById("title")?.textContent || "").trim();
+    if (!player || !special || player.stage !== "results" || screenTitle !== "年度賽事與個人成績") return;
+    const season = (Array.isArray(player.seasonHistory) ? player.seasonHistory : []).slice(-1)[0];
+    if (!season || Number(season.year) !== Number(player.year)) return;
+    const marker = `${season.year}-${season.team || player.team || "team"}`;
+    if ([...special.querySelectorAll(".blSeasonStoryCard")].some((node) => node.dataset.blSeasonStory === marker)) return;
+
+    const context = seasonStoryContext(player, season);
+    const headline = buildSeasonHeadline(context);
+    const reactions = buildSeasonFanReactions(context, headline);
+    season.storyHeadline = headline;
+    season.fanReactions = reactions;
+
+    const legacyStory = [...special.querySelectorAll(".awards")]
+      .find((node) => node.querySelector(".resultSectionTitle")?.textContent.trim() === "本季留下的故事");
+    if (legacyStory) legacyStory.classList.add("blSeasonStoryLegacy");
+
+    const card = document.createElement("section");
+    card.className = "blSeasonStoryCard";
+    card.dataset.blSeasonStory = marker;
+    card.innerHTML = `<div class="blSeasonStoryHead"><div><small>SEASON STORY · ${safeText(context.year || "YEAR")}</small><span>本季一句話</span></div><em>${safeText(season.path || player.path || "CAREER")}</em></div><h3>${safeText(headline)}</h3>${context.beats.length ? `<div class="blSeasonMoments">${context.beats.slice(0, 2).map((beat) => `<span>${safeText(seasonStoryMoment(beat.text))}</span>`).join("")}</div>` : ""}<div class="blSeasonFanHead"><b>球迷即時反應</b><span>這一季在看台上留下的聲音</span></div><div class="blSeasonFanGrid">${reactions.map((reaction) => `<article class="${safeText(reaction.tone)}"><p>「${safeText(reaction.text)}」</p><small>— ${safeText(reaction.source)}</small></article>`).join("")}</div>`;
+
+    const tournamentList = special.querySelector(".tourneyList");
+    if (tournamentList) tournamentList.insertAdjacentElement("afterend", card);
+    else special.prepend(card);
+  }
+
   function retirementStoryText(player, honors = []) {
     const history = Array.isArray(player.seasonHistory) ? player.seasonHistory.filter(Boolean) : [];
     const name = String(player.name || "這名球員").trim();
@@ -440,6 +651,7 @@
 
     if (document.body.classList.contains("retirementMode")) record("retirement");
     syncQuickTraining();
+    syncSeasonStoryCard();
     syncRetirementPublicCard();
   }
 
