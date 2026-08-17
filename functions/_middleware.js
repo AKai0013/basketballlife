@@ -169,9 +169,25 @@ body.retirementMode .fanEchoGrid{min-width:0!important}
       main.appendChild(section);
     }
 
+    function relocateRetirementFanEcho() {
+      if (!document.body.classList.contains("retirementMode")) return;
+      const main = document.querySelector(".legacyMain");
+      if (!main) return;
+
+      const echoSection = main.querySelector(".fanEchoSection") || main.querySelector(".fanEchoIntro")?.closest(".legacySection");
+      const seedBox = main.querySelector(".legacySeed");
+      const seedSection = seedBox?.closest(".legacySection") || seedBox;
+      if (!echoSection || !seedSection || echoSection === seedSection) return;
+      if (echoSection.nextElementSibling === seedSection) return;
+
+      seedSection.before(echoSection);
+      echoSection.setAttribute("data-bl-fan-echo-before-seed", "1");
+    }
+
     function syncRetirementPatches() {
       sanitizeRetirementSeedTier();
       ensureRetirementFanEcho();
+      relocateRetirementFanEcho();
     }
 
     syncRetirementPatches();
