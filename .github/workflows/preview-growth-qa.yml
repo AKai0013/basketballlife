@@ -49,7 +49,7 @@ jobs:
             html=$(curl -L -sS "$PREVIEW_URL?qa_wait=$GITHUB_SHA" || true)
             core=$(curl -L -sS "$PREVIEW_URL/preview-growth-core.js?qa_wait=$GITHUB_SHA" || true)
             mobile=$(curl -L -sS "$PREVIEW_URL/preview-mobile-live.js?qa_wait=$GITHUB_SHA" || true)
-            if grep -q 'growth-ui-v1-20260817i' <<<"$html" \
+            if grep -q 'growth-ui-v1-20260817j' <<<"$html" \
               && grep -q 'preview-growth-core.js' <<<"$html" \
               && grep -q 'preview-mobile-live.js' <<<"$html" \
               && grep -q 'preview-public-read.js' <<<"$html" \
