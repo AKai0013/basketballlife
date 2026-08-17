@@ -1,0 +1,64 @@
+name: Preview growth UI QA
+
+on:
+  push:
+    branches:
+      - preview/growth-ui-v1
+    paths:
+      - index.html
+      - functions/**
+      - qa/**
+      - .github/workflows/preview-growth-qa.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: preview-growth-ui-qa
+  cancel-in-progress: true
+
+jobs:
+  browser-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      PREVIEW_URL: https://preview-growth-ui-v1.basketballlife.pages.dev/
+    steps:
+      - name: Check out preview branch
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Wait for Cloudflare branch preview
+        shell: bash
+        run: |
+          for attempt in {1..30}; do
+            status=$(curl -L -sS -o /dev/null -w '%{http_code}' "$PREVIEW_URL" || true)
+            if [ "$status" = "200" ]; then
+              exit 0
+            fi
+            sleep 4
+          done
+          echo "Preview did not become ready" >&2
+          exit 1
+
+      - name: Run desktop and mobile funnel validation
+        run: node qa/preview-growth-qa.mjs
+
+      - name: Upload QA evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: preview-growth-ui-qa
+          path: qa-artifacts/
+          if-no-files-found: warn
+          retention-days: 7
