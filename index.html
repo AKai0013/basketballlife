@@ -7647,6 +7647,22 @@ function finishName(score){
  if(score>=53)return "複賽";
  return "預賽";
 }
+function tournamentFinishName(score,tournamentName){
+ if(isProPath()&&tournamentName==="例行賽"){
+  if(score>=82)return "聯盟前二";
+  if(score>=73)return "季後賽資格";
+  if(score>=63)return "附加賽資格";
+  return "未晉級季後賽";
+ }
+ if(isProPath()&&tournamentName==="季後賽"){
+  if(score>=88)return "冠軍";
+  if(score>=82)return "亞軍";
+  if(score>=73)return "四強";
+  if(score>=63)return "首輪晉級";
+  return "首輪止步";
+ }
+ return finishName(score);
+}
 function seasonRewardScale(){return p.path==="HBL"?1:isCollegePath()?.90:isProPath()?.65:.80}
 function finishReward(name,weight){
  const base={冠軍:5,亞軍:4,四強:3,八強:2,複賽:1,預賽:0}[name]||0;
@@ -7775,7 +7791,7 @@ function startCareer(){
  const previousSave=readCareerSave();
  if(previousSave&&!window.confirm("開始新人生會覆蓋目前的本機生涯存檔，確定要繼續嗎？"))return;
  if(previousSave)clearCareerSave(false);
- const n=document.getElementById("playerNameInput").value.trim()||"無名球員",r=RNG(seed+chosenPos);
+ const n=document.getElementById("playerNameInput").value.trim()||"籃球癡漢",r=RNG(seed+chosenPos);
  const tier=seedTierProfile(seed);
  const tb=()=>ri(r,tier.start[0],tier.start[1]);
 
@@ -12853,7 +12869,7 @@ function showResults(){
  for(let i=0;i<tourneys.length;i++){
    let t=tourneys[i];
    let score=teamCompetitiveScore(r,i,t);
-   let fin=finishName(score);
+   let fin=tournamentFinishName(score,t.name);
    let reward=finishReward(fin,t.weight);
    tourneyPoints+=reward;
    resultRows.push({name:t.name,finish:fin,reward});
