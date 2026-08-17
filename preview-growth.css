@@ -66,11 +66,6 @@ body.retirementMode .legacyDetails{
   min-width:0!important;
 }
 
-@keyframes blLiveTextScroll{
-  from{text-indent:100%}
-  to{text-indent:var(--bl-live-end,-100%)}
-}
-
 @media(max-width:760px){
   /* The source card was width:100% plus 8px margins, causing a real 16px overflow. */
   .setup.card{
@@ -83,7 +78,7 @@ body.retirementMode .legacyDetails{
     font-size:9px!important;
   }
 
-  /* The ticker itself stays 100% wide; only the text-indent moves. */
+  /* Keep BL LIVE readable without allowing any animated text width to escape. */
   .liveViewport{
     position:relative!important;
     width:auto!important;
@@ -101,19 +96,13 @@ body.retirementMode .legacyDetails{
     height:100%!important;
     padding-left:0!important;
     overflow:hidden!important;
-    animation:blLiveTextScroll var(--bl-live-duration,48s) linear infinite!important;
+    animation:none!important;
     transform:none!important;
+    text-indent:0!important;
+    text-overflow:ellipsis!important;
     box-sizing:border-box!important;
     white-space:nowrap!important;
-    will-change:text-indent;
-  }
-  .liveTrack[data-bl-live-static="1"]{
-    animation:none!important;
-    text-indent:0!important;
-    text-overflow:ellipsis;
-  }
-  .liveViewport:hover .liveTrack{
-    animation-play-state:paused!important;
+    will-change:auto!important;
   }
 
   body.retirementMode .legacyPage{
