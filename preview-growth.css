@@ -280,3 +280,18 @@ body.retirementMode .legacyDetails{
     overflow-wrap:anywhere!important;
   }
 }
+
+/* Match the source selector's specificity so its 5px mobile gap cannot win. */
+@media(max-width:620px){
+  #game:not(.hidden) .header{
+    gap:0!important;
+  }
+  #game:not(.hidden) .header>.box:not(.who){
+    flex:0 0 25%!important;
+    width:25%!important;
+    max-width:25%!important;
+    min-width:0!important;
+    padding:8px 6px!important;
+    box-sizing:border-box!important;
+  }
+}
