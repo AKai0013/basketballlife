@@ -4904,6 +4904,11 @@ window.BL_ONLINE_CONFIG = {
  };
 
  const $=id=>document.getElementById(id);
+ function displayPlayerName(value){
+ const name=String(value??"").trim();
+ return !name||name==="無名球員"||name==="這名球員"?"籃球癡漢":name;
+}
+
  function gamePlayer(){
    try{return (typeof p!=="undefined" && p)?p:null}catch(_){return null}
  }
@@ -5224,7 +5229,7 @@ window.BL_ONLINE_CONFIG = {
  }
 
  function formatTickerMessage(item,nicknameOverride=""){
-   const player=String(item?.player||item?.player_name||gamePlayer()?.name||"球員");
+   const player=displayPlayerName(item?.player||item?.player_name||gamePlayer()?.name||"球員");
    const nick=String(nicknameOverride||item?.nickname||state.nickname||"匿名玩家");
    const type=String(item?.type||item?.event_type||"history");
    const league=String(item?.league||"");
@@ -6067,7 +6072,7 @@ window.BL_ONLINE_CONFIG = {
    const legacyBadges=`${hof?` · 名人堂 ×${hof}`:""}${jersey?` · 球衣退休 ×${jersey}`:""}`;
    return `<button class="rankRow ${isMine?"rankRowMine":""}" onclick="BasketballLifeOnline.openCareer('${esc(record.id)}')">
      <span class="rankNo">${medal}</span>
-     <span class="rankIdentity"><b>${esc(record.nickname)}${isMine?`<em class="rankMinePill">${isPersonalBest?"個人最佳":"我的紀錄"}</em>`:""}</b><small>${esc(record.player_name)} · ${esc(record.position||"")} · 退役 ${record.retired_age||"-"} 歲${legacyBadges}</small></span>
+     <span class="rankIdentity"><b>${esc(record.nickname)}${isMine?`<em class="rankMinePill">${isPersonalBest?"個人最佳":"我的紀錄"}</em>`:""}</b><small>${esc(displayPlayerName(record.player_name))} · ${esc(record.position||"")} · 退役 ${record.retired_age||"-"} 歲${legacyBadges}</small></span>
      <span class="rankValue"><b>${esc(def.fmt(value))}</b><small>${esc(secondary)}</small></span>
    </button>`;
  }
@@ -6229,7 +6234,7 @@ window.BL_ONLINE_CONFIG = {
    const publicSeed=maskPublicSeed(r.seed);
    content.innerHTML=`<div class="publicLegacy">
      <div class="publicLegacyTop">
-       <div class="publicHeroIdentity"><div class="publicPortrait">${playerAvatarSVG(cd.avatar_seed||`PUBLIC-${r.id||r.player_name}`,r.position||"PG",r.retired_age||40,`${r.player_name||"球員"} 的球員頭像`)}</div><div><div class="legacyKicker">BasketballLife · PUBLIC COURT LEGACY</div><div class="legacyName">${esc(r.player_name)}</div><div class="legacyMeta">玩家 <b>${esc(r.nickname)}</b>｜${esc(r.position||"")}${cd.height_cm?`・${cd.height_cm} cm｜臂展 ${cd.wingspan_cm||"—"} cm`:""}${cd.birthplace&&cd.birthplace!=="未設定"?`｜${esc(cd.birthplace)}出身`:""}｜退役 ${r.retired_age||"-"} 歲｜${r.final_year||"-"} 年</div></div></div>
+       <div class="publicHeroIdentity"><div class="publicPortrait">${playerAvatarSVG(cd.avatar_seed||`PUBLIC-${r.id||r.player_name}`,r.position||"PG",r.retired_age||40,`${displayPlayerName(r.player_name)} 的球員頭像`)}</div><div><div class="legacyKicker">BasketballLife · PUBLIC COURT LEGACY</div><div class="legacyName">${esc(displayPlayerName(r.player_name))}</div><div class="legacyMeta">玩家 <b>${esc(r.nickname)}</b>｜${esc(r.position||"")}${cd.height_cm?`・${cd.height_cm} cm｜臂展 ${cd.wingspan_cm||"—"} cm`:""}${cd.birthplace&&cd.birthplace!=="未設定"?`｜${esc(cd.birthplace)}出身`:""}｜退役 ${r.retired_age||"-"} 歲｜${r.final_year||"-"} 年</div></div></div>
        <div class="powerStamp"><small>BL POWER</small><b>${publicPower.toLocaleString()}</b><span>${tier}</span></div>
      </div>
      <div class="publicBadgeRow">${hof.length?`<span>🏛️ 名人堂 ×${hof.length}</span>`:""}${jersey.length?`<span>🏟️ 球衣退休 ×${jersey.length}</span>`:""}</div>
@@ -7878,7 +7883,7 @@ function render(){
  renderFeedHistory();
  setTimeout(fitGameToViewport,0);
  setReadingMode(p.readingMode||"standard",true);
- pname.textContent=p.name;ppos.textContent=`#${p.jerseyNumber??7}・${p.pos}・${p.heightCm||"—"}cm`;
+ pname.textContent=displayPlayerName(p.name);ppos.textContent=`#${p.jerseyNumber??7}・${p.pos}・${p.heightCm||"—"}cm`;
  ppos.title=`${p.handedness||"右手"}｜臂展 ${p.wingspanCm||"—"} cm｜出生地 ${p.birthplace||"未設定"}`;teamname.textContent=currentTeam()?`・${currentTeam()}`:"";
  renderPlayerAvatar(document.getElementById("playerAvatar"),p.avatarSeed,p.pos,p.age,`${p.name} 的球員頭像`);
  age.textContent=p.age;year.textContent=p.year;ovr.textContent=overall();path.textContent=p.path;
