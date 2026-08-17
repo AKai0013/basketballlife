@@ -10,6 +10,7 @@ on:
       - qa/**
       - preview-growth.css
       - preview-growth-core.js
+      - preview-mobile-live.js
       - preview-public-read.js
       - .github/workflows/preview-growth-qa.yml
   workflow_dispatch:
@@ -47,10 +48,14 @@ jobs:
           for attempt in {1..60}; do
             html=$(curl -L -sS "$PREVIEW_URL?qa_wait=$GITHUB_SHA" || true)
             core=$(curl -L -sS "$PREVIEW_URL/preview-growth-core.js?qa_wait=$GITHUB_SHA" || true)
-            if grep -q 'preview-growth-core.js' <<<"$html" \
+            mobile=$(curl -L -sS "$PREVIEW_URL/preview-mobile-live.js?qa_wait=$GITHUB_SHA" || true)
+            if grep -q 'growth-ui-v1-20260817f' <<<"$html" \
+              && grep -q 'preview-growth-core.js' <<<"$html" \
+              && grep -q 'preview-mobile-live.js' <<<"$html" \
               && grep -q 'preview-public-read.js' <<<"$html" \
               && grep -q 'bl_growth_funnel_v1' <<<"$core" \
-              && grep -q 'weeklyChallengeTiming' <<<"$core"; then
+              && grep -q 'weeklyChallengeTiming' <<<"$core" \
+              && grep -q 'blMobileRendered' <<<"$mobile"; then
               exit 0
             fi
             sleep 5
