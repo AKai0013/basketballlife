@@ -38,6 +38,23 @@
       }
     }
 
+    function ownerRetirementActive() {
+      const game = document.getElementById("game");
+      return Boolean(
+        game
+        && !game.classList.contains("hidden")
+        && game.dataset.stage === "retired"
+      );
+    }
+
+    /* fitGameToViewport returns before its desktop-only class toggle on phones.
+       Set the owner retirement class from the actual game stage instead. */
+    function ensureRetirementMode() {
+      if (!ownerRetirementActive()) return false;
+      document.body.classList.add("retirementMode");
+      return true;
+    }
+
     /* The owner can see the exact Seed on their own retirement page. Only the
        tier suffix is removed there; public career views remain masked above. */
     function sanitizeRetirementSeedTier() {
@@ -87,6 +104,7 @@
     }
 
     function syncRetirementPatches() {
+      if (!ensureRetirementMode()) return;
       sanitizeRetirementSeedTier();
       ensureRetirementFanEcho();
       relocateRetirementFanEcho();
