@@ -1,6 +1,129 @@
 function leaderboardReturnPatchScript() {
   return String.raw`<script id="bl-leaderboard-return-patch">
 (() => {
+  const CLIENT_CACHE_TTL = 5 * 60 * 1000;
+  const CLIENT_CACHE_PREFIX = "bl_http_cache_v1:";
+  const responseCache = new Map();
+
+  function requestInfo(input, init = {}) {
+    try {
+      const request = input instanceof Request ? input : null;
+      const method = String(init.method || request?.method || "GET").toUpperCase();
+      const rawUrl = request?.url || String(input || "");
+      const url = new URL(rawUrl, location.href);
+      return { method, url };
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function cachePolicy(url) {
+    if (url.origin !== location.origin) return null;
+    if (url.pathname === "/api/careers") return { persist: true };
+    if (url.pathname === "/api/news") return { persist: true };
+    if (/^\/api\/careers\/[^/]+$/.test(url.pathname)) return { persist: false };
+    return null;
+  }
+
+  function cacheKey(url) {
+    return url.pathname + url.search;
+  }
+
+  function sessionKey(key) {
+    return CLIENT_CACHE_PREFIX + encodeURIComponent(key);
+  }
+
+  function cloneCached(entry, source) {
+    const headers = new Headers(entry.headers || {});
+    headers.set("x-bl-client-cache", source);
+    return new Response(entry.body, {
+      status: entry.status || 200,
+      statusText: entry.statusText || "",
+      headers,
+    });
+  }
+
+  function readCached(key, persist) {
+    const now = Date.now();
+    const memory = responseCache.get(key);
+    if (memory) {
+      if (now - memory.at < CLIENT_CACHE_TTL) return cloneCached(memory, "HIT-MEMORY");
+      responseCache.delete(key);
+    }
+    if (!persist) return null;
+    try {
+      const stored = JSON.parse(sessionStorage.getItem(sessionKey(key)) || "null");
+      if (stored?.at && now - stored.at < CLIENT_CACHE_TTL && typeof stored.body === "string") {
+        responseCache.set(key, stored);
+        return cloneCached(stored, "HIT-SESSION");
+      }
+      if (stored) sessionStorage.removeItem(sessionKey(key));
+    } catch (_) {}
+    return null;
+  }
+
+  async function saveCached(key, response, persist) {
+    try {
+      if (!response?.ok) return;
+      const contentType = response.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) return;
+      const body = await response.clone().text();
+      const entry = {
+        at: Date.now(),
+        status: response.status,
+        statusText: response.statusText,
+        headers: Array.from(response.headers.entries()),
+        body,
+      };
+      responseCache.set(key, entry);
+      if (persist && body.length < 900000) {
+        try { sessionStorage.setItem(sessionKey(key), JSON.stringify(entry)); } catch (_) {}
+      }
+    } catch (_) {}
+  }
+
+  function clearClientApiCache(pathname = "") {
+    for (const key of Array.from(responseCache.keys())) {
+      if (!pathname || key.startsWith(pathname)) responseCache.delete(key);
+    }
+    try {
+      for (let i = sessionStorage.length - 1; i >= 0; i -= 1) {
+        const key = sessionStorage.key(i);
+        if (!key?.startsWith(CLIENT_CACHE_PREFIX)) continue;
+        if (!pathname) sessionStorage.removeItem(key);
+        else {
+          const decoded = decodeURIComponent(key.slice(CLIENT_CACHE_PREFIX.length));
+          if (decoded.startsWith(pathname)) sessionStorage.removeItem(key);
+        }
+      }
+    } catch (_) {}
+  }
+
+  function installApiFetchCache() {
+    if (window.__blApiFetchCacheInstalled || typeof window.fetch !== "function") return;
+    const nativeFetch = window.fetch.bind(window);
+    window.fetch = async function (input, init = {}) {
+      const info = requestInfo(input, init);
+      const policy = info ? cachePolicy(info.url) : null;
+      if (info?.method === "GET" && policy) {
+        const key = cacheKey(info.url);
+        const cached = readCached(key, policy.persist);
+        if (cached) return cached;
+        const response = await nativeFetch(input, init);
+        void saveCached(key, response, policy.persist);
+        return response;
+      }
+
+      const response = await nativeFetch(input, init);
+      if (response.ok && info && info.method !== "GET" && info.url.origin === location.origin) {
+        if (info.url.pathname.startsWith("/api/careers")) clearClientApiCache("/api/careers");
+        if (info.url.pathname.startsWith("/api/news")) clearClientApiCache("/api/news");
+      }
+      return response;
+    };
+    window.__blApiFetchCacheInstalled = true;
+  }
+
   function installLeaderboardReturnPatch() {
     const bl = window.BasketballLifeOnline;
     if (!bl || !bl.state || typeof bl.openCareer !== "function" || typeof bl.openLeaderboard !== "function" || bl.__leaderboardReturnPatched) return false;
@@ -46,8 +169,6 @@ function leaderboardReturnPatchScript() {
         state.activeLeaderboardEra = saved.era || "v8";
         state.activeMetric = saved.metric || "power";
         history.replaceState({ bl: "leaderboard" }, "", leaderboardUrl(saved));
-        // openLeaderboard(false) reuses the existing in-memory leaderboard cache,
-        // so returning from a public career normally causes zero new API reads.
         await bl.openLeaderboard(saved.metric || "power", false);
         requestAnimationFrame(() => {
           window.scrollTo({ top: saved.scrollY || 0, left: 0, behavior: "auto" });
@@ -79,6 +200,8 @@ function leaderboardReturnPatchScript() {
     bl.__leaderboardReturnPatched = true;
     return true;
   }
+
+  installApiFetchCache();
 
   if (!installLeaderboardReturnPatch()) {
     let tries = 0;
