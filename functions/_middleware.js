@@ -1,9 +1,10 @@
-const PREVIEW_ASSET_REV = "growth-ui-v1-20260817e";
+const PREVIEW_ASSET_REV = "growth-ui-v1-20260817f";
 
 function previewAssets() {
   return [
     `<link rel="stylesheet" href="/preview-growth.css?v=${PREVIEW_ASSET_REV}">`,
     `<script defer src="/preview-growth-core.js?v=${PREVIEW_ASSET_REV}"></script>`,
+    `<script defer src="/preview-mobile-live.js?v=${PREVIEW_ASSET_REV}"></script>`,
     `<script defer src="/preview-public-read.js?v=${PREVIEW_ASSET_REV}"></script>`,
   ].join("");
 }
