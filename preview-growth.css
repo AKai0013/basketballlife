@@ -43,6 +43,106 @@ html,body{
   color:#8fc6a4!important;
 }
 
+.blQuickStartPromise{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  margin:20px 28px 10px;
+  padding:13px 15px;
+  border:1px solid #80582f;
+  border-radius:11px;
+  background:linear-gradient(135deg,rgba(111,68,29,.24),rgba(13,31,41,.88));
+}
+.blQuickStartPromise b{
+  color:#f0b36f;
+  font-size:15px;
+  white-space:nowrap;
+}
+.blQuickStartPromise span{
+  color:#adbbc3;
+  font-size:12px;
+  line-height:1.5;
+  text-align:right;
+}
+.setup>.blFastStartButton{
+  margin-top:0!important;
+  box-shadow:0 10px 24px rgba(229,150,73,.13)!important;
+}
+.blAdvancedSetup{
+  margin:12px 28px 18px;
+  border:1px solid #2d4351;
+  border-radius:12px;
+  background:#0a151d;
+  overflow:hidden;
+}
+.blAdvancedSetup>summary{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  min-height:58px;
+  padding:10px 15px;
+  color:#d7e0e3;
+  cursor:pointer;
+  list-style:none;
+  user-select:none;
+}
+.blAdvancedSetup>summary::-webkit-details-marker{display:none}
+.blAdvancedSetup>summary span{display:grid;gap:3px}
+.blAdvancedSetup>summary b{font-size:13px}
+.blAdvancedSetup>summary small{color:#8498a3;font-size:10.5px}
+.blAdvancedSetup>summary em{
+  flex:0 0 auto;
+  color:#e4a05a;
+  font-size:11px;
+  font-style:normal;
+  font-weight:900;
+}
+.blAdvancedSetup[open]>summary{
+  border-bottom:1px solid #2a3e4a;
+  background:#0e1d27;
+}
+.blAdvancedSetupBody{padding:16px}
+.blAdvancedSetupBody>.setupBuilder{margin:0 0 16px!important}
+.blAdvancedSetupBody>label{display:block;margin:12px 0 7px!important}
+.blAdvancedSetupBody>.seed,
+.blAdvancedSetupBody>.seedError,
+.blAdvancedSetupBody>.seedHelp{margin-left:0!important;margin-right:0!important}
+
+.blQuickTrainingRow{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin:12px 0 10px;
+  padding:10px;
+  border:1px solid #3c6074;
+  border-radius:10px;
+  background:linear-gradient(135deg,rgba(24,64,83,.42),rgba(10,24,33,.82));
+}
+.blQuickTrainingBtn{
+  flex:0 0 auto;
+  min-height:42px;
+  padding:9px 14px;
+  border:1px solid #5e91ab;
+  border-radius:9px;
+  background:#143348;
+  color:#eaf7fc;
+  font-weight:900;
+  cursor:pointer;
+}
+.blQuickTrainingBtn:disabled{
+  border-color:#314650;
+  background:#111f27;
+  color:#7f929b;
+  cursor:default;
+}
+.blQuickTrainingRow small{
+  color:#99adb7;
+  font-size:11px;
+  line-height:1.45;
+}
+
 body.retirementMode .fanEchoSection{
   display:block!important;
 }
@@ -80,6 +180,27 @@ body.retirementMode .legacyDetails{
   .weeklyChallenge .weeklyChallengeTiming{
     font-size:9px!important;
   }
+  .setupIdentity{
+    padding:18px 18px 15px!important;
+  }
+  .setupIdentity h1{
+    margin-bottom:8px!important;
+    font-size:29px!important;
+  }
+  .setupIdentity .mut{
+    display:none!important;
+  }
+  .blQuickStartPromise{
+    display:grid;
+    gap:4px;
+    margin:16px 18px 9px!important;
+  }
+  .blQuickStartPromise b{white-space:normal}
+  .blQuickStartPromise span{text-align:left}
+  .blAdvancedSetup{margin:10px 18px 16px!important}
+  .blAdvancedSetupBody{padding:12px}
+  .blQuickTrainingRow{display:grid;gap:7px}
+  .blQuickTrainingBtn{width:100%}
 
   .liveViewport{
     position:relative!important;
@@ -210,6 +331,9 @@ body.retirementMode .legacyDetails{
 
 @media(max-width:430px){
   .weeklyChallenge{padding:9px 12px!important}
+  .blQuickStartPromise{padding:11px 12px}
+  .blAdvancedSetup>summary{padding:9px 12px}
+  .blAdvancedSetupBody{padding:10px}
   body.retirementMode .legacyMain{padding:6px!important}
   body.retirementMode .legacyHero{padding:12px 10px 10px!important}
   body.retirementMode .legacyCareerRail{padding:9px!important}
@@ -218,4 +342,128 @@ body.retirementMode .legacyDetails{
     grid-template-columns:76px minmax(0,1fr)!important;
     gap:8px!important;
   }
+}
+
+/* Retirement card: reuse the public-career information hierarchy. */
+body.retirementMode .legacyDashboard{display:block!important;width:100%!important}
+body.retirementMode .legacyCareerRail{display:none!important}
+body.retirementMode .legacyMain{width:min(100%,980px)!important;margin:0 auto!important;padding:18px!important}
+body.retirementMode .legacyHero.blRetirementPublicCard{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) 150px!important;
+  gap:15px 18px!important;
+  padding:22px!important;
+  border:1px solid #526068!important;
+  border-top:4px solid #e59649!important;
+  border-radius:15px!important;
+  background:radial-gradient(circle at 91% 14%,rgba(229,150,73,.18),transparent 29%),linear-gradient(145deg,#121f27,#0f1b22 64%,#171b16)!important;
+  box-shadow:0 16px 40px rgba(0,0,0,.28)!important;
+}
+body.retirementMode .blRetirementPublicCard .legacyHeroIdentity{
+  display:flex!important;
+  align-items:center!important;
+  gap:14px!important;
+  min-width:0!important;
+}
+body.retirementMode .blRetirementPublicCard .legacyPortrait{
+  width:92px!important;
+  height:92px!important;
+  flex-basis:92px!important;
+}
+body.retirementMode .blRetirementPublicCard .legacyHeroKicker{display:block!important;color:#de9953!important}
+body.retirementMode .blRetirementPublicCard .legacyName{margin:6px 0 0!important;font-size:34px!important;line-height:1.05!important}
+body.retirementMode .blRetirementPublicCard .legacyMeta{
+  display:block!important;
+  max-width:650px!important;
+  margin-top:7px!important;
+  color:#a9b8bf!important;
+  font-size:11px!important;
+  line-height:1.55!important;
+}
+body.retirementMode .blRetirementPublicCard .legacyPowerStamp{
+  display:block!important;
+  align-self:stretch!important;
+  padding:14px 10px!important;
+  background:rgba(29,23,16,.76)!important;
+}
+body.retirementMode .blRetirementPublicCard .legacyPowerStamp>b{font-size:27px!important}
+body.retirementMode .blRetirementPublicCard .legacyHeroStats{display:none!important}
+.blRetirementPublicSummary{
+  position:relative;
+  z-index:1;
+  grid-column:1/-1;
+  display:grid;
+  gap:10px;
+  padding-top:14px;
+  border-top:1px solid #354a54;
+}
+.blRetirementEvaluation{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
+  grid-template-areas:"label label" "tier detail";
+  align-items:baseline;
+  gap:4px 12px;
+  padding:11px 13px;
+  border:1px solid #6b5236;
+  border-radius:10px;
+  background:linear-gradient(135deg,rgba(58,39,22,.52),rgba(7,19,25,.62));
+}
+.blRetirementEvaluation small{grid-area:label;color:#dd9853;font-size:9px;font-weight:950;letter-spacing:.12em}
+.blRetirementEvaluation b{grid-area:tier;color:#f0c17f;font-size:19px}
+.blRetirementEvaluation span{grid-area:detail;min-width:0;color:#aebbc1;font-size:10.5px;line-height:1.5}
+.blRetirementPublicMetrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.blRetirementPublicMetrics>span{
+  min-width:0;
+  padding:10px 12px;
+  border:1px solid #314954;
+  border-radius:9px;
+  background:#09151c;
+}
+.blRetirementPublicMetrics small{display:block;color:#7f939e;font-size:9px;font-weight:850}
+.blRetirementPublicMetrics b{display:block;margin-top:3px;color:#edf0ee;font-size:21px;line-height:1}
+.blRetirementPublicSplit{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.blRetirementPublicSplit>div{
+  min-width:0;
+  padding:11px 12px;
+  border:1px solid #304650;
+  border-radius:9px;
+  background:rgba(7,17,23,.58);
+}
+.blRetirementPublicSplit>div>small{display:block;margin-bottom:7px;color:#d99653;font-size:9px;font-weight:950;letter-spacing:.1em}
+.blRetirementPublicSplit p{
+  display:-webkit-box;
+  overflow:hidden;
+  margin:0;
+  color:#d7dfe1;
+  font-size:11.5px;
+  line-height:1.65;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:3;
+}
+.blRetirementHonorList{display:flex;gap:5px;flex-wrap:wrap}
+.blRetirementHonorList span{
+  padding:4px 7px;
+  border:1px solid #59452f;
+  border-radius:999px;
+  background:#1b1712;
+  color:#e5ab6c;
+  font-size:9px;
+  font-weight:850;
+}
+
+@media(max-width:760px){
+  body.retirementMode .legacyMain{padding:7px!important}
+  body.retirementMode .legacyHero.blRetirementPublicCard{grid-template-columns:minmax(0,1fr) 98px!important;gap:11px 8px!important;padding:14px 12px!important}
+  body.retirementMode .blRetirementPublicCard .legacyHeroIdentity{align-items:flex-start!important;gap:9px!important}
+  body.retirementMode .blRetirementPublicCard .legacyPortrait{width:66px!important;height:66px!important;flex-basis:66px!important}
+  body.retirementMode .blRetirementPublicCard .legacyName{font-size:25px!important}
+  body.retirementMode .blRetirementPublicCard .legacyMeta{font-size:9px!important;line-height:1.45!important}
+  body.retirementMode .blRetirementPublicCard .legacyPowerStamp{padding:10px 6px!important}
+  body.retirementMode .blRetirementPublicCard .legacyPowerStamp>b{font-size:20px!important}
+  .blRetirementEvaluation{grid-template-columns:1fr;grid-template-areas:"label" "tier" "detail"}
+  .blRetirementEvaluation b{font-size:17px}
+  .blRetirementPublicMetrics{gap:5px}
+  .blRetirementPublicMetrics>span{padding:9px 7px}
+  .blRetirementPublicMetrics b{font-size:18px}
+  .blRetirementPublicSplit{grid-template-columns:1fr}
 }

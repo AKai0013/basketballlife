@@ -4,6 +4,13 @@
   const FUNNEL_KEY = "bl_growth_funnel_v1";
   const SESSION_KEY = "bl_growth_funnel_session_v1";
   const STAGES = ["home_view", "player_create", "career_start", "major_event", "retirement", "share"];
+  const TRAINING_PRIORITY = {
+    PG: ["pass", "handle", "iq", "shoot", "defense", "ath", "finish", "rebound"],
+    SG: ["shoot", "finish", "handle", "ath", "iq", "defense", "pass", "rebound"],
+    SF: ["finish", "defense", "shoot", "ath", "rebound", "iq", "handle", "pass"],
+    PF: ["rebound", "defense", "finish", "ath", "iq", "shoot", "pass", "handle"],
+    C: ["rebound", "defense", "finish", "ath", "iq", "pass", "shoot", "handle"],
+  };
   let syncFrame = 0;
   let liveWrapFrame = 0;
   let boundaryTimer = 0;
@@ -112,6 +119,173 @@
     return style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && rect.height > 0;
   }
 
+  function currentPlayer() {
+    try { return typeof p !== "undefined" && p ? p : null; } catch (_) { return null; }
+  }
+
+  function installQuickStartLayout() {
+    const setup = document.getElementById("setup");
+    const builder = setup?.querySelector(":scope > .setupBuilder");
+    const start = document.getElementById("startCareerBtn");
+    if (!setup || !builder || !start || document.getElementById("blAdvancedSetup")) return;
+
+    const quick = document.createElement("div");
+    quick.className = "blQuickStartPromise";
+    quick.innerHTML = `<b>名字＋位置，就能開始。</b><span>身材、外觀、出生地與世界 Seed 都已備妥預設值；想研究細節再展開。</span>`;
+    setup.insertBefore(quick, start);
+    start.classList.add("blFastStartButton");
+
+    const details = document.createElement("details");
+    details.id = "blAdvancedSetup";
+    details.className = "blAdvancedSetup";
+    details.innerHTML = `<summary><span><b>完整自訂球員</b><small>身材・外觀・出生地・世界 Seed</small></span><em>展開</em></summary><div class="blAdvancedSetupBody"></div>`;
+    start.insertAdjacentElement("afterend", details);
+
+    const body = details.querySelector(".blAdvancedSetupBody");
+    const seedLabel = setup.querySelector(':scope > label[for="seed"]');
+    const seed = setup.querySelector(":scope > .seed");
+    const seedError = document.getElementById("seedError");
+    const seedHelp = document.getElementById("seedHelp");
+    [builder, seedLabel, seed, seedError, seedHelp].forEach((node) => {
+      if (node) body.appendChild(node);
+    });
+
+    details.addEventListener("toggle", () => {
+      const toggle = details.querySelector("summary em");
+      if (toggle) toggle.textContent = details.open ? "收合" : "展開";
+    });
+  }
+
+  function trainingScore(player, key, credit, priority, priorPicks = 0) {
+    const stat = Number(player.stats?.[key] || 0);
+    if (stat >= 99) return -Infinity;
+    const cap = Number(player.caps?.[key] || 99);
+    const progress = Math.max(0, Number(player.trainingProgress?.[key] || 0));
+    let cost = 8;
+    try { if (typeof pointCost === "function") cost = Math.max(1, Number(pointCost(key)) || 1); } catch (_) {}
+    const immediateGain = Math.floor((progress + credit) / cost);
+    const priorityIndex = priority.indexOf(key);
+    const roleFit = (priority.length - (priorityIndex < 0 ? priority.length : priorityIndex)) * 14;
+    const nextStep = ((progress + credit) % cost) / cost;
+    const capFit = stat < cap ? 28 : -24;
+    return immediateGain * 220 + roleFit + nextStep * 30 + capFit + (99 - stat) * 0.08 - priorPicks * 44;
+  }
+
+  function quickAllocateTraining() {
+    const player = currentPlayer();
+    if (!player || player.stage !== "training" || player.diceRolling) return false;
+    const assign = typeof window.assignTraining === "function" ? window.assignTraining : null;
+    if (!assign) return false;
+    const priority = TRAINING_PRIORITY[player.pos] || TRAINING_PRIORITY.PG;
+    let guard = 0;
+    while (Array.isArray(player.used) && player.used.some((used) => !used) && guard < 20) {
+      guard += 1;
+      const index = player.used.findIndex((used) => !used);
+      const credit = Math.max(0, Number(player.dice?.[index] || 0));
+      const available = Object.keys(player.stats || {}).filter((key) => Number(player.stats[key]) < 99);
+      if (!available.length) break;
+      const picks = (player.trainingUndo || []).reduce((counts, item) => {
+        if (item?.k) counts[item.k] = (counts[item.k] || 0) + 1;
+        return counts;
+      }, {});
+      available.sort((a, b) => trainingScore(player, b, credit, priority, picks[b] || 0) - trainingScore(player, a, credit, priority, picks[a] || 0));
+      const before = player.used.filter(Boolean).length;
+      assign(available[0]);
+      if (player.used.filter(Boolean).length <= before) break;
+    }
+    const message = document.getElementById("diceMsg");
+    if (message && player.used?.every(Boolean)) {
+      message.textContent = `已依 ${player.pos} 的位置重點分配本季骰子；可用「返回上一步」逐顆調整。`;
+    }
+    return !!player.used?.every(Boolean);
+  }
+
+  function syncQuickTraining() {
+    const player = currentPlayer();
+    const dicewrap = document.querySelector('#game[data-stage="training"] .dicewrap');
+    if (!dicewrap || !player || player.stage !== "training") return;
+    let row = dicewrap.querySelector(".blQuickTrainingRow");
+    if (!row) {
+      row = document.createElement("div");
+      row.className = "blQuickTrainingRow";
+      row.innerHTML = `<button type="button" class="blQuickTrainingBtn">⚡ 一鍵推薦分配</button><small>依場上位置與升級進度分配全部骰子；原本逐顆玩法仍保留。</small>`;
+      const assign = dicewrap.querySelector("#assign");
+      if (assign) dicewrap.insertBefore(row, assign);
+      row.querySelector("button")?.addEventListener("click", quickAllocateTraining);
+    }
+    const button = row.querySelector("button");
+    const finished = !!player.used?.length && player.used.every(Boolean);
+    if (button) {
+      button.disabled = !!player.diceRolling || finished;
+      const label = finished ? "✓ 本季特訓已分配" : player.diceRolling ? "🎲 等待骰子落桌" : "⚡ 一鍵推薦分配";
+      if (button.textContent !== label) button.textContent = label;
+    }
+  }
+
+  function safeText(value) {
+    return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    })[char]);
+  }
+
+  function retirementPublicProfile(player) {
+    const power = Math.max(0, Number(player.careerRating || 0));
+    const tier = power >= 70000 ? "歷史級巨星"
+      : power >= 45000 ? "聯盟傳奇"
+        : power >= 28000 ? "明星級生涯"
+          : power >= 15000 ? "優秀職業球員"
+            : "職業旅人";
+    const awards = new Map();
+    (player.careerAwards || []).forEach((award) => {
+      const name = String(award?.name || "").trim();
+      if (name) awards.set(name, (awards.get(name) || 0) + 1);
+    });
+    const honors = [...awards.entries()]
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "zh-Hant"))
+      .slice(0, 4)
+      .map(([name, count]) => count > 1 ? `${name} ×${count}` : name);
+    if (Number(player.championships || 0) > 0) honors.push(`主要冠軍 ×${Number(player.championships)}`);
+    if (Number(player.nationalCaps || 0) > 0) honors.push(`國家隊資歷 ${Number(player.nationalCaps)} 次`);
+    const noise = /在簽約時承諾|角色由「|一般事件|自主訓練|角色承諾/;
+    const beat = [...(player.storyBeats || [])]
+      .filter((item) => item?.text && !noise.test(String(item.text)))
+      .sort((a, b) => Number(b.importance || 0) - Number(a.importance || 0))[0];
+    const status = [];
+    if (player.hallOfFame?.length) status.push(`名人堂：${player.hallOfFame.join("、")}`);
+    if (player.jerseyRetired?.length) status.push(`球衣退休：${player.jerseyRetired.join("、")}`);
+    return {
+      power,
+      tier,
+      honors: honors.slice(0, 6),
+      status: status.join("｜") || "完成一段正式球員生涯",
+      beat: String(beat?.text || player.retirementReason || "正式告別球員舞台。"),
+    };
+  }
+
+  function syncRetirementPublicCard() {
+    const player = currentPlayer();
+    const hero = document.querySelector("body.retirementMode .legacyHero");
+    if (!hero || !player?.retired || hero.querySelector(".blRetirementPublicSummary")) return;
+    const profile = retirementPublicProfile(player);
+    hero.classList.add("blRetirementPublicCard");
+    const stamp = hero.querySelector(".legacyPowerStamp");
+    const stampLabel = stamp?.querySelector("small");
+    const stampTier = stamp?.querySelector(":scope > span");
+    if (stampLabel) stampLabel.textContent = "BL POWER";
+    if (stampTier) stampTier.textContent = profile.tier;
+
+    const games = Math.max(0, Number(player.careerGames || 0));
+    const points = Math.max(0, Math.round(Number(player.careerPtsTotal || 0)));
+    const summary = document.createElement("section");
+    summary.className = "blRetirementPublicSummary";
+    summary.innerHTML = `<div class="blRetirementEvaluation"><small>生涯歷史評價</small><b>${safeText(profile.tier)}</b><span>評價 ${profile.power.toLocaleString()}｜${safeText(profile.status)}</span></div><div class="blRetirementPublicMetrics"><span><small>職業出賽</small><b>${games.toLocaleString()}</b></span><span><small>生涯總得分</small><b>${points.toLocaleString()}</b></span><span><small>巔峰 OVR</small><b>${Number(player.peakOverall || 0).toLocaleString()}</b></span></div><div class="blRetirementPublicSplit"><div><small>主要榮譽</small><div class="blRetirementHonorList">${profile.honors.length ? profile.honors.map((honor) => `<span>${safeText(honor)}</span>`).join("") : "<span>沒有主要個人獎項</span>"}</div></div><div><small>生涯故事</small><p>「${safeText(profile.beat)}」</p></div></div>`;
+    hero.append(summary);
+  }
+
   function syncLiveMarquee() {
     liveWrapFrame = 0;
     const track = document.getElementById("liveTrack");
@@ -172,6 +346,8 @@
     )) record("major_event");
 
     if (document.body.classList.contains("retirementMode")) record("retirement");
+    syncQuickTraining();
+    syncRetirementPublicCard();
   }
 
   function scheduleSync() {
@@ -221,6 +397,7 @@
     attributeFilter: ["class"],
   });
 
+  installQuickStartLayout();
   syncMilestones();
   syncLiveMarquee();
   addEventListener("resize", scheduleLiveMarquee, { passive: true });
