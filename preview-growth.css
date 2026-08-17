@@ -155,7 +155,9 @@ body.retirementMode .legacyTableWrap{
   max-width:100%!important;
   min-width:0!important;
   overflow-x:auto!important;
-  overflow-y:hidden!important;
+  overflow-y:auto!important;
+  scrollbar-gutter:stable;
+  overscroll-behavior:contain;
   contain:inline-size;
   -webkit-overflow-scrolling:touch;
 }

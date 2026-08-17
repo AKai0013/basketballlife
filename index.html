@@ -10665,7 +10665,7 @@ function buildCareerShareCanvas(){
  const games=Math.max(0,Number(p.careerGames||0)),pts=Math.round(Number(p.careerPtsTotal||0)),reb=Math.round(Number(p.careerRebTotal||0)),ast=Math.round(Number(p.careerAstTotal||0)),totalIncome=Number(p.careerSalary||0),careerSalary=Number.isFinite(Number(p.careerBasketballSalary))?Number(p.careerBasketballSalary):totalIncome;
  const metrics=[['職業出賽',games.toLocaleString(),'場'],['生涯總得分',pts.toLocaleString(),'PTS'],['生涯場均',games?(pts/games).toFixed(1):'0.0','PPG'],['總籃板／助攻',`${reb.toLocaleString()} / ${ast.toLocaleString()}`,'REB / AST'],['主要冠軍',p.championships||0,'座'],['生涯球員薪資',moneyText(careerSalary),'']];
  box(45,320,1110,74,palette.metric,palette.line,7);c.fillStyle=palette.orange;c.fillRect(45,320,1110,3);
- metrics.forEach((m,i)=>{const x=45+i*185,y=320;if(i){c.strokeStyle="#24384a";c.lineWidth=1;c.beginPath();c.moveTo(x,y+13);c.lineTo(x,y+61);c.stroke()}txt(m[0],x+12,y+22,12,palette.muted,true);txt(m[1],x+12,y+55,String(m[1]).length>10?17:23,palette.text,true);txt(m[2],x+158,y+55,10,palette.muted,true,"right")});
+ metrics.forEach((m,i)=>{const x=45+i*185,y=320,value=String(m[1]);if(i){c.strokeStyle="#24384a";c.lineWidth=1;c.beginPath();c.moveTo(x,y+13);c.lineTo(x,y+61);c.stroke()}txt(m[0],x+12,y+22,12,palette.muted,true);if(m[2])txt(m[2],x+173,y+22,9,palette.muted,true,"right");let valueSize=value.length>10?17:23;c.font=`900 ${valueSize}px ${font}`;while(valueSize>14&&c.measureText(value).width>160){valueSize--;c.font=`900 ${valueSize}px ${font}`}txt(value,x+12,y+57,valueSize,palette.text,true)});
  let y=425;
 
  y=section("代表稱號",y);
