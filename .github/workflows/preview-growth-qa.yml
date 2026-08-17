@@ -61,6 +61,35 @@ jobs:
       - name: Run desktop, 390px and 430px funnel validation
         run: node qa/preview-growth-qa.mjs
 
+      - name: Require exact 390px and 430px full-page screenshots
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const dir = path.resolve('qa-artifacts');
+
+          function pngWidth(file) {
+            const bytes = fs.readFileSync(file);
+            const signature = bytes.subarray(0, 8).toString('hex');
+            if (signature !== '89504e470d0a1a0a') throw new Error(`Not a PNG: ${file}`);
+            return bytes.readUInt32BE(16);
+          }
+
+          for (const [prefix, expected] of [['mobile-390-', 390], ['mobile-430-', 430]]) {
+            const files = fs.readdirSync(dir)
+              .filter((name) => name.startsWith(prefix) && name.endsWith('.png'))
+              .sort();
+            if (!files.length) throw new Error(`No screenshots found for ${prefix}`);
+            for (const name of files) {
+              const width = pngWidth(path.join(dir, name));
+              if (width !== expected) {
+                throw new Error(`${name}: expected ${expected}px, got ${width}px`);
+              }
+            }
+            console.log(`${prefix} ${files.length} screenshots: all exactly ${expected}px wide`);
+          }
+          NODE
+
       - name: Upload QA evidence
         if: always()
         uses: actions/upload-artifact@v4
