@@ -11,7 +11,7 @@ html,body{
   html,body{overflow-x:clip}
 }
 
-/* BL LIVE is visually clipped, but its nowrap track must not expand the document. */
+/* BL LIVE uses a fixed-width clipping track around the moving headline. */
 .liveTicker{
   min-width:0!important;
   max-width:100%!important;
@@ -21,22 +21,41 @@ html,body{
   position:relative!important;
   flex:1 1 0!important;
   min-width:0!important;
-  width:0!important;
+  width:auto!important;
   max-width:100%!important;
   height:100%!important;
   overflow:hidden!important;
-  contain:inline-size;
+  contain:strict;
 }
 .liveTrack{
-  position:absolute!important;
-  inset:0 auto 0 0!important;
-  display:flex!important;
+  position:relative!important;
+  inset:auto!important;
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  height:100%!important;
+  padding-left:0!important;
+  overflow:hidden!important;
+  animation:none!important;
+  transform:none!important;
+  box-sizing:border-box!important;
+  white-space:nowrap!important;
+}
+.liveTrack>.blLiveMarquee{
+  display:inline-flex!important;
   align-items:center!important;
   width:max-content!important;
-  max-width:none!important;
+  min-width:max-content!important;
   height:100%!important;
-  box-sizing:content-box!important;
+  padding-left:100%!important;
+  animation:tickerMove 48s linear infinite!important;
+  color:inherit;
+  font:inherit;
   white-space:nowrap!important;
+  will-change:transform;
+}
+.liveViewport:hover .liveTrack>.blLiveMarquee{
+  animation-play-state:paused!important;
 }
 
 /* Make the challenge unmistakably a seven-day board. */
