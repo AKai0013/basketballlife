@@ -10468,7 +10468,7 @@ function retirementRankMarkHTML(){
  return `<div class="legacyRankMark"><b>✓ 已登錄全球排行</b><span>${bits.join("｜")||"公開生涯已建立"}</span></div>`;
 }
 function retirementActionsHTML(){
- return `<div class="retirementShareCta"><div class="retirementShareCtaCopy"><b>分享這段生涯</b><span>把結局與世界 Seed 留成一張圖。</span></div><div class="retirementShareCtaButtons"><button class="btn retirementShareBtn primary" type="button" onclick="generateRetirementPageImage()"><span>製作我的引退故事圖</span><small>適合直接貼文分享</small></button><button class="btn retirementShareBtn" type="button" onclick="generateCareerImage()"><span>製作完整生涯紀錄長圖</span><small>完整數據、榮譽與逐季紀錄</small></button></div></div>`;
+ return `<div class="retirementShareCta"><div class="retirementShareCtaCopy"><b>分享這段生涯</b><span>把結局與世界 Seed 留成一張圖。</span></div><div class="retirementShareCtaButtons"><button class="btn retirementShareBtn primary" type="button" onclick="generateRetirementPageImage()"><span>製作我的引退故事圖</span></button><button class="btn retirementShareBtn" type="button" onclick="generateCareerImage()"><span>製作完整生涯紀錄長圖</span></button></div></div>`;
 }
 function refreshRetirementRankingView(){
  document.querySelectorAll(".legacyRankMarkHost").forEach(x=>x.innerHTML=retirementRankMarkHTML());

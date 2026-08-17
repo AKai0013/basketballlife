@@ -753,14 +753,6 @@ body.retirementMode .retireBtns .retirementShareBtn.primary{
   box-shadow:0 12px 28px rgba(236,116,43,.25);
 }
 body.retirementMode .retirementShareBtn span{font-weight:950}
-body.retirementMode .retirementShareBtn small{
-  display:block;
-  margin-top:4px;
-  color:#aebbc3;
-  font-size:9px;
-  font-weight:750;
-}
-body.retirementMode .retirementShareBtn.primary small{color:#5a321b}
 
 @media(max-width:700px){
   body.retirementMode .retirementShareCta{grid-template-columns:1fr;padding:13px}
