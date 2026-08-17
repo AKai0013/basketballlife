@@ -11,51 +11,16 @@ html,body{
   html,body{overflow-x:clip}
 }
 
-/* BL LIVE uses a fixed-width clipping track around the moving headline. */
 .liveTicker{
   min-width:0!important;
   max-width:100%!important;
   overflow:hidden!important;
 }
 .liveViewport{
-  position:relative!important;
   flex:1 1 0!important;
   min-width:0!important;
-  width:auto!important;
   max-width:100%!important;
-  height:100%!important;
   overflow:hidden!important;
-  contain:strict;
-}
-.liveTrack{
-  position:relative!important;
-  inset:auto!important;
-  display:block!important;
-  width:100%!important;
-  max-width:100%!important;
-  height:100%!important;
-  padding-left:0!important;
-  overflow:hidden!important;
-  animation:none!important;
-  transform:none!important;
-  box-sizing:border-box!important;
-  white-space:nowrap!important;
-}
-.liveTrack>.blLiveMarquee{
-  display:inline-flex!important;
-  align-items:center!important;
-  width:max-content!important;
-  min-width:max-content!important;
-  height:100%!important;
-  padding-left:100%!important;
-  animation:tickerMove 48s linear infinite!important;
-  color:inherit;
-  font:inherit;
-  white-space:nowrap!important;
-  will-change:transform;
-}
-.liveViewport:hover .liveTrack>.blLiveMarquee{
-  animation-play-state:paused!important;
 }
 
 /* Make the challenge unmistakably a seven-day board. */
@@ -101,6 +66,11 @@ body.retirementMode .legacyDetails{
   min-width:0!important;
 }
 
+@keyframes blLiveTextScroll{
+  from{text-indent:100%}
+  to{text-indent:var(--bl-live-end,-100%)}
+}
+
 @media(max-width:760px){
   /* The source card was width:100% plus 8px margins, causing a real 16px overflow. */
   .setup.card{
@@ -111,6 +81,39 @@ body.retirementMode .legacyDetails{
   }
   .weeklyChallenge .weeklyChallengeTiming{
     font-size:9px!important;
+  }
+
+  /* The ticker itself stays 100% wide; only the text-indent moves. */
+  .liveViewport{
+    position:relative!important;
+    width:auto!important;
+    height:100%!important;
+    overflow:hidden!important;
+    contain:strict;
+  }
+  .liveTrack{
+    position:relative!important;
+    inset:auto!important;
+    display:block!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    height:100%!important;
+    padding-left:0!important;
+    overflow:hidden!important;
+    animation:blLiveTextScroll var(--bl-live-duration,48s) linear infinite!important;
+    transform:none!important;
+    box-sizing:border-box!important;
+    white-space:nowrap!important;
+    will-change:text-indent;
+  }
+  .liveTrack[data-bl-live-static="1"]{
+    animation:none!important;
+    text-indent:0!important;
+    text-overflow:ellipsis;
+  }
+  .liveViewport:hover .liveTrack{
+    animation-play-state:paused!important;
   }
 
   body.retirementMode .legacyPage{
