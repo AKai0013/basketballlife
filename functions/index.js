@@ -19,9 +19,8 @@ function leaderboardReturnPatchScript() {
 
   function cachePolicy(url) {
     if (url.origin !== location.origin) return null;
-    if (url.pathname === "/api/careers") return { persist: true };
     if (url.pathname === "/api/news") return { persist: true };
-    if (/^\/api\/careers\/[^/]+$/.test(url.pathname)) return { persist: false };
+    if (/^\/api\/careers\/[^/]+$/.test(url.pathname)) return null;
     return null;
   }
 
