@@ -66,6 +66,9 @@ jobs:
       - name: Run desktop, 390px and 430px funnel validation
         run: node qa/preview-growth-qa.mjs
 
+      - name: Trace any remaining mobile body width
+        run: node qa/width-debug.mjs
+
       - name: Require exact 390px and 430px full-page screenshots
         run: |
           node <<'NODE'
