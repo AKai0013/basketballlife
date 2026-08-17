@@ -4904,10 +4904,6 @@ window.BL_ONLINE_CONFIG = {
  };
 
  const $=id=>document.getElementById(id);
- function displayPlayerName(value){
- const name=String(value??"").trim();
- return !name||name==="無名球員"||name==="這名球員"?"籃球癡漢":name;
-}
 
  function gamePlayer(){
    try{return (typeof p!=="undefined" && p)?p:null}catch(_){return null}
@@ -6490,6 +6486,10 @@ window.BL_ONLINE_CONFIG = {
  });
 })();
 
+function displayPlayerName(value){
+ const name=String(value??"").trim();
+ return !name||name==="無名球員"||name==="這名球員"?"籃球癡漢":name;
+}
 
 // Robust DOM bindings: do not rely on browsers exposing element IDs as global variables.
 
@@ -6609,6 +6609,7 @@ function validCareerPlayer(player){
 }
 function normalizeCareerPlayer(player){
  if(!player||typeof player!=="object")return player;
+ player.name=displayPlayerName(player.name);
  if(typeof player.careerVersion!=="string"||!player.careerVersion)player.careerVersion="legacy";
  if(typeof player.avatarSeed!=="string"||!player.avatarSeed)player.avatarSeed=newAvatarSeed();
  if(typeof player.publicCareerId!=="string")player.publicCareerId="";
