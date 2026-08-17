@@ -212,8 +212,8 @@ body.retirementMode .legacyDetails{
   }
 }
 
-/* Five header cells must occupy explicit tracks on phones. The old three-column
-   rule auto-created two intrinsic columns and widened a 390px page to 535px. */
+/* On phones, give the player identity a full row and place the four compact
+   values underneath. This avoids implicit Grid tracks and protects long names. */
 @media(max-width:620px){
   #game{
     width:100%!important;
@@ -222,42 +222,60 @@ body.retirementMode .legacyDetails{
     overflow-x:hidden!important;
   }
   #game .header{
-    display:grid!important;
-    grid-template-columns:minmax(0,1.8fr) repeat(2,minmax(0,1fr))!important;
-    grid-template-rows:minmax(0,1fr) minmax(0,1fr)!important;
-    grid-auto-columns:minmax(0,1fr)!important;
-    grid-auto-rows:minmax(0,1fr)!important;
-    grid-auto-flow:row!important;
+    display:flex!important;
+    flex-flow:row wrap!important;
+    align-items:stretch!important;
     width:100%!important;
     max-width:100%!important;
     min-width:0!important;
+    height:auto!important;
+    min-height:0!important;
     overflow:hidden!important;
     box-sizing:border-box!important;
   }
   #game .header>.box{
     min-width:0!important;
-    width:auto!important;
     max-width:100%!important;
     box-sizing:border-box!important;
   }
   #game .header>.who{
-    grid-column:1!important;
-    grid-row:1 / span 2!important;
+    flex:0 0 100%!important;
+    width:100%!important;
+    min-height:72px!important;
+    border-right:0!important;
+    border-bottom:1px solid rgba(113,178,203,.24)!important;
+    overflow:hidden!important;
   }
-  #game .header>.box:nth-child(2){
-    grid-column:2!important;
-    grid-row:1!important;
+  #game .header>.box:not(.who){
+    flex:0 0 25%!important;
+    width:25%!important;
+    min-height:54px!important;
+    padding:8px 6px!important;
+    overflow:hidden!important;
   }
-  #game .header>.box:nth-child(3){
-    grid-column:3!important;
-    grid-row:1!important;
+  #game .header>.box:nth-child(2){border-left:0!important}
+  #game .header .playerIdentity{
+    flex:1 1 auto!important;
+    min-width:0!important;
+    max-width:calc(100% - 64px)!important;
   }
-  #game .header>.box:nth-child(4){
-    grid-column:2!important;
-    grid-row:2!important;
+  #game .header .playerIdentityName,
+  #game .header .playerIdentityMeta{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    white-space:normal!important;
+    overflow-wrap:anywhere!important;
   }
-  #game .header>.box:nth-child(5){
-    grid-column:3!important;
-    grid-row:2!important;
+  #game .header .playerIdentityName{
+    line-height:1.08!important;
+  }
+  #game .header .playerIdentityMeta{
+    line-height:1.25!important;
+  }
+  #game .header>.box:not(.who)>small,
+  #game .header>.box:not(.who)>b{
+    max-width:100%!important;
+    overflow-wrap:anywhere!important;
   }
 }
