@@ -309,7 +309,10 @@
       beats,
       meaningfulBeat,
       awards,
-      name: String(player.name || "這名球員").trim(),
+      name: (() => {
+        const rawName = String(player.name || "").trim();
+        return !rawName || rawName === "無名球員" || rawName === "這名球員" ? "籃球癡漢" : rawName;
+      })(),
       team: String(season.team || player.team || "球隊").trim(),
       year: Number(season.year || player.year || 0),
       games: Math.max(0, Number(season.games ?? stats.games ?? 0)),
@@ -333,9 +336,9 @@
     if (meaningfulBeat) {
       const beat = seasonStoryBeatParts(meaningfulBeat.text);
       if (beat.title) {
-        if (beat.result === "大成功") return `${prefix}${name}在${team}把「${beat.choice}」押到底；這次${beat.title}的大成功，成了整季最亮的一次突破。`;
-        if (beat.result === "成功") return `${prefix}${name}在${team}選擇「${beat.choice}」，也在${beat.title}這道考驗中穩穩站住。`;
-        return `${prefix}${name}在${team}選擇「${beat.choice}」，卻在${beat.title}付出代價；這成了整季最難忘的一課。`;
+        if (beat.result === "大成功") return `${prefix}${name}在${team}面對「${beat.title}」時選擇「${beat.choice}」，結果大成功，打出整季最亮的一段表現。`;
+        if (beat.result === "成功") return `${prefix}${name}在${team}面對「${beat.title}」時選擇「${beat.choice}」，穩穩把這次考驗處理好。`;
+        return `${prefix}${name}在${team}面對「${beat.title}」時選擇「${beat.choice}」卻付出代價，這成了整季最難忘的一課。`;
       }
       return `${prefix}${name}在${team}遇上真正的轉折：${beat.raw}。`;
     }
@@ -468,7 +471,7 @@
 
   function retirementStoryText(player, honors = []) {
     const history = Array.isArray(player.seasonHistory) ? player.seasonHistory.filter(Boolean) : [];
-    const name = String(player.name || "這名球員").trim();
+    const name = String(player.name || "籃球癡漢").trim() || "籃球癡漢";
     if (!history.length) return `${name} 完成了屬於自己的球員生涯，最後一次走下球場時，留下的不只是一份數據。`;
 
     const first = history[0] || {};
