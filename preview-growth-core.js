@@ -112,24 +112,55 @@
     return style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && rect.height > 0;
   }
 
-  /* The original moving node grows with long BL LIVE headlines. Keep that node
-     inside a fixed-width clipping layer so its animation cannot widen the page. */
-  function ensureLiveMarquee() {
+  /* Mobile Chromium propagates transformed marquee overflow into body.scrollWidth.
+     Keep the headline as direct text inside a fixed-width element and animate its
+     text-indent instead, so no DOM node ever becomes wider than the viewport. */
+  function syncLiveMarquee() {
     liveWrapFrame = 0;
     const track = document.getElementById("liveTrack");
     if (!track) return;
-    const alreadyWrapped = track.childNodes.length === 1
-      && track.firstElementChild?.classList.contains("blLiveMarquee");
-    if (alreadyWrapped) return;
 
-    const marquee = document.createElement("span");
-    marquee.className = "blLiveMarquee";
-    while (track.firstChild) marquee.appendChild(track.firstChild);
-    track.appendChild(marquee);
+    const oldWrapper = track.childNodes.length === 1
+      && track.firstElementChild?.classList.contains("blLiveMarquee")
+      ? track.firstElementChild
+      : null;
+    if (oldWrapper) {
+      const fragment = document.createDocumentFragment();
+      while (oldWrapper.firstChild) fragment.appendChild(oldWrapper.firstChild);
+      track.replaceChildren(fragment);
+    }
+
+    if (!matchMedia("(max-width:760px)").matches) {
+      delete track.dataset.blLiveStatic;
+      track.style.removeProperty("--bl-live-end");
+      track.style.removeProperty("--bl-live-duration");
+      track.style.removeProperty("animation");
+      track.style.removeProperty("text-indent");
+      return;
+    }
+
+    track.style.setProperty("animation", "none", "important");
+    track.style.setProperty("text-indent", "0px", "important");
+    void track.offsetWidth;
+
+    const clientWidth = Math.max(1, track.clientWidth);
+    const contentWidth = Math.max(clientWidth, track.scrollWidth);
+    const staticText = contentWidth <= clientWidth + 4;
+    if (staticText) track.dataset.blLiveStatic = "1";
+    else delete track.dataset.blLiveStatic;
+
+    track.style.setProperty("--bl-live-end", `${-Math.ceil(contentWidth + 8)}px`);
+    const duration = Math.max(18, Math.min(54, (clientWidth + contentWidth) / 38));
+    track.style.setProperty("--bl-live-duration", `${duration.toFixed(2)}s`);
+    track.title = String(track.textContent || "").replace(/\s+/g, " ").trim();
+
+    track.style.removeProperty("animation");
+    track.style.removeProperty("text-indent");
+    void track.offsetWidth;
   }
 
   function scheduleLiveMarquee() {
-    if (!liveWrapFrame) liveWrapFrame = requestAnimationFrame(ensureLiveMarquee);
+    if (!liveWrapFrame) liveWrapFrame = requestAnimationFrame(syncLiveMarquee);
   }
 
   function syncMilestones() {
@@ -194,7 +225,8 @@
   });
 
   syncMilestones();
-  ensureLiveMarquee();
+  syncLiveMarquee();
+  addEventListener("resize", scheduleLiveMarquee, { passive: true });
   if (!installCareerStartWrapper()) {
     let attempts = 0;
     const timer = setInterval(() => {
