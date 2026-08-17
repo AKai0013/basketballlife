@@ -129,9 +129,19 @@
     const start = document.getElementById("startCareerBtn");
     if (!setup || !builder || !start || document.getElementById("blAdvancedSetup")) return;
 
+    const identity = setup.querySelector(":scope > .setupIdentity");
+    const heroTitle = identity?.querySelector("h1");
+    const heroCopy = identity?.querySelector("p");
+    const heroKicker = identity?.querySelector(".setupKicker");
+    const heroPromise = identity?.querySelector(".setupPromise");
+    if (heroKicker) heroKicker.textContent = "BASKETBALLLIFE · CAREER SIMULATOR";
+    if (heroTitle) heroTitle.textContent = "從 HBL 開始，打完你的一生。";
+    if (heroCopy) heroCopy.textContent = "16 歲上場。每一次選擇，都會把你帶向不同的球隊、舞台與結局。";
+    if (heroPromise) heroPromise.innerHTML = "<span>HBL → 職業 → 旅外 → 國家隊 → 引退</span>";
+
     const quick = document.createElement("div");
     quick.className = "blQuickStartPromise";
-    quick.innerHTML = `<b>名字＋位置，就能開始。</b><span>身材、外觀、出生地與世界 Seed 都已備妥預設值；想研究細節再展開。</span>`;
+    quick.innerHTML = `<b>名字＋位置，就能開始。</b><span>其他設定已自動備妥。</span>`;
     setup.insertBefore(quick, start);
     start.classList.add("blFastStartButton");
 
@@ -148,6 +158,19 @@
     const seedHelp = document.getElementById("seedHelp");
     [builder, seedLabel, seed, seedError, seedHelp].forEach((node) => {
       if (node) body.appendChild(node);
+    });
+
+    const nameLabel = setup.querySelector(':scope > label[for="playerNameInput"]');
+    const nameInput = document.getElementById("playerNameInput");
+    const positionLabel = [...setup.children].find((node) => node.tagName === "LABEL" && /選擇場上位置/.test(node.textContent || ""));
+    const positionGrid = document.getElementById("posgrid");
+    const continuePanel = document.getElementById("continueCareerPanel");
+    const creatorCredit = setup.querySelector(":scope > .creatorCredit");
+    const quickPanel = document.createElement("div");
+    quickPanel.className = "blHomeQuickPanel";
+    setup.insertBefore(quickPanel, nameLabel || quick);
+    [nameLabel, nameInput, positionLabel, positionGrid, quick, start, details, continuePanel, creatorCredit].forEach((node) => {
+      if (node) quickPanel.appendChild(node);
     });
 
     details.addEventListener("toggle", () => {
@@ -336,7 +359,15 @@
 
   function syncMilestones() {
     syncFrame = 0;
-    if (visible(document.getElementById("setup"))) record("home_view");
+    const setup = document.getElementById("setup");
+    const community = document.getElementById("communityPage");
+    const homeVisible = !!setup
+      && !setup.classList.contains("hidden")
+      && (!community || community.classList.contains("hidden"))
+      && !document.body.classList.contains("retirementMode")
+      && !visible(document.getElementById("game"));
+    document.body.classList.toggle("blHomeMode", homeVisible);
+    if (homeVisible) record("home_view");
 
     const panel = document.getElementById("currentPanel");
     if (panel && (
