@@ -8,6 +8,9 @@ on:
       - index.html
       - functions/**
       - qa/**
+      - preview-growth.css
+      - preview-growth-core.js
+      - preview-public-read.js
       - .github/workflows/preview-growth-qa.yml
   workflow_dispatch:
 
@@ -21,7 +24,7 @@ concurrency:
 jobs:
   browser-qa:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     env:
       PREVIEW_URL: https://preview-growth-ui-v1.basketballlife.pages.dev/
     steps:
@@ -38,20 +41,24 @@ jobs:
           npm install --no-save playwright@1.55.0
           npx playwright install --with-deps chromium
 
-      - name: Wait for Cloudflare branch preview
+      - name: Wait for the current Cloudflare branch preview
         shell: bash
         run: |
-          for attempt in {1..30}; do
-            status=$(curl -L -sS -o /dev/null -w '%{http_code}' "$PREVIEW_URL" || true)
-            if [ "$status" = "200" ]; then
+          for attempt in {1..60}; do
+            html=$(curl -L -sS "$PREVIEW_URL?qa_wait=$GITHUB_SHA" || true)
+            core=$(curl -L -sS "$PREVIEW_URL/preview-growth-core.js?qa_wait=$GITHUB_SHA" || true)
+            if grep -q 'preview-growth-core.js' <<<"$html" \
+              && grep -q 'preview-public-read.js' <<<"$html" \
+              && grep -q 'bl_growth_funnel_v1' <<<"$core" \
+              && grep -q 'weeklyChallengeTiming' <<<"$core"; then
               exit 0
             fi
-            sleep 4
+            sleep 5
           done
-          echo "Preview did not become ready" >&2
+          echo "Cloudflare Preview did not expose the current growth patch" >&2
           exit 1
 
-      - name: Run desktop and mobile funnel validation
+      - name: Run desktop, 390px and 430px funnel validation
         run: node qa/preview-growth-qa.mjs
 
       - name: Upload QA evidence
