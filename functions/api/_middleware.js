@@ -1,4 +1,5 @@
 const CACHE_TTL_SECONDS = 300;
+const CACHE_VERSION = "v8.2";
 
 function cacheablePath(url) {
   return url.pathname === "/api/careers" || url.pathname === "/api/news";
@@ -6,7 +7,7 @@ function cacheablePath(url) {
 
 function cacheKey(url) {
   const keyUrl = new URL(url.toString());
-  keyUrl.searchParams.set("_bl_cache", "v7");
+  keyUrl.searchParams.set("_bl_cache", CACHE_VERSION);
   return new Request(keyUrl.toString(), { method: "GET" });
 }
 
@@ -288,6 +289,27 @@ async function handleCachedGet(context, url) {
   return cacheable;
 }
 
+async function clearCareerListCache() {
+  try{
+    const cache = caches.default;
+    const keys = await cache.keys();
+    await Promise.all(
+      keys
+        .filter(req => {
+          try{
+            const parsed = new URL(req.url);
+            return parsed.pathname === "/api/careers";
+          }catch(_){
+            return false;
+          }
+        })
+        .map(req=>cache.delete(req))
+    );
+  }catch(error){
+    console.warn("BL clear cached leaderboard failed", error);
+  }
+}
+
 export async function onRequest(context) {
   const request = context.request;
   const url = new URL(request.url);
@@ -306,7 +328,10 @@ export async function onRequest(context) {
 
   if (request.method === "POST" && url.pathname === "/api/careers") {
     const response = await context.next();
-    if (response.ok) context.waitUntil(maintainPublishedCareer(context.env, response.clone()));
+    if (response.ok) {
+      context.waitUntil(maintainPublishedCareer(context.env, response.clone()));
+      context.waitUntil(clearCareerListCache());
+    }
     return response;
   }
 
