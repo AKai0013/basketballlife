@@ -19,7 +19,11 @@ export async function onRequest(context) {
   if (!response.ok || !contentType.includes("text/html")) return response;
 
   const html = await response.text();
-  if (html.includes("preview-growth-core.js")) return response;
+  if (html.includes("preview-growth-core.js")) {
+    const headers = new Headers(response.headers);
+    headers.delete("content-length");
+    return new Response(html, { status: response.status, statusText: response.statusText, headers });
+  }
 
   const assets = previewAssets();
   const output = html.includes("</body>")
