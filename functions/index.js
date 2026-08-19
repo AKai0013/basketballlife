@@ -226,7 +226,11 @@ export async function onRequest(context) {
   if (!response.ok || !contentType.includes("text/html")) return response;
 
   const html = await response.text();
-  if (html.includes("bl-leaderboard-return-patch")) return response;
+  if (html.includes("bl-leaderboard-return-patch")) {
+    const headers = new Headers(response.headers);
+    headers.delete("content-length");
+    return new Response(html, { status: response.status, statusText: response.statusText, headers });
+  }
 
   const patch = leaderboardReturnPatchScript();
   const output = html.includes("</body>") ? html.replace("</body>", patch + "</body>") : html + patch;
