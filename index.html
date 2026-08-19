@@ -5097,6 +5097,11 @@ window.BL_ONLINE_CONFIG = {
      const profile=await loadProfile();
      const nickname=cleanNickname(profile?.nickname||"");
      if(!nickname)return false;
+     if(nickname!==state.nickname){
+       state.leaderboardCache?.clear?.();
+       state.leaderboardStats=null;
+       state.weeklyArchiveRows=null;
+     }
      state.nickname=nickname;
      cacheNickname(nickname);
      setStatus("online",`Online｜${nickname}`);
@@ -6433,6 +6438,9 @@ window.BL_ONLINE_CONFIG = {
 
      state.nickname=nickname;
      cacheNickname(nickname);
+     state.leaderboardCache?.clear?.();
+     state.leaderboardStats=null;
+     state.weeklyArchiveRows=null;
      hideNicknameModal();
      setStatus("online",`Online｜${nickname}`);
      setStartReady();
