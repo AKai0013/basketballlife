@@ -19,6 +19,7 @@ function leaderboardReturnPatchScript() {
 
   function cachePolicy(url) {
     if (url.origin !== location.origin) return null;
+    if (url.pathname === "/api/careers") return { persist: true };
     if (url.pathname === "/api/news") return { persist: true };
     if (/^\/api\/careers\/[^/]+$/.test(url.pathname)) return null;
     return null;
@@ -117,6 +118,10 @@ function leaderboardReturnPatchScript() {
       if (response.ok && info && info.method !== "GET" && info.url.origin === location.origin) {
         if (info.url.pathname.startsWith("/api/careers")) clearClientApiCache("/api/careers");
         if (info.url.pathname.startsWith("/api/news")) clearClientApiCache("/api/news");
+        if (info.url.pathname.startsWith("/api/session")) {
+          clearClientApiCache("/api/careers");
+          clearClientApiCache("/api/news");
+        }
       }
       return response;
     };
