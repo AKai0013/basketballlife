@@ -5091,6 +5091,19 @@ window.BL_ONLINE_CONFIG = {
    catch(err){if(err.status===401)return null;throw err}
  }
 
+ async function refreshNicknameFromServer(){
+   if(!state.client||!state.user||state.offline)return false;
+   try{
+     const profile=await loadProfile();
+     const nickname=cleanNickname(profile?.nickname||"");
+     if(!nickname)return false;
+     state.nickname=nickname;
+     cacheNickname(nickname);
+     setStatus("online",`Online｜${nickname}`);
+     return true;
+   }catch(_){return false}
+ }
+
  function normalizeDbNews(row){
    if(!row)return null;
    const item={
@@ -6107,6 +6120,7 @@ window.BL_ONLINE_CONFIG = {
        const connected=await reconnectOnline(true);
        if(!connected)throw new Error("排行榜服務目前無法連線，請稍後再試。");
      }
+     await refreshNicknameFromServer();
      const records=await loadLeaderboardRecords(false,state.activeMetric,state.activeLeaderboardEra);
      renderLeaderboard(records,state.activeMetric);
    }catch(err){
@@ -6388,8 +6402,11 @@ window.BL_ONLINE_CONFIG = {
    if(state.pendingCareerEnrollment)renderCareerUploadIssue("裝置目前離線；退休生涯已保留在本機，恢復連線後會自動補傳。");
  });
  document.addEventListener("visibilitychange",()=>{
-   if(document.visibilityState==="visible"&&state.pendingCareerEnrollment){
-     reconnectOnline(false).then(ok=>{if(ok)scheduleRetirementAutoPublish(0)}).catch(()=>{});
+   if(document.visibilityState==="visible"){
+     if(state.client&&state.user&&!state.offline)refreshNicknameFromServer().catch(()=>{});
+     if(state.pendingCareerEnrollment){
+       reconnectOnline(false).then(ok=>{if(ok)scheduleRetirementAutoPublish(0)}).catch(()=>{});
+     }
    }
  });
 
