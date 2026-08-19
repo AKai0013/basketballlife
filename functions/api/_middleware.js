@@ -2,10 +2,7 @@ const CACHE_TTL_SECONDS = 300;
 const CACHE_VERSION = "v8.2";
 
 function cacheablePath(url) {
-  // Career summaries and details must always reflect the same sealed record.
-  // News can tolerate a short cache, but leaderboards cannot: a cached summary
-  // can disagree with a freshly loaded public-career detail after publishing.
-  return url.pathname === "/api/news";
+  return url.pathname === "/api/careers" || url.pathname === "/api/news";
 }
 
 function cacheKey(url) {
@@ -292,28 +289,25 @@ async function handleCachedGet(context, url) {
   return cacheable;
 }
 
-async function handleCareerGet(context, url) {
-  let response;
-  try {
-    const payload = await optimizedLeaderboard(context.request, context.env);
-    response = new Response(JSON.stringify(payload), {
-      status: 200,
-      headers: { "content-type": "application/json; charset=utf-8" },
-    });
-  } catch (error) {
-    console.warn("BL optimized leaderboard fallback", error);
-    response = await context.next();
+async function clearCareerListCache() {
+  try{
+    const cache = caches.default;
+    const keys = await cache.keys();
+    await Promise.all(
+      keys
+        .filter(req => {
+          try{
+            const parsed = new URL(req.url);
+            return parsed.pathname === "/api/careers";
+          }catch(_){
+            return false;
+          }
+        })
+        .map(req=>cache.delete(req))
+    );
+  }catch(error){
+    console.warn("BL clear cached leaderboard failed", error);
   }
-
-  if (!response.ok) return response;
-  const sanitized = await sanitizeResponse(response, url, "BYPASS");
-  const headers = new Headers(sanitized.headers);
-  headers.set("cache-control", "no-store");
-  return new Response(sanitized.body, {
-    status: sanitized.status,
-    statusText: sanitized.statusText,
-    headers,
-  });
 }
 
 export async function onRequest(context) {
@@ -323,7 +317,6 @@ export async function onRequest(context) {
     (url.pathname === "/api/careers" || url.pathname.startsWith("/api/careers/"));
 
   if (request.method === "GET") {
-    if (url.pathname === "/api/careers") return handleCareerGet(context, url);
     if (!cacheablePath(url) && !isCareerGet) return context.next();
 
     if (cacheablePath(url)) return handleCachedGet(context, url);
@@ -335,7 +328,16 @@ export async function onRequest(context) {
 
   if (request.method === "POST" && url.pathname === "/api/careers") {
     const response = await context.next();
-    if (response.ok) context.waitUntil(maintainPublishedCareer(context.env, response.clone()));
+    if (response.ok) {
+      context.waitUntil(maintainPublishedCareer(context.env, response.clone()));
+      context.waitUntil(clearCareerListCache());
+    }
+    return response;
+  }
+
+  if ((request.method === "PUT" || request.method === "POST") && url.pathname === "/api/session") {
+    const response = await context.next();
+    if (response.ok) context.waitUntil(clearCareerListCache());
     return response;
   }
 

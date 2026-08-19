@@ -67,7 +67,12 @@ async function session(request,env){
     let auth=await authenticate(request,env,{create:true,nickname:body.nickname});if(auth.error)return auth.error;
     const nickname=text(body.nickname||auth.profile.nickname,20);
     if(nickname!==auth.profile.nickname){
-      try{await env.DB.prepare("UPDATE profiles SET nickname=?,updated_at=CURRENT_TIMESTAMP WHERE user_id=?").bind(nickname,auth.profile.user_id).run()}
+      try{
+        await env.DB.batch([
+          env.DB.prepare("UPDATE profiles SET nickname=?,updated_at=CURRENT_TIMESTAMP WHERE user_id=?").bind(nickname,auth.profile.user_id),
+          env.DB.prepare("UPDATE career_records SET nickname=?,updated_at=CURRENT_TIMESTAMP WHERE user_id=? AND is_public=1").bind(nickname,auth.profile.user_id),
+        ]);
+      }
       catch(e){return fail(String(e).includes("UNIQUE")?"這個玩家暱稱已經有人使用":"暱稱更新失敗",409)}
     }
     return json({user:{id:auth.profile.user_id},nickname});
