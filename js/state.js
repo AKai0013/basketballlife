@@ -38,26 +38,30 @@ for(const id of ["dicepool","assign","diceMsg","pointsLeft","pointRows"]){
   }
 }
 
+function seedTierDefinition(key){return SEED_TIER_DEFS.find(t=>t.key===key)||SEED_TIER_DEFS.find(t=>t.key==="B")}
+function seedTierRank(key){return {C:0,B:1,A:2,S:3,"S+":4,"SS+":5,"SSS+":6}[key]??1}
+function seedTierAtLeast(key,minimum){return seedTierRank(key)>=seedTierRank(minimum)}
 function seedTierProfile(seed){
  const idx=seedPool.indexOf(seed);
  // Preserve the original tier of every legacy fixed seed.
  if(idx>=0){
-   if(idx<3)return SEED_TIER_DEFS[0];
-   if(idx<10)return SEED_TIER_DEFS[1];
-   if(idx<22)return SEED_TIER_DEFS[2];
-   if(idx<40)return SEED_TIER_DEFS[3];
-   return SEED_TIER_DEFS[4];
+   if(idx<3)return seedTierDefinition("S+");
+   if(idx<10)return seedTierDefinition("S");
+   if(idx<22)return seedTierDefinition("A");
+   if(idx<40)return seedTierDefinition("B");
+   return seedTierDefinition("C");
  }
- // Procedural seeds use their own stable hash. Distribution mirrors the
- // original library (6% / 14% / 24% / 36% / 20%) without a finite pool.
+ // Procedural distribution: SSS+ 1%, SS+ 2%, S+ 3%, S 14%, A 24%, B 36%, C 20%.
  let hash=2166136261;
  for(const ch of String(seed||"")){hash^=ch.charCodeAt(0);hash=Math.imul(hash,16777619)}
  const bucket=(hash>>>0)%10000;
- if(bucket<600)return SEED_TIER_DEFS[0];
- if(bucket<2000)return SEED_TIER_DEFS[1];
- if(bucket<4400)return SEED_TIER_DEFS[2];
- if(bucket<8000)return SEED_TIER_DEFS[3];
- return SEED_TIER_DEFS[4];
+ if(bucket<100)return seedTierDefinition("SSS+");
+ if(bucket<300)return seedTierDefinition("SS+");
+ if(bucket<600)return seedTierDefinition("S+");
+ if(bucket<2000)return seedTierDefinition("S");
+ if(bucket<4400)return seedTierDefinition("A");
+ if(bucket<8000)return seedTierDefinition("B");
+ return seedTierDefinition("C");
 }
 function proceduralSeed(){
  const bytes=new Uint8Array(8);
@@ -104,6 +108,8 @@ function normalizeCareerPlayer(player){
  if(!player||typeof player!=="object")return player;
  player.name=displayPlayerName(player.name);
  if(typeof player.careerVersion!=="string"||!player.careerVersion)player.careerVersion="legacy";
+ const seedProfile=seedTierProfile(player.seed);
+ if(!SEED_TIER_DEFS.some(t=>t.key===player.seedTier)){player.seedTier=seedProfile.key;player.seedTierLabel=seedProfile.label;player.seedTierDesc=seedProfile.desc}
  if(typeof player.avatarSeed!=="string"||!player.avatarSeed)player.avatarSeed=newAvatarSeed();
  if(typeof player.publicCareerId!=="string")player.publicCareerId="";
  if(typeof player.publicCareerUploadId!=="string"||!player.publicCareerUploadId)player.publicCareerUploadId=player.publicCareerId||"";
@@ -122,7 +128,7 @@ function normalizeCareerPlayer(player){
    "injuryHistory","log","dice","used","trainingUndo","pointUndo","titles","titleHistory",
    "seasonPointFocus","offers","news","seasonHistory","careerAwards","chainTitles","teamsPlayed",
    "hallOfFame","jerseyRetired","specialQueue","internationalHistory","offCourtHistory","offCourtEventKinds","championshipHistory","lastSeasonAwards","hallVotes","formerPartners",
-   "medicalHistory","medicalPressureHistory","recentEvents","feedHistory","relationshipHistory","chainQueue","storyBeats","seasonStoryCandidates","teamWorldHistory"
+   "medicalHistory","medicalPressureHistory","recentEvents","feedHistory","relationshipHistory","chainQueue","storyBeats","seasonStoryCandidates","teamWorldHistory","collegeDraftHistory","draftEntrySelections"
  ];
  arrayFields.forEach(k=>{if(!Array.isArray(player[k]))player[k]=[]});
  // V7.50 corrects the US college system: both routes are four-year NCAA divisions.
@@ -156,14 +162,15 @@ function normalizeCareerPlayer(player){
    careerScoringTitles:0,careerAssistTitles:0,careerReboundTitles:0,careerAllStar:0,
    careerFinalsMVP:0,majorInjuryCount:0,careerThreatInjuries:0,recoverySeasons:0,
    surgeries:0,missedSeasons:0,children:0,relationshipYears:0,lifeEventCount:0,romanceAttempts:0,affairCount:0,
-   lastNationalCallupYear:0,nationalSelectionStreak:0,
+    lastNationalCallupYear:0,nationalSelectionStreak:0,proEntryYear:0,
    familyHarmony:60,scandalCount:0,conductMarketPenalty:0,conductSuspensionGames:0,nationalTeamBanUntil:0,conductPenaltySetYear:0,lastOffCourtEventYear:0,financialLosses:0,developmentSeasons:0,medicalProtectionUntilYear:0,
    planRiskMod:0,planGrowthMod:0,planStatMod:0,specialBonusPoints:0,seasonEventSuccess:0,
    eventSuccesses:0,clutchWins:0,tradeCount:0,careerRating:0,peakOverall:0,seasonInjuryRiskTarget:0,seasonInjurySurvival:1,seasonInjuryChecksDone:0,seasonInjuryExtra:0,lastMedicalPressureYear:0,lastCoachChangeYear:0,lastRelationshipEventYear:0
  };
- Object.entries(numberDefaults).forEach(([k,v])=>{if(!Number.isFinite(Number(player[k])))player[k]=v;else player[k]=Number(player[k])});
+  Object.entries(numberDefaults).forEach(([k,v])=>{if(!Number.isFinite(Number(player[k])))player[k]=v;else player[k]=Number(player[k])});
+  if(typeof player.proEntrySource!=="string")player.proEntrySource="";
  const objectDefaults={
-   oldInjuries:{},leagueHistory:{},awardHistoryByLeague:{},partnerProfile:{},romanceCandidate:{},trainingProgress:{shoot:0,finish:0,handle:0,pass:0,defense:0,rebound:0,ath:0,iq:0},
+    oldInjuries:{},oldInjuryFloors:{},oldInjuryLastYear:{},leagueHistory:{},awardHistoryByLeague:{},partnerProfile:{},romanceCandidate:{},trainingProgress:{shoot:0,finish:0,handle:0,pass:0,defense:0,rebound:0,ath:0,iq:0},
    strategyStats:{risk:{pick:0,success:0,streak:0,best:0},balance:{pick:0,success:0,streak:0,best:0},safe:{pick:0,success:0,streak:0,best:0}},careerCast:{},teamWorld:{},roleState:{},eventMemory:{},specialEventMemory:{},pendingTryoutOffer:{}
  };
  Object.entries(objectDefaults).forEach(([k,v])=>{if(!player[k]||typeof player[k]!=="object"||Array.isArray(player[k]))player[k]=JSON.parse(JSON.stringify(v))});
@@ -173,7 +180,7 @@ function normalizeCareerPlayer(player){
    player.strategyStats[k]=player.strategyStats[k]||{};
    ["pick","success","streak","best"].forEach(n=>{if(!Number.isFinite(Number(player.strategyStats[k][n])))player.strategyStats[k][n]=0});
  });
- const boolFields=["genius","geniusResolved","geniusFailed","severeInjuryRecovered","retired","married","divorced","familyPlanningClosed","developmentLastChanceUsed","pendingSeasonAdvance","usCollegeRouteMigrated","retirementDefianceSucceeded","retirementPressureUsed","seasonMedicalEventShown","seasonNaturalInjuryChecked"];
+  const boolFields=["genius","geniusResolved","geniusFailed","severeInjuryRecovered","retired","married","divorced","familyPlanningClosed","developmentLastChanceUsed","pendingSeasonAdvance","usCollegeRouteMigrated","retirementDefianceSucceeded","retirementPressureUsed","seasonMedicalEventShown","seasonNaturalInjuryChecked","freshmanDraftAttempted"];
  boolFields.forEach(k=>player[k]=!!player[k]);
  if(player.injury&&typeof player.injury==="object"){
    const original=Math.max(0,Number(player.injury.originalMissedGames)||0);

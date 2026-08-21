@@ -65,7 +65,7 @@ function saveCareerNow(){
  if(!p||careerSaveRestoring)return false;
  try{
    const save={
-     schema:CAREER_SAVE_SCHEMA,gameVersion:"8.0.0",savedAt:Date.now(),
+      schema:CAREER_SAVE_SCHEMA,gameVersion:"8.1.0",savedAt:Date.now(),
      player:p,chosenPos,selectedDie,screen:currentCareerScreen()
    };
    localStorage.setItem(CAREER_SAVE_KEY,JSON.stringify(save));
@@ -99,7 +99,8 @@ function restoreCareerScreen(screen){
  next.innerHTML=screen.nextHTML;
  next.className=screen.nextClass;
  const story=document.querySelector("main.story");
- if(story)story.scrollTop=Math.max(0,Number(screen.storyScroll)||0);
+ if(story)story.scrollTop=window.matchMedia?.("(max-width:700px)").matches?0:Math.max(0,Number(screen.storyScroll)||0);
+ setTimeout(focusCurrentScreen,0);
 }
 function continueCareer(){
  const save=readCareerSave();
@@ -284,7 +285,7 @@ window.BasketballLifeMigration=(()=>{
    }
    const btn=el("siteMigrationBtn");
    if(btn){btn.disabled=true;btn.textContent="正在安全轉移…"}
-   setPanel({title:"正在連接 BasketballLife 新站",text:"請保留這個分頁，系統會在新分頁準備完成後傳送資料。",state:"等待新網站回應…"});
+   setPanel({title:"正在連接 BasketballLife 新站",text:"請保留這個分頁；新分頁開啟後，生涯資料會自動轉移。",state:"等待新網站回應…"});
    const send=()=>{try{popup.postMessage(payload,PRIMARY_ORIGIN)}catch(_){}};
    const onMessage=event=>{
      if(event.origin!==PRIMARY_ORIGIN||event.source!==popup||event.data?.protocol!==PROTOCOL)return;

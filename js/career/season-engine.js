@@ -1,4 +1,54 @@
 function eTitle(){return title.textContent}
+function signatureOpponentPool(path){
+ if(path==="歐洲聯賽"&&p.contract?.europeLeague&&typeof EUROPE_LEAGUES!=="undefined"){
+  const profile=EUROPE_LEAGUES.find(league=>league.label===p.contract.europeLeague);
+  if(profile)return profile.teams.filter(team=>team!==p.team);
+ }
+ const pools={
+  HBL:typeof HBL_TEAMS!=="undefined"?HBL_TEAMS:[],
+  UBA:typeof UBA_TEAMS!=="undefined"?UBA_TEAMS:[],
+  "UBA 強權":typeof UBA_TEAMS!=="undefined"?UBA_TEAMS:[],
+  日本大學:typeof JAPAN_COLLEGE_TEAMS!=="undefined"?JAPAN_COLLEGE_TEAMS:[],
+  "NCAA D1":typeof NCAA_D1_TEAMS!=="undefined"?NCAA_D1_TEAMS:[],
+  "NCAA D2":typeof NCAA_D2_TEAMS!=="undefined"?NCAA_D2_TEAMS:[],
+  台灣職業:typeof PRO_TEAMS!=="undefined"?PRO_TEAMS:[],
+  日本職業:typeof JAPAN_PRO_TEAMS!=="undefined"?JAPAN_PRO_TEAMS:[],
+  韓國職業:typeof KOREA_PRO_TEAMS!=="undefined"?KOREA_PRO_TEAMS:[],
+  CBA:typeof CBA_TEAMS!=="undefined"?CBA_TEAMS:[],
+  "SBL／半職業":typeof SEMIPRO_TEAMS!=="undefined"?SEMIPRO_TEAMS:[],
+  "NBA G League":typeof GLEAGUE_TEAMS!=="undefined"?GLEAGUE_TEAMS:[],
+  歐洲聯賽:typeof EUROPE_TEAMS!=="undefined"?EUROPE_TEAMS:[],
+  NBA:typeof NBA_TEAMS!=="undefined"?NBA_TEAMS:[]
+ };
+ return (pools[path]||[]).filter(team=>team!==p.team);
+}
+function signatureGameStage(representative){
+ const name=String(representative?.name||""),finish=String(representative?.finish||"");
+ if(name==="例行賽"||name.endsWith("例行賽"))return "例行賽關鍵戰";
+ if(name==="季後賽"||name.endsWith("季後賽")){
+  if(finish==="冠軍"||finish==="亞軍")return "總冠軍戰";
+  if(finish==="四強")return "季後賽四強";
+  if(finish==="首輪晉級")return "首輪晉級戰";
+  return "季後賽首輪";
+ }
+ return ({冠軍:"冠軍戰",亞軍:"冠軍戰",四強:"四強賽",八強:"八強賽",複賽:"複賽關鍵戰",預賽:"分組賽"})[finish]||"年度關鍵戰";
+}
+function completeSignatureGame(game,r,representative){
+ const pool=signatureOpponentPool(p.path);
+ const finish=String(representative?.finish||"");
+ const stage=signatureGameStage(representative);
+ const win=finish==="冠軍"||finish==="首輪晉級"||(/例行賽關鍵戰|複賽關鍵戰/.test(stage)&&r()>=.25)||(finish==="預賽"&&r()>=.5);
+ const proPace=["NBA","NBA G League","CBA","歐洲聯賽"].includes(p.path);
+ const low=proPace?88:66,high=proPace?122:94;
+ const winner=ri(r,low,high),margin=ri(r,2,13);
+ game.event=String(representative?.name||leagueDisplay(p.path)||p.path||"年度賽事");
+ game.stage=stage;
+ game.opponent=pool.length?pool[ri(r,0,pool.length-1)]:"同級勁旅";
+ game.result=win?"勝":"敗";
+ game.scoreFor=win?winner:winner-margin;
+ game.scoreAgainst=win?winner-margin:winner;
+ return game;
+}
 function maybeNaturalSeasonInjury(){
  if(p.seasonNaturalInjuryChecked||p.injury)return false;
  p.seasonNaturalInjuryChecked=true;
@@ -18,7 +68,7 @@ function showHealth(){
  chapter.textContent=`${p.year} · ${p.age}歲 · 健康結算`;title.textContent="健康與傷病";
  text.textContent=p.injury
    ? "醫療團隊完成本季傷勢評估。下方會顯示受傷部位、預估缺席場數、恢復時間與舊傷紀錄。"
-   : "醫療團隊完成本季健康檢查。沒有新的正式傷勢，身體負荷與舊傷狀況如下。";
+   : "醫療團隊完成本季健康檢查。你順利度過球季，身體負荷與舊傷狀況如下。";
 
  if(p.injury){
    p.healthySeasons=0;
@@ -26,7 +76,7 @@ function showHealth(){
    const original=p.injury.originalMissedGames??0;
    const remaining=Math.max(0,p.injury.remainingGames??original);
    const actualRisk=Math.round((1-Math.max(0,Math.min(1,Number(p.seasonInjurySurvival)||0)))*100);
-   const riskSettlement=p.seasonNaturalInjuryChecked?`${actualRisk}%`:`本季已有正式傷勢，不重複抽新傷`;
+   const riskSettlement=p.seasonNaturalInjuryChecked?`${actualRisk}%`:`已記錄 ${p.injury.name}`;
   special.innerHTML=`<div class="injuryCard ${p.injury.level==="輕傷"?"light":p.injury.level==="中傷"?"mid":""}">
      <b>🏥 ${p.injury.name}</b><br>${p.lastInjurySummary||""}
      <div class="medicalGrid">
@@ -36,19 +86,20 @@ function showHealth(){
        <div class="medicalCell"><small>恢復時間</small><b>${p.injury.recovery||"依復健進度"}</b></div>
        <div class="medicalCell"><small>目前預估剩餘</small><b>${remaining>0?remaining+" 場":"可望復出"}</b></div>
     </div>
-  </div><div class="medicalPanel"><div class="cardLabel">本季風險如何累積</div><b class="medicalValue">季初基礎 ${Math.round(p.seasonInjuryRiskTarget||estimatedPlanRisk(p.seasonPlan||"normal"))}%｜健康結算 ${riskSettlement}</b><div class="mut" style="margin-top:6px">一般事件不會逐次抽傷病；若球員已帶傷或在國際賽出現正式傷勢，健康階段不會再追加一個新傷病判定。</div></div>
+  </div><div class="medicalPanel"><div class="cardLabel">本季健康評估</div><b class="medicalValue">季初受傷風險 ${Math.round(p.seasonInjuryRiskTarget||estimatedPlanRisk(p.seasonPlan||"normal"))}%｜本季結果：${riskSettlement}</b><div class="mut" style="margin-top:6px">接下來的重點是治療與復健；醫療團隊會依剩餘賽程持續更新可復出時間。</div></div>
    <div class="medicalPanel"><div class="cardLabel">舊傷紀錄</div><div class="medicalHistory">${oldInjuryHTML()}</div></div>`;
- }else{
-   p.healthySeasons++;
-   p.bodyLoad=Math.round(Math.max(0,(p.bodyLoad||0)-14-(p.seasonPlan==="care"?8:0)));
+  }else{
+    p.healthySeasons++;
+    p.bodyLoad=Math.round(Math.max(0,(p.bodyLoad||0)-14-(p.seasonPlan==="care"?8:0)));
+    const fadedOldInjuries=decayOldInjuries();
    let ironHTML=(p.healthySeasons>=3&&!hasTitle("ironman"))?unlockTitle("ironman"):"";
    let comebackHTML=rehabSeasonEffect();
    let baseRisk=Math.round(p.seasonInjuryRiskTarget||estimatedPlanRisk(p.seasonPlan||"normal"));
    let actualRisk=Math.round((1-Math.max(0,Math.min(1,Number(p.seasonInjurySurvival)||1)))*100);
-  special.innerHTML=`<div class="healthok"><div class="healthHeadline">本季平安出賽</div><div class="healthSub">季初基礎風險 <b>${baseRisk}%</b>｜納入本季明確負荷後，健康結算 <b>${actualRisk}%</b>；一般事件沒有額外逐次抽傷病。</div></div>
-   <div class="medicalPanel"><div class="cardLabel">身體負荷</div><b class="medicalValue">${p.bodyLoad}/100｜${medicalRiskLabel()}</b>
-   <div class="bodyLoadBar"><div class="bodyLoadFill" style="width:${Math.round(p.bodyLoad||0)}%"></div></div>
-   <div style="margin-top:8px">${oldInjuryHTML()}</div></div>${ironHTML}${comebackHTML}`;
+   special.innerHTML=`<div class="healthok"><div class="healthHeadline">本季平安出賽</div><div class="healthSub">季初預估受傷風險 <b>${baseRisk}%</b>｜球季結束時為 <b>${actualRisk}%</b>。你沒有新增需要停賽治療的傷勢。</div></div>
+    <div class="medicalPanel"><div class="cardLabel">身體負荷</div><b class="medicalValue">${p.bodyLoad}/100｜${medicalRiskLabel()}</b>
+    <div class="bodyLoadBar"><div class="bodyLoadFill" style="width:${Math.round(p.bodyLoad||0)}%"></div></div>
+    <div style="margin-top:8px">${oldInjuryHTML()}</div>${fadedOldInjuries.length?`<div class="mut" style="margin-top:7px">連續健康出賽讓 ${fadedOldInjuries.join("、")} 的舊傷警報解除；其餘部位也正在持續改善。</div>`:""}</div>${ironHTML}${comebackHTML}`;
  }
  next.textContent="查看賽季成果 →";next.classList.remove("hidden");
 }
@@ -81,7 +132,9 @@ function showResults(){
  const roleBoost=isProPath()?({core:5,starter:3,sixth:1,worker:0,benchLeader:-3,garbage:-7}[v8Role.current]||0):0;
  const worldMinutes=isProPath()?(v8World.direction==="rebuild"?(p.age<=26?3:-2):v8World.direction==="contend"?(v8Role.current==="core"||v8Role.current==="starter"?2:-2):v8World.direction==="turmoil"?-2:v8World.direction==="finance"?-1:0):0;
  const coachMinutes=isProPath()?Math.round(((p.careerCast?.coach?.trust||50)-50)*.08):0;
- let mins=Math.round(baseMins+relative*(isProPath()?.68:.48)+p.rep*(isProPath()?.14:.18)+mental*1.1+roleBoost+worldMinutes+coachMinutes+ri(r,-3,3)-(isProPath()?veteranProfile.penalty:0));
+ // 體能代表耐力與可承擔負荷；相同角色下，體能越好越能留在場上。
+ const staminaMinutes=Math.max(-3.5,Math.min(3.5,(p.stats.ath-50)*.07));
+ let mins=Math.round(baseMins+relative*(isProPath()?.68:.48)+p.rep*(isProPath()?.14:.18)+mental*1.1+roleBoost+worldMinutes+coachMinutes+staminaMinutes+ri(r,-3,3)-(isProPath()?veteranProfile.penalty:0));
  mins=Math.max(isProPath()?6:8,Math.min(maxMins,mins));
  let promisedFloor=0;
  if(isProPath()){
@@ -93,18 +146,19 @@ function showResults(){
 
  let levelPenalty=isProPath()?Math.max(-4,Math.min(5,(ov-leagueTarget())*.18)):0;
  // 先算每36分鐘產量，再依真正上場時間換算，讓「35分鐘卻像12分鐘角色」不再太常出現。
- let scoringSkill=p.stats.shoot*.43+p.stats.finish*.42+p.stats.ath*.15;
+ // 切入以控球創造路線、終結完成進球；綜合體能只提供較小的爆發／對抗輔助。
+ let scoringSkill=p.stats.shoot*.38+p.stats.finish*.45+p.stats.handle*.10+p.stats.ath*.07;
  let veteranEfficiencyPenalty=isProPath()?Math.max(0,p.age-33)*.55:0;
  let scoring36=8+(scoringSkill-40)*.43+levelPenalty*1.15+mental*1.0+(p.planStatMod||0)*1.2+ri(r,-2,2)-veteranEfficiencyPenalty;
  let rawPts=Math.max(3,scoring36)*(mins/36)-injPenalty*.20;
- let rawReb=(2.1+(p.stats.rebound-35)*.085)*(mins/30)+ri(r,-1,1);
+ let rawReb=(2.1+(p.stats.rebound-35)*.082+(p.stats.ath-50)*.018)*(mins/30)+ri(r,-1,1);
  let rawAst=(1.6+((p.stats.pass+p.stats.handle+p.stats.iq)/3-35)*.070)*(mins/30)+levelPenalty*.08+mental*.18+ri(r,-1,1);
  let rawStl=(.35+(p.stats.defense-35)*.021+(p.stats.iq-35)*.008)*(mins/30)+r()*.20;
 
  let pts=Math.max(1,Math.round(rawPts*bias.pts*10)/10);
  // 不同層級的比賽節奏、球權集中度與賽程長度不同。即使能力封頂，
  // 場均得分也不該在台灣／日韓職籃長期膨脹到 NBA 歷史級數字。
- const scoringCeiling=p.path==="NBA"?38:p.path==="NBA G League"?34:p.path==="HBL"?34:isCollegePath()?31:p.path==="SBL／半職業"?32:["韓國職籃","日本職籃"].includes(p.path)?31:34;
+ const scoringCeiling=p.path==="NBA"?38:p.path==="歐洲聯賽"?32:p.path==="NBA G League"?34:p.path==="HBL"?34:isCollegePath()?31:p.path==="SBL／半職業"?32:["韓國職業","日本職業"].includes(p.path)?31:34;
  pts=Math.min(scoringCeiling,pts);
  let reb=Math.max(.5,Math.round(rawReb*bias.reb*10)/10);
  let ast=Math.max(0,Math.round(rawAst*bias.ast*10)/10);
@@ -113,9 +167,16 @@ function showResults(){
 
  // 命中率改成比較合理的籃球區間；舊版太容易人人FG 60%+、3PT 50%+。
  let posFg=p.pos==="C"?4:p.pos==="PF"?2:p.pos==="PG"?-1:0;
- let fg=Math.max(34,Math.min(62,Math.round(36+p.stats.finish*.12+p.stats.shoot*.055+p.stats.ath*.025+posFg+mental*.9+ri(r,-2,2))));
- let three=Math.max(20,Math.min(47,Math.round(21+p.stats.shoot*.22+p.stats.iq*.025+mental*.8+ri(r,-2,2))));
+ let fg=Math.max(34,Math.min(62,Math.round(36+p.stats.finish*.14+p.stats.shoot*.025+p.stats.handle*.015+p.stats.ath*.025+posFg+mental*.9+ri(r,-2,2))));
+ let three=Math.max(20,Math.min(47,Math.round(20+p.stats.shoot*.245+p.stats.iq*.02+mental*.8+ri(r,-2,2))));
  if(games===0){mins=0;pts=0;reb=0;ast=0;stl=0;blk=0;fg=0;three=0;}
+
+ // 賽程越密、上場越久，疲勞與身體負荷越高；體能只在這裡提供耐力／恢復優勢。
+ const scheduleDensity=scheduledGames>=70?12:scheduledGames>=40?8:scheduledGames>=25?5:3;
+ const workload=Math.max(0,mins-18)*.35,staminaRelief=(p.stats.ath-50)*.12,planLoad=p.seasonPlan==="attack"?3:p.seasonPlan==="care"?-3:0;
+ const seasonFatigueGain=games?Math.max(2,Math.min(26,Math.round(scheduleDensity+workload-staminaRelief+planLoad))):0;
+ const seasonBodyLoadGain=games?Math.max(1,Math.min(18,Math.round(scheduleDensity*.55+workload*.6-staminaRelief*.5+planLoad))):0;
+ p.fatigue=Math.min(100,(p.fatigue||0)+seasonFatigueGain);p.bodyLoad=Math.min(100,(p.bodyLoad||0)+seasonBodyLoadGain);
 
  let pool=tournamentPool(), tourneys=[];
  if(p.path==="HBL"){
@@ -159,9 +220,10 @@ function showResults(){
  let stageDevelopmentPoints=p.path==="HBL"
    ? Math.max(3,Math.min(6,3+Math.floor((p.growth-55)/15)))
    : (isCollegePath()&&p.age<=21?1:0);
- const eliteDevelopmentPoints=p.seedTier==="S+"
-   ? (p.age<=21?3:p.age<=24?2:0)
-   : p.seedTier==="S"?(p.age<=21?2:p.age<=23?1:0):0;
+ const eliteDevelopmentPoints=p.seedTier==="SSS+"?(p.age<=21?5:p.age<=24?3:0)
+    :p.seedTier==="SS+"?(p.age<=21?4:p.age<=24?3:0)
+    :p.seedTier==="S+"?(p.age<=21?3:p.age<=24?2:0)
+    :p.seedTier==="S"?(p.age<=21?2:p.age<=23?1:0):0;
  const developmentPoints=stageDevelopmentPoints+(p.path!=="HBL"?eliteDevelopmentPoints:0);
  p.seasonStats={games,mins,pts,reb,ast,stl,blk,fg,three,tourneys:resultRows,awards};
  let proAwards=determineAwards(p.seasonStats,resultRows);
@@ -184,13 +246,27 @@ function showResults(){
  if(representative)recordV8Story("game",`${representative.name}取得${representative.finish}；你繳出 ${pts}分、${reb}籃板、${ast}助攻`,representative.finish==="冠軍"?5:3);
  if(proAwards.length)recordV8Story("turning",`本季獲得${proAwards.slice(0,2).join("、")}`,proAwards.some(x=>/MVP|第一隊|最佳防守/.test(x))?5:3);
  evaluateV8CoachFuture(resultRows);
+ const signatureR=RNG(`${p.seed}-signature-game-${p.year}-${p.team}`),gameMinutesCap=["NBA","NBA G League"].includes(p.path)?48:40;
+ const signatureGame=games>0?{
+   minutes:Math.min(gameMinutesCap,Math.max(Math.round(mins),Math.round(mins)+ri(signatureR,2,7))),
+   pts:Math.max(Math.round(pts),Math.min(65,Math.round(pts+Math.max(5,pts*.5)+ri(signatureR,0,7)))),
+   reb:Math.max(Math.round(reb),Math.min(25,Math.round(reb+2+ri(signatureR,0,4)))),
+   ast:Math.max(Math.round(ast),Math.min(22,Math.round(ast+2+ri(signatureR,0,4)))),
+   stl:Math.max(Math.round(stl),Math.min(9,Math.round(stl+signatureR()*2.4))),
+   blk:Math.max(Math.round(blk),Math.min(9,Math.round(blk+signatureR()*2.2)))
+ }:null;
+ if(signatureGame){
+  signatureGame.impact=Math.round(signatureGame.pts+signatureGame.reb*1.2+signatureGame.ast*1.5+signatureGame.stl*3+signatureGame.blk*3);
+  completeSignatureGame(signatureGame,signatureR,representative);
+ }
  p.seasonHistory.push({
    year:p.year,age:p.age,team:p.team,path:p.path,
+   competition:p.path==="歐洲聯賽"?(p.contract?.europeLeague||"歐洲國內頂級聯賽"):"",continentalCup:p.path==="歐洲聯賽"?(p.contract?.continentalCup||""):"",
    salary:isProPath()?Number(p.contract?.salary||0):0,contractType:isProPath()?String(p.contract?.type||""):"",
    scheduledGames,missedGames:missedThisSeason,
    injuryMissedGames:injuryMissed,injuryName:injuryMissed>0?(p.injury?.name||"傷病"):"",
    suspensionGames:conductMissed,
-   games,mins,pts,reb,ast,stl,blk,fg,three,ovr:overall()
+   games,mins,pts,reb,ast,stl,blk,fg,three,ovr:overall(),seasonFatigueGain,seasonBodyLoadGain,signatureGame,tourneys:resultRows,seasonAwards:[...awards,...proAwards]
  });
  const seasonStory=finalizeV8SeasonStory();
  updateCareerTotals(p.seasonStats);
@@ -213,7 +289,7 @@ const missReasonParts=[];
  原定賽程 ${scheduledGames} 場｜${missReasonParts.join("｜")}｜實際出賽 <b>${games}</b> 場
  ${p.injury?.remainingGames>0?`<br><span class="bad">目前仍預估缺席 ${p.injury.remainingGames} 場，傷勢將延續至下一階段。</span>`:""}
  </div>` : "";
- let veteranMinutesHTML=isProPath()&&p.age>=32?`<div class="notice"><b>⏱️ ${veteranProfile.label}</b><br>${p.age}歲老將本季上場時間上限約 <b>${maxMins} 分鐘</b>；年齡、身體負荷與傷後狀態會優先於球隊信任，避免暮年反而越打越久。</div>`:"";
+ let veteranMinutesHTML=isProPath()&&p.age>=32?`<div class="notice"><b>⏱️ ${veteranProfile.label}</b><br>教練團預計將你本季的上場時間控制在 <b>${maxMins} 分鐘</b>左右，並依年齡、身體負荷與傷後狀態隨時調整。</div>`:"";
  const rolePromiseMiss=isProPath()&&promisedFloor&&mins<promisedFloor-2;
  special.innerHTML=`
  ${rolePromiseMiss?`<div class="notice fail"><b>⚠️ 角色承諾未兌現</b><br>合約承諾：${p.roleState.promisedLabel}（${p.roleState.promisedMinutes||"未明確"}）｜實際：${p.roleState.currentLabel}（${mins}分鐘）。此落差可能觸發後續協商。</div>`:""}
@@ -304,7 +380,9 @@ function pointCost(k){
  // Growth is now visible in actual development, not only scouting. Elite seeds
  // accelerate most strongly from college age through the first pro contract,
  // then return to the same late-career costs as everyone else.
- if(p.seedTier==="S+")seedDiscount=p.age<=22?2:p.age<=26?3:p.age<=29?2:0;
+ if(p.seedTier==="SSS+")seedDiscount=p.age<=22?4:p.age<=26?5:p.age<=29?3:0;
+ else if(p.seedTier==="SS+")seedDiscount=p.age<=22?3:p.age<=26?4:p.age<=29?3:0;
+ else if(p.seedTier==="S+")seedDiscount=p.age<=22?2:p.age<=26?3:p.age<=29?2:0;
  else if(p.seedTier==="S")seedDiscount=p.age<=22?1:p.age<=26?2:p.age<=28?1:0;
  return Math.max(1,basePointCost(p.stats[k])+breakthroughSurcharge(k)-(p.geniusCostDiscount||0)-seedDiscount+skillCostModifier(k)+chainSkillDiscount(k));
 }
@@ -420,7 +498,10 @@ function finishSeason(){
      logIt(`🩺 ${p.injury.name} 持續復健｜預估仍缺席 ${p.injury.remainingGames} 場`);
    }
  }
- p.fatigue=Math.max(0,p.fatigue-18);
+ const staminaRecovery=Math.max(-3,Math.min(7,Math.round((p.stats.ath-50)*.10)));
+ const offseasonRecovery=(p.seasonPlan==="care"?32:p.seasonPlan==="attack"?18:25)+staminaRecovery;
+ p.fatigue=Math.max(0,p.fatigue-offseasonRecovery);
+ if(!p.injury)p.health=Math.min(100,(p.health||100)+(p.seasonPlan==="care"?10:6));
  p.confidence=Math.max(0,Math.min(100,Math.round(50+(p.confidence-50)*.88)));
  if((p.conductMarketPenalty||0)>0&&(p.conductPenaltySetYear||0)<p.year)p.conductMarketPenalty=Math.max(0,p.conductMarketPenalty-4);
 
@@ -432,9 +513,10 @@ function finishSeason(){
    p.seasonEventCount=ri(RNG(p.seed+"events-"+p.year),2,4);render();showCareerChapter("newSchoolYear");return;
  }
 
- // 大學：每一季都回到「留下 / 轉學 / 簽職業」決策
+ // 大學：每一季都先決定留校、轉學或報名新人市場，不會跳過選秀直接收到職業合約。
  if(isCollegePath()){
-   showCollegeDecision();return;
+   showCollegeDecision();
+   return;
  }
 
  // 成人發展體系：每季都重新進市場，不允許無限自動續留
@@ -472,7 +554,7 @@ function graduationProfile(){
  let ss=p.seasonStats||{};
  let production=Math.min(14,(ss.pts||0)*.24+(ss.ast||0)*.40+(ss.reb||0)*.19+(ss.stl||0)*.68+(ss.blk||0)*.30);
  let injuryPenalty=Math.min(10,p.injuryHistory.length*1.25)+(p.majorInjuryCount||0)*1.6;
- let tierBonus=p.seedTier==="S+"?4:p.seedTier==="S"?3:p.seedTier==="A"?1.5:p.seedTier==="B"?0:-1;
+ let tierBonus=p.seedTier==="SSS+"?7:p.seedTier==="SS+"?5.5:p.seedTier==="S+"?4:p.seedTier==="S"?3:p.seedTier==="A"?1.5:p.seedTier==="B"?0:-1;
  let scout=Math.round(
    avg*.30+top3*.23+talent*.21+production+
    Math.max(-10,p.rep)*.30+
@@ -489,7 +571,7 @@ function graduationInvite(path,scout,minScore,chance,salt){
  let r=RNG(p.seed+"grad-invite-"+path+"-"+p.year+"-"+salt);
  // The farther above the baseline, the more likely the invitation becomes.
  let extra=Math.max(0,scout-minScore)*.045;
- let tier=p.seedTier==="S+"?.12:p.seedTier==="S"?.09:p.seedTier==="A"?.04:0;
+ let tier=p.seedTier==="SSS+"?.20:p.seedTier==="SS+"?.16:p.seedTier==="S+"?.12:p.seedTier==="S"?.09:p.seedTier==="A"?.04:0;
  return r()<Math.min(.97,chance+extra+tier);
 }
 

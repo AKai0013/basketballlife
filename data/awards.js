@@ -64,7 +64,7 @@ const TITLE_DEFS={
  asia_journey:{name:"亞洲征途",rarity:"rare",effect:"職業市場評分 +2。",unlock:"曾在 4 個不同職業聯盟完成賽季。"},
  franchise:{name:"一生一隊",rarity:"epic",effect:"該母隊的球衣退休評估獲得忠誠加成。",unlock:"同一支職業球隊效力至少 6 季。"},
  evergreen:{name:"職業常青樹",rarity:"epic",effect:"退役 BL POWER 額外 +500。",unlock:"正式成人／職業聯盟累積 700 場出賽。"},
- veteran:{name:"沉著老練",rarity:"uncommon",effect:"所有策略判定獲得少量經驗加成。",unlock:"生涯累積成功處理 8 次事件。"},
+ veteran:{name:"沉著老練",rarity:"uncommon",effect:"面對生涯抉擇時，更容易得到理想結果。",unlock:"生涯累積成功處理 8 次事件。"},
  daredevil:{name:"無畏者",rarity:"rare",effect:"冒險成功率 54% → 60%，大成功門檻更寬。",unlock:"連續 3 次選擇冒險策略且全部成功。"},
  gambler:{name:"豪賭之星",rarity:"epic",effect:"冒險成功率最高提升至 66%，大成功能力獎勵更高；大失敗代價不變。",unlock:"生涯累積 10 次冒險策略成功。"},
  composed:{name:"審時度勢",rarity:"uncommon",effect:"平衡策略成功率 66% → 78%。",unlock:"連續 4 次平衡策略成功。"},

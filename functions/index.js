@@ -142,7 +142,7 @@ function leaderboardReturnPatchScript() {
       url.search = "";
       url.hash = "";
       url.searchParams.set("leaderboard", saved.metric || "power");
-      url.searchParams.set("era", saved.era || "v8");
+      url.searchParams.set("era", saved.era || "v81");
       return url.pathname + url.search;
     }
 
@@ -156,7 +156,7 @@ function leaderboardReturnPatchScript() {
     bl.openCareer = async function (...args) {
       if (!restoring && isLeaderboardView()) {
         returnState = {
-          era: state.activeLeaderboardEra || "v8",
+          era: state.activeLeaderboardEra || "v81",
           metric: state.activeMetric || "power",
           scrollY: Math.max(0, window.scrollY || document.documentElement.scrollTop || 0),
         };
@@ -170,7 +170,7 @@ function leaderboardReturnPatchScript() {
       returnState = null;
       restoring = true;
       try {
-        state.activeLeaderboardEra = saved.era || "v8";
+        state.activeLeaderboardEra = saved.era || "v81";
         state.activeMetric = saved.metric || "power";
         history.replaceState({ bl: "leaderboard" }, "", leaderboardUrl(saved));
         await bl.openLeaderboard(saved.metric || "power", false);

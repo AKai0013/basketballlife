@@ -7,6 +7,20 @@ const V8_AGENTS=[
 ];
 const V8_TEAMMATES=["王柏勛","李冠廷","張睿哲","陳柏宇","林育誠","黃子維","吳政諺","周品皓"];
 const V8_RIVALS=["趙允成","江承峰","徐尚恩","何彥廷","蘇庭岳","羅威辰"];
+const V8_OVERSEAS_COACHES={
+ english:[{name:"Marcus Bennett",trait:"強調防守紀律與空間"},{name:"Daniel Carter",trait:"願意讓年輕後衛主導進攻"},{name:"Anthony Reed",trait:"用數據決定輪替"},{name:"Victor Hayes",trait:"偏好高強度轉換進攻"}],
+ japan:[{name:"高橋直樹",trait:"重視團隊秩序與無球跑動"},{name:"佐藤健一",trait:"擅長培養年輕球員"},{name:"中村修平",trait:"防守要求非常細膩"},{name:"小林拓海",trait:"偏好快速傳導體系"}],
+ korea:[{name:"김도현",trait:"訓練強度與紀律要求很高"},{name:"박준서",trait:"擅長建立防守體系"},{name:"이승현",trait:"依照對位快速改變輪替"},{name:"최민규",trait:"重視速度與外線空間"}],
+ china:[{name:"王建軍",trait:"偏好成熟即戰力"},{name:"李昊然",trait:"重視身體對抗與防守"},{name:"陳偉東",trait:"給持球核心很大自由"},{name:"趙明宇",trait:"用狀態而非名氣排輪替"}],
+ europe:[{name:"Alejandro Ruiz",trait:"強調閱讀比賽與半場執行"},{name:"Matteo Ricci",trait:"擅長設計無球與擋拆進攻"},{name:"Nikola Petrović",trait:"要求對抗、紀律與防守輪轉"},{name:"Theo Laurent",trait:"重視空間、傳導與多位置能力"},{name:"Emre Kaya",trait:"比賽計畫細密且輪替嚴格"}]
+};
+const V8_OVERSEAS_TEAMMATES={
+ english:["Jordan Reed","Malik Thompson","Ethan Brooks","Darius Cole","Noah Williams","Cameron Price","Jaylen Foster","Andre Lewis"],
+ japan:["田中悠真","山本蓮","伊藤颯太","松本大輝","渡邊海斗","鈴木亮介","井上晴人","藤田陸"],
+ korea:["김민준","이도윤","박지훈","최현우","정우진","강태윤","윤성민","한준호"],
+ china:["張子豪","陳宇軒","王浩然","李俊傑","趙天宇","周博文","劉凱翔","許家銘"],
+ europe:["Luka Petrović","Matteo Bianchi","Theo Laurent","Alejandro Vega","Nikos Papadakis","Emre Demir","Jonas Müller","Mantas Kazlauskas"]
+};
 const V8_TEAM_DIRECTIONS=[
  {id:"contend",label:"爭冠窗口",note:"球團只接受能立即幫助贏球的角色。"},
  {id:"playoff",label:"季後賽競爭",note:"輪替會隨戰績與對位快速調整。"},

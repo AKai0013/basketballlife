@@ -88,10 +88,28 @@ function weightedInjuryByTier(r,tier){
  for(let i=0;i<pool.length;i++){z-=weights[i];if(z<=0)return pool[i]}
  return pool[pool.length-1];
 }
-function addOldInjury(area,amount=1){p.oldInjuries[area]=(p.oldInjuries[area]||0)+amount}
+function addOldInjury(area,amount=1,tier="中傷"){
+ p.oldInjuries[area]=Math.min(6,Math.round(((p.oldInjuries[area]||0)+amount)*100)/100);
+ p.oldInjuryFloors=p.oldInjuryFloors||{};p.oldInjuryLastYear=p.oldInjuryLastYear||{};
+ const floor=tier==="重傷"?.75:tier==="大傷"?.35:0;
+ p.oldInjuryFloors[area]=Math.max(Number(p.oldInjuryFloors[area])||0,floor);
+ p.oldInjuryLastYear[area]=p.year;
+}
+function decayOldInjuries(){
+ p.oldInjuryFloors=p.oldInjuryFloors||{};p.oldInjuryLastYear=p.oldInjuryLastYear||{};
+ const recovered=[];
+ for(const [area,raw] of Object.entries(p.oldInjuries||{})){
+   const floor=Math.max(0,Number(p.oldInjuryFloors[area])||0),years=Math.max(0,p.year-(Number(p.oldInjuryLastYear[area])||p.year));
+   let decay=.42+(p.seasonPlan==="care"?.22:0)+(p.healthySeasons>=2?.12:0)+(years>=4?.10:0);
+   const next=Math.max(floor,Math.round((Number(raw||0)-decay)*100)/100);
+   if(next<=.05){delete p.oldInjuries[area];delete p.oldInjuryFloors[area];delete p.oldInjuryLastYear[area];recovered.push(area)}
+   else p.oldInjuries[area]=next;
+ }
+ return recovered;
+}
 function oldInjuryHTML(){
  const es=Object.entries(p.oldInjuries||{}).filter(([k,v])=>v>0);
- return es.length?es.map(([k,v])=>`<span class="oldInjury">${k}｜舊傷 Lv.${v}</span>`).join(""):"目前沒有明顯舊傷部位。";
+ return es.length?es.map(([k,v])=>`<span class="oldInjury">${k}｜${v>=2.5?"高":v>=1.25?"中":"低"}度復發風險</span>`).join(""):"目前沒有明顯舊傷部位。";
 }
 function updateBodyLoad(reason=0){
  let plan=p.seasonPlan==="attack"?14:p.seasonPlan==="care"?-14:2;
@@ -164,7 +182,9 @@ function createInjury(r,risk,areaHint=""){
    if(alt.length)x=alt[ri(r,0,alt.length-1)];
  }
  let nbaEquivalentGames=ri(r,x.games[0],x.games[1]);
- let recur=(p.oldInjuries[x.area]||0)>0;
+ const oldBurden=Number(p.oldInjuries[x.area])||0,lastYear=Number(p.oldInjuryLastYear?.[x.area])||0,yearsSince=Math.max(0,p.year-lastYear);
+ const recurChance=Math.max(0,Math.min(.68,.04+oldBurden*.13+(p.fatigue||0)*.0015+(p.bodyLoad||0)*.001-yearsSince*.035));
+ let recur=oldBurden>0&&r()<recurChance;
 
  if(recur){
    nbaEquivalentGames+=ri(r,1,5);
@@ -187,7 +207,7 @@ function createInjury(r,risk,areaHint=""){
  };
  p.injuryHistory.push({year:p.year,name:x.name,area:x.area,level:tier,missedGames,recovery:x.recovery,seasonShare:originalSeasonShare});
  p.medicalHistory.push({year:p.year,name:x.name,area:x.area,tier,missedGames,recovery:x.recovery,recur,seasonShare:originalSeasonShare});
- if(x.area!=="頭部")addOldInjury(x.area,tier==="重傷"?2:1);
+ if(x.area!=="頭部")addOldInjury(x.area,tier==="重傷"?1.8:tier==="大傷"?1.2:tier==="中傷"?.75:.45,tier);
  p.health=Math.max(20,p.health-tierWeight(tier)*8);
  p.bodyLoad=Math.min(100,(p.bodyLoad||0)+tierWeight(tier)*7);
 

@@ -35,7 +35,7 @@ function startCareer(){
  const jerseyNumber=Math.max(0,Math.min(99,Math.round(Number(document.getElementById("jerseyNumberInput")?.value)||7)));
  const handedness=document.getElementById("handednessInput")?.value||"右手";
  const weekly=weeklyChallengeProfile(),weeklyChallenge=weeklySetupActive&&seed===weekly.seed&&chosenPos===weekly.pos&&chosenHeight===weekly.height&&chosenWingspan===weekly.wingspan?{active:true,id:weekly.id,label:weekly.label,seed:weekly.seed,pos:weekly.pos,height:weekly.height,wingspan:weekly.wingspan}:{active:false};
- p={name:n,pos:chosenPos,seed,avatarSeed:selectedAvatarSeed(),heightCm:chosenHeight,wingspanCm:chosenWingspan,birthplace,jerseyNumber,handedness,readingMode:"standard",weeklyChallenge,careerVersion:"8.0.0",seedTier:tier.key,seedTierLabel:tier.label,seedTierDesc:tier.desc,
+ p={name:n,pos:chosenPos,seed,avatarSeed:selectedAvatarSeed(),heightCm:chosenHeight,wingspanCm:chosenWingspan,birthplace,jerseyNumber,handedness,readingMode:"standard",weeklyChallenge,careerVersion:"8.1.0",seedTier:tier.key,seedTierLabel:tier.label,seedTierDesc:tier.desc,
  age:16,year:2026,path:"HBL",grade:1,stage:"training",stats:s,caps,growth:ri(r,tier.growth[0],tier.growth[1]),
  durability:ri(r,38,94),clutch:ri(r,35,96),discipline:ri(r,38,94),confidence:50,health:100,fatigue:0,six:0,genius:false,geniusType:"",round:0,eventIndex:0,
  seasonEventCount:ri(r,2,4),dice:[],used:[],trainingUndo:[],trainingProgress:{shoot:0,finish:0,handle:0,pass:0,defense:0,rebound:0,ath:0,iq:0},pointUndo:[],seasonPoints:0,bonusPoints:0,rep:0,injury:null,injuryHistory:[],log:[],seasonStats:null,team:"",geniusResolved:false,geniusFailed:false,transition:null,geniusCostDiscount:0,titles:[],titleHistory:[],seasonPointFocus:[],clutchWins:0,eventSuccesses:0,healthySeasons:0,championships:0,severeInjuryRecovered:false,offers:[],strategyStats:{risk:{pick:0,success:0,streak:0,best:0},balance:{pick:0,success:0,streak:0,best:0},safe:{pick:0,success:0,streak:0,best:0}},seasonEventSuccess:0,geniusFailureShown:false,careerSeason:0,contract:null,seasonPlan:null,planRiskMod:0,planGrowthMod:0,planStatMod:0,nationalCaps:0,relationship:"單身",lifeEventCount:0,news:[],seasonHistory:[],careerAwards:[],careerSalary:0,careerGames:0,careerPtsTotal:0,careerRebTotal:0,careerAstTotal:0,chainTitles:[],retired:false,retirementReason:"",peakOverall:0,ageDeclineStage:0,careerMVP:0,careerFirstTeam:0,careerSecondTeam:0,careerDPOY:0,careerScoringTitles:0,careerAssistTitles:0,
@@ -47,12 +47,12 @@ function startCareer(){
  specialQueue:[],specialIndex:0,romanceStage:0,romanceNextYear:0,romanceLastResult:"",nationalCallups:0,u18Caps:0,u20Caps:0,youthNationalAwards:0,lastNationalCallupYear:0,nationalSelectionStreak:0,familyHarmony:60,scandalCount:0,divorced:false,
  conductMarketPenalty:0,conductSuspensionGames:0,nationalTeamBanUntil:0,conductPenaltySetYear:0,offCourtHistory:[],offCourtEventKinds:[],lastOffCourtEventYear:0,financialLosses:0,
  specialBonusPoints:0,internationalHistory:[],championshipHistory:[],awardHistoryByLeague:{},lastSeasonAwards:[],hallVotes:[],
-    bodyLoad:0,oldInjuries:{},rehabBoost:0,medicalHistory:[],medicalPressureHistory:[],lastMedicalPressureYear:0,majorInjuryCount:0,careerThreatInjuries:0,recoverySeasons:0,seasonInjuryRiskTarget:0,seasonInjurySurvival:1,seasonInjuryChecksDone:0,seasonInjuryExtra:0,seasonMedicalEventShown:false,seasonNaturalInjuryChecked:false,
+    bodyLoad:0,oldInjuries:{},oldInjuryFloors:{},oldInjuryLastYear:{},rehabBoost:0,medicalHistory:[],medicalPressureHistory:[],lastMedicalPressureYear:0,majorInjuryCount:0,careerThreatInjuries:0,recoverySeasons:0,seasonInjuryRiskTarget:0,seasonInjurySurvival:1,seasonInjuryChecksDone:0,seasonInjuryExtra:0,seasonMedicalEventShown:false,seasonNaturalInjuryChecked:false,
     recentEvents:[],eventMemory:{},specialEventMemory:{},feedHistory:[],relationshipHistory:[],chainQueue:[],storyBeats:[],seasonStoryCandidates:[],careerCast:{},teamWorld:{},roleState:{},expandedFeedYear:null,showOlderFeedYears:false,pendingRenewalOffer:null,pendingNBAOffer:null,pendingTryoutOffer:{},declinedTryoutCount:0,marketOriginTeam:"",marketOriginLeague:"",marketReturnOffer:null,marketReturnMode:"",
     medicalProtectionUntilYear:0,medicalProtectionReason:"",medicalProtectedArea:"",postOpCareChosen:false,lastMajorInjuryYear:0,
     lastDanceActive:false,lastDanceUsed:false,retirementDefianceUsed:false,retirementDefianceSucceeded:false,retirementPressureUsed:false,retirementCrisisCount:0,retirementCrisisReason:"",homecomingTeam:"",homecomingRegion:"",
     publicCareerId:"",publicCareerUploadId:"",leaderboardChoice:null,retirementRankSummary:null,careerUploadError:null,diceRevealCount:0,diceRolling:false,
-    developmentSeasons:0,developmentLastChanceUsed:false,firstFullProAge:null,pendingSeasonAdvance:false,franchiseTeam:""};
+    developmentSeasons:0,developmentLastChanceUsed:false,firstFullProAge:null,pendingSeasonAdvance:false,freshmanDraftAttempted:false,collegeDraftHistory:[],draftEntrySelections:[],proEntrySource:"",proEntryYear:0,franchiseTeam:""};
 
  p.team=HBL_TEAMS[ri(RNG(p.seed+"hbl-team"),0,HBL_TEAMS.length-1)];
  ensureV8CareerState(p);refreshV8Role(p,"生涯起點");
@@ -94,8 +94,8 @@ function render(){
  if(injurySummary)injurySummary.innerHTML=p.injury?`目前傷勢：<span class="bad">${p.injury.name}（${p.injury.level}）</span>`:(p.injuryHistory.length?`傷病履歷：${p.injuryHistory.length} 次正式傷勢`:"目前沒有正式傷病紀錄。");
  if(log)log.innerHTML=p.log.map(x=>`<div>• ${x}</div>`).join("");
  const cl=confidenceLabel();
- titleShelf.innerHTML=([...[...p.titles,...p.chainTitles].map(t=>`<span class="titleBadge ${titleRarityClass(t)}" tabindex="0" data-tip="${escapeFeedText(t.effect||"生涯特殊稱號")}">${t.name}</span>`),
- `<span class="mentalBadge ${cl.cls}" tabindex="0" data-tip="影響事件判定、臨場表現與市場評價">心理｜${cl.name} ${p.confidence}</span>`,
+ titleShelf.innerHTML=([...[...p.titles,...p.chainTitles].map(t=>{const def=typeof titleDefinition==="function"?titleDefinition(t):{};const effect=t.id==="genius"?(t.effect||def.effect):(def.effect||t.effect);return `<span class="titleBadge ${titleRarityClass(t)}" tabindex="0" data-tip="${escapeFeedText(effect||"生涯特殊稱號")}">${def.name||t.name}</span>`}),
+ `<span class="mentalBadge ${cl.cls}" tabindex="0" data-tip="影響重大選擇的結果、臨場表現與市場評價">心理｜${cl.name} ${p.confidence}</span>`,
  `<span class="mentalBadge" tabindex="0" data-tip="影響上場時間、續約與市場價值">球隊信任｜${p.rep>=0?"+":""}${p.rep}</span>`]).join("");
  refreshTicker();
  if(isProPath()){
@@ -112,6 +112,31 @@ function render(){
  flow.innerHTML=p.stage==="transition"?"":[["training","季初特訓"],["events","一般事件"],["special","特殊事件"],["health","健康"],["results","賽季結算"],["points","能力點"]].map(([k,t])=>`<span class="${p.stage===k?"on":""}">${t}</span>`).join("");
 }
 
+function abilityHelpPopover(){
+ let pop=document.getElementById("abilityHelpPopover");
+ if(pop)return pop;
+ pop=document.createElement("div");pop.id="abilityHelpPopover";pop.className="abilityHelpPopover";pop.hidden=true;pop.setAttribute("role","tooltip");
+ pop.innerHTML='<b class="abilityHelpTitle"></b><span class="abilityHelpText"></span>';
+ document.body.appendChild(pop);return pop;
+}
+function closeAbilityHelp(el=null){
+ const pop=document.getElementById("abilityHelpPopover"),active=el||document.querySelector(".abilityHelpCard.helpOpen");
+ if(active){active.classList.remove("helpOpen");active.setAttribute("aria-expanded","false")}
+ if(pop){pop.hidden=true;pop.removeAttribute("data-ability");pop.removeAttribute("data-pinned")}
+}
+function showAbilityHelp(el,pinned=false){
+ if(!el)return;const key=el.dataset.ability,pop=abilityHelpPopover();
+ document.querySelectorAll(".abilityHelpCard.helpOpen").forEach(node=>{if(node!==el){node.classList.remove("helpOpen");node.setAttribute("aria-expanded","false")}});
+ el.classList.add("helpOpen");el.setAttribute("aria-expanded","true");pop.dataset.ability=key;if(pinned)pop.dataset.pinned="1";pop.querySelector(".abilityHelpTitle").textContent=L[key]||"能力影響";pop.querySelector(".abilityHelpText").textContent=ABILITY_HELP[key]||"影響球場表現。";pop.hidden=false;
+ requestAnimationFrame(()=>{const box=el.getBoundingClientRect(),gap=8,pad=12,w=pop.offsetWidth,h=pop.offsetHeight;let left=Math.max(pad,Math.min(box.left+(box.width-w)/2,innerWidth-w-pad)),top=box.bottom+gap;if(top+h>innerHeight-pad)top=Math.max(pad,box.top-h-gap);pop.style.left=`${Math.round(left)}px`;pop.style.top=`${Math.round(top)}px`});
+}
+function pinAbilityHelp(el){showAbilityHelp(el,true)}
+function leaveAbilityHelp(el){const pop=document.getElementById("abilityHelpPopover");if(pop?.dataset.pinned!=="1")closeAbilityHelp(el)}
+function toggleAbilityHelp(el){
+ if(!el)return;const pop=document.getElementById("abilityHelpPopover"),same=el.classList.contains("helpOpen")&&!pop?.hidden&&pop.dataset.pinned==="1";same?closeAbilityHelp(el):pinAbilityHelp(el);
+}
+document.addEventListener("pointerdown",event=>{if(!event.target.closest?.(".abilityHelpCard")&&!event.target.closest?.("#abilityHelpPopover"))closeAbilityHelp()});
+window.addEventListener("resize",()=>closeAbilityHelp());window.addEventListener("scroll",()=>closeAbilityHelp(),true);
 function abilityPanel(){
  return `<div class="trainingStats">${Object.entries(p.stats).map(([k,v])=>{
    const talent=p.caps[k],over=v>talent,maxed=v>=99;
@@ -119,7 +144,7 @@ function abilityPanel(){
    const detail=maxed
      ? `<div class="trainingCostDetail"><b>已達 99</b>｜無法再提升</div>`
      : `<div class="trainingCostDetail"><b>${v}→${v+1} 需要 ${cost} 點</b>｜已存 ${progress}/${cost}｜還差 ${need} 點</div>`;
-   return `<div class="stat"><div class="sl"><b>${L[k]}</b><span class="abilityValue"><span class="abilityScore">${v} / ${talent}</span>${over?` <span class="breakthroughTag">突破 +${v-talent}</span>`:""}</span></div><div class="track"><div class="fill" style="width:${Math.min(v,99)}%"></div></div>${detail}</div>`;
+    return `<div class="stat abilityHelpCard" data-ability="${k}" tabindex="0" role="button" aria-expanded="false" aria-label="${L[k]}：${ABILITY_HELP[k]||"影響球場表現。"}" onclick="pinAbilityHelp(this)" onmouseenter="showAbilityHelp(this)" onmouseleave="leaveAbilityHelp(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleAbilityHelp(this)}"><div class="sl"><b>${L[k]} <span class="abilityHelpMark">?</span></b><span class="abilityValue"><span class="abilityScore">${v} / ${talent}</span>${over?` <span class="breakthroughTag">突破 +${v-talent}</span>`:""}</span></div><div class="track"><div class="fill" style="width:${Math.min(v,99)}%"></div></div>${detail}</div>`;
  }).join("")}</div>`;
 }
 
@@ -367,6 +392,13 @@ function fitGameToViewport(){
      vh<720?"xs":vh<820?"sm":vh<940?"md":"lg";
  });
 }
+function focusCurrentScreen(){
+ if(!window.matchMedia?.("(max-width:700px)").matches)return;
+ const current=document.getElementById("currentPanel"),history=document.getElementById("feedHistory");
+ if(!current||document.getElementById("game")?.classList.contains("hidden"))return;
+ if(history&&!history.classList.contains("hasOpenYear"))history.scrollTop=history.scrollHeight;
+ current.scrollIntoView({block:"start",inline:"nearest",behavior:"auto"});
+}
 window.addEventListener("resize",fitGameToViewport,{passive:true});
 window.addEventListener("orientationchange",fitGameToViewport,{passive:true});
 if(window.visualViewport)window.visualViewport.addEventListener("resize",fitGameToViewport,{passive:true});
@@ -381,7 +413,7 @@ function resetMain(){
  if(special)special.innerHTML="";
  if(choices)choices.innerHTML="";
  if(next)next.classList.add("hidden");
- setTimeout(fitGameToViewport,0);
+ setTimeout(()=>{fitGameToViewport();focusCurrentScreen()},0);
 }
 
 
@@ -390,7 +422,7 @@ function isCollegePath(){
  return ["UBA","UBA 強權","NCAA D2","日本大學","NCAA D1"].includes(p.path);
 }
 function isProPath(){
- return ["SBL／半職業","台灣職業","日本職業","韓國職業","CBA","NBA G League","NBA","海外職業","職業"].includes(p.path);
+ return ["SBL／半職業","台灣職業","日本職業","韓國職業","CBA","NBA G League","歐洲聯賽","NBA","海外職業","職業"].includes(p.path);
 }
 function collegeMaxYears(){
  return 4;
@@ -402,7 +434,7 @@ function isDevelopmentPath(){
  return p.path==="SBL／半職業"&&p.age<=24;
 }
 function developmentLevel(path){
- return {"SBL／半職業":1,"台灣職業":2,"韓國職業":3,"日本職業":4,"CBA":4,"NBA G League":4,"NBA":5}[path]||0;
+ return {"SBL／半職業":1,"台灣職業":2,"韓國職業":3,"日本職業":4,"CBA":4,"NBA G League":5,"歐洲聯賽":6,"NBA":7}[path]||0;
 }
 function leagueMarketRank(path){return developmentLevel(path)}
 function developmentSeasonCount(){

@@ -4,6 +4,10 @@ function tournamentPool(){
   if(p.path==="日本大學") return JAPAN_TOURNAMENTS;
   if(p.path==="NCAA D2") return NCAA_D2_TOURNAMENTS;
   if(p.path==="NCAA D1") return NCAA_D1_TOURNAMENTS;
+  if(p.path==="歐洲聯賽"){
+    const domestic=p.contract?.europeLeague||"歐洲國內頂級聯賽",cup=p.contract?.continentalCup;
+    return [{name:`${domestic}例行賽`,weight:.82},{name:`${domestic}季後賽`,weight:1.0},cup&&cup!=="僅國內賽事"?{name:cup,weight:cup==="EuroLeague"?1.08:cup==="EuroCup"?.96:.90}:{name:"國內盃賽",weight:.76}];
+  }
   if(isProPath()) return PRO_TOURNAMENTS;
   return [{name:"年度主要賽事",weight:1.0},{name:"邀請賽",weight:.7},{name:"盃賽",weight:.75}];
 }
@@ -23,13 +27,13 @@ function finishName(score){
  return "預賽";
 }
 function tournamentFinishName(score,tournamentName){
- if(isProPath()&&tournamentName==="例行賽"){
+ if(isProPath()&&(tournamentName==="例行賽"||tournamentName.endsWith("例行賽"))){
   if(score>=82)return "聯盟前二";
   if(score>=73)return "季後賽資格";
   if(score>=63)return "附加賽資格";
   return "未晉級季後賽";
  }
- if(isProPath()&&tournamentName==="季後賽"){
+ if(isProPath()&&(tournamentName==="季後賽"||tournamentName.endsWith("季後賽"))){
   if(score>=88)return "冠軍";
   if(score>=82)return "亞軍";
   if(score>=73)return "四強";
@@ -67,6 +71,7 @@ function leagueSalaryBase(league,year=SALARY_BASE_YEAR){return Math.round((LEAGU
 
 const STUDENT_SCHEDULES=window.BL_STUDENT_SCHEDULES;
 function seasonScheduleRange(path=p?.path||"HBL"){
+ if(path==="歐洲聯賽"&&Number(p?.contract?.europeSeasonGames)>0)return [p.contract.europeSeasonGames,p.contract.europeSeasonGames];
  return STUDENT_SCHEDULES[path]||LEAGUE_CFG[path]?.games||[24,30];
 }
 function scheduledGamesForSeason(path=p?.path||"HBL",year=p?.year||2026){

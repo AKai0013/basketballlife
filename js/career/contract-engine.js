@@ -26,7 +26,7 @@ function showDevelopmentMarketReview(){
 
  chapter.textContent=`${p.year} · ${p.age}歲 · ${cur} · 市場評估`;
  title.textContent="SBL｜年度市場評估";
- text.innerHTML=`成人籃球每一季結束後都會重新評估你的市場價值。SBL是成人籃球與職業邊緣的跳板，不是可以無限停留的等待區：正常發展期最多3季，之後只能接受職籃測試，或使用一次晚成球員的最後一年。<br>
+ text.innerHTML=`成人籃球每一季結束後都會重新評估市場價值。球探把 SBL 視為通往職業的發展舞台：一般發展期為3季，之後只剩職籃測試，或一次晚成球員的最後機會。<br>
  <span class="mut">目前球隊 <b>${p.team}</b>｜SBL第 <b>${devSeasons}</b> 季｜職涯評價 <b class="gold">${sc}</b>｜綜合能力 ${overall()}｜年齡 ${p.age}</span>`;
 
  let html=`<div class="offerGrid">`;
@@ -34,10 +34,10 @@ function showDevelopmentMarketReview(){
    html+=`<div class="offerCard"><b>📈 升級邀約</b><div class="mut">你本季的表現已經讓更高層級球隊提出正式報價。</div></div>${upgrades.map(proOfferCard).join("")}`;
  }else{
    const noOfferText=devSeasons<3
-     ? "你仍可留在目前層級再拚一季，但市場不會無限等待。"
+     ? "你仍可留在目前層級再拚一季，但更高層級球隊希望盡快看到突破。"
      : devSeasons===3&&!p.developmentLastChanceUsed&&p.age<=24
        ? "一般發展期已滿；只能立即挑戰職籃，或使用唯一一次晚成最後一年。"
-       : "發展名額已到期，只剩最後職籃測試，不能再續留SBL。";
+       : "SBL發展期已結束，接下來只能把握最後一次職籃測試。";
    html+=`<div class="offerCard"><b>目前沒有更高層級正式報價</b><div class="mut">${noOfferText}</div></div>`;
  }
 
@@ -51,7 +51,7 @@ function showDevelopmentMarketReview(){
    <div class="offerCard"><b>直接挑戰職籃測試</b><div class="mut">不再等待，現在就爭取台灣職籃的一年證明約。</div>
    <button class="btn" style="margin-top:9px" onclick="developmentTryout()">參加職籃測試</button></div>`;
  }else{
-   html+=`<div class="offerCard"><b>發展名額到期</b><div class="mut">你已完成 ${devSeasons} 季SBL發展期，不能再用一年短約無限等待。這是進入正式職籃的最後測試。</div>
+   html+=`<div class="offerCard"><b>發展期結束</b><div class="mut">你已完成 ${devSeasons} 季SBL生涯。現在只剩最後一次職籃測試，決定能否繼續留在成人球員市場。</div>
    <button class="btn" style="margin-top:9px" onclick="developmentTryout()">最後職籃測試</button></div>`;
  }
  html+=`</div>`;special.innerHTML=html;choices.innerHTML="";
@@ -113,8 +113,9 @@ function contractTypeInfo(type){
   "標準合約":{years:[2,3],mult:[1.08,1.38],role:"主要輪替",bonus:[.10,.18]},
   "先發合約":{years:[2,4],mult:[1.30,1.68],role:"先發主力",bonus:[.14,.23]},
   "明星合約":{years:[3,4],mult:[1.65,2.22],role:"明星／核心",bonus:[.18,.30]},
-  "核心長約":{years:[4,5],mult:[2.18,3.00],role:"建隊核心",bonus:[.24,.38]},
-  "NBA雙向合約":{years:[1,1],mult:[1.45,2.05],role:"NBA／G League雙向球員",bonus:[.04,.10]},
+   "核心長約":{years:[4,5],mult:[2.18,3.00],role:"建隊核心",bonus:[.24,.38]},
+   "新秀合約":{years:[1,3],mult:[.82,1.22],role:"新秀輪替／發展",bonus:[.04,.12]},
+   "NBA雙向合約":{years:[1,1],mult:[1.45,2.05],role:"NBA／G League雙向球員",bonus:[.04,.10]},
   "母隊回歸約":{years:[1,2],mult:[.70,1.05],role:"輪替／老將角色",bonus:[0,.06]}
  };
  return map[type]||map["標準合約"];
@@ -129,7 +130,7 @@ function contractTierLabel(multiplier=1){
  return "證明合約";
 }
 function contractRolePromise(type,multiplier=1,direction="playoff"){
- let role=type==="核心長約"?"先發核心":type==="明星合約"?"固定先發":type==="先發合約"?"固定先發":type==="標準合約"?"主要輪替":type==="短約"?"板凳輪替":type==="NBA雙向合約"?"NBA／G League雙向競爭":"名單競爭";
+ let role=type==="核心長約"?"先發核心":type==="明星合約"?"固定先發":type==="先發合約"?"固定先發":type==="標準合約"?"主要輪替":type==="短約"?"板凳輪替":type==="新秀合約"?"新秀輪替競爭":type==="NBA雙向合約"?"NBA／G League雙向競爭":"名單競爭";
  if(direction==="contend"&&["主要輪替","板凳輪替"].includes(role))role="季後賽輪替";
  if(direction==="rebuild"&&role==="主要輪替")role="先發競爭";
  return role;
@@ -146,19 +147,99 @@ function buildContractOption(c,r){
  if(["標準合約","先發合約","短約"].includes(c.type)&&r()<.42)return {type:"team",label:"球隊選項",status:"pending",yearSalary:Math.round(c.salary*1.03)};
  return {type:"none",label:"全額保障",status:"none"};
 }
+function europeanLeagueForTeam(team){
+ return (typeof EUROPE_LEAGUES!=="undefined"?EUROPE_LEAGUES:[]).find(league=>league.teams.includes(team))||null;
+}
+function selectEuropeanLeague(scout,salt,forcedTeam=""){
+ const leagues=typeof EUROPE_LEAGUES!=="undefined"?EUROPE_LEAGUES:[];
+ if(!leagues.length)return null;
+ const existing=europeanLeagueForTeam(forcedTeam);if(existing)return existing;
+ const eligible=leagues.filter(league=>scout>=league.market-7);
+ const pool=(eligible.length?eligible:leagues.slice().sort((a,b)=>a.market-b.market).slice(0,3)).sort((a,b)=>b.market-a.market);
+ const r=RNG(`${p.seed}-europe-domestic-${p.year}-${salt}`),upper=scout>=84?Math.min(3,pool.length):pool.length;
+ return pool[ri(r,0,Math.max(0,upper-1))]||pool[0];
+}
+function selectEuropeanCup(profile,scout,salt){
+ const r=RNG(`${p.seed}-europe-cup-${profile?.id||"general"}-${p.year}-${salt}`),roll=r()*100;
+ if(scout>=86)return roll<68?{label:"EuroLeague",games:18,target:88,weight:1.08}:roll<90?{label:"EuroCup",games:14,target:84,weight:.96}:{label:"Basketball Champions League",games:12,target:82,weight:.90};
+ if(scout>=78)return roll<24?{label:"EuroLeague",games:18,target:88,weight:1.08}:roll<62?{label:"EuroCup",games:14,target:84,weight:.96}:{label:"Basketball Champions League",games:12,target:82,weight:.90};
+ if(scout>=70)return roll<30?{label:"EuroCup",games:14,target:84,weight:.96}:roll<78?{label:"Basketball Champions League",games:12,target:82,weight:.90}:{label:"僅國內賽事",games:0,target:profile?.target||81,weight:0};
+ return roll<55?{label:"Basketball Champions League",games:12,target:82,weight:.90}:{label:"僅國內賽事",games:0,target:profile?.target||81,weight:0};
+}
+function applyEuropeanContractProfile(c,profile,cup){
+ if(!c||c.league!=="歐洲聯賽"||!profile)return c;
+ c.europeLeague=profile.label;c.europeCountry=profile.country;c.europeLeagueId=profile.id;c.europeDomesticGames=profile.games;
+ c.continentalCup=cup?.label||"僅國內賽事";c.europeCupGames=Number(cup?.games||0);c.europeSeasonGames=profile.games+c.europeCupGames;
+ c.europeTarget=Math.max(profile.target,Number(cup?.target||0)-1);c.europeStrength=Math.max(profile.strength,1+(Number(cup?.weight||0)*.38));c.europeAward=Math.max(profile.award,Math.round(Number(cup?.weight||0)*9));
+ return c;
+}
+function contractCompetitionLabel(c){
+ if(c?.league!=="歐洲聯賽")return leagueDisplay(c?.league||"");
+ const domestic=c.europeLeague||"歐洲國內頂級聯賽",cup=c.continentalCup&&c.continentalCup!=="僅國內賽事"?`＋${c.continentalCup}`:"";
+ return `${domestic}${cup}`;
+}
 function normalizeV8Contract(c){
  if(!c||typeof c!=="object")return c;
+ if(c.league==="歐洲聯賽"&&!c.europeLeague){
+   const profile=europeanLeagueForTeam(c.team)||selectEuropeanLeague(82,`legacy-${c.startYear||p?.year||0}`,c.team),cup=selectEuropeanCup(profile,82,`legacy-${c.team||"team"}-${c.startYear||0}`);
+   applyEuropeanContractProfile(c,profile,cup);
+ }
  if(!c.rolePromise)c.rolePromise=contractRolePromise(c.type,c.multiplier,c.teamDirection||"playoff");
  if(!c.promisedMinutes)c.promisedMinutes=contractRoleMinutes(c.rolePromise);
  if(!c.option||typeof c.option!=="object")c.option={type:"none",label:"全額保障",status:"none"};
+ if(!c.developmentResources)c.developmentResources=contractDevelopmentResources(c);
+ if(!c.transferCost)c.transferCost=contractTransferCost(c);
  return c;
+}
+function collegeResumeProfile(source=p.path){
+ const collegePaths=["UBA","UBA 強權","NCAA D1","NCAA D2","日本大學"];
+ const last=(p.seasonHistory||[]).filter(x=>collegePaths.includes(x.path)&&(source?x.path===source:true)).slice(-1)[0]||{};
+ const mins=Number(last.mins||0),games=Number(last.games||0),schedule=Math.max(1,Number(last.scheduledGames||scheduledGamesForSeason(source,p.year)));
+ const impact=Number(last.pts||0)+Number(last.ast||0)*.75+Number(last.reb||0)*.38+Number(last.stl||0)*1.5+Number(last.blk||0)*1.2;
+ const available=games>=schedule*.6;
+ const level=available&&mins>=27&&impact>=17?"star":available&&mins>=23?"starter":mins>=14?"rotation":"bench";
+ const labels={star:"明星級主力",starter:"穩定先發",rotation:"固定輪替",bench:"板凳／有限出賽"};
+ return {source,level,label:labels[level],mins:Math.round(mins*10)/10,impact:Math.round(impact*10)/10};
+}
+function collegeReturnMarketBonus(league){
+ if(league!=="台灣職業")return 0;
+ const profile=collegeResumeProfile(p.path),level=profile.level;
+ if(p.path==="NCAA D1")return level==="star"?10:level==="starter"?8:level==="rotation"?3:1;
+ if(p.path==="NCAA D2")return level==="star"?8:level==="starter"?6:level==="rotation"?2:0;
+ if(p.path==="日本大學")return ["star","starter"].includes(level)?2:1;
+ return 0;
+}
+function contractInjuryDiscount(){
+ const recent=(p.injuryHistory||[]).filter(x=>p.year-(Number(x.year)||0)<=3);
+ const recentMajor=recent.filter(x=>["大傷","重傷"].includes(x.level)).length;
+ const oldBurden=Object.values(p.oldInjuries||{}).reduce((sum,v)=>sum+Number(v||0),0);
+ let rate=recent.length*.012+recentMajor*.035+Math.min(.055,oldBurden*.012);
+ if(p.injury)rate+=p.injury.level==="重傷"?.12:p.injury.level==="大傷"?.08:p.injury.level==="中傷"?.035:.015;
+ if((p.health||100)>=92&&!p.injury)rate-=.025;
+ return Math.max(0,Math.min(.22,Math.round(rate*1000)/1000));
+}
+function contractDevelopmentResources(c){
+ const rank=leagueMarketRank(c.league),direction=c.teamDirection||"playoff";
+ const base=rank>=7?"世界頂級醫療、分析與個人訓練":rank>=6?"歐洲頂級技術、戰術與醫療團隊":rank>=5?"NBA 體系訓練與雙向曝光":rank>=4?"完整外援教練、體能與影片資源":rank>=2?"職業級教練、體能與復健":"基礎訓練與有限醫療支援";
+ return `${base}${direction==="rebuild"?"；年輕球員養成優先":direction==="contend"?"；以即戰力和季後賽準備為主":""}`;
+}
+function contractTransferCost(c){
+ const currentPath=p?.path||c.league,currentTeam=p?.team||"";
+ if(c.renewal||c.team===currentTeam&&c.league===currentPath)return "低｜熟悉體系，無重新適應期";
+ const from=leagueMarketRank(currentPath),to=leagueMarketRank(c.league),crossBorder=c.league!==currentPath&&!["SBL／半職業","台灣職業"].includes(c.league);
+ if(crossBorder&&Math.abs(to-from)>=2)return "高｜跨國生活、語言與角色重新競爭";
+ if(crossBorder)return "中高｜海外適應與輪替重新評估";
+ if(to>from)return "中｜升級聯盟，需重新證明角色";
+ return "中低｜層級壓力較小，但曝光與履歷可能下降";
 }
 function contractMarketScore(league,scout){
  const cfg=LEAGUE_CFG[league]||{market:68},aw=(p.lastSeasonAwards?.length||0);
  let score=(scout-cfg.market)+(p.rep||0)*.10+confidencePerformanceMod()*2+Math.min(7,aw*1.2);
  score+=(p.careerMVP||0)*2.5+(p.careerFinalsMVP||0)*2.1+(p.careerDPOY||0)*1.8+(p.careerFirstTeam||0)*.8+(p.careerAllStar||0)*.35;
  if(hasTitle("asia_journey"))score+=2;
- score-=Math.min(8,(p.injuryHistory?.length||0)*.55+(p.majorInjuryCount||0)*1.3);
+ const recentInjuries=(p.injuryHistory||[]).filter(x=>p.year-(Number(x.year)||0)<=3);
+ score-=Math.min(7,recentInjuries.length*.65+recentInjuries.filter(x=>["大傷","重傷"].includes(x.level)).length*1.4);
+ score+=collegeReturnMarketBonus(league);
  if(hasTitle("lockerroom"))score-=6;
  if(p.age>=35)score-=(p.age-34)*1.35;
  else if(p.age>=31)score-=(p.age-30)*.45;
@@ -187,6 +268,7 @@ function finalizeContract(c){
 function makeContract(league,scout,salt,forcedTeam=null,renewal=false){
  const cfg=LEAGUE_CFG[league]||{salary:220,market:68,exposure:0,trait:"職業聯盟"};
  const r=RNG(p.seed+"contract-"+league+"-"+p.year+"-"+salt+(forcedTeam||""));
+ const europeProfile=league==="歐洲聯賽"?selectEuropeanLeague(scout,salt,forcedTeam||""):null;
  const type=chooseContractType(league,scout,r,renewal),info=contractTypeInfo(type);
  let lo=info.mult[0],hi=info.mult[1],cs=contractMarketScore(league,scout);
  let mult=lo+(hi-lo)*r();
@@ -208,10 +290,15 @@ function makeContract(league,scout,salt,forcedTeam=null,renewal=false){
  }else salary=Math.max(20,Math.round(leagueSalaryBase(league,p.year)*mult));
  const bp=info.bonus[0]+(info.bonus[1]-info.bonus[0])*r();
  let bonus=Math.round(salary*bp);
- let pool=leagueTeamPool(league),team=forcedTeam||seedPick(pool,league+"-contract-"+salt);
+ let pool=europeProfile?.teams||leagueTeamPool(league),team=forcedTeam||seedPick(pool,league+"-contract-"+salt);
+ const europeCup=europeProfile?selectEuropeanCup(europeProfile,scout,salt):null;
+ if(europeProfile)salary=Math.max(20,Math.round(salary*europeProfile.salaryFactor*(europeCup?.label==="EuroLeague"?1.08:europeCup?.label==="EuroCup"?1.03:1)));
  const direction=v8Pick(V8_TEAM_DIRECTIONS,`${p.seed}-${team}-${p.year}-direction`).id;
  if(direction==="finance")salary=Math.max(20,Math.round(salary*.90));
- let c={league,team,salary,bonus,years,startYear:p.year,remaining:years,type,role:info.role,renewal,teamDirection:direction};
+ const injuryDiscount=contractInjuryDiscount();
+ if(injuryDiscount>0){salary=Math.max(20,Math.round(salary*(1-injuryDiscount)));bonus=Math.max(0,Math.round(bonus*(1-injuryDiscount*.65)))}
+ let c={league,team,salary,bonus,years,startYear:p.year,remaining:years,type,role:info.role,renewal,teamDirection:direction,injuryDiscount};
+ if(europeProfile)applyEuropeanContractProfile(c,europeProfile,europeCup);
  c.rolePromise=contractRolePromise(type,mult,direction);c.promisedMinutes=contractRoleMinutes(c.rolePromise);c.option=buildContractOption(c,r);
  const agentPriority=p.pendingAgentPriority||"";
  if(agentPriority==="money"){
@@ -237,7 +324,7 @@ function repriceContract(c,factor,yearsOverride=null,typeOverride=null){
 }
 function contractText(){
  if(!p.contract)return "";
- const c=normalizeV8Contract(p.contract);return `${c.type||"職業合約"}｜${c.years}年｜年薪 ${moneyText(c.salary)}｜承諾 ${c.rolePromise}｜${c.option?.label||"全額保障"}`;
+ const c=normalizeV8Contract(p.contract);return `${contractCompetitionLabel(c)}｜${c.type||"職業合約"}｜${c.years}年｜年薪 ${moneyText(c.salary)}｜承諾 ${c.rolePromise}｜${c.option?.label||"全額保障"}`;
 }
 function teamDirectionEffect(direction,age=p?.age||25){
  const map={
@@ -254,17 +341,20 @@ function contractOfferHTML(c){
  const cfg=LEAGUE_CFG[c.league]||{label:c.league,exposure:0,trait:"職業聯盟"};
  const directionLabel=(V8_TEAM_DIRECTIONS.find(x=>x.id===c.teamDirection)||{}).label||"球隊評估中";
  return `<div>
-   <span class="contractTypeBadge">${c.type||"職業合約"}｜${c.years}年</span>
+   <span class="contractTypeBadge">${c.type||"職業合約"}</span>
    <span class="contractRoleBadge">${c.role||"輪替球員"}</span>
-   <div class="contractMain">年薪 ${moneyText(c.salary)}｜${contractTierLabel(c.multiplier)}</div>
-   <div class="contractSub">${cfg.label}｜${c.trait||cfg.trait||""}<br>保障總值 <b>${moneyText(c.total||((c.salary||0)*(c.years||1)+(c.bonus||0)))}</b>｜簽約金 ${moneyText(c.bonus||0)}</div>
+   ${c.league==="歐洲聯賽"?`<div class="europeCompetitionLine"><small>實際參賽舞台</small><b>${contractCompetitionLabel(c)}</b><span>${c.europeCountry||"歐洲"}｜國內 ${c.europeDomesticGames||"—"} 場${c.europeCupGames?`＋跨國賽 ${c.europeCupGames} 場`:""}</span></div>`:""}
+   <div class="contractMain">合約條件比較</div>
    <div class="contractMetaGrid">
-    <div class="contractMetaCell"><small>球隊定位</small><b>${c.role||"輪替"}</b></div>
-    <div class="contractMetaCell"><small>角色承諾</small><b>${c.rolePromise}・${c.promisedMinutes}</b></div>
-    <div class="contractMetaCell"><small>合約選項</small><b>${c.option?.label||"全額保障"}${c.option?.type!=="none"?`・另1年 ${moneyText(c.option.yearSalary||c.salary)}`:""}</b></div>
-    <div class="contractMetaCell"><small>球隊狀態</small><b>${teamDirectionEffect(c.teamDirection)}</b></div>
-   <div class="contractMetaCell"><small>NBA關注</small><b class="exposureStars">${exposureStars(c.exposure??cfg.exposure)}</b></div>
+    <div class="contractMetaCell"><small>年薪</small><b>${moneyText(c.salary)}</b></div>
+    <div class="contractMetaCell"><small>年限</small><b>${c.years} 年｜${c.option?.label||"全額保障"}</b></div>
+    <div class="contractMetaCell"><small>預計角色</small><b>${c.rolePromise}</b></div>
+    <div class="contractMetaCell"><small>預計上場時間</small><b>${c.promisedMinutes}</b></div>
+    <div class="contractMetaCell"><small>成長資源</small><b>${c.developmentResources}</b></div>
+    <div class="contractMetaCell"><small>轉隊成本</small><b>${c.transferCost}</b></div>
    </div>
+   <div class="contractSub">保障總值 <b>${moneyText(c.total||((c.salary||0)*(c.years||1)+(c.bonus||0)))}</b>｜簽約金 ${moneyText(c.bonus||0)}｜${teamDirectionEffect(c.teamDirection)}</div>
+   ${c.injuryDiscount?`<div class="balanceNote">🩺 醫療風險折價 ${Math.round(c.injuryDiscount*100)}%｜球隊因近期傷勢與目前舊傷風險下修報價；健康出賽能逐年恢復市場評價。</div>`:""}
    ${c.agentNote?`<div class="balanceNote">📑 經紀人的談判結果：${c.agentNote}</div>`:""}
   </div>`;
 }
@@ -290,9 +380,10 @@ function makeRenewalOffer(){
  }
  if(!canReceiveStandardContract(p.path,sc,true))return null;
  let c=makeContract(p.path,sc,"renewal-"+p.year+"-"+p.team,p.team,true);
- // A solid incumbent generally does not receive an inexplicable huge pay cut before testing the market.
- if(p.contract?.salary && sc>=(LEAGUE_CFG[p.path]?.market||60)+2 && c.salary<p.contract.salary*.88){
-   const floor=p.contract.salary*.88/c.salary;
+ // 傷後續約可以降薪，但單次不得因同一份醫療紀錄直接腰斬；健康與市場仍會逐年重估。
+ const renewalFloor=p.injury?.level==="重傷"?.72:p.injury?.level==="大傷"?.76:contractInjuryDiscount()>0?.82:.88;
+ if(p.contract?.salary && c.salary<p.contract.salary*renewalFloor){
+   const floor=p.contract.salary*renewalFloor/c.salary;
    c=repriceContract(c,floor);
  }
  c.renewal=true;
@@ -401,7 +492,7 @@ function listenFreeAgencyMarket(){
    .filter(c=>{
       let cfg=LEAGUE_CFG[c.league]||{market:99};
       let edge=sc-cfg.market,exposurePull=(cfg.exposure||0)*.006;
-      let tierPull=(p.seedTier==="S+"?.16:p.seedTier==="S"?.12:p.seedTier==="A"?.05:0);
+      let tierPull=(p.seedTier==="SSS+"?.24:p.seedTier==="SS+"?.20:p.seedTier==="S+"?.16:p.seedTier==="S"?.12:p.seedTier==="A"?.05:0);
       let underLevel=leagueMarketRank(p.path)<seedExpectedLeagueRank()?.06:0;
       let chance=Math.max(.20,Math.min(.96,.46+edge*.055+exposurePull+tierPull+underLevel-(p.age>=38?.08:0)));
       return r()<chance;
@@ -439,7 +530,7 @@ function listenFreeAgencyMarket(){
 
 function proOfferCard(c){
  return `<div class="offerCard">
-   <b>${c.team}｜${leagueDisplay(c.league)}</b>
+   <b>${c.team}｜${contractCompetitionLabel(c)}</b>
    ${contractOfferHTML(c)}
    <button class="btn" style="margin-top:10px" onclick='acceptContract(${JSON.stringify(c)})'>接受合約</button>
  </div>`;
@@ -459,6 +550,7 @@ function consumePendingSeasonAdvance(){
 function acceptContract(c){
  const wasPro=isProPath();
  const previousTeam=p.team,previousLeague=p.path;
+ const entryResume=!wasPro?collegeResumeProfile(previousLeague):null;
  consumePendingSeasonAdvance();
  c=finalizeContract({...c});
  c.startYear=p.year;
@@ -466,6 +558,11 @@ function acceptContract(c){
  p.pendingRenewalOffer=null;p.pendingNBAOffer=null;p.pendingTryoutOffer={};p.marketReturnOffer=null;p.marketReturnMode="";p.marketOriginTeam="";p.marketOriginLeague="";
  const usedAgentPriority=p.pendingAgentPriority||"";p.pendingAgentPriority="";
  p.contract=c;p.path=c.league;p.team=c.team;p.careerSeason=wasPro?Math.max(1,p.careerSeason):1;p.grade=1;ensureTeamHistory();
+ if(!wasPro&&["UBA","UBA 強權","NCAA D2","日本大學","NCAA D1"].includes(previousLeague)){
+   p.proEntrySource=previousLeague;p.proEntryYear=p.year;p.proEntryCollegeRole=entryResume?.level||"bench";p.proEntryCollegeMins=entryResume?.mins||0;
+ }
+ if(c.draftRouteId)p.proEntryDraft={id:c.draftRouteId,label:c.draftRouteLabel||"新人市場",year:p.year,grade:c.draftGrade||0};
+ p.draftEntrySelections=[];
  ensureV8CareerState(p);ensureV8TeamWorld(p);refreshV8Role(p,stayedWithTeam?"續約定位":"新球隊定位");
  p.roleState.promised=roleIdFromPromise(c.rolePromise);p.roleState.promisedLabel=c.rolePromise;p.roleState.promiseYear=p.year;p.roleState.promisedMinutes=c.promisedMinutes;
  if(c.league==="SBL／半職業"){
@@ -485,10 +582,11 @@ function acceptContract(c){
 }
 function seedMarketBonus(){
  const t=p.seedTier;
- return t==="S+"?8:t==="S"?6:t==="A"?3:t==="B"?1:-1;
+ // Seed mainly controls growth ceiling. Market access must be earned on court rather than granted by tier.
+ return t==="SSS+"?5:t==="SS+"?4:t==="S+"?3:t==="S"?2:t==="A"?1:t==="B"?0:-1;
 }
 function seedExpectedLeagueRank(){
- return p.seedTier==="S+"?5:p.seedTier==="S"?4:p.seedTier==="A"?4:p.seedTier==="B"?2:1;
+ return p.seedTier==="SSS+"?7:p.seedTier==="SS+"?6:p.seedTier==="S+"?6:p.seedTier==="S"?5:p.seedTier==="A"?4:p.seedTier==="B"?2:1;
 }
 
 function scoutingScore(){
@@ -506,7 +604,7 @@ function leagueRosterOverallFloor(league){
  const floors={
    "SBL／半職業":p.age<=23?45:50,
    "台灣職業":58,"韓國職業":66,"日本職業":70,"CBA":71,
-   "NBA G League":72,"NBA":86
+   "NBA G League":72,"歐洲聯賽":78,"NBA":86
  };
  return floors[league]??60;
 }
@@ -520,8 +618,9 @@ function contractRosterOverallFloor(league,incumbent=false){
 function canReceiveStandardContract(league,score=scoutingScore(),incumbent=false){
  const cfg=LEAGUE_CFG[league];if(!cfg)return false;
  if(p.age>=50)return false;
- const ovrFloor=contractRosterOverallFloor(league,incumbent);
- const scoutFloor=cfg.market-(incumbent?3:0);
+ const resumeBonus=collegeReturnMarketBonus(league);
+ const ovrFloor=contractRosterOverallFloor(league,incumbent)-Math.min(2,Math.ceil(resumeBonus/2));
+ const scoutFloor=cfg.market-(incumbent?3:0)-resumeBonus;
  const ov=overall(),provenAbility=ov>=ovrFloor+8&&score>=scoutFloor-10;
  return ov>=ovrFloor&&(score>=scoutFloor||provenAbility);
 }
@@ -529,8 +628,10 @@ function gLeaguePathwayEligible(score=scoutingScore()){
  const ov=overall(),standard=canReceiveStandardContract("NBA G League",score,false)&&ov>=76;
  if(standard)return true;
  if(p.age>30)return false;
- const resume=["NCAA D1","NCAA D2","日本大學","台灣職業","韓國職業","日本職業","CBA","NBA G League","NBA"].includes(p.path);
+ const resume=["NCAA D1","NCAA D2","日本大學","台灣職業","韓國職業","日本職業","CBA","NBA G League","歐洲聯賽","NBA"].includes(p.path);
  if(!resume)return false;
+ if(p.seedTier==="SSS+")return ov>=70&&score>=74;
+ if(p.seedTier==="SS+")return ov>=72&&score>=76;
  if(p.seedTier==="S+")return ov>=74&&score>=78;
  if(p.seedTier==="S")return ov>=76&&score>=81;
  // A 級沒有保送，但在 29 歲前若已累積 NCAA／旅外／完整職業履歷，
@@ -564,7 +665,7 @@ function nbaPathwayOfferKind(score=scoutingScore()){
  const earnedByPerformance=nbaPerformanceOfferKind(score);
  if(earnedByPerformance)return earnedByPerformance;
  const standardResume=(
-   p.path==="NCAA D1"||p.path==="NBA G League"||p.path==="CBA"||p.path==="日本職業"||p.path==="NBA"||
+   p.path==="NCAA D1"||p.path==="NBA G League"||p.path==="歐洲聯賽"||p.path==="CBA"||p.path==="日本職業"||p.path==="NBA"||
    p.careerMVP>=1||p.careerFirstTeam>=2||p.careerAllStar>=3
  );
  if(canReceiveStandardContract("NBA",score,false)&&ov>=86&&standardResume)return "standard";
@@ -580,11 +681,15 @@ function nbaPathwayOfferKind(score=scoutingScore()){
  // G League DPOY 是明確的 NBA 防守履歷。仍需基本能力、出勤與球探評價，
  // 但不再與普通單季獎項共用較高門檻。
  if(gLeagueDPOY&&p.age<=30&&playedEnough){
+   if(p.seedTier==="SSS+"&&ov>=72&&score>=78)return "two-way";
+   if(p.seedTier==="SS+"&&ov>=73&&score>=79)return "two-way";
    if(p.seedTier==="S+"&&ov>=75&&score>=81)return "two-way";
    if(p.seedTier==="S"&&ov>=77&&score>=83)return "two-way";
    if(p.seedTier==="A"&&ov>=79&&score>=86)return "two-way";
    if(p.seedTier==="B"&&ov>=81&&score>=89)return "two-way";
  }
+ if(p.seedTier==="SSS+"&&ov>=73&&score>=79)return "two-way";
+ if(p.seedTier==="SS+"&&ov>=75&&score>=81)return "two-way";
  if(p.seedTier==="S+"&&ov>=77&&score>=84)return "two-way";
  if(p.seedTier==="S"){
    if(ov>=79&&score>=87)return "two-way";
@@ -609,20 +714,126 @@ function proOffersForScore(score,salt){
  if(eligible("日本職業"))out.push(makeContract("日本職業",score,salt+"jp"));
  if(eligible("CBA"))out.push(makeContract("CBA",score,salt+"cn"));
  if(gLeaguePathwayEligible(score))out.push(makeContract("NBA G League",score,salt+"gl"));
+ if(eligible("歐洲聯賽"))out.push(makeContract("歐洲聯賽",score,salt+"eu"));
  const nbaKind=nbaPathwayOfferKind(score);
  if(nbaKind)out.push(makeNBAPathwayContract(score,nbaKind,salt+"nba"));
- return out;
+ return out.sort((a,b)=>leagueMarketRank(b.league)-leagueMarketRank(a.league)||(b.salary||0)-(a.salary||0));
 }
 
 function ncaaD2TransferInvite(score,minScore=58,baseChance=.45,salt="d1"){ 
  if(score<minScore)return false;
  const r=RNG(p.seed+"ncaa-d2-to-d1-"+p.year+"-"+salt);
  const extra=Math.max(0,score-minScore)*.055;
- const tier=p.seedTier==="S+"?.12:p.seedTier==="S"?.09:p.seedTier==="A"?.04:0;
+ const tier=p.seedTier==="SSS+"?.20:p.seedTier==="SS+"?.16:p.seedTier==="S+"?.12:p.seedTier==="S"?.09:p.seedTier==="A"?.04:0;
  return r()<Math.min(.98,baseChance+extra+tier);
 }
+function collegeDraftAssessment(){
+ const score=scoutingScore(),ov=overall(),ss=p.seasonStats||{},profile=collegeResumeProfile(p.path);
+ const impact=Number(ss.pts||0)+Number(ss.ast||0)*.75+Number(ss.reb||0)*.38+Number(ss.stl||0)*1.5+Number(ss.blk||0)*1.2;
+ return {score,ov,impact:Math.round(impact*10)/10,grade:Math.max(1,Math.min(4,Number(p.grade)||1)),profile};
+}
+function collegeDraftRoutes(){
+ return [
+  {id:"nba",label:"NBA 選秀",league:"NBA",method:"正式選秀",targetScore:80,targetOvr:75,minScore:72,minOvr:68,base:24,cap:72,boost:{"NCAA D1":8,"NCAA D2":3,"日本大學":1,"UBA 強權":1}},
+  {id:"europe",label:"歐洲新人市場",league:"歐洲聯賽",method:"球探邀請／試訓",targetScore:76,targetOvr:72,minScore:66,minOvr:63,base:32,cap:88,boost:{"NCAA D1":6,"NCAA D2":4,"日本大學":3,"UBA 強權":1}},
+  {id:"gleague",label:"NBA G League 球員池",league:"NBA G League",method:"選秀／球員池",targetScore:73,targetOvr:69,minScore:64,minOvr:61,base:35,cap:90,boost:{"NCAA D1":6,"NCAA D2":4,"日本大學":2,"UBA 強權":1}},
+  {id:"cba",label:"CBA 新秀／試訓市場",league:"CBA",method:"選秀／球團試訓",targetScore:70,targetOvr:67,minScore:59,minOvr:57,base:38,cap:90,boost:{"NCAA D1":5,"NCAA D2":3,"日本大學":2,"UBA 強權":2}},
+  {id:"japan",label:"B.League 新人選拔",league:"日本職業",method:"新人選拔／特別指定",targetScore:67,targetOvr:64,minScore:56,minOvr:54,base:41,cap:92,boost:{"NCAA D1":5,"NCAA D2":3,"日本大學":7,"UBA 強權":2}},
+  {id:"korea",label:"KBL 亞洲球員選拔",league:"韓國職業",method:"亞洲名額評估",targetScore:64,targetOvr:62,minScore:54,minOvr:52,base:42,cap:92,boost:{"NCAA D1":4,"NCAA D2":3,"日本大學":3,"UBA 強權":2}},
+  {id:"taiwan",label:"台灣職籃新人選秀",league:"台灣職業",method:"正式新人選秀",targetScore:56,targetOvr:54,minScore:44,minOvr:43,base:49,cap:94,boost:{"NCAA D1":8,"NCAA D2":6,"日本大學":3,"UBA 強權":5,"UBA":3}},
+  {id:"sbl",label:"SBL 新人測試",league:"SBL／半職業",method:"測試／選拔",targetScore:47,targetOvr:45,minScore:0,minOvr:0,base:60,cap:95,boost:{"NCAA D1":6,"NCAA D2":5,"日本大學":3,"UBA 強權":4,"UBA":3}}
+ ];
+}
+function collegeDraftRouteAssessment(route,a=collegeDraftAssessment()){
+ const gradeLift={1:-8,2:-3,3:1,4:5}[a.grade]||0;
+ const productionLift=Math.max(-7,Math.min(10,(a.impact-13)*.7));
+ const roleLift=a.profile.level==="star"?6:a.profile.level==="starter"?4:a.profile.level==="rotation"?1:-2;
+ const exposure=Number(route.boost?.[p.path]||0);
+ let chance=Math.round(route.base+(a.score-route.targetScore)*2+(a.ov-route.targetOvr)*1.35+productionLift+gradeLift+roleLift+exposure);
+ chance=Math.max(2,Math.min(route.cap||94,chance));
+ const exceptional=a.profile.level==="star"&&a.impact>=20&&a.score>=route.minScore-3&&a.ov>=route.minOvr-3;
+ let reason="";
+ if(!exceptional&&(a.score<route.minScore||a.ov<route.minOvr))reason=`至少需接近球探 ${route.minScore}、OVR ${route.minOvr}`;
+ if(route.id==="nba"&&!reason&&!(["NCAA D1","NCAA D2","日本大學"].includes(p.path)||a.score>=82&&a.ov>=76))reason="需高階旅外履歷，或極端突出的本土大學表現";
+ return {...route,chance,locked:!!reason,reason};
+}
+function renderCollegeDraftRegistration(){
+ const a=collegeDraftAssessment(),routes=collegeDraftRoutes().map(x=>collegeDraftRouteAssessment(x,a)),selected=Array.isArray(p.draftEntrySelections)?p.draftEntrySelections:[];
+ p.draftEntrySelections=selected.filter(id=>routes.some(x=>x.id===id&&!x.locked)).slice(0,3);
+ chapter.textContent=`${p.year} · ${p.age}歲 · ${p.path} · 大${p.grade}季末`;
+ title.textContent="選擇要挑戰的新人市場";
+ text.innerHTML=`你最多可報名 <b>3 個</b>新人市場。每個聯賽都會依名額、位置需求、即戰力、大學角色、本季表現與同屆競爭做出自己的決定。<br><span class="mut">OVR <b>${a.ov}</b>｜球探評價 <b class="gold">${a.score}</b>｜本季場上影響 ${a.impact}｜${p.path} ${a.profile.label}（${a.profile.mins} 分鐘）</span>`;
+ const cards=routes.map(r=>{
+  const on=p.draftEntrySelections.includes(r.id),disabled=r.locked?"disabled":"";
+  return `<button class="draftRouteChoice ${on?"selected":""} ${r.locked?"locked":""}" ${disabled} onclick="toggleCollegeDraftRoute('${r.id}')"><span class="draftRouteTop"><b>${r.label}</b><strong>${r.locked?"未達門檻":r.chance+"%"}</strong></span><small>${r.method}｜${leagueDisplay(r.league)}</small><span>${r.locked?r.reason:`預估獲邀／獲選機率 ${r.chance}%`}</span></button>`;
+ }).join("");
+ special.innerHTML=`<div class="draftRegistration"><div class="draftSelectionHead"><b>已選 ${p.draftEntrySelections.length}/3 個市場</b><span>${p.draftSelectionNotice||"可再次點擊取消選擇"}</span></div><div class="draftRouteGrid">${cards}</div></div>`;
+ choices.innerHTML=`<button class="choice" ${p.draftEntrySelections.length?"":"disabled"} onclick="resolveCollegeDraft()"><b>確認報名並公布結果</b><small>${p.draftEntrySelections.length?`你的履歷將送往 ${p.draftEntrySelections.length} 個市場，等待各聯賽分別回覆。`:"請先選擇至少一個可報名市場。"}</small></button><button class="choice" onclick="showCollegeDecision()"><b>返回季末決策</b><small>尚未送出報名，可以重新考慮留校或轉學。</small></button>`;
+}
+function openCollegeDraftRegistration(){
+ p.draftEntrySelections=[];p.draftSelectionNotice="";p.stage="decision";resetMain();render();flow.innerHTML="";renderCollegeDraftRegistration();
+}
+function toggleCollegeDraftRoute(id){
+ const selected=Array.isArray(p.draftEntrySelections)?p.draftEntrySelections:[],at=selected.indexOf(id);
+ p.draftSelectionNotice="";
+ if(at>=0)selected.splice(at,1);else if(selected.length<3)selected.push(id);else p.draftSelectionNotice="最多只能同時報名 3 個市場。";
+ p.draftEntrySelections=selected;renderCollegeDraftRegistration();
+}
+function makeCollegeDraftContract(route,a,chance){
+ let c=makeContract(route.league,Math.max(a.score,route.targetScore-2),`college-draft-${route.id}-${p.year}-${p.grade}`);
+ c.type="新秀合約";c.role=contractTypeInfo(c.type).role;c.draftRouteId=route.id;c.draftRouteLabel=route.label;c.draftGrade=p.grade;
+ c.years=c.remaining=route.id==="sbl"?1:route.id==="nba"?Math.max(2,Math.min(3,c.years)):Math.max(1,Math.min(2,c.years));
+ const collegeStarter=["star","starter"].includes(a.profile.level),homeStarter=route.id==="taiwan"&&collegeStarter&&["NCAA D1","NCAA D2"].includes(p.path);
+ c.rolePromise=route.id==="nba"?"名單競爭":homeStarter?"先發競爭":chance>=75?"主要輪替":"新秀輪替競爭";
+ c.promisedMinutes=contractRoleMinutes(c.rolePromise);return finalizeContract(c);
+}
+function collegeDraftDevelopmentFocus(a){
+ if(a.profile.level==="bench")return "先在輪替中爭取穩定上場時間，讓球隊看到你能承擔固定角色";
+ if(a.impact<11)return "把場均產量與關鍵比賽表現拉高，讓履歷不只停在潛力";
+ if(a.ov<62)return "繼續提升即戰力，縮小能力與職業輪替門檻的差距";
+ if(a.score<a.ov+4)return "累積更高層級賽事與獎項，提高球探對履歷的信任";
+ return "維持健康與穩定出勤，等待更適合自身位置的球隊名額";
+}
+function collegeDraftRouteFeedback(route,a,success){
+ if(success)return `${route.label}認為你的${a.profile.label}履歷與本季產量符合需求，願意提供進入職業名單的機會。`;
+ const concerns=[];
+ if(a.ov<route.targetOvr)concerns.push(`即戰力仍低於這個市場偏好的 OVR ${route.targetOvr}`);
+ if(a.score<route.targetScore)concerns.push(`球探履歷尚未達到主要錄取區間 ${route.targetScore}`);
+ if(a.impact<13)concerns.push("本季數據影響力還不夠突出");
+ if(a.grade<=2)concerns.push("提前投入時仍要與更成熟的畢業球員競爭");
+ return concerns.length?`${concerns.slice(0,2).join("；")}。球隊因此沒有在本屆使用名額。`:`你的條件已接近錄取區間，但球隊名額、位置需求與同屆競爭沒有站在你這邊。`;
+}
+function collegeDraftScoutingSummary(a,results){
+ const entered=results.map(x=>x.label).join("、"),successes=results.filter(x=>x.success);
+ if(successes.length)return `你把履歷送進${entered}。${successes.map(x=>x.label).join("、")}願意繼續談合約；其餘市場則因名額與球隊需求沒有提出邀請。`;
+ return `你把履歷送進${entered}，但本屆沒有球隊願意立刻使用名額。球探仍把你評為${p.path}的${a.profile.label}；接下來最重要的是${collegeDraftDevelopmentFocus(a)}。`;
+}
+function resolveCollegeDraft(){
+ const a=collegeDraftAssessment(),routes=collegeDraftRoutes().map(x=>collegeDraftRouteAssessment(x,a)),ids=(p.draftEntrySelections||[]).slice(0,3),picked=ids.map(id=>routes.find(x=>x.id===id)).filter(x=>x&&!x.locked);
+ if(!picked.length){renderCollegeDraftRegistration();return}
+ if(p.grade===1)p.freshmanDraftAttempted=true;
+ const results=picked.map(route=>{
+  const roll=Math.floor(RNG(`${p.seed}-college-market-${route.id}-${p.year}-${p.grade}-${p.team}`)()*100)+1,success=roll<=route.chance;
+  return {id:route.id,label:route.label,league:route.league,method:route.method,chance:route.chance,roll,success,feedback:collegeDraftRouteFeedback(route,a,success)};
+ });
+ p.collegeDraftHistory=p.collegeDraftHistory||[];p.collegeDraftHistory.push({year:p.year,grade:p.grade,path:p.path,team:p.team,results:results.map(x=>({...x}))});
+ const offers=results.filter(x=>x.success).map(row=>makeCollegeDraftContract(routes.find(x=>x.id===row.id),a,row.chance)).sort((x,y)=>leagueMarketRank(y.league)-leagueMarketRank(x.league));
+ p.stage="decision";resetMain();render();flow.innerHTML="";chapter.textContent=`${p.year} · ${p.age}歲 · 大${p.grade}新人市場結果`;
+ title.textContent=offers.length?`收到 ${offers.length} 份新秀合約`:"本屆沒有收到球隊邀請";
+ text.innerHTML=offers.length?"球探與球隊已做出決定。獲選的市場願意把名額與合約交給你；其餘球隊則在本屆選擇了其他方向。":"球隊同時考量有限名額、位置需求、即戰力、履歷與同屆球員；這一次，沒有市場願意立刻提出合約。";
+ const receipt=`<div class="draftResultList">${results.map(x=>`<article class="draftResultRow ${x.success?"pass":"fail"}"><div><b>${x.success?"✓":"×"} ${x.label}</b><small>${x.method||leagueDisplay(x.league)}</small></div><span>事前預估 ${x.chance}%｜${x.success?"球隊回覆：進入名單":"球隊回覆：本屆未錄取"}</span><p>${x.feedback}</p></article>`).join("")}</div>`;
+ const max=collegeMaxYears(),focus=collegeDraftDevelopmentFocus(a),returnCard=p.grade<max?`<div class="offerCard"><b>🎓 回到 ${p.team}</b><div class="mut">你仍保有目前的比賽履歷。以大${p.grade+1}身分回校後，下一季重點是${focus}。</div><button class="btn" style="margin-top:9px" onclick="stayCollege()">回大學繼續打</button></div>`:`<div class="offerCard"><b>投入畢業公開測試</b><div class="mut">你仍可用畢業球員身分參加台灣職籃與 SBL 公開測試，爭取最後的職業入口。</div><button class="btn" style="margin-top:9px" onclick="openTryout()">參加公開測試</button></div>`;
+ const scouting=`<section class="draftScoutingSummary"><small>SCOUTING SUMMARY</small><b>球探總結</b><p>${collegeDraftScoutingSummary(a,results)}</p></section>`;
+ recordV8Story("turning",`大${p.grade}結束後挑戰${results.map(x=>x.label).join("、")}，${offers.length?`收到 ${offers.length} 份新秀合約`:`本屆未獲邀並決定繼續尋找出路`}`,offers.length?4:3,{major:offers.length>0});
+ special.innerHTML=`${scouting}${receipt}<div class="offerGrid">${offers.map(proOfferCard).join("")}${returnCard}</div>`;choices.innerHTML="";
+}
+// Compatibility aliases for older saved decision screens.
+function showFreshmanDraftDecision(){showCollegeDecision()}
+function enterFreshmanDraft(){openCollegeDraftRegistration()}
+function returnFromFreshmanDraft(){p.freshmanDraftAttempted=true;stayCollege()}
 function transferFromNCAAD2(){
  const oldTeam=p.team;
+ p.draftEntrySelections=[];p.draftSelectionNotice="";
  p.path="NCAA D1";
  p.contract=null;
  p.careerSeason=0;
@@ -640,16 +851,16 @@ function transferNCAAEarly(){transferFromNCAAD2()}
 function showCollegeDecision(){
  p.pendingSeasonAdvance=true;
  p.stage="decision";resetMain();render();flow.innerHTML="";
- let sc=scoutingScore(),max=collegeMaxYears(),offers=proOffersForScore(sc,"college-"+p.grade),collegeComplete=p.grade>=max;
+ let sc=scoutingScore(),max=collegeMaxYears(),collegeComplete=p.grade>=max,profile=collegeResumeProfile(p.path);
  chapter.textContent=`${p.year} · ${p.age}歲 · ${p.path} · 季末抉擇`;
 
  // ----------------------------------------------------------
  // Normal college season decision
  // ----------------------------------------------------------
- title.textContent=collegeComplete?"大學生涯完成，選擇你的職業去向":"留下，轉換跑道，還是投入職業？";
+ title.textContent=collegeComplete?"大學生涯完成｜選擇新人市場":"留校、轉學，或挑戰新人市場？";
  text.innerHTML=collegeComplete
-  ? `大學生涯已正式完成。各隊已依你的完整大學表現、健康狀況與發展潛力提出評估；請從收到的職業合約中選擇去向，若沒有正式報價則可投入公開測試。<br><span class="mut">職涯評價 <b class="gold">${sc}</b>｜大學畢業</span>`
-  : `本季結束後，各隊重新評估你的發展。你可以繼續完成大學生涯，也可能提前接受職業邀約。<br><span class="mut">職涯評價 <b class="gold">${sc}</b>｜${currentCareerLabel()}</span>`;
+  ? `大學生涯已正式完成。下一步是選擇要挑戰的選秀／新人市場；各聯賽收到履歷後，才會決定是否提出合約。<br><span class="mut">球探評價 <b class="gold">${sc}</b>｜${p.path} ${profile.label}｜大學畢業</span>`
+  : `本季結束後，你可以留校、接受符合條件的轉學邀請，或提前報名最多三個聯賽的選秀／新人市場。投入市場後，球隊會根據履歷決定是否提出合約。<br><span class="mut">球探評價 <b class="gold">${sc}</b>｜${currentCareerLabel()}｜本季角色 ${profile.label}</span>`;
 
  let html='<div class="offerGrid">';
  if(p.grade<max){
@@ -659,17 +870,13 @@ function showCollegeDecision(){
    html+=`<div class="offerCard"><b>🎓 NCAA D1 轉學邀請</b><div class="mut">D1 球隊注意到你在 ${p.team} 的表現。轉學後保留年級進度，下一季以大${p.grade+1}身分加入更高曝光與更激烈的輪替競爭。</div><div class="offerMeta"><span>D2 → D1</span><span>球探 ${sc}</span></div><button class="btn" style="margin-top:9px" onclick="transferFromNCAAD2()">接受 D1 邀請</button></div>`;
  }
 
- html+=offers.length?offers.map(proOfferCard).join(""):`<div class="offerCard"><b>目前沒有正式職業合約</b><div class="mut">${collegeComplete?"大學生涯已完成，請透過公開測試爭取職業或半職業機會。":"可以留校繼續累積身價；下一季仍會重新評估。"}</div></div>`;
-
- if(p.grade>=max && !offers.length){
-   html+=`<div class="offerCard"><b>投入公開測試</b><div class="mut">學籍年限結束，只能從職業測試或半職業重新尋找機會。</div><button class="btn" style="margin-top:9px" onclick="openTryout()">參加測試</button></div>`;
- }
+ html+=`<div class="offerCard draftEntryCard"><b>🌍 ${collegeComplete?"畢業新人市場":"提前投入新人市場"}</b><div class="mut">可查看 NBA、歐洲、G League、CBA、B.League、KBL、台灣職籃與 SBL 的門檻及個別機率，再從符合資格者中最多選三個報名。</div><button class="btn" style="margin-top:9px" onclick="openCollegeDraftRegistration()">查看各聯賽評估</button></div>`;
  html+='</div>';
  special.innerHTML=html;
  choices.innerHTML="";
 }
 function stayCollege(){
- p.grade++;if(!consumePendingSeasonAdvance())advanceCareerCalendar(false);
+ p.draftEntrySelections=[];p.draftSelectionNotice="";p.grade++;if(!consumePendingSeasonAdvance())advanceCareerCalendar(false);
  if(p.age>=22&&!p.genius&&!p.geniusResolved){p.geniusFailed=true;p.geniusResolved=true;logIt(`潛能覺醒失敗：22歲前高標值「6」累計 ${p.six}/5 次。`);}
  showCareerChapter("newSchoolYear");
 }
@@ -701,7 +908,7 @@ function declineTryoutOffer(){
  title.textContent="拒絕這份報價，不等於直接退休";
  text.textContent=`你拒絕了 ${offer.team} 的報價，但其他球隊與原報價尚未立刻關門。現在要決定繼續談判、尋找另一支球隊，或由你主動結束生涯。`;
  special.innerHTML=`<div class="offerGrid"><div class="offerCard"><b>剛才拒絕的報價｜${offer.team}</b>${contractOfferHTML(offer)}</div></div>`;
- const alternativeButton=(p.declinedTryoutCount||0)<2?`<button class="choice" onclick="seekAlternativeTryoutOffer()"><b>請經紀團隊聯絡其他球隊</b><small>尋找同級或下一層級的另一份短約；薪資與角色通常會比原報價差。</small></button>`:`<div class="notice fail"><b>其他球隊已完成本輪評估</b><br>經紀團隊已替你找過另一份報價；本輪市場不會無限產生新合約。</div>`;
+ const alternativeButton=(p.declinedTryoutCount||0)<2?`<button class="choice" onclick="seekAlternativeTryoutOffer()"><b>請經紀團隊聯絡其他球隊</b><small>尋找同級或下一層級的另一份短約；薪資與角色通常會比原報價差。</small></button>`:`<div class="notice fail"><b>其他球隊已完成本輪評估</b><br>經紀團隊已詢問所有可能的球隊，目前沒有其他球隊願意提出報價。</div>`;
  choices.innerHTML=`
    <button class="choice" onclick="reconsiderTryoutOffer()"><b>重新考慮原報價</b><small>回到談判桌接受原合約；球隊不會因一次拒絕就立刻撤案。</small></button>
    ${alternativeButton}
