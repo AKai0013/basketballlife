@@ -22,6 +22,8 @@
     myPublicCareerRows:[],
     weeklyArchiveRows:null,
     versionChampionRows:null,
+    activeChampionVersion:"V8.0",
+    activeChampionCategory:"all",
    activeMetric:"power",
    activeLeaderboardEra:"v81",
    pendingCareerEnrollment:false,
@@ -1225,9 +1227,42 @@
    if(!weeks.length)return `<div class="rankEmpty">第一週挑戰結束後，冠軍與代表生涯會永久出現在這裡。</div>`;
    return `<div class="weeklyArchiveGrid">${weeks.map(([id,items])=>{const ranked=rankAllCareers(weeklyPersonalBests(items,id),"power"),winner=ranked[0],representatives=ranked.slice(1,3);return `<article class="weeklyArchiveCard"><small>${esc(weeklyMeta(winner)?.label||id)}</small><b>🏆 ${esc(winner?.nickname||"尚無冠軍")}</b><span>${winner?`${normalizedPower(winner).toLocaleString()} BL POWER｜${esc(displayPlayerName(winner.player_name))}`:""}</span>${representatives.length?`<div>代表生涯：${representatives.map(x=>esc(x.nickname)).join("、")}</div>`:""}${winner?`<button class="btn" onclick="BasketballLifeOnline.openCareer('${esc(winner.id)}')">查看冠軍生涯</button>`:""}</article>`}).join("")}</div>`;
  }
+ const championFeatureMetrics=["power","peak","championships","salary"];
+ const championMetricGroups={
+   all:{label:"全部紀錄",metrics:["mvp","fmvp","dpoy","first","allstar","scoring","assists","rebounds","national","games","hof","jersey"]},
+   awards:{label:"個人獎項",metrics:["mvp","fmvp","dpoy","first","allstar"]},
+   stats:{label:"數據履歷",metrics:["scoring","assists","rebounds","national","games"]},
+   legacy:{label:"傳奇榮譽",metrics:["hof","jersey"]}
+ };
+ const championMetricIcons={power:"⚡",peak:"📈",championships:"🏆",salary:"💰",mvp:"👑",fmvp:"🏅",dpoy:"🛡️",first:"⭐",allstar:"🌟",scoring:"🔥",assists:"🎯",rebounds:"💪",national:"🇹🇼",games:"📅",hof:"🏛️",jersey:"🎽"};
+ function championHolderCounts(rows){const counts=new Map();for(const x of rows){const id=String(x.record?.id||"");if(id)counts.set(id,(counts.get(id)||0)+1)}return counts}
+ function championHolderBadge(record,counts){const count=counts.get(String(record?.id||""))||1;return count>1?`<em class="championHolderBadge">保持 ${count} 項紀錄</em>`:""}
  function versionChampionsHTML(items){
-   if(!items.length)return `<div class="rankEmpty">舊版本冠軍資料讀取中，請稍後重新開啟排行榜。</div>`;
-   return ["V8.0","V7.50"].map(version=>{const rows=items.filter(x=>x.version===version);return rows.length?`<section class="versionChampionGroup"><h3>${version} 各項冠軍</h3><div class="versionChampionGrid">${rows.map(({metric,record})=>{const def=leaderboardMetrics[metric],value=def.value(record);return `<button class="versionChampionCard" onclick="BasketballLifeOnline.openCareer('${esc(record.id)}')"><small>${esc(def.short)}・${version} 冠軍</small><b>${esc(record.nickname)}</b><span>${esc(def.fmt(value))}｜${esc(displayPlayerName(record.player_name))}</span></button>`}).join("")}</div></section>`:""}).join("");
+   if(!items.length)return `<div class="rankEmpty">版本冠軍資料讀取中，請稍後重新開啟排行榜。</div>`;
+   const versions=["V8.0","V7.50"],version=versions.includes(state.activeChampionVersion)?state.activeChampionVersion:"V8.0";
+   const rows=items.filter(x=>x.version===version),byMetric=new Map(rows.map(x=>[x.metric,x])),counts=championHolderCounts(rows);
+   if(!rows.length)return `<div class="rankEmpty">${esc(version)} 尚未留下可顯示的冠軍紀錄。</div>`;
+   const category=championMetricGroups[state.activeChampionCategory]?state.activeChampionCategory:"all",group=championMetricGroups[category];
+   const focus=championFeatureMetrics.map(metric=>byMetric.get(metric)).filter(Boolean);
+   const records=group.metrics.map(metric=>byMetric.get(metric)).filter(Boolean);
+   return `<div class="championBoard">
+     <div class="championVersionTabs" aria-label="選擇冠軍版本">${versions.map(x=>`<button type="button" class="championVersionButton ${x===version?"on":""}" aria-pressed="${x===version}" onclick="BasketballLifeOnline.changeChampionVersion('${x}')"><small>${x===version?"目前查看":"切換版本"}</small><b>${x}</b></button>`).join("")}</div>
+     <div class="championFocusHead"><div><span>FEATURED RECORDS</span><b>${esc(version)} 焦點紀錄</b></div><small>先看最具代表性的四項生涯紀錄</small></div>
+     <div class="championFocusGrid">${focus.map(({metric,record})=>{const def=leaderboardMetrics[metric],value=def.value(record);return `<button type="button" class="championFocusCard" onclick="BasketballLifeOnline.openCareer('${esc(record.id)}')"><span class="championFocusLabel">${championMetricIcons[metric]||"🏅"} ${esc(def.short)}</span><strong>${esc(def.fmt(value))}</strong><b>${esc(record.nickname)}</b><small>${esc(displayPlayerName(record.player_name))}${championHolderBadge(record,counts)}</small></button>`}).join("")}</div>
+     <div class="championListHead"><div><span>COMPLETE RECORDS</span><b>完整紀錄</b></div><div class="championFilterTabs">${Object.entries(championMetricGroups).map(([key,item])=>`<button type="button" class="championFilterButton ${key===category?"on":""}" aria-pressed="${key===category}" onclick="BasketballLifeOnline.changeChampionCategory('${key}')">${esc(item.label)}</button>`).join("")}</div></div>
+     <div class="championRecordList">${records.map(({metric,record})=>{const def=leaderboardMetrics[metric],value=def.value(record);return `<button type="button" class="championRecordRow" onclick="BasketballLifeOnline.openCareer('${esc(record.id)}')"><span class="championRecordMetric"><i>${championMetricIcons[metric]||"🏅"}</i><b>${esc(def.short)}</b></span><span class="championRecordIdentity"><b>${esc(record.nickname)}</b><small>${esc(displayPlayerName(record.player_name))}${championHolderBadge(record,counts)}</small></span><span class="championRecordValue"><b>${esc(def.fmt(value))}</b><small>查看生涯 →</small></span></button>`}).join("")}</div>
+   </div>`;
+ }
+
+ function changeChampionVersion(version){
+   if(!["V8.0","V7.50"].includes(version))return;
+   state.activeChampionVersion=version;
+   renderLeaderboard([],state.activeMetric||"power");
+ }
+ function changeChampionCategory(category){
+   if(!championMetricGroups[category])return;
+   state.activeChampionCategory=category;
+   renderLeaderboard([],state.activeMetric||"power");
  }
 
  function personalArchiveRow(record){
@@ -1286,7 +1321,7 @@
    const era=state.activeLeaderboardEra||"v81",allEra=leaderboardEraRecords(records,era);
    const eraTabs=`<div class="rankTabs rankEraTabs">${Object.entries(leaderboardEras).map(([key,item])=>`<button class="rankTab ${key===era?"on":""}" onclick="BasketballLifeOnline.changeLeaderboardEra('${key}')">${esc(item.label)}</button>`).join("")}</div>`;
    if(era==="champions"){
-     content.innerHTML=`${eraTabs}<div class="rankIntro"><div><div class="rankKicker">VERSION HALL OF CHAMPIONS</div><h2>版本冠軍榜</h2><p>${esc(leaderboardEras.champions.note)}</p></div></div><section class="rankGlobalZone versionChampionHall"><div class="rankSectionHead"><div><span>FINAL RECORD HOLDERS</span><b>各版本最終紀錄保持人</b><small>點擊任一冠軍即可查看完整公開生涯。</small></div></div>${versionChampionsHTML(state.versionChampionRows||[])}</section>`;
+     content.innerHTML=`${eraTabs}<div class="rankIntro"><div><div class="rankKicker">VERSION HALL OF CHAMPIONS</div><h2>版本冠軍榜</h2><p>${esc(leaderboardEras.champions.note)}</p></div></div><section class="rankGlobalZone versionChampionHall"><div class="rankSectionHead"><div><span>FINAL RECORD HOLDERS</span><b>各版本最終紀錄保持人</b><small>切換版本與分類，點擊任一紀錄即可查看完整公開生涯。</small></div></div>${versionChampionsHTML(state.versionChampionRows||[])}</section>`;
      return;
    }
    const weeklyId=weeklyChallengeProfile().id;
@@ -1654,6 +1689,8 @@
    openLeaderboardNewTab,
    changeRankMetric,
    changeLeaderboardEra,
+   changeChampionVersion,
+   changeChampionCategory,
    openCareer,
    closeCommunity,
    routeFromUrl,
