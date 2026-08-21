@@ -119,7 +119,8 @@ function continueCareer(){
      // A saved screen contains the rendered HTML from the version that created it.
      // Rebuild retired careers from current data so old saves receive the latest
      // career rail, retirement-night header and fan feedback instead of stale HTML.
-     p.careerRating=calcCareerRating();
+      evaluateCareerLegacyTitles();
+      evaluateHallOfFame();
      document.body.classList.add("retirementMode");
      chapter.textContent="生涯終章";
      title.textContent=retirementExitClass()==="ceremony"?"正式引退":retirementExitClass()==="farewell"?"告別球場":"球員生涯落幕";
