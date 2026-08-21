@@ -18,10 +18,12 @@
    publishFingerprints:new Set(),
    verifiedCareerIds:new Set(),
    leaderboardCache:new Map(),
-   leaderboardStats:null,
-   weeklyArchiveRows:null,
+    leaderboardStats:null,
+    myPublicCareerRows:[],
+    weeklyArchiveRows:null,
+    versionChampionRows:null,
    activeMetric:"power",
-   activeLeaderboardEra:"v8",
+   activeLeaderboardEra:"v81",
    pendingCareerEnrollment:false,
    returnView:"setup",
    reconnectPromise:null,
@@ -138,13 +140,14 @@
    const raw=[err?.message,err?.details,err?.hint].filter(Boolean).join("｜")||"未知錯誤";
    if(/Deterministic schedule mismatch/i.test(raw)){
      const gp=gamePlayer(),seed=String(gp?.seed||"未知"),version=String(gp?.careerVersion||"legacy");
-     return `舊版賽程相容驗證尚未通過。請先更新頁面再按「重新連線並上傳」；若仍失敗，請保留 Seed ${seed} 與建立版 ${version} 後回報。你的本機生涯與能力資料不會被改動。`;
+     return `這支較早版本的生涯目前無法公開上榜。請先更新頁面再按「重新連線並上傳」；若仍失敗，請附上 Seed ${seed} 與版本 ${version} 回報。你的本機生涯不受影響。`;
    }
-   if(/Failed to fetch|NetworkError|Load failed|network|連線逾時|timeout/i.test(raw))return "網路或排行榜服務連線逾時，生涯已保留在本機，系統會自動補傳。";
-   if(/JWT|token|Authentication required|auth|401|403/i.test(raw))return "Online 登入憑證已失效，系統正在重新取得匿名登入身分。";
-   if(/V7\.50\.8 publisher required|publish_career_v7508|function.*not found|PGRST202|server integrity|伺服器完整性驗證尚未啟用/i.test(raw))return "排行榜仍連到舊版發布驗證，這支生涯已保留在本機；管理端完成 V8 上傳修正後，再按「重新連線並上傳」即可。";
-   if(/完整性|Malformed|Invalid|mismatch|exceeds|Duplicate|schedule|season|award|career record/i.test(raw))return `這支生涯未通過排行榜資料驗證：${raw.slice(0,150)}`;
-   return `排行榜回覆：${raw.slice(0,170)}`;
+   if(/Failed to fetch|NetworkError|Load failed|network|連線逾時|timeout/i.test(raw))return "排行榜暫時連不上。你的生涯已保留在本機，連線恢復後會自動再試。";
+   if(/JWT|token|Authentication required|auth|401|403/i.test(raw))return "Online 身分已過期，正在重新連線；你的生涯進度不受影響。";
+   if(/Online API\s*404|API route not found|404 Not Found/i.test(raw))return "排行榜服務目前沒有回應。你的生涯已保留在本機，請稍後再試。";
+   if(/V7\.50\.8 publisher required|publish_career_v7508|function.*not found|PGRST202|server integrity|伺服器完整性驗證尚未啟用/i.test(raw))return "排行榜目前無法接收這支生涯。紀錄已保留在本機，請稍後再按「重新連線並上傳」。";
+   if(/完整性|Malformed|Invalid|mismatch|exceeds|Duplicate|schedule|season|award|career record/i.test(raw))return "這支生涯的紀錄目前無法完成確認，因此暫時不能公開上榜。你的本機進度不受影響。";
+   return "排行榜暫時無法完成上傳。你的生涯已保留在本機，請稍後再試。";
  }
 
  function rememberCareerPublishError(err){
@@ -429,8 +432,8 @@
    return `${location.origin}${location.pathname}?career=${encodeURIComponent(id)}`;
  }
 
- const GAME_VERSION="8.0.0";
- const CAREER_PUBLISHER_VERSION="8.0.0";
+ const GAME_VERSION="8.1.0";
+ const CAREER_PUBLISHER_VERSION="8.1.0";
  const CAREER_INTEGRITY_SCHEMA="v8-core-1";
  const INVALID_CAREER_IDS=new Set([
    "e9040a1c-5dc3-49f6-944c-8172cb8a518d"
@@ -540,7 +543,7 @@
  function careerAwardIntegrityErrors(record){
    const errors=[],seasons=Array.isArray(record?.season_history)?record.season_history:[];
    const seasonByYear=new Map(seasons.map(x=>[Number(x?.year),x]));
-   const labels={"SBL／半職業":["SBL",0],"台灣職業":["台灣職籃",1],"韓國職業":["韓國職籃",4],"日本職業":["日本職籃",6],CBA:["CBA",7],"NBA G League":["NBA G League",7],NBA:["NBA",13]};
+   const labels={"SBL／半職業":["SBL",0],"台灣職業":["台灣職籃",1],"韓國職業":["韓國職籃",4],"日本職業":["日本職籃",6],CBA:["CBA",7],"NBA G League":["NBA G League",7],"歐洲聯賽":["歐洲聯賽",10],NBA:["NBA",13]};
    const championships=Array.isArray(record?.career_data?.championship_history)?record.career_data.championship_history:[];
    const seen=new Set();
    for(const award of Array.isArray(record?.awards)?record.awards:[]){
@@ -680,7 +683,7 @@
    return {
      game_version:p.careerVersion||"legacy",
      upload_id:p.publicCareerUploadId||p.publicCareerId||"",
-     ranking_era:String(p.careerVersion||"").startsWith("8.")?"v8":String(p.careerVersion||"").startsWith("7.50.")?"v750":"legacy",
+     ranking_era:String(p.careerVersion||"").startsWith("8.1")?"v81":String(p.careerVersion||"").startsWith("8.0")?"v8":String(p.careerVersion||"").startsWith("7.50.")?"v750":"legacy",
      retirement_reason:p.retirementReason||"",
      avatar_seed:p.avatarSeed||"",
      height_cm:p.heightCm||null,
@@ -854,7 +857,7 @@
 
  async function retirementRankSummary(id){
    try{
-     const era=p?.weeklyChallenge?.active?"weekly":"v8";
+     const era=p?.weeklyChallenge?.active?"weekly":"v81";
      const powerRecords=(await loadLeaderboardRecords(true,"power",era)).filter(isOfficialRankingRecord);
      const peakRecords=(await loadLeaderboardRecords(true,"peak",era)).filter(isOfficialRankingRecord);
      const powerIndex=rankAllCareers(powerRecords,"power").findIndex(r=>r.id===id);
@@ -1129,10 +1132,10 @@
    };
  }
 
- async function loadLeaderboardRecords(force=false,metricKey=state.activeMetric||"power",era=state.activeLeaderboardEra||"v8"){
+ async function loadLeaderboardRecords(force=false,metricKey=state.activeMetric||"power",era=state.activeLeaderboardEra||"v81"){
    if(!state.client||!state.user)throw new Error("尚未連上 Online");
    const metric=leaderboardMetrics[metricKey]?metricKey:"power";
-   const rankingEra=leaderboardEras[era]?era:"v8";
+   const rankingEra=leaderboardEras[era]?era:"v81";
    const weeklyId=rankingEra==="weekly"?weeklyChallengeProfile().id:"";
    const cacheKey=`${rankingEra}:${metric}:${weeklyId}`;
    const cached=state.leaderboardCache instanceof Map?state.leaderboardCache.get(cacheKey):null;
@@ -1143,8 +1146,12 @@
    }
 
    const query=new URLSearchParams({era:rankingEra,metric,weekly_id:weeklyId});
-   const data=await apiRequest(`careers?${query.toString()}`,{timeout:15000});
-   const rows=(Array.isArray(data?.rows)?data.rows:[]).map(normalizeLeaderboardSummary);
+   const [data,mineData]=await Promise.all([
+     apiRequest(`careers?${query.toString()}`,{timeout:15000}),
+     apiRequest("careers?mine=1",{timeout:12000}).catch(()=>({rows:[]}))
+   ]);
+   state.myPublicCareerRows=dedupeLeaderboardRecords((mineData?.rows||[]).map(normalizeLeaderboardSummary)).filter(isOfficialRankingRecord);
+   const rows=[...(Array.isArray(data?.rows)?data.rows:[]),...state.myPublicCareerRows].map(normalizeLeaderboardSummary);
    const visibleRows=dedupeLeaderboardRecords(rows).filter(isOfficialRankingRecord);
    state.leaderboardStats=data?.stats||null;
 
@@ -1158,10 +1165,24 @@
    state.leaderboardCache.set(cacheKey,{at:Date.now(),rows:visibleRows,stats:state.leaderboardStats,weeklyArchiveRows:state.weeklyArchiveRows});
    return visibleRows;
  }
+ async function loadVersionChampions(){
+   if(Array.isArray(state.versionChampionRows))return state.versionChampionRows;
+   try{
+     const [v8,v7]=await Promise.all([
+       apiRequest("careers?champions=1&era=v8",{timeout:18000}),
+       apiRequest("careers?champions=1&era=v7",{timeout:18000})
+     ]);
+     state.versionChampionRows=[
+       ...(v8?.champions||[]).map(x=>({...x,version:"V8.0"})),
+       ...(v7?.champions||[]).map(x=>({...x,version:"V7.50"}))
+     ].map(x=>({metric:x.metric,version:x.version,record:normalizeLeaderboardSummary(x.record)})).filter(x=>leaderboardMetrics[x.metric]&&isOfficialRankingRecord(x.record));
+   }catch(_){state.versionChampionRows=[]}
+   return state.versionChampionRows;
+ }
 
  function isOfficialRankingRecord(record){
    if(INVALID_CAREER_IDS.has(String(record?.id||"")))return false;
-   if(!["v750","v8"].includes(String(record?.career_data?.ranking_era||"")))return false;
+   if(!["v750","v8","v81"].includes(String(record?.career_data?.ranking_era||"")))return false;
    const requireServer=String(record?.career_data?.publisher_version||"")===CAREER_PUBLISHER_VERSION;
    if(record?._leaderboardSummary)return !requireServer||record?.career_data?.integrity?.server_verified==="passed";
    return careerRecordIntegrity(record,{requireEnvelope:requireServer,requireServer}).ok;
@@ -1175,17 +1196,16 @@
    }).sort((a,b)=>def.value(b)-def.value(a)||normalizedPower(b)-normalizedPower(a)||new Date(b.created_at||0)-new Date(a.created_at||0));
  }
 
- const leaderboardEras={
-   v8:{label:"V8 現役榜",note:"只收錄 V8.0 正式版生涯；每週 Seed 挑戰不會混入本榜。"},
-   weekly:{label:"每週 Seed 挑戰榜",note:"相同 Seed、位置與身材競賽；每位玩家每週只保留 BL POWER 最高的一支生涯。"},
-   v7:{label:"V7 傳奇榜",note:"永久保留 V7.50 系列既有公開生涯，不會被 V8 紀錄覆蓋。"}
- };
+  const leaderboardEras={
+   v81:{label:"V8.1 現役榜",note:"V8.1 正式版生涯專屬排行。"},
+   weekly:{label:"每週 Seed 挑戰榜",note:"相同 Seed、位置與身材競賽；每位玩家保留 BL POWER 最高的一支生涯。"}
+  };
  function weeklyMeta(record){return record?.career_data?.weekly_challenge||{}}
  function leaderboardEraRecords(records,era=state.activeLeaderboardEra){
    const official=(records||[]).filter(isOfficialRankingRecord);
    if(era==="v7")return official.filter(r=>String(r?.career_data?.ranking_era||"")==="v750");
-   if(era==="weekly")return official.filter(r=>String(r?.career_data?.ranking_era||"")==="v8"&&weeklyMeta(r).active);
-   return official.filter(r=>String(r?.career_data?.ranking_era||"")==="v8"&&!weeklyMeta(r).active);
+   if(era==="weekly")return official.filter(r=>String(r?.career_data?.ranking_era||"")==="v81"&&weeklyMeta(r).active);
+   return official.filter(r=>String(r?.career_data?.ranking_era||"")==="v81"&&!weeklyMeta(r).active);
  }
  function weeklyPersonalBests(records,weeklyId){
    const best=new Map();
@@ -1202,6 +1222,15 @@
    const weeks=[...groups.entries()].filter(([id])=>id!==current).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,24);
    if(!weeks.length)return `<div class="rankEmpty">第一週挑戰結束後，冠軍與代表生涯會永久出現在這裡。</div>`;
    return `<div class="weeklyArchiveGrid">${weeks.map(([id,items])=>{const ranked=rankAllCareers(weeklyPersonalBests(items,id),"power"),winner=ranked[0],representatives=ranked.slice(1,3);return `<article class="weeklyArchiveCard"><small>${esc(weeklyMeta(winner)?.label||id)}</small><b>🏆 ${esc(winner?.nickname||"尚無冠軍")}</b><span>${winner?`${normalizedPower(winner).toLocaleString()} BL POWER｜${esc(winner.player_name)}`:""}</span>${representatives.length?`<div>代表生涯：${representatives.map(x=>esc(x.nickname)).join("、")}</div>`:""}${winner?`<button class="btn" onclick="BasketballLifeOnline.openCareer('${esc(winner.id)}')">查看冠軍生涯</button>`:""}</article>`}).join("")}</div>`;
+ }
+ function versionChampionsHTML(items){
+   if(!items.length)return `<div class="rankEmpty">舊版本冠軍資料讀取中，請稍後重新開啟排行榜。</div>`;
+   return ["V8.0","V7.50"].map(version=>{const rows=items.filter(x=>x.version===version);return rows.length?`<section class="versionChampionGroup"><h3>${version} 各項冠軍</h3><div class="versionChampionGrid">${rows.map(({metric,record})=>{const def=leaderboardMetrics[metric],value=def.value(record);return `<button class="versionChampionCard" onclick="BasketballLifeOnline.openCareer('${esc(record.id)}')"><small>${esc(def.short)}・${version} 冠軍</small><b>${esc(record.nickname)}</b><span>${esc(def.fmt(value))}｜${esc(displayPlayerName(record.player_name))}</span></button>`}).join("")}</div></section>`:""}).join("");
+ }
+
+ function personalArchiveRow(record){
+   const era=String(record?.career_data?.ranking_era||""),version=era==="v8"?"V8.0":era==="v750"?"V7.50":"舊版本";
+   return `<button class="rankRow rankRowMine" onclick="BasketballLifeOnline.openCareer('${esc(record.id)}')"><span class="rankNo">${version}</span><span class="rankIdentity"><b>${esc(record.nickname)}</b><small>${esc(displayPlayerName(record.player_name))} · ${esc(record.position||"")} · 退役 ${record.retired_age||"-"} 歲</small></span><span class="rankValue"><b>${normalizedPower(record).toLocaleString()}</b><small>BL POWER</small></span></button>`;
  }
 
  function rankRow(record,index,def,metricKey,isMine=false,isPersonalBest=false){
@@ -1225,13 +1254,13 @@
    url.search="";
    url.hash="";
    url.searchParams.set("leaderboard",key);
-   url.searchParams.set("era",state.activeLeaderboardEra||"v8");
+   url.searchParams.set("era",state.activeLeaderboardEra||"v81");
    window.open(url.toString(),"_blank","noopener,noreferrer");
  }
 
- async function openLeaderboard(metricKey="power",pushUrl=true,era=state.activeLeaderboardEra||"v8"){
+ async function openLeaderboard(metricKey="power",pushUrl=true,era=state.activeLeaderboardEra||"v81"){
    state.activeMetric=leaderboardMetrics[metricKey]?metricKey:"power";
-   state.activeLeaderboardEra=leaderboardEras[era]?era:"v8";
+   state.activeLeaderboardEra=leaderboardEras[era]?era:"v81";
    showCommunityShell(leaderboardEras[state.activeLeaderboardEra].label);
    const content=document.getElementById("communityContent");
    if(content)content.innerHTML=`<div class="communityLoading">正在讀取公開生涯…</div>`;
@@ -1243,6 +1272,7 @@
      }
      await refreshNicknameFromServer();
      const records=await loadLeaderboardRecords(false,state.activeMetric,state.activeLeaderboardEra);
+     if(state.activeLeaderboardEra==="v81")await loadVersionChampions();
      renderLeaderboard(records,state.activeMetric);
    }catch(err){
      if(content)content.innerHTML=`<div class="communityError">排行榜讀取失敗：${esc(err?.message||"請稍後再試")}<div class="publishedBtns"><button class="btn" type="button" onclick="BasketballLifeOnline.openLeaderboard('${esc(state.activeMetric)}',false)">重新讀取</button></div></div>`;
@@ -1252,11 +1282,12 @@
  function renderLeaderboard(records,metricKey){
    const content=document.getElementById("communityContent");if(!content)return;
    const def=leaderboardMetrics[metricKey]||leaderboardMetrics.power;
-   const era=state.activeLeaderboardEra||"v8",allEra=leaderboardEraRecords(records,era);
+   const era=state.activeLeaderboardEra||"v81",allEra=leaderboardEraRecords(records,era);
    const weeklyId=weeklyChallengeProfile().id;
    const scoped=era==="weekly"?weeklyPersonalBests(allEra,weeklyId):allEra;
    const rows=rankAllCareers(scoped,metricKey);
    const mine=rows.map((record,index)=>({record,index})).filter(x=>x.record.user_id===state.user?.id),mineVisible=mine.slice(0,4),mineRest=mine.slice(4);
+   const oldMine=(state.myPublicCareerRows||[]).filter(r=>r.user_id===state.user?.id&&!weeklyMeta(r).active&&["v8","v750"].includes(String(r?.career_data?.ranking_era||"")));
    const stats=state.leaderboardStats||{};
    const players=Number(stats.players??new Set(scoped.map(r=>r.user_id||r.nickname)).size);
    const careerCount=Number(stats.careers??scoped.length);
@@ -1265,30 +1296,32 @@
    content.innerHTML=`
      <div class="rankTabs rankEraTabs">${Object.entries(leaderboardEras).map(([key,item])=>`<button class="rankTab ${key===era?"on":""}" onclick="BasketballLifeOnline.changeLeaderboardEra('${key}')">${esc(item.label)}</button>`).join("")}</div>
      <div class="rankIntro">
-       <div><div class="rankKicker">${era==="weekly"?"OFFICIAL WEEKLY CHALLENGE":era==="v7"?"V7 LEGACY ARCHIVE":"V8 ACTIVE CAREERS"}</div><h2>${esc(leaderboardEras[era].label)}・${esc(def.label)}</h2><p>${esc(leaderboardEras[era].note)}</p></div>
-       <div class="rankSummary"><span><small>排行榜玩家</small><b>${players}</b></span><span><small>公開生涯</small><b>${careerCount}</b></span><span><small>最高 POWER</small><b>${topPower.toLocaleString()}</b></span><span><small>最高 OVR</small><b>${topPeak}</b></span></div>
-     </div>
-     <div class="rankTabs">${Object.entries(leaderboardMetrics).map(([k,m])=>`<button class="rankTab ${k===metricKey?"on":""}" onclick="BasketballLifeOnline.changeRankMetric('${k}')">${esc(m.short)}</button>`).join("")}</div>
+        <div><div class="rankKicker">${era==="weekly"?"OFFICIAL WEEKLY CHALLENGE":"V8.1 ACTIVE CAREERS"}</div><h2>${esc(leaderboardEras[era].label)}・${esc(def.label)}</h2><p>${esc(leaderboardEras[era].note)}</p></div>
+        <div class="rankSummary"><span><small>排行榜玩家</small><b>${players}</b></span><span><small>公開生涯</small><b>${careerCount}</b></span><span><small>最高 POWER</small><b>${topPower.toLocaleString()}</b></span><span><small>最高 OVR</small><b>${topPeak}</b></span></div>
+      </div>
+      ${era==="weekly"?`<section class="rankGlobalZone weeklyArchiveZone featuredArchive"><div class="rankSectionHead"><div><span>WEEKLY HALL OF RECORDS</span><b>歷屆冠軍與代表生涯</b><small>每週結算後，冠軍與代表生涯會永久收錄於此。</small></div></div>${weeklyArchiveHTML(state.weeklyArchiveRows||[])}</section>`:""}
+      ${era==="v81"?`<details class="versionChampionZone"><summary>🏆 版本冠軍榜｜V8.0、V7.50 各項目第一名</summary>${versionChampionsHTML(state.versionChampionRows||[])}</details>`:""}
+      <div class="rankTabs">${Object.entries(leaderboardMetrics).map(([k,m])=>`<button class="rankTab ${k===metricKey?"on":""}" onclick="BasketballLifeOnline.changeRankMetric('${k}')">${esc(m.short)}</button>`).join("")}</div>
      <div class="rankNotice"><b>${esc(def.label)}：</b>${esc(def.description)} 全球榜單顯示前 50 支公開生涯；未進入前 50 的本人紀錄會另外收在「我的公開生涯」，不與榜單混排。</div>
      ${mine.length?`<section class="rankMineZone" aria-label="我的公開生涯">
        <div class="rankSectionHead"><div><span>MY PUBLIC CAREERS</span><b>我的公開生涯</b><small>最高 4 筆直接顯示且都能點選；進入前 50 的紀錄仍會在全球榜以橘色標示。</small></div><span class="rankSectionCount">${mine.length} 筆公開紀錄</span></div>
        <div class="rankMineGrid">${mineVisible.map((x,i)=>rankRow(x.record,x.index,def,metricKey,true,i===0)).join("")}</div>
        ${mineRest.length?`<details class="rankMineMore"><summary>查看其餘 ${mineRest.length} 筆公開生涯</summary><div class="rankMineGrid">${mineRest.slice(0,20).map(x=>rankRow(x.record,x.index,def,metricKey,true,false)).join("")}</div></details>`:""}
      </section>`:""}
+     ${era==="v81"&&oldMine.length?`<details class="rankMineMore oldVersionCareers"><summary>查看舊版本公開生涯（${oldMine.length} 筆，不計入 V8.1 排名）</summary><div class="rankMineGrid">${oldMine.slice(0,40).map(personalArchiveRow).join("")}</div></details>`:""}
      <section class="rankGlobalZone" aria-label="全球排行榜前 50 名">
        <div class="rankSectionHead"><div><span>GLOBAL TOP 50</span><b>全球排行榜・目前前 50 名</b><small>依 ${esc(def.label)} 排序；點擊任一紀錄可查看完整公開生涯。</small></div><span class="rankSectionCount">${Math.min(50,rows.length)} 筆</span></div>
        <div class="rankList">${rows.length?rows.slice(0,50).map((r,i)=>rankRow(r,i,def,metricKey,r.user_id===state.user?.id)).join(""):`<div class="rankEmpty">這個項目目前還沒有公開紀錄。</div>`}</div>
      </section>`;
-   if(era==="weekly")content.insertAdjacentHTML("beforeend",`<section class="rankGlobalZone weeklyArchiveZone"><div class="rankSectionHead"><div><span>WEEKLY HALL OF RECORDS</span><b>歷屆冠軍與代表生涯</b><small>每週結束後永久保留，不會因新 Seed 開始而消失。</small></div></div>${weeklyArchiveHTML(state.weeklyArchiveRows||[])}</section>`);
  }
 
  async function changeRankMetric(metricKey){
    state.activeMetric=metricKey;
-   history.replaceState({bl:"leaderboard"},"",`${location.pathname}?leaderboard=${encodeURIComponent(metricKey)}&era=${encodeURIComponent(state.activeLeaderboardEra||"v8")}`);
+   history.replaceState({bl:"leaderboard"},"",`${location.pathname}?leaderboard=${encodeURIComponent(metricKey)}&era=${encodeURIComponent(state.activeLeaderboardEra||"v81")}`);
    try{renderLeaderboard(await loadLeaderboardRecords(false,metricKey,state.activeLeaderboardEra),metricKey)}catch(err){console.warn(err)}
  }
  async function changeLeaderboardEra(era){
-   state.activeLeaderboardEra=leaderboardEras[era]?era:"v8";
+   state.activeLeaderboardEra=leaderboardEras[era]?era:"v81";
    history.replaceState({bl:"leaderboard"},"",`${location.pathname}?leaderboard=${encodeURIComponent(state.activeMetric||"power")}&era=${encodeURIComponent(state.activeLeaderboardEra)}`);
    showCommunityShell(leaderboardEras[state.activeLeaderboardEra].label);
    try{renderLeaderboard(await loadLeaderboardRecords(false,state.activeMetric||"power",state.activeLeaderboardEra),state.activeMetric||"power")}catch(err){console.warn(err)}
@@ -1308,7 +1341,7 @@
  function publicSeasonTable(seasons){
    const ss=Array.isArray(seasons)?seasons:[];
    if(!ss.length)return `<div class="rankEmpty">沒有逐季資料。</div>`;
-   return `<div class="legacyTableWrap"><table class="legacyTable"><tr><th>年</th><th>球隊</th><th>聯盟</th><th>GP/賽程</th><th>缺賽</th><th>MPG</th><th>PTS</th><th>REB</th><th>AST</th><th>STL</th><th>BLK</th></tr>${ss.map(x=>`<tr class="${Number(x.missedGames||0)>0?"seasonInjuryRow":""}"><td>${x.year||""}</td><td>${esc(x.team||"")}</td><td>${esc(typeof leagueDisplay==="function"?leagueDisplay(x.path):x.path||"")}</td><td>${seasonGamesDisplay(x)}</td><td>${esc(seasonAbsenceDisplay(x))}</td><td>${x.mins||0}</td><td>${x.pts||0}</td><td>${x.reb||0}</td><td>${x.ast||0}</td><td>${x.stl||0}</td><td>${x.blk||0}</td></tr>`).join("")}</table></div>`;
+   return `<div class="legacyTableWrap"><table class="legacyTable"><tr><th>年</th><th>球隊</th><th>聯盟</th><th>GP/賽程</th><th>缺賽</th><th>MPG</th><th>PTS</th><th>REB</th><th>AST</th><th>STL</th><th>BLK</th></tr>${ss.map(x=>`<tr class="${Number(x.missedGames||0)>0?"seasonInjuryRow":""}"><td>${x.year||""}</td><td>${esc(x.team||"")}</td><td>${esc(typeof seasonLeagueDisplay==="function"?seasonLeagueDisplay(x):typeof leagueDisplay==="function"?leagueDisplay(x.path):x.path||"")}</td><td>${seasonGamesDisplay(x)}</td><td>${esc(seasonAbsenceDisplay(x))}</td><td>${x.mins||0}</td><td>${x.pts||0}</td><td>${x.reb||0}</td><td>${x.ast||0}</td><td>${x.stl||0}</td><td>${x.blk||0}</td></tr>`).join("")}</table></div>`;
  }
 
  function publicNationalTable(history,seasons=[]){
@@ -1324,7 +1357,7 @@
      return `<tr><td>${Number(x.year)||"—"}</td><td>${esc(nationalLevelLabel(x.level))}</td><td>${esc(x.event||"國際賽")}</td><td>${esc(x.finish||"—")}</td><td>${recorded?x.games:"—"}</td><td>${recorded?Number(x.pts).toFixed(1):"—"}</td><td>${recorded?Number(x.reb).toFixed(1):"—"}</td><td>${recorded?Number(x.ast).toFixed(1):"—"}</td></tr>`;
    }).join("")}</table></div></details>`;
    const oldCount=rows.filter(x=>!hasInternationalBoxScore(x)).length;
-   return `${totals}${events}${normalized.estimatedCount?`<div class="mut" style="margin-top:7px">※ ${normalized.estimatedCount} 屆來自較早版本，當時未保存國際賽個人數據；本頁已依該年度球季實績補算。</div>`:""}${oldCount?`<div class="mut" style="margin-top:7px">※ ${oldCount} 屆找不到同年度球季資料，因此仍以「—」標示。</div>`:""}`;
+   return `${totals}${events}${normalized.estimatedCount?`<div class="mut" style="margin-top:7px">※ ${normalized.estimatedCount} 屆為早期版本紀錄，僅保留當時可確認的國際賽資料。</div>`:""}${oldCount?`<div class="mut" style="margin-top:7px">※ ${oldCount} 屆缺少同年度球季數據，以「—」標示。</div>`:""}`;
  }
 
  function publicOffCourtHistory(history){
@@ -1407,7 +1440,7 @@
    const q=new URLSearchParams(location.search);
    const career=q.get("career"),leader=q.get("leaderboard");
    if(career){await openCareer(career,false);return true}
-   if(leader!==null){await openLeaderboard(leader||"power",false,q.get("era")||"v8");return true}
+   if(leader!==null){await openLeaderboard(leader||"power",false,q.get("era")||"v81");return true}
    return false;
  }
 

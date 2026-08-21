@@ -1,5 +1,16 @@
 function v8Pick(list,key){return list[hash(String(key))%list.length]}
-function v8CareerIsProfessional(player){return ["SBL／半職業","台灣職業","日本職業","韓國職業","CBA","NBA G League","NBA","海外職業","職業"].includes(player?.path)}
+function v8CastRegion(player=p){
+ const path=String(player?.path||"");
+ if(["NCAA D1","NCAA D2","NBA G League","NBA"].includes(path))return "english";
+ if(["日本大學","日本職業"].includes(path))return "japan";
+ if(path==="韓國職業")return "korea";
+ if(path==="CBA")return "china";
+ if(path==="歐洲聯賽")return "europe";
+ return "taiwan";
+}
+function v8CoachPool(player=p){const region=v8CastRegion(player);return region==="taiwan"?V8_COACHES:(V8_OVERSEAS_COACHES[region]||V8_COACHES)}
+function v8TeammatePool(player=p){const region=v8CastRegion(player);return region==="taiwan"?V8_TEAMMATES:(V8_OVERSEAS_TEAMMATES[region]||V8_TEAMMATES)}
+function v8CareerIsProfessional(player){return ["SBL／半職業","台灣職業","日本職業","韓國職業","CBA","NBA G League","歐洲聯賽","NBA","海外職業","職業"].includes(player?.path)}
 function ensureV8Agent(player=p){
  if(!player||!v8CareerIsProfessional(player))return null;
  const cast=player.careerCast||(player.careerCast={}),seed=player.seed||"V8WORLD";
@@ -22,7 +33,7 @@ function ensureV8CareerState(player=p){
  if(v8CareerIsProfessional(player))ensureV8Agent(player);
  else if(cast.agent)delete cast.agent;
  if(!cast.rival)cast.rival={name:v8Pick(V8_RIVALS,`${seed}-rival`),trait:"從學生時期一路被拿來比較",respect:42,metYear:player.year||2026};
- if(!cast.teammate)cast.teammate={name:v8Pick(V8_TEAMMATES,`${seed}-${player.team||"first"}-mate`),trait:"主要輪替競爭者",trust:52,team:player.team||"",metYear:player.year||2026};
+ if(!cast.teammate)cast.teammate={name:v8Pick(v8TeammatePool(player),`${seed}-${player.team||"first"}-mate`),trait:"主要輪替競爭者",trust:52,team:player.team||"",metYear:player.year||2026};
  ensureV8TeamWorld(player,true);
  return player;
 }
@@ -43,15 +54,21 @@ function ensureV8TeamWorld(player=p,initial=false){
  }
  const cast=player.careerCast||(player.careerCast={});
  if(!cast.coach||cast.coach.team!==player.team){
-   const coach=v8Pick(V8_COACHES,`${player.seed}-${player.team}-coach`);
+   const coach=v8Pick(v8CoachPool(player),`${player.seed}-${player.team}-coach`);
    cast.coach={...coach,team:player.team,trust:initial?56:52,metYear:player.year};
-   cast.teammate={name:v8Pick(V8_TEAMMATES,`${player.seed}-${player.team}-mate`),trait:"同位置輪替競爭者",trust:50,team:player.team,metYear:player.year};
+   cast.teammate={name:v8Pick(v8TeammatePool(player),`${player.seed}-${player.team}-mate`),trait:"同位置輪替競爭者",trust:50,team:player.team,metYear:player.year};
  }
  return player.teamWorld;
 }
 function v8RoleFor(player=p){
  if(!player)return {id:"bench",label:"板凳末端"};
- const score=overall()+(player.rep||0)*.12+(player.contract?.multiplier||0)*2;
+ // NCAA division alone is not a role. A real college starter receives a meaningful Taiwan-role head start.
+ const recentReturn=player.path==="台灣職業"&&player.year-(Number(player.proEntryYear)||0)<=2;
+ const entryRole=player.proEntryCollegeRole||"bench",entrySource=player.proEntrySource||"";
+ const ncaaReturn=!recentReturn?0:entrySource==="NCAA D1"?(entryRole==="star"?11:entryRole==="starter"?9:entryRole==="rotation"?3:1):entrySource==="NCAA D2"?(entryRole==="star"?9:entryRole==="starter"?7:entryRole==="rotation"?2:0):0;
+ const promised=player.contract?.rolePromise||player.roleState?.promisedLabel||"";
+ const promiseBonus=/核心/.test(promised)?6:/固定先發/.test(promised)?5:/先發競爭/.test(promised)?3:/主要輪替/.test(promised)?2:0;
+ const score=overall()+(player.rep||0)*.12+(player.contract?.multiplier||0)*2+ncaaReturn+promiseBonus;
  if(score>=88)return {id:"core",label:"先發核心"};
  if(score>=76)return {id:"starter",label:"固定先發"};
  if(score>=67)return {id:"sixth",label:"最佳第六人"};
@@ -123,7 +140,7 @@ function evaluateV8CoachFuture(results=[]){
  const world=ensureV8TeamWorld(p),best=(results||[]).reduce((m,x)=>Math.max(m,x.reward||0),0),pressure=world.direction==="turmoil"?.22:world.direction==="contend"?.13:world.direction==="rebuild"?.08:.04;
  const chance=Math.min(.48,pressure+(best<=1?.14:0)+(p.careerCast.coach.trust<35?.08:0));
  if(RNG(`${p.seed}-${p.team}-coach-change-${p.year}`)()>=chance)return;
- const old=p.careerCast.coach,candidates=V8_COACHES.filter(x=>x.name!==old.name),next=v8Pick(candidates,`${p.seed}-${p.team}-new-coach-${p.year+1}`);
+ const old=p.careerCast.coach,pool=v8CoachPool(p),candidates=pool.filter(x=>x.name!==old.name),next=v8Pick(candidates.length?candidates:pool,`${p.seed}-${p.team}-new-coach-${p.year+1}`);
  p.relationshipHistory.push({year:p.year,person:old.name,type:"coach",action:"dismissed",story:`${old.name} 在球季結束後離任`});
  p.careerCast.coach={...next,team:p.team,trust:50,metYear:p.year+1};p.lastCoachChangeYear=p.year;
  p.roleState.promised="worker";p.roleState.promisedLabel="重新競爭";p.roleState.promisedMinutes="由新教練評估";

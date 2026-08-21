@@ -19,4 +19,15 @@ const NCAA_D2_TEAMS=[
 ];
 const SEMIPRO_TEAMS=["台北戰鷹","新北海盜","桃園青年軍","台中雷豹","高雄海港"];
 const GLEAGUE_TEAMS=["南灣疾風","奧斯汀銀星","鹽湖城山貓","長島航海家","聖克魯茲浪潮","首都Go-Go"];
+const EUROPE_LEAGUES=[
+ {id:"acb",label:"西班牙 Liga ACB",country:"西班牙",target:86,market:84,games:34,strength:1.40,award:9,salaryFactor:1.10,teams:["馬德里王冠","巴塞隆納海岸","瓦倫西亞火焰","巴斯克守衛"]},
+ {id:"bsl",label:"土耳其 BSL",country:"土耳其",target:84,market:82,games:30,strength:1.34,award:8,salaryFactor:1.04,teams:["伊斯坦堡之星","安卡拉堡壘","伊茲密爾愛琴海","布爾薩綠城"]},
+ {id:"lba",label:"義大利 LBA",country:"義大利",target:82,market:80,games:30,strength:1.29,award:7,salaryFactor:.94,teams:["米蘭紅黑","波隆那雙塔","威尼斯雄獅","羅馬飛鷹"]},
+ {id:"lnb",label:"法國 LNB Élite",country:"法國",target:82,market:80,games:30,strength:1.27,award:7,salaryFactor:.91,teams:["巴黎都會","摩納哥王冠","里昂河谷","史特拉斯堡白鶴"]},
+ {id:"bbl",label:"德國 BBL",country:"德國",target:82,market:80,games:34,strength:1.27,award:7,salaryFactor:.93,teams:["慕尼黑獵鷹","柏林棕熊","漢堡高塔","波昂犀牛"]},
+ {id:"gbl",label:"希臘 GBL",country:"希臘",target:83,market:81,games:26,strength:1.31,award:8,salaryFactor:.88,teams:["雅典神殿","比雷埃夫斯浪潮","塞薩洛尼基之翼","帕特雷海港"]},
+ {id:"aba",label:"亞得里亞海 ABA League",country:"亞得里亞海地區",target:82,market:80,games:30,strength:1.30,award:7,salaryFactor:.86,teams:["貝爾格勒堡壘","札格雷布灰狼","盧比安納飛龍","波德里查雄鷹"]},
+ {id:"lkl",label:"立陶宛 LKL",country:"立陶宛",target:81,market:79,games:30,strength:1.25,award:6,salaryFactor:.82,teams:["考納斯琥珀","維爾紐斯鐵壁","克萊佩達港灣","帕內韋日斯橡樹"]}
+];
+const EUROPE_TEAMS=EUROPE_LEAGUES.flatMap(league=>league.teams);
 const NBA_TEAMS=["洛杉磯星辰","紐約帝國","芝加哥烈焰","邁阿密浪潮","達拉斯孤星","波士頓綠衫","舊金山灣區","鳳凰城烈日"];

@@ -13,6 +13,7 @@ window.BL_LEAGUE_CFG = {
   "日本職業": {label:"日本職籃", target:80, market:78, strength:1.20, salary:2000, games:[60,60], award:6, exposure:4, trait:"穩定長約"},
   "CBA": {label:"CBA", target:81, market:79, strength:1.22, salary:3500, games:[42,42], award:7, exposure:4, trait:"高薪市場"},
   "NBA G League": {label:"NBA G League", target:82, market:80, strength:1.21, salary:160, games:[50,50], award:7, exposure:10, trait:"NBA跳板"},
+  "歐洲聯賽": {label:"歐洲聯賽", target:86, market:85, strength:1.38, salary:6200, games:[38,38], award:10, exposure:8, trait:"歐洲頂級舞台"},
   "NBA": {label:"NBA", target:91, market:90, strength:1.56, salary:12000, games:[82,82], award:13, exposure:10, trait:"最高舞台"}
 };
 

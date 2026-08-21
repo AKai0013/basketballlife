@@ -346,6 +346,30 @@ body.retirementMode .legacyDetails{
   }
 }
 
+.eventChancePreview{
+  display:inline-flex;
+  margin-top:7px;
+  padding:3px 7px;
+  border:1px solid #355165;
+  border-radius:999px;
+  color:#9bc9e8;
+  font-size:10px;
+  font-weight:900;
+}
+
+/* V8.1 phone-first frame: desktop remains wide; phone/tablet play stays in one readable column. */
+@media(max-width:700px){
+  #game:not(.hidden) .feedHistory:not(.hasOpenYear){
+    max-height:72px!important;
+    overflow:hidden!important;
+  }
+  #game:not(.hidden) .feedHistory.hasOpenYear{
+    max-height:55dvh!important;
+    overflow-y:auto!important;
+  }
+  #currentPanel{scroll-margin-top:8px}
+}
+
 /* Retirement card: reuse the public-career information hierarchy. */
 body.retirementMode .legacyDashboard{display:block!important;width:100%!important}
 body.retirementMode .legacyCareerRail{display:none!important}
@@ -697,7 +721,7 @@ body.blHomeMode .weeklyChallenge .weeklyChallengeTiming{
   line-height:1.25!important;
 }
 
-/* Turn the season result into a story people can retell, without changing simulation data. */
+/* Season receipt: concrete simulated evidence instead of generic fan quotes. */
 #game[data-stage="results"] .blSeasonStoryLegacy{display:none!important}
 #game[data-stage="results"] .blSeasonStoryCard{
   flex:1 0 100%;
@@ -751,6 +775,10 @@ body.blHomeMode .weeklyChallenge .weeklyChallengeTiming{
   line-height:1.5;
   letter-spacing:-.02em;
 }
+#game[data-stage="results"] .blSignatureMatchup{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px;padding:11px 13px;border:1px solid #3b515e;border-radius:10px;background:rgba(6,15,21,.68)}
+#game[data-stage="results"] .blSignatureMatchup b{color:#e9f0f3;font-size:14px;line-height:1.4}
+#game[data-stage="results"] .blSignatureMatchup span{padding:4px 8px;border-radius:999px;background:#28402f;color:#80d5a0;font-size:9px;font-weight:950;white-space:nowrap}
+#game[data-stage="results"] .blSignatureStatline{margin:8px 2px 0;color:#efb36f;font-size:11px;font-weight:850;line-height:1.55}
 #game[data-stage="results"] .blSeasonMoments{
   display:flex;
   flex-wrap:wrap;
@@ -766,7 +794,40 @@ body.blHomeMode .weeklyChallenge .weeklyChallengeTiming{
   font-size:10px;
   line-height:1.45;
 }
-#game[data-stage="results"] .blSeasonFanHead{
+#game[data-stage="results"] .blSeasonDataGrid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:8px;
+  margin-top:15px;
+}
+#game[data-stage="results"] .blSeasonDataGrid article{
+  min-width:0;
+  padding:12px;
+  border:1px solid #314552;
+  border-radius:11px;
+  background:rgba(8,17,23,.72);
+}
+#game[data-stage="results"] .blSeasonDataGrid small{
+  display:block;
+  color:#78909d;
+  font-size:9px;
+  font-weight:900;
+}
+#game[data-stage="results"] .blSeasonDataGrid b{
+  display:block;
+  margin-top:5px;
+  color:#f2b064;
+  font-size:17px;
+  line-height:1.2;
+}
+#game[data-stage="results"] .blSeasonDataGrid span{
+  display:block;
+  margin-top:5px;
+  color:#aab9c1;
+  font-size:9.5px;
+  line-height:1.45;
+}
+#game[data-stage="results"] .blSeasonRecordHead{
   display:flex;
   align-items:baseline;
   gap:9px;
@@ -774,37 +835,8 @@ body.blHomeMode .weeklyChallenge .weeklyChallengeTiming{
   padding-top:15px;
   border-top:1px solid #3e3d37;
 }
-#game[data-stage="results"] .blSeasonFanHead b{color:#f0b16f;font-size:12px}
-#game[data-stage="results"] .blSeasonFanHead span{color:#71838d;font-size:9px}
-#game[data-stage="results"] .blSeasonFanGrid{
-  display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:8px;
-  margin-top:9px;
-}
-#game[data-stage="results"] .blSeasonFanGrid article{
-  min-width:0;
-  padding:12px;
-  border:1px solid #314552;
-  border-radius:11px;
-  background:rgba(8,17,23,.72);
-}
-#game[data-stage="results"] .blSeasonFanGrid article.spark{border-color:#76532f;background:rgba(45,31,18,.72)}
-#game[data-stage="results"] .blSeasonFanGrid article.critical{border-color:#714044;background:rgba(45,22,25,.72)}
-#game[data-stage="results"] .blSeasonFanGrid article.support{border-color:#38594e}
-#game[data-stage="results"] .blSeasonFanGrid p{
-  margin:0;
-  color:#d9e0e2;
-  font-size:11px;
-  line-height:1.65;
-}
-#game[data-stage="results"] .blSeasonFanGrid small{
-  display:block;
-  margin-top:8px;
-  color:#7f929c;
-  font-size:9px;
-  font-weight:800;
-}
+#game[data-stage="results"] .blSeasonRecordHead b{color:#f0b16f;font-size:12px}
+#game[data-stage="results"] .blSeasonRecordHead span{color:#71838d;font-size:9px}
 
 /* Keep the retirement share decision visually stronger than utility actions. */
 body.retirementMode .retirementShareCta{
@@ -866,10 +898,11 @@ body.retirementMode .retirementShareBtn span{font-weight:950}
 @media(max-width:700px){
   #game[data-stage="results"] .blSeasonStoryCard{margin-top:10px;padding:16px 14px}
   #game[data-stage="results"] .blSeasonStoryCard h3{font-size:20px;line-height:1.55}
-  #game[data-stage="results"] .blSeasonFanHead{display:block}
-  #game[data-stage="results"] .blSeasonFanHead span{display:block;margin-top:3px}
-  #game[data-stage="results"] .blSeasonFanGrid{grid-template-columns:1fr}
-  #game[data-stage="results"] .blSeasonFanGrid article{padding:11px 12px}
+  #game[data-stage="results"] .blSeasonDataGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #game[data-stage="results"] .blSeasonDataGrid article{padding:10px}
+  #game[data-stage="results"] .blSeasonRecordHead{display:block}
+  #game[data-stage="results"] .blSeasonRecordHead span{display:block;margin-top:3px}
+  #game[data-stage="results"] .blSignatureMatchup{align-items:flex-start;flex-direction:column;gap:6px}
   body.retirementMode .retirementShareCta{grid-template-columns:1fr;padding:13px}
   body.retirementMode .retirementShareCtaButtons{grid-template-columns:1fr}
 }
@@ -922,4 +955,13 @@ body.retirementMode .retirementShareBtn span{font-weight:950}
   body.blHomeMode .blHomeQuickPanel{padding:22px 15px 20px}
   body.blHomeMode .blHomeQuickPanel>.posgrid{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:5px!important}
   body.blHomeMode .blHomeQuickPanel>.posgrid button{min-height:54px!important;padding:6px 2px!important}
+}
+
+@media(max-width:700px){
+  body>.wrap,
+  body.blHomeMode>.wrap{
+    width:min(100%,520px)!important;
+    max-width:520px!important;
+    margin-inline:auto!important;
+  }
 }

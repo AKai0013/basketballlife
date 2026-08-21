@@ -617,6 +617,14 @@ body.onlineModalOpen{
 .weeklyArchiveGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
 .weeklyArchiveCard{display:flex;flex-direction:column;gap:7px;padding:14px;border:1px solid #375363;border-radius:12px;background:linear-gradient(145deg,#122330,#0c171f)}
 .weeklyArchiveCard small{color:#df914a;font-weight:900;letter-spacing:.5px}.weeklyArchiveCard>b{font-size:17px}.weeklyArchiveCard span,.weeklyArchiveCard div{color:#9eb0bb;font-size:12px}.weeklyArchiveCard .btn{margin-top:4px}
+.featuredArchive{margin:12px 0 8px;border-color:#a66a2d;background:linear-gradient(145deg,rgba(61,39,20,.58),rgba(10,22,30,.96))}
+.versionChampionZone{margin:10px 0;padding:11px;border:1px solid #3b5060;border-radius:12px;background:#0b151d}
+.versionChampionZone>summary{cursor:pointer;color:#e9a257;font-size:12px;font-weight:950;list-style:none}
+.versionChampionZone>summary::-webkit-details-marker{display:none}
+.versionChampionGroup{margin-top:12px}.versionChampionGroup h3{margin:0;color:#e8aa6b;font-size:11px;font-weight:950;letter-spacing:.4px}
+.versionChampionGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:10px}
+.versionChampionCard{display:grid;gap:3px;padding:10px;text-align:left;border:1px solid #304958;border-radius:9px;background:#101f29;color:#edf3f5;cursor:pointer}
+.versionChampionCard small{color:#d58a45;font-size:8px;font-weight:950;letter-spacing:.7px}.versionChampionCard b{font-size:12px}.versionChampionCard span{color:#8fa7b5;font-size:9px}
 .rankTab{flex:none;border:1px solid #304959;border-radius:999px;background:#11202a;color:#9eb0bc;padding:6px 10px;font-size:10px;font-weight:850;cursor:pointer}
 .rankTab.on{border-color:#d58a45;background:#332114;color:#f2ac66}
 .rankNotice{margin-bottom:7px;padding:7px 9px;border-left:2px solid #d78e49;background:#151d22;color:#7f929e;font-size:9.5px;line-height:1.5}
@@ -629,6 +637,7 @@ body.onlineModalOpen{
 .rankMineGrid .rankRow{grid-template-columns:42px minmax(0,1fr) 112px;padding:8px 9px}
 .rankMineGrid .rankIdentity b{font-size:12px}.rankMineGrid .rankIdentity small{font-size:8.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rankMineGrid .rankValue b{font-size:13px}
 .rankMineMore{margin-top:7px}.rankMineMore>summary{cursor:pointer;color:#d99a58;font-size:9px;font-weight:850}.rankMineMore .rankMineGrid{margin-top:7px}
+.oldVersionCareers{margin:0 0 15px;padding:10px 11px;border:1px solid #3b4b56;border-radius:10px;background:#10171c}.oldVersionCareers>summary{font-size:10px}.oldVersionCareers .rankNo{font-size:9px}
 .rankList{display:flex;flex-direction:column;gap:5px}
 .rankRow{width:100%;display:grid;grid-template-columns:52px minmax(0,1fr) 160px;align-items:center;gap:9px;padding:9px 11px;border:1px solid #2c4351;border-radius:9px;background:#101c25;color:inherit;text-align:left;cursor:pointer}
 .rankRow:hover{border-color:#58758a;background:#13232e}
@@ -1143,8 +1152,9 @@ body.retirementMode .legacyTable td{padding:5px 7px!important}
 .creatorCredit span{color:#52636e}
 .homeCreatorCredit{gap:9px;margin-top:15px;padding-top:12px;color:#b7c7d1;font-size:12px;font-weight:850}
 .homeCreatorCredit>a:first-of-type{color:#f0b36b;font-weight:950}
-.discordInvite{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border:1px solid #586da0;border-radius:999px;background:linear-gradient(135deg,#26345d,#1d2949);color:#dbe5ff!important;font-size:11px;font-weight:900;letter-spacing:.01em;transition:transform .15s ease,border-color .15s ease,background .15s ease}
-.discordInvite:hover,.discordInvite:focus{border-color:#8fa9e8;background:linear-gradient(135deg,#334675,#26365e);text-decoration:none!important;transform:translateY(-1px)}
+.communityInviteCard{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 14px;margin-top:16px;padding:15px 17px;border:1px solid #637cc1;border-radius:13px;background:radial-gradient(circle at 100% 0,#7289da33,transparent 42%),linear-gradient(135deg,#1c2948,#101b2f);color:#eef2ff!important;text-decoration:none!important;box-shadow:0 12px 28px #05091155;transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease}
+.communityInviteCard>span{grid-column:1;color:#9fb2ee;font-size:8.5px;font-weight:950;letter-spacing:.13em}.communityInviteCard>b{grid-column:1;font-size:16px;line-height:1.25}.communityInviteCard>small{grid-column:1;color:#bdc8e7;font-size:10.5px;line-height:1.45}.communityInviteCard>em{grid-column:2;grid-row:1/4;align-self:center;padding:9px 12px;border-radius:9px;background:#7588d8;color:#fff;font-size:11px;font-style:normal;font-weight:950;white-space:nowrap}.communityInviteCard:hover,.communityInviteCard:focus{border-color:#a3b5f1;box-shadow:0 15px 34px #05091177;transform:translateY(-2px)}
+@media(max-width:520px){.communityInviteCard{grid-template-columns:1fr;padding:14px}.communityInviteCard>em{grid-column:1;grid-row:auto;margin-top:7px;text-align:center}}
 .die.rolling{
   color:#e4a15c;background:linear-gradient(145deg,#2b2118,#171d22);border-color:#9a683b;
   animation:diceTumble .16s steps(2,end) infinite;box-shadow:0 7px 18px rgba(0,0,0,.26)
@@ -1388,7 +1398,7 @@ body.retirementMode .legacyHero .legacyMeta{margin-top:7px!important;color:#aab8
   .rankIntro{gap:9px}.rankIntro h2{font-size:18px}.rankIntro p{font-size:10.5px;line-height:1.55}
   .rankSummary{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
   .rankTabs{margin-right:-8px;padding-right:8px}
-  .rankEraTabs .rankTab{min-width:132px}.weeklyArchiveGrid{grid-template-columns:1fr}
+  .rankEraTabs .rankTab{min-width:132px}.weeklyArchiveGrid,.versionChampionGrid{grid-template-columns:1fr}
   .rankRow{grid-template-columns:38px minmax(0,1fr) 94px!important;gap:6px;padding:9px 7px!important}
   .rankNo{font-size:12.5px}.rankIdentity b{font-size:14px!important}.rankIdentity small{font-size:10.5px!important;line-height:1.5}
   .rankValue b{font-size:15px!important}.rankValue small{font-size:9px}
