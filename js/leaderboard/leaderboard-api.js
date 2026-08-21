@@ -148,7 +148,10 @@
    if(/JWT|token|Authentication required|auth|401|403/i.test(raw))return "Online 身分已過期，正在重新連線；你的生涯進度不受影響。";
    if(/Online API\s*404|API route not found|404 Not Found/i.test(raw))return "排行榜服務目前沒有回應。你的生涯已保留在本機，請稍後再試。";
    if(/V7\.50\.8 publisher required|publish_career_v7508|function.*not found|PGRST202|server integrity|伺服器完整性驗證尚未啟用/i.test(raw))return "排行榜目前無法接收這支生涯。紀錄已保留在本機，請稍後再按「重新連線並上傳」。";
-   if(/完整性|Malformed|Invalid|mismatch|exceeds|Duplicate|schedule|season|award|career record/i.test(raw))return "這支生涯的紀錄目前無法完成確認，因此暫時不能公開上榜。你的本機進度不受影響。";
+   if(/完整性|Malformed|Invalid|mismatch|exceeds|Duplicate|schedule|season|award|career record/i.test(raw)){
+     const reason=raw.match(/(?:完整性驗證失敗|完整性封套建立失敗|此公開生涯未通過完整性驗證)[：:]([^｜]+)/)?.[1]?.trim();
+     return `這支生涯的紀錄目前無法完成確認${reason?`：${reason}`:""}，因此暫時不能公開上榜。這與 Seed 等級無關，你的本機進度不受影響。`;
+   }
    return "排行榜暫時無法完成上傳。你的生涯已保留在本機，請稍後再試。";
  }
 

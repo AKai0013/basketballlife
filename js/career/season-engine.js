@@ -192,7 +192,7 @@ function showResults(){
  for(let i=0;i<tourneys.length;i++){
    let t=tourneys[i];
    let score=teamCompetitiveScore(r,i,t);
-   let fin=tournamentFinishName(score,t.name);
+   let fin=tournamentFinishWithQualification(score,t.name,resultRows);
    let reward=finishReward(fin,t.weight);
    tourneyPoints+=reward;
    resultRows.push({name:t.name,finish:fin,reward});

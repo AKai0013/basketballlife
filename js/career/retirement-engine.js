@@ -157,6 +157,14 @@ function retirementHomecomingContract(){
  c.salary=Math.max(20,Math.round(leagueSalaryBase(home.league,p.year)*.72));
  return finalizeContract(c);
 }
+function hasFarewellResume(){
+ const honors=(p.careerMVP||0)+(p.careerFirstTeam||0)+(p.championships||0)+(p.nationalCaps||0);
+ const proSeasons=(p.seasonHistory||[]).filter(row=>isProfessionalPathValue(row.path)).length;
+ return honors>=3||proSeasons>=8||(p.careerGames||0)>=300;
+}
+function canOfferHomecomingLastDance(){
+ return !p.lastDanceUsed&&p.age>=36&&p.age<=50&&hasFarewellResume();
+}
 function startVeteranExtension(contract,kind,resultHTML=""){
  const oldTeam=p.team,agingHTML=p.pendingAgingHTML||"";
  p.pendingAgingHTML="";p.retirementCrisisReason="";
@@ -180,8 +188,7 @@ function showRetirementCrisis(reason){
  chapter.textContent=`${p.year} · ${p.age}歲 · 生涯續命抉擇`;
  title.textContent="市場已經沒有標準合約";
  text.innerHTML=`經紀團隊走訪母隊、自由市場與公開測試後，帶回最後的消息：<b>${reason}</b>。標準合約的大門已經關上，現在由你決定如何走完球員生涯的最後一段路。`;
- const hasFarewellResume=(p.careerMVP||0)+(p.careerFirstTeam||0)+(p.championships||0)+(p.nationalCaps||0)>=3;
- const lastDanceButton=!p.lastDanceUsed&&p.age>=36&&p.age<=49&&hasFarewellResume?`<button class="choice" onclick="resolveRetirementCrisis('lastDance')"><b>🏠 接受家鄉告別合約</b><small>${home.team} 願以限時輪替與老將領袖角色，提供一季純告別性質的合約。${home.reason}。</small><span class="retirementOdds">${home.region}返鄉｜1 年後正式引退</span></button>`:"";
+ const lastDanceButton=canOfferHomecomingLastDance()?`<button class="choice" onclick="resolveRetirementCrisis('lastDance')"><b>🏠 接受家鄉告別合約</b><small>${home.team} 願以限時輪替與老將領袖角色，提供一季純告別性質的合約。${home.reason}。</small><span class="retirementOdds">${p.age>=50?"50歲告別特例":"家鄉返鄉"}｜打完正式引退</span></button>`:"";
  const defyButton=!p.retirementDefianceUsed&&chance>0?`<button class="choice" onclick="resolveRetirementCrisis('defy')"><b>🔥 自費參加封閉測試</b><small>再向職業球團證明一次身體與即戰力；成功只能取得一年老將證明約，失敗則正式離開市場。</small><span class="retirementOdds">取得證明約機率 ${chance}%</span></button>`:"";
  const pressureButton=!p.retirementPressureUsed&&pressureChance>0&&(p.marketOriginTeam||p.team)?`<button class="choice" onclick="resolveRetirementCrisis('pressure')"><b>📣 公開施壓母隊</b><small>要求 ${p.marketOriginTeam||p.team} 再給一年；可能換到低角色合約，也會破壞球團與更衣室關係。</small><span class="retirementOdds">母隊讓步機率 ${pressureChance}%｜必定留下負面稱號</span></button>`:"";
  special.innerHTML=`<div class="retirementCrisis"><h3>合約市場最終報告</h3><p>${reason}。</p><div class="retirementCrisisMeta"><span>年齡 ${p.age}</span><span>總評 ${overall()}</span><span>健康狀態 ${healthState}</span><span>市場狀態 ${marketState}</span></div></div>
@@ -238,7 +245,11 @@ function resolveRetirementCrisis(action){
 }
 function maybeForceRetire(){
  if(!isProPath()&&p.path!=="半職業")return false;
- if(p.lastDanceActive){p.year++;p.age++;retireCareer("完成家鄉最後一舞後，依照告別合約正式退休");return true}
+ if(p.lastDanceActive){
+   // 50歲告別特例在同一年度完成，避免退休年份與年齡被推成不合法的 2011 年差。
+   if(p.age<50){p.year++;p.age++}
+   retireCareer("完成家鄉最後一舞後，依照告別合約正式退休");return true;
+ }
  // 有效合約必須先走完；球隊可以縮減角色，但不能把仍有保障年限的球員直接判定退休。
  // 正式退場只會發生在合約到期、全市場搜尋與公開測試都失敗之後。
  return false;
