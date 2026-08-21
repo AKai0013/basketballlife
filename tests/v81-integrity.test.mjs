@@ -11,6 +11,7 @@ test("V8.1 mobile and PWA shell is complete",()=>{
   const html=read("index.html"),manifest=JSON.parse(read("manifest.webmanifest"));
   assert.match(html,/rel="manifest"/);
   assert.match(html,/>V8\.1</);
+  assert.match(html,/href="https:\/\/github\.com\/AKai0013\/basketballlife\/blob\/main\/README\.md"/);
   assert.equal(manifest.display,"standalone");
   assert.equal(manifest.orientation,"portrait-primary");
   assert.match(read("css/growth-preview.css"),/max-width:520px!important/);
@@ -21,8 +22,10 @@ test("README describes the current V8.1 game instead of retired leaderboard eras
   const readme=read("README.md");
   assert.match(readme,/目前正式版：V8\.1/);
   for(const feature of ["SSS+ 神話","NBA 選秀","西班牙 Liga ACB","版本冠軍榜","portrait-primary","50 歲"])assert.match(readme,new RegExp(feature.replace("+","\\+")));
+  assert.ok(readme.indexOf("## 📚 重要版本")<readme.indexOf("## 🎮 一季怎麼進行？"));
   assert.doesNotMatch(readme,/目前正式版：V8\.0/);
   assert.doesNotMatch(readme,/\*\*V7 傳奇榜\*\*/);
+  assert.doesNotMatch(readme,/## 🧩 專案結構/);
 });
 
 test("league hierarchy and contract comparison include every V8.1 field",()=>{
