@@ -553,9 +553,11 @@
    const seen=new Set();
    for(const award of Array.isArray(record?.awards)?record.awards:[]){
      const year=Number(award?.year),name=String(award?.name||""),season=seasonByYear.get(year),league=labels[String(season?.path||"")];
-     if(!Number.isInteger(year)||!season||!league||!name.startsWith(`${league[0]} `)){errors.push(`獎項資料無法對應賽季 ${year||"?"}`);continue}
-     const key=`${year}|${name}`;if(seen.has(key)){errors.push(`重複獎項 ${year} ${name}`);continue}seen.add(key);
-     const type=name.slice(league[0].length+1),diff=league[1];
+      const prefixes=season&&typeof awardLeaguePrefixesForSeason==="function"?awardLeaguePrefixesForSeason(season):league?[league[0]]:[];
+      const prefix=prefixes.sort((a,b)=>b.length-a.length).find(value=>name.startsWith(`${value} `));
+      if(!Number.isInteger(year)||!season||!league||!prefix){errors.push(`獎項資料無法對應賽季 ${year||"?"}`);continue}
+      const key=`${year}|${name}`;if(seen.has(key)){errors.push(`重複獎項 ${year} ${name}`);continue}seen.add(key);
+      const type=name.slice(prefix.length+1),diff=league[1];
      const pts=Number(season.pts),ast=Number(season.ast),reb=Number(season.reb),stl=Number(season.stl),blk=Number(season.blk||0),fg=Number(season.fg);
      const star=pts*1.25+ast*1.05+reb*.62+stl*1.8+blk*1.6+(fg-43)*.18;
      const eligible={
@@ -577,8 +579,10 @@
    const seen=new Set();
    if(history.length!==Number(record?.championships||0))errors.push("冠軍數與逐年冠軍紀錄不一致");
    for(const item of history){
-     const year=Number(item?.year),season=seasonByYear.get(year),expected=tournamentByPath[String(season?.path||"")]||"季後賽";
-     if(!Number.isInteger(year)||seen.has(year)||!season||String(item?.path||"")!==String(season.path)||String(item?.team||"")!==String(season.team||"")||String(item?.tournament||"")!==expected){
+      const year=Number(item?.year),season=seasonByYear.get(year),expected=tournamentByPath[String(season?.path||"")]||"季後賽";
+      const storedTournamentMatch=Array.isArray(season?.tourneys)&&season.tourneys.some(row=>String(row?.name||"")===String(item?.tournament||"")&&String(row?.finish||"")==="冠軍");
+      const tournamentMatches=storedTournamentMatch||(!Array.isArray(season?.tourneys)&&String(item?.tournament||"")===expected);
+      if(!Number.isInteger(year)||seen.has(year)||!season||String(item?.path||"")!==String(season.path)||String(item?.team||"")!==String(season.team||"")||!tournamentMatches){
        errors.push(`冠軍紀錄無法對應賽季 ${year||"?"}`);
      }
      seen.add(year);

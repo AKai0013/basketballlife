@@ -184,7 +184,10 @@ test("European schedule integrity follows the stored domestic league and contine
   vm.runInNewContext(read("js/career/career-engine.js"),context);
   assert.equal(context.seasonScheduleRangeForRecord({path:"歐洲聯賽",competition:"法國 LNB Élite",continentalCup:"EuroCup"}).join(","),"44,44");
   assert.equal(context.seasonScheduleRangeForRecord({path:"歐洲聯賽",competition:"西班牙 Liga ACB",continentalCup:"EuroLeague"}).join(","),"52,52");
+  assert.ok(context.awardLeaguePrefixesForSeason({path:"歐洲聯賽",competition:"希臘 GBL",continentalCup:"EuroLeague"}).includes("希臘 GBL＋EuroLeague"));
+  assert.ok(context.awardLeaguePrefixesForSeason({path:"歐洲聯賽",competition:"希臘 GBL",continentalCup:"EuroLeague"}).includes("歐洲聯賽"));
   assert.match(read("js/leaderboard/leaderboard-api.js"),/seasonScheduleRangeForRecord\(season\)/);
+  assert.match(read("js/leaderboard/leaderboard-api.js"),/storedTournamentMatch/);
 });
 
 test("a decorated senior national-team career reaches the national Hall of Fame ballot",()=>{
