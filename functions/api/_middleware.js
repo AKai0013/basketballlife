@@ -1,5 +1,5 @@
 const CACHE_TTL_SECONDS = 300;
-const CACHE_VERSION = "v8.4";
+const CACHE_VERSION = "v8.5";
 
 function cacheablePath(url) {
   if (url.pathname === "/api/careers" && url.searchParams.get("mine") === "1") return false;
@@ -120,7 +120,7 @@ function boardSpec(era, weeklyId) {
   if (era === "weekly") {
     return {
       key: `weekly:${weeklyId}`,
-      where: "is_public=1 AND ranking_era='v81' AND weekly_active=1 AND weekly_id=?",
+      where: "is_public=1 AND ranking_era IN ('v8','v81') AND weekly_active=1 AND weekly_id=?",
       binds: [weeklyId],
     };
   }
