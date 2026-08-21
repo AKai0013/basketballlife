@@ -537,6 +537,10 @@ function finishSeason(){
      if(p.contract.remaining<=0){
        showContractExpiryDecision();return;
      }
+     if(p.path==="歐洲聯賽"&&p.contract.nbaOut){
+       const nbaKind=nbaPathwayOfferKind(scoutingScore());
+       if(nbaKind){showEuropeanNBAOutDecision(nbaKind);return}
+     }
    }
    p.seasonEventCount=ri(RNG(p.seed+"events-"+p.year),2,4);p.seasonPlan=null;p.planRiskMod=0;p.planGrowthMod=0;p.planStatMod=0;p.seasonInjuryRiskTarget=0;p.seasonInjurySurvival=1;p.seasonInjuryChecksDone=0;p.seasonInjuryExtra=0;p.seasonMedicalEventShown=false;p.seasonNaturalInjuryChecked=false;
    render();showCareerChapter("newSchoolYear");return;
