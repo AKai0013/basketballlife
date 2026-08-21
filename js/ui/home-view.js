@@ -312,13 +312,14 @@ function renderPos(){
  const names={PG:"控球後衛",SG:"得分後衛",SF:"小前鋒",PF:"大前鋒",C:"中鋒"};
  document.getElementById("posgrid").innerHTML=POSITIONS.map(x=>`<button type="button" class="pos ${x===chosenPos?"on":""}" aria-pressed="${x===chosenPos}" ${weeklySetupActive?"disabled":""} onclick="selectSetupPosition('${x}')"><b>${x}</b><small>${names[x]}</small></button>`).join("");
 }
+const WEEKLY_SEED_OVERRIDES={"2026W35":"R72ZLBN5"};
 function weeklyChallengeProfile(date=new Date()){
  const utc=new Date(Date.UTC(date.getUTCFullYear(),date.getUTCMonth(),date.getUTCDate()));
  const day=utc.getUTCDay()||7;utc.setUTCDate(utc.getUTCDate()+4-day);
  const yearStart=new Date(Date.UTC(utc.getUTCFullYear(),0,1));
  const week=Math.ceil((((utc-yearStart)/86400000)+1)/7),id=`${utc.getUTCFullYear()}W${String(week).padStart(2,"0")}`;
- const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",base=hash(`BL-WEEKLY-${id}`);let seed="",x=base>>>0;
- for(let i=0;i<8;i++){x=(Math.imul(x,1664525)+1013904223)>>>0;seed+=chars[x%chars.length]}
+ const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",base=hash(`BL-WEEKLY-${id}`);let seed=WEEKLY_SEED_OVERRIDES[id]||"",x=base>>>0;
+ for(let i=seed.length;i<8;i++){x=(Math.imul(x,1664525)+1013904223)>>>0;seed+=chars[x%chars.length]}
  const pos=POSITIONS[hash(`${id}-position`)%POSITIONS.length];
  const body=bodyRangeFor(pos),height=body.defaultHeight,wingspan=height+body.defaultReach;
  return {id,seed,pos,height,wingspan,label:`${utc.getUTCFullYear()} 第 ${week} 週`};
