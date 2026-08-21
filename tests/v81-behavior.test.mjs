@@ -212,3 +212,8 @@ test("the full career poster separates GP and PTS and uses the full canvas width
   assert.match(source,/const hx=\[618,740,784,821,851,878,904\]/);
   assert.match(source,/rule\(1254,52,x4-26,52\)/);
 });
+
+test("loading an existing retired save reapplies the current Hall of Fame rules",()=>{
+  const source=read("js/storage.js");
+  assert.match(source,/if\(p\.retired\|\|p\.stage==="retired"\)[\s\S]*?evaluateCareerLegacyTitles\(\);[\s\S]*?evaluateHallOfFame\(\);/);
+});
