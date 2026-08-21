@@ -97,6 +97,13 @@ function seasonScheduleRangeForRecord(season={}){
  }
  return LEAGUE_CFG[path]?.games||[38,38];
 }
+function awardLeaguePrefixesForSeason(season={}){
+ const path=String(season?.path||""),fallback=LEAGUE_CFG[path]?.label||path;
+ if(path!=="歐洲聯賽")return fallback?[fallback]:[];
+ const competition=String(season?.competition||"").trim(),cup=String(season?.continentalCup||"").trim();
+ const full=competition&&cup&&cup!=="僅國內賽事"?`${competition}＋${cup}`:competition;
+ return [...new Set([full,competition,fallback,"歐洲聯賽"].filter(Boolean))];
+}
 function scheduledGamesForSeason(path=p?.path||"HBL",year=p?.year||2026){
  const [lo,hi]=seasonScheduleRange(path);
  if(lo===hi)return lo;
