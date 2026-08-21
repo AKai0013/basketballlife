@@ -186,8 +186,18 @@ test("European schedule integrity follows the stored domestic league and contine
   assert.equal(context.seasonScheduleRangeForRecord({path:"歐洲聯賽",competition:"西班牙 Liga ACB",continentalCup:"EuroLeague"}).join(","),"52,52");
   assert.ok(context.awardLeaguePrefixesForSeason({path:"歐洲聯賽",competition:"希臘 GBL",continentalCup:"EuroLeague"}).includes("希臘 GBL＋EuroLeague"));
   assert.ok(context.awardLeaguePrefixesForSeason({path:"歐洲聯賽",competition:"希臘 GBL",continentalCup:"EuroLeague"}).includes("歐洲聯賽"));
+  assert.equal(context.awardDifficultyForSeasonRecord({path:"歐洲聯賽",competition:"西班牙 Liga ACB",continentalCup:"EuroCup"}),9);
+  assert.equal(context.awardDifficultyForSeasonRecord({path:"歐洲聯賽",competition:"西班牙 Liga ACB",continentalCup:"EuroLeague"}),10);
+  const borderline={games:44,scheduledGames:44,pts:30,ast:8,reb:6,stl:1,blk:.5,fg:50};
+  assert.equal(context.professionalAwardEvaluation(borderline,{difficulty:9}).eligible["年度第一隊"],true);
+  assert.equal(context.professionalAwardEvaluation(borderline,{difficulty:10}).eligible["年度第一隊"],false);
+  const oldEuropeanSeason={...borderline,year:2041,path:"歐洲聯賽",competition:"西班牙 Liga ACB",continentalCup:"EuroCup",seasonAwards:["西班牙 Liga ACB＋EuroCup 年度第一隊"]};
+  assert.deepEqual(Array.from(context.careerAwardIntegrityErrors({season_history:[oldEuropeanSeason],awards:[{year:2041,name:"西班牙 Liga ACB＋EuroCup 年度第一隊"}],career_data:{}})),[]);
+  const impossible=context.careerAwardIntegrityErrors({season_history:[{...oldEuropeanSeason,awardAudit:{difficulty:9,schedule:44,defense:70,previousDPOY:0,dpoyRoll:.5,champion:false,league:"西班牙 Liga ACB＋EuroCup"}}],awards:[{year:2041,name:"西班牙 Liga ACB＋EuroCup 年度MVP"}],career_data:{}});
+  assert.match(String(impossible[0]),/與該季表現不一致/);
   assert.match(read("js/leaderboard/leaderboard-api.js"),/seasonScheduleRangeForRecord\(season\)/);
   assert.match(read("js/leaderboard/leaderboard-api.js"),/storedTournamentMatch/);
+  assert.match(read("js/career/career-engine.js"),/storedMatch&&!season\.awardAudit/);
 });
 
 test("a decorated senior national-team career reaches the national Hall of Fame ballot",()=>{
