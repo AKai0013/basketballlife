@@ -545,32 +545,6 @@
    return Math.round(Math.max(3,scoring36)*(mins/36)*ptsBias*10)/10;
  }
 
- function careerAwardIntegrityErrors(record){
-   const errors=[],seasons=Array.isArray(record?.season_history)?record.season_history:[];
-   const seasonByYear=new Map(seasons.map(x=>[Number(x?.year),x]));
-   const labels={"SBL／半職業":["SBL",0],"台灣職業":["台灣職籃",1],"韓國職業":["韓國職籃",4],"日本職業":["日本職籃",6],CBA:["CBA",7],"NBA G League":["NBA G League",7],"歐洲聯賽":["歐洲聯賽",10],NBA:["NBA",13]};
-   const championships=Array.isArray(record?.career_data?.championship_history)?record.career_data.championship_history:[];
-   const seen=new Set();
-   for(const award of Array.isArray(record?.awards)?record.awards:[]){
-     const year=Number(award?.year),name=String(award?.name||""),season=seasonByYear.get(year),league=labels[String(season?.path||"")];
-      const prefixes=season&&typeof awardLeaguePrefixesForSeason==="function"?awardLeaguePrefixesForSeason(season):league?[league[0]]:[];
-      const prefix=prefixes.sort((a,b)=>b.length-a.length).find(value=>name.startsWith(`${value} `));
-      if(!Number.isInteger(year)||!season||!league||!prefix){errors.push(`獎項資料無法對應賽季 ${year||"?"}`);continue}
-      const key=`${year}|${name}`;if(seen.has(key)){errors.push(`重複獎項 ${year} ${name}`);continue}seen.add(key);
-      const type=name.slice(prefix.length+1),diff=league[1];
-     const pts=Number(season.pts),ast=Number(season.ast),reb=Number(season.reb),stl=Number(season.stl),blk=Number(season.blk||0),fg=Number(season.fg);
-     const star=pts*1.25+ast*1.05+reb*.62+stl*1.8+blk*1.6+(fg-43)*.18;
-     const eligible={
-       "年度MVP":star>=52+diff,"年度第一隊":star>=44+diff,"年度第二隊":star>=37+diff&&star<44+diff,
-       "最佳防守球員":stl+blk>=3,"得分王":pts>=23+diff*.30,"助攻王":ast>=7.8+diff*.10,
-       "籃板王":reb>=10+diff*.08,"明星賽":star>=36+diff,
-       "總冠軍賽MVP":star>=43+diff&&championships.some(x=>Number(x?.year)===year&&String(x?.path||"")===String(season.path)&&String(x?.tournament||"").includes("季後賽"))
-     };
-     if(!(type in eligible)||!eligible[type])errors.push(`${year} ${name} 與該季表現不一致`);
-   }
-   return errors;
- }
-
  function careerChampionshipIntegrityErrors(record){
    const errors=[],seasons=Array.isArray(record?.season_history)?record.season_history:[];
    const seasonByYear=new Map(seasons.map(x=>[Number(x?.year),x]));

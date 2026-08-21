@@ -330,28 +330,22 @@ function addAward(name){
 function determineAwards(stats,resultRows){
  if(!isProPath())return [];
  let a=[],league=currentLeague(),diff=leagueAwardDifficulty(),pts=stats.pts,ast=stats.ast,reb=stats.reb,stl=stats.stl,blk=stats.blk||0;
- let starScore=pts*1.25+ast*1.05+reb*.62+stl*1.8+blk*1.6+(stats.fg-43)*.18;
  const add=(label,counter)=>{const full=`${league} ${label}`;a.push(full);if(counter)p[counter]++;addAward(full);};
- if(starScore>=52+diff)add("年度MVP","careerMVP");
- if(starScore>=44+diff)add("年度第一隊","careerFirstTeam");
- else if(starScore>=37+diff)add("年度第二隊","careerSecondTeam");
- // DPOY is an annual league-wide race, not a permanent unlock after one
- // defensive threshold. Availability, league strength and prior wins all make
- // a repeat award harder, while the seeded roll keeps the result reproducible.
  const awardSchedule=Math.max(1,scheduledGamesForSeason(p.path,p.year));
- const defensiveAvailability=Math.min(1,stats.games/awardSchedule);
  const previousDPOY=Math.max(0,p.careerDPOY||0);
- const dpoyScore=p.stats.defense*.52+(stl+blk)*9+defensiveAvailability*8-diff*.32;
- const dpoyRepeatPenalty=Math.min(13,previousDPOY*2.4);
- const dpoyChance=Math.max(.06,Math.min(.62,(dpoyScore-(78+dpoyRepeatPenalty))/22));
  const dpoyRoll=RNG(`${p.seed}-dpoy-${p.year}-${league}`)();
- if(stats.games>=awardSchedule*.65 && dpoyScore>=81+diff*.20 && dpoyRoll<dpoyChance)add("最佳防守球員","careerDPOY");
- const scoringLine=23+diff*.30,assistLine=7.8+diff*.10,reboundLine=10+diff*.08;
- if(pts>=scoringLine)add("得分王","careerScoringTitles");
- if(ast>=assistLine)add("助攻王","careerAssistTitles");
- if(reb>=reboundLine)add("籃板王","careerReboundTitles");
- if(starScore>=36+diff)add("明星賽","careerAllStar");
- if(resultRows.some(x=>x.name.includes("季後賽")&&x.finish==="冠軍") && starScore>=43+diff)add("總冠軍賽MVP","careerFinalsMVP");
+ const champion=resultRows.some(x=>x.name.includes("季後賽")&&x.finish==="冠軍");
+ const evaluation=professionalAwardEvaluation(stats,{difficulty:diff,schedule:awardSchedule,defense:p.stats.defense,previousDPOY,dpoyRoll,champion});
+ if(evaluation.eligible["年度MVP"])add("年度MVP","careerMVP");
+ if(evaluation.eligible["年度第一隊"])add("年度第一隊","careerFirstTeam");
+ else if(evaluation.eligible["年度第二隊"])add("年度第二隊","careerSecondTeam");
+ if(evaluation.eligible["最佳防守球員"])add("最佳防守球員","careerDPOY");
+ if(evaluation.eligible["得分王"])add("得分王","careerScoringTitles");
+ if(evaluation.eligible["助攻王"])add("助攻王","careerAssistTitles");
+ if(evaluation.eligible["籃板王"])add("籃板王","careerReboundTitles");
+ if(evaluation.eligible["明星賽"])add("明星賽","careerAllStar");
+ if(evaluation.eligible["總冠軍賽MVP"])add("總冠軍賽MVP","careerFinalsMVP");
+ p.lastSeasonAwardAudit={difficulty:diff,schedule:awardSchedule,defense:p.stats.defense,previousDPOY,dpoyRoll,champion,league};
  p.lastSeasonAwards=a;
  p.awardHistoryByLeague[league]=p.awardHistoryByLeague[league]||[];p.awardHistoryByLeague[league].push(...a.map(name=>({year:p.year,name})));
  return a;

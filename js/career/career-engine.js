@@ -104,6 +104,48 @@ function awardLeaguePrefixesForSeason(season={}){
  const full=competition&&cup&&cup!=="僅國內賽事"?`${competition}＋${cup}`:competition;
  return [...new Set([full,competition,fallback,"歐洲聯賽"].filter(Boolean))];
 }
+const EUROPE_CUP_AWARD_DIFFICULTY={EuroLeague:10,EuroCup:9,"Basketball Champions League":8,"僅國內賽事":0};
+function awardDifficultyForSeasonRecord(season={}){
+ const path=String(season?.path||""),explicit=Number(season?.europeAwardDifficulty);
+ if(path!=="歐洲聯賽")return Number(LEAGUE_CFG[path]?.award||0);
+ if(Number.isFinite(explicit)&&explicit>0)return explicit;
+ const profile=typeof EUROPE_LEAGUES!=="undefined"?EUROPE_LEAGUES.find(league=>league.label===season?.competition):null;
+ const cup=EUROPE_CUP_AWARD_DIFFICULTY[String(season?.continentalCup||"僅國內賽事")]||0;
+ return Math.max(Number(profile?.award||0),cup,Number(LEAGUE_CFG[path]?.award||0)-1);
+}
+function professionalAwardEvaluation(stats={},options={}){
+ const diff=Math.max(0,Number(options.difficulty)||0),pts=Number(stats.pts)||0,ast=Number(stats.ast)||0,reb=Number(stats.reb)||0,stl=Number(stats.stl)||0,blk=Number(stats.blk)||0,fg=Number(stats.fg)||0;
+ const starScore=pts*1.25+ast*1.05+reb*.62+stl*1.8+blk*1.6+(fg-43)*.18;
+ const schedule=Math.max(1,Number(options.schedule)||Number(stats.scheduledGames)||Number(stats.games)||1),games=Math.max(0,Number(stats.games)||0);
+ const defense=Number(options.defense),previousDPOY=Math.max(0,Number(options.previousDPOY)||0),hasDefense=Number.isFinite(defense);
+ const dpoyScore=hasDefense?defense*.52+(stl+blk)*9+Math.min(1,games/schedule)*8-diff*.32:NaN;
+ const dpoyRepeatPenalty=Math.min(13,previousDPOY*2.4),dpoyChance=hasDefense?Math.max(.06,Math.min(.62,(dpoyScore-(78+dpoyRepeatPenalty))/22)):0;
+ const suppliedRoll=Number(options.dpoyRoll),dpoyRoll=Number.isFinite(suppliedRoll)?suppliedRoll:(typeof RNG==="function"&&options.seed?RNG(`${options.seed}-dpoy-${options.year}-${options.league||""}`)():NaN);
+ const champion=!!options.champion;
+ return {starScore,schedule,dpoyScore,dpoyChance,dpoyRoll,eligible:{
+  "年度MVP":starScore>=52+diff,"年度第一隊":starScore>=44+diff,"年度第二隊":starScore>=37+diff&&starScore<44+diff,
+  "最佳防守球員":games>=schedule*.65&&hasDefense&&Number.isFinite(dpoyRoll)&&dpoyScore>=81+diff*.20&&dpoyRoll<dpoyChance,
+  "得分王":pts>=23+diff*.30,"助攻王":ast>=7.8+diff*.10,"籃板王":reb>=10+diff*.08,"明星賽":starScore>=36+diff,
+  "總冠軍賽MVP":champion&&starScore>=43+diff
+ }};
+}
+function careerAwardIntegrityErrors(record={}){
+ const errors=[],seasons=Array.isArray(record.season_history)?record.season_history:[],seasonByYear=new Map(seasons.map(x=>[Number(x?.year),x]));
+ const labels={"SBL／半職業":"SBL","台灣職業":"台灣職籃","韓國職業":"韓國職籃","日本職業":"日本職籃",CBA:"CBA","NBA G League":"NBA G League","歐洲聯賽":"歐洲聯賽",NBA:"NBA"};
+ const championships=Array.isArray(record?.career_data?.championship_history)?record.career_data.championship_history:[],known=["年度MVP","年度第一隊","年度第二隊","最佳防守球員","得分王","助攻王","籃板王","明星賽","總冠軍賽MVP"],seen=new Set();
+ for(const award of Array.isArray(record.awards)?record.awards:[]){
+  const year=Number(award?.year),name=String(award?.name||""),season=seasonByYear.get(year),league=labels[String(season?.path||"")];
+  const prefixes=season?awardLeaguePrefixesForSeason(season):league?[league]:[],prefix=prefixes.sort((a,b)=>b.length-a.length).find(value=>name.startsWith(`${value} `));
+  if(!Number.isInteger(year)||!season||!league||!prefix){errors.push(`獎項資料無法對應賽季 ${year||"?"}`);continue}
+  const key=`${year}|${name}`;if(seen.has(key)){errors.push(`重複獎項 ${year} ${name}`);continue}seen.add(key);
+  const type=name.slice(prefix.length+1);if(!known.includes(type)){errors.push(`${year} ${name} 不是正式獎項`);continue}
+  const audit=season.awardAudit||{},storedAwards=Array.isArray(season.seasonAwards)?season.seasonAwards.map(String):[],storedMatch=storedAwards.includes(name);
+  const champion=Array.isArray(season.tourneys)?season.tourneys.some(x=>String(x?.finish||"")==="冠軍"&&String(x?.name||"").includes("季後賽")):championships.some(x=>Number(x?.year)===year&&String(x?.path||"")===String(season.path)&&String(x?.tournament||"").includes("季後賽"));
+  const evaluation=professionalAwardEvaluation(season,{difficulty:awardDifficultyForSeasonRecord(season),schedule:Number(audit.schedule)||Number(season.scheduledGames),defense:audit.defense,previousDPOY:audit.previousDPOY,dpoyRoll:audit.dpoyRoll,champion});
+  if(!evaluation.eligible[type]&&!(storedMatch&&!season.awardAudit))errors.push(`${year} ${name} 與該季表現不一致`);
+ }
+ return errors;
+}
 function scheduledGamesForSeason(path=p?.path||"HBL",year=p?.year||2026){
  const [lo,hi]=seasonScheduleRange(path);
  if(lo===hi)return lo;
