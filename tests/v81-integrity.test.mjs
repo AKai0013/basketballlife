@@ -17,6 +17,14 @@ test("V8.1 mobile and PWA shell is complete",()=>{
   assert.match(read("js/ui/career-view.js"),/function focusCurrentScreen\(/);
 });
 
+test("README describes the current V8.1 game instead of retired leaderboard eras",()=>{
+  const readme=read("README.md");
+  assert.match(readme,/目前正式版：V8\.1/);
+  for(const feature of ["SSS+ 神話","NBA 選秀","西班牙 Liga ACB","版本冠軍榜","portrait-primary","50 歲"])assert.match(readme,new RegExp(feature.replace("+","\\+")));
+  assert.doesNotMatch(readme,/目前正式版：V8\.0/);
+  assert.doesNotMatch(readme,/\*\*V7 傳奇榜\*\*/);
+});
+
 test("league hierarchy and contract comparison include every V8.1 field",()=>{
   const leagues=read("data/leagues.js"),contracts=read("js/career/contract-engine.js"),teams=read("data/teams.js"),career=read("js/career/career-engine.js");
   assert.match(leagues,/"歐洲聯賽"/);
