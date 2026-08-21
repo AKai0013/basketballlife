@@ -618,13 +618,27 @@ body.onlineModalOpen{
 .weeklyArchiveCard{display:flex;flex-direction:column;gap:7px;padding:14px;border:1px solid #375363;border-radius:12px;background:linear-gradient(145deg,#122330,#0c171f)}
 .weeklyArchiveCard small{color:#df914a;font-weight:900;letter-spacing:.5px}.weeklyArchiveCard>b{font-size:17px}.weeklyArchiveCard span,.weeklyArchiveCard div{color:#9eb0bb;font-size:12px}.weeklyArchiveCard .btn{margin-top:4px}
 .featuredArchive{margin:12px 0 8px;border-color:#a66a2d;background:linear-gradient(145deg,rgba(61,39,20,.58),rgba(10,22,30,.96))}
-.versionChampionZone{margin:10px 0;padding:11px;border:1px solid #3b5060;border-radius:12px;background:#0b151d}
-.versionChampionZone>summary{cursor:pointer;color:#e9a257;font-size:12px;font-weight:950;list-style:none}
-.versionChampionZone>summary::-webkit-details-marker{display:none}
-.versionChampionGroup{margin-top:12px}.versionChampionGroup h3{margin:0;color:#e8aa6b;font-size:11px;font-weight:950;letter-spacing:.4px}
-.versionChampionGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:10px}
-.versionChampionCard{display:grid;gap:3px;padding:10px;text-align:left;border:1px solid #304958;border-radius:9px;background:#101f29;color:#edf3f5;cursor:pointer}
-.versionChampionCard small{color:#d58a45;font-size:8px;font-weight:950;letter-spacing:.7px}.versionChampionCard b{font-size:12px}.versionChampionCard span{color:#8fa7b5;font-size:9px}
+.versionChampionHall{padding-top:12px}
+.championBoard{display:grid;gap:16px;margin-top:12px}
+.championVersionTabs{display:grid;grid-template-columns:repeat(2,minmax(0,180px));gap:7px}
+.championVersionButton{display:grid;gap:2px;padding:9px 14px;border:1px solid #344d5d;border-radius:10px;background:#101d26;color:#9cafbb;text-align:left;cursor:pointer}
+.championVersionButton small{font-size:8px;font-weight:850;letter-spacing:.7px}.championVersionButton b{font-size:14px}
+.championVersionButton.on{border-color:#d88b42;background:linear-gradient(135deg,#3b2515,#1c2022);color:#ffb366;box-shadow:inset 3px 0 #f2a04d}
+.championFocusHead,.championListHead{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.championFocusHead span,.championListHead span{display:block;color:#7897a8;font-size:8px;font-weight:950;letter-spacing:1.2px}
+.championFocusHead b,.championListHead b{display:block;margin-top:2px;color:#f1ede7;font-size:13px}.championFocusHead>small{color:#8297a4;font-size:9px}
+.championFocusGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.championFocusCard{display:flex;min-width:0;min-height:126px;flex-direction:column;align-items:flex-start;padding:13px;border:1px solid #3b5362;border-top:3px solid #df914a;border-radius:12px;background:linear-gradient(150deg,#152733,#0d181f);color:#f3eee8;text-align:left;cursor:pointer}
+.championFocusCard:hover,.championRecordRow:hover{border-color:#d78d48;background:#182b36}
+.championFocusLabel{color:#dca05f;font-size:9px;font-weight:950;letter-spacing:.4px}.championFocusCard strong{margin:8px 0 6px;color:#ffad5f;font-size:24px;line-height:1}.championFocusCard>b{font-size:13px}.championFocusCard>small{display:flex;min-width:0;align-items:center;gap:6px;margin-top:4px;color:#8fa4b1;font-size:9px}
+.championHolderBadge{display:inline-flex;flex:none;padding:2px 5px;border:1px solid #60452f;border-radius:999px;background:#211811;color:#dca05f;font-size:7px;font-style:normal;font-weight:900;white-space:nowrap}
+.championFilterTabs{display:flex;gap:5px;overflow-x:auto}
+.championFilterButton{flex:none;padding:5px 9px;border:1px solid #304959;border-radius:999px;background:#101d26;color:#91a5b1;font-size:9px;font-weight:850;cursor:pointer}.championFilterButton.on{border-color:#d58a45;background:#332114;color:#f2ac66}
+.championRecordList{overflow:hidden;border:1px solid #314957;border-radius:12px;background:#0e1921}
+.championRecordRow{display:grid;width:100%;min-height:64px;grid-template-columns:145px minmax(0,1fr) 150px;gap:12px;align-items:center;padding:9px 13px;border:0;border-bottom:1px solid #243a47;background:transparent;color:#edf2f4;text-align:left;cursor:pointer}.championRecordRow:last-child{border-bottom:0}
+.championRecordMetric{display:flex;align-items:center;gap:9px}.championRecordMetric i{display:grid;width:28px;height:28px;place-items:center;border-radius:8px;background:#1c2d38;font-size:14px;font-style:normal}.championRecordMetric b{font-size:11px}
+.championRecordIdentity{display:grid;min-width:0;gap:2px}.championRecordIdentity>b{overflow:hidden;font-size:12px;text-overflow:ellipsis;white-space:nowrap}.championRecordIdentity>small{display:flex;min-width:0;align-items:center;gap:6px;color:#879da9;font-size:9px}
+.championRecordValue{display:grid;justify-items:end;gap:2px}.championRecordValue>b{color:#f1a155;font-size:14px}.championRecordValue>small{color:#718a99;font-size:8px}
 .rankTab{flex:none;border:1px solid #304959;border-radius:999px;background:#11202a;color:#9eb0bc;padding:6px 10px;font-size:10px;font-weight:850;cursor:pointer}
 .rankTab.on{border-color:#d58a45;background:#332114;color:#f2ac66}
 .rankNotice{margin-bottom:7px;padding:7px 9px;border-left:2px solid #d78e49;background:#151d22;color:#7f929e;font-size:9.5px;line-height:1.5}
@@ -1398,7 +1412,12 @@ body.retirementMode .legacyHero .legacyMeta{margin-top:7px!important;color:#aab8
   .rankIntro{gap:9px}.rankIntro h2{font-size:18px}.rankIntro p{font-size:10.5px;line-height:1.55}
   .rankSummary{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
   .rankTabs{margin-right:-8px;padding-right:8px}
-  .rankEraTabs .rankTab{min-width:132px}.weeklyArchiveGrid,.versionChampionGrid{grid-template-columns:1fr}
+  .rankEraTabs .rankTab{min-width:132px}.weeklyArchiveGrid{grid-template-columns:1fr}
+  .championBoard{gap:13px}.championVersionTabs{grid-template-columns:repeat(2,minmax(0,1fr))}.championVersionButton{padding:8px 10px}
+  .championFocusHead{align-items:flex-start}.championFocusHead>small{max-width:120px;text-align:right}
+  .championFocusGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.championFocusCard{min-height:112px;padding:11px}.championFocusCard strong{font-size:21px}.championFocusCard>small{display:grid;gap:4px}.championHolderBadge{width:max-content}
+  .championListHead{display:grid;gap:8px}.championFilterTabs{margin-right:-8px;padding-right:8px}
+  .championRecordRow{min-height:58px;grid-template-columns:90px minmax(0,1fr) 82px;gap:7px;padding:8px}.championRecordMetric{gap:6px}.championRecordMetric i{width:24px;height:24px;font-size:12px}.championRecordMetric b{font-size:9px}.championRecordIdentity>b{font-size:11px}.championRecordIdentity>small{display:grid;gap:3px;font-size:8px}.championRecordValue>b{font-size:11px}.championRecordValue>small{font-size:7px}
   .rankRow{grid-template-columns:38px minmax(0,1fr) 94px!important;gap:6px;padding:9px 7px!important}
   .rankNo{font-size:12.5px}.rankIdentity b{font-size:14px!important}.rankIdentity small{font-size:10.5px!important;line-height:1.5}
   .rankValue b{font-size:15px!important}.rankValue small{font-size:9px}

@@ -91,6 +91,11 @@ test("leaderboard separates V8.1, version champions and old personal careers",()
   assert.match(board,/careers\?mine=1/);
   assert.match(board,/V8\.1 現役榜/);
   assert.match(board,/champions:\{label:"版本冠軍榜"/);
+  assert.match(board,/championFeatureMetrics=\["power","peak","championships","salary"\]/);
+  assert.match(board,/function changeChampionVersion\(/);
+  assert.match(board,/function changeChampionCategory\(/);
+  assert.match(read("css/leaderboard.css"),/\.championFocusGrid\{display:grid;grid-template-columns:repeat\(4/);
+  assert.match(read("css/leaderboard.css"),/\.championRecordRow\{display:grid/);
   assert.match(board,/\["v8","v81"\]\.includes/);
   assert.match(board,/查看舊版本公開生涯/);
   assert.match(board,/ranking_era:String\(p\.careerVersion\|\|""\)\.startsWith\("8\.1"\)\?"v81"/);
