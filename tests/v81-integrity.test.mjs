@@ -90,12 +90,14 @@ test("leaderboard separates V8.1, version champions and old personal careers",()
   assert.doesNotMatch(board,/v7:\{label:"V7 傳奇榜"/);
   assert.match(board,/careers\?mine=1/);
   assert.match(board,/V8\.1 現役榜/);
-  assert.match(board,/版本冠軍榜｜V8\.0、V7\.50/);
+  assert.match(board,/champions:\{label:"版本冠軍榜"/);
+  assert.match(board,/\["v8","v81"\]\.includes/);
   assert.match(board,/查看舊版本公開生涯/);
   assert.match(board,/ranking_era:String\(p\.careerVersion\|\|""\)\.startsWith\("8\.1"\)\?"v81"/);
   assert.match(api,/searchParams\.get\("mine"\)===?"1"/);
   assert.match(api,/data\.ranking_era!=="v81"/);
   assert.match(middleware,/ranking_era='v81' AND weekly_active=0/);
+  assert.match(middleware,/ranking_era IN \('v8','v81'\) AND weekly_active=1/);
   assert.match(middleware,/searchParams\.get\("mine"\) === "1"\) return false/);
   assert.match(api,/ROW_NUMBER\(\) OVER\(PARTITION BY weekly_id/);
 });

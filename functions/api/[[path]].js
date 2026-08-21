@@ -116,7 +116,7 @@ async function careers(request,env,path){
       const rows=(await env.DB.prepare(`SELECT ${summaryColumns} FROM (SELECT ${summaryColumns},ROW_NUMBER() OVER(PARTITION BY weekly_id ORDER BY ${orderColumn[metric]} DESC,career_rating DESC) AS weekly_rank FROM career_records WHERE is_public=1 AND ranking_era IN ('v8','v81') AND weekly_active=1 AND weekly_id<>?) WHERE weekly_rank<=3 ORDER BY weekly_id DESC,weekly_rank ASC LIMIT 240`).bind(weeklyId).all()).results.map(x=>hydrate(x,true));
       return json({rows});
     }
-    const clause=era==="v7"?"ranking_era='v750' AND weekly_active=0":era==="v8"?"ranking_era='v8' AND weekly_active=0":era==="weekly"?"ranking_era='v81' AND weekly_active=1 AND weekly_id=?":"ranking_era='v81' AND weekly_active=0";
+    const clause=era==="v7"?"ranking_era='v750' AND weekly_active=0":era==="v8"?"ranking_era='v8' AND weekly_active=0":era==="weekly"?"ranking_era IN ('v8','v81') AND weekly_active=1 AND weekly_id=?":"ranking_era='v81' AND weekly_active=0";
     const statement=env.DB.prepare(`SELECT ${summaryColumns} FROM career_records WHERE is_public=1 AND ${clause} ORDER BY ${orderColumn[metric]} DESC,career_rating DESC LIMIT 50`);
     const totalsStatement=env.DB.prepare(`SELECT COUNT(DISTINCT user_id) AS players,COUNT(*) AS careers,COALESCE(MAX(career_rating),0) AS top_power,COALESCE(MAX(peak_overall),0) AS top_peak FROM career_records WHERE is_public=1 AND ${clause}`);
     const [rowsResult,totals]=era==="weekly"

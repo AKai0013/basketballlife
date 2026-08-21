@@ -45,6 +45,15 @@ test("default leaderboard reads only the V8.1 era",async()=>{
   assert.ok(sqlSeen.some(sql=>sql.includes("ranking_era='v81' AND weekly_active=0")));
 });
 
+test("weekly leaderboard keeps V8.0 challenge records alongside V8.1",async()=>{
+  const sqlSeen=[];
+  const DB={prepare(sql){sqlSeen.push(sql);return {bind(){return this},async all(){return {results:[]}},async first(){return {players:0,careers:0,top_power:0,top_peak:0}}}}};
+  const request=new Request("https://basketballlife.pages.dev/api/careers?era=weekly&metric=power&weekly_id=2026W34");
+  const response=await onRequest({request,env:{DB},params:{path:["careers"]}});
+  assert.equal(response.status,200);
+  assert.ok(sqlSeen.some(sql=>sql.includes("ranking_era IN ('v8','v81') AND weekly_active=1")));
+});
+
 test("version champions bind V8.0 and V7.50 separately",async()=>{
   for(const [era,expected] of [["v8","v8"],["v7","v750"]]){
     const bound=[];
