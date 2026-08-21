@@ -277,6 +277,7 @@ function refreshSetupBody(reset=false){
  const height=document.getElementById("heightInput"),wingspan=document.getElementById("wingspanInput");
  if(height){height.min=cfg.height[0];height.max=cfg.height[1];height.value=chosenHeight;height.disabled=weeklySetupActive}
  if(wingspan){wingspan.min=chosenHeight+cfg.reach[0];wingspan.max=chosenHeight+cfg.reach[1];wingspan.value=chosenWingspan;wingspan.disabled=weeklySetupActive}
+ document.querySelectorAll("[data-body-step]").forEach(button=>{button.disabled=weeklySetupActive});
  const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value};
  set("heightValue",`${chosenHeight} cm`);set("heightMin",`${cfg.height[0]} cm`);set("heightMax",`${cfg.height[1]} cm`);
  set("wingspanValue",`${chosenWingspan} cm`);set("wingspanMin",`${chosenHeight+cfg.reach[0]} cm`);set("wingspanMax",`${chosenHeight+cfg.reach[1]} cm`);
@@ -287,6 +288,8 @@ function updateSetupHeight(value){
  const reach=chosenWingspan-chosenHeight;chosenHeight=Number(value);chosenWingspan=chosenHeight+reach;refreshSetupBody(false);
 }
 function updateSetupWingspan(value){if(weeklySetupActive)return;chosenWingspan=Number(value);refreshSetupBody(false)}
+function adjustSetupHeight(delta){updateSetupHeight(chosenHeight+Number(delta||0))}
+function adjustSetupWingspan(delta){updateSetupWingspan(chosenWingspan+Number(delta||0))}
 function selectSetupPosition(pos){
  if(weeklySetupActive||!POSITIONS.includes(pos))return;chosenPos=pos;renderPos();refreshSetupBody(true);
 }

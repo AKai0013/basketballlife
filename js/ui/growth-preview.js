@@ -127,7 +127,7 @@
     const setup = document.getElementById("setup");
     const builder = setup?.querySelector(":scope > .setupBuilder");
     const start = document.getElementById("startCareerBtn");
-    if (!setup || !builder || !start || document.getElementById("blAdvancedSetup")) return;
+    if (!setup || !builder || !start || document.getElementById("blHomeCustomPanel")) return;
 
     const identity = setup.querySelector(":scope > .setupIdentity");
     const heroTitle = identity?.querySelector("h1");
@@ -143,22 +143,11 @@
     quick.className = "blQuickStartPromise";
     quick.innerHTML = `<b>名字＋位置，就能開始。</b><span>其他設定已自動備妥。</span>`;
     setup.insertBefore(quick, start);
-    start.classList.add("blFastStartButton");
-
-    const details = document.createElement("details");
-    details.id = "blAdvancedSetup";
-    details.className = "blAdvancedSetup";
-    details.innerHTML = `<summary><span><b>完整自訂球員</b><small>身材・外觀・出生地・世界 Seed</small></span><em>展開</em></summary><div class="blAdvancedSetupBody"></div>`;
-    start.insertAdjacentElement("afterend", details);
-
-    const body = details.querySelector(".blAdvancedSetupBody");
     const seedLabel = setup.querySelector(':scope > label[for="seed"]');
     const seed = setup.querySelector(":scope > .seed");
     const seedError = document.getElementById("seedError");
     const seedHelp = document.getElementById("seedHelp");
-    [builder, seedLabel, seed, seedError, seedHelp].forEach((node) => {
-      if (node) body.appendChild(node);
-    });
+    if (seedLabel) seedLabel.textContent = "世界 Seed";
 
     const nameLabel = setup.querySelector(':scope > label[for="playerNameInput"]');
     const nameInput = document.getElementById("playerNameInput");
@@ -170,14 +159,64 @@
     const quickPanel = document.createElement("div");
     quickPanel.className = "blHomeQuickPanel";
     setup.insertBefore(quickPanel, nameLabel || quick);
-    [nameLabel, nameInput, positionLabel, positionGrid, quick, start, details, continuePanel, communityInvite, creatorCredit].forEach((node) => {
+    [nameLabel, nameInput, positionLabel, positionGrid, quick].forEach((node) => {
       if (node) quickPanel.appendChild(node);
     });
 
-    details.addEventListener("toggle", () => {
-      const toggle = details.querySelector("summary em");
-      if (toggle) toggle.textContent = details.open ? "收合" : "展開";
-    });
+    const startActions = document.createElement("div");
+    startActions.className = "blHomeStartActions";
+    const customButton = document.createElement("button");
+    customButton.type = "button";
+    customButton.className = "blOpenCustomButton";
+    customButton.innerHTML = `<b>完整自訂球員 →</b><small id="blCustomSummary">身材・外觀・出生地</small>`;
+    startActions.append(start, customButton);
+    quickPanel.appendChild(startActions);
+
+    const seedPanel = document.createElement("div");
+    seedPanel.className = "blHomeSeedPanel";
+    [seedLabel, seed, seedError, seedHelp].forEach((node) => { if (node) seedPanel.appendChild(node); });
+    quickPanel.appendChild(seedPanel);
+    [continuePanel, communityInvite, creatorCredit].forEach((node) => { if (node) quickPanel.appendChild(node); });
+
+    const customPanel = document.createElement("section");
+    customPanel.id = "blHomeCustomPanel";
+    customPanel.className = "blHomeCustomPanel hidden";
+    customPanel.innerHTML = `<div class="blHomeCustomHead"><button type="button" class="blCustomBack">← 返回快速開始</button><small>PLAYER BUILDER</small><h2>完整自訂球員</h2><p id="blCustomPlayerMeta"></p></div><div class="blHomeCustomBody"></div><div class="blHomeCustomActions"><button type="button" class="blCustomApply">套用設定並返回</button><button type="button" class="blCustomStart">套用設定，開始生涯</button></div>`;
+    customPanel.querySelector(".blHomeCustomBody")?.appendChild(builder);
+    setup.appendChild(customPanel);
+
+    const syncCustomSummary = () => {
+      const pos = positionGrid?.querySelector(".pos.on b")?.textContent?.trim() || "PG";
+      const height = document.getElementById("heightInput")?.value || "—";
+      const wingspan = document.getElementById("wingspanInput")?.value || "—";
+      const birthplace = document.querySelector("#birthplaceInput .birthplaceChip.on")?.textContent?.trim() || "隨機";
+      const summary = document.getElementById("blCustomSummary");
+      const meta = document.getElementById("blCustomPlayerMeta");
+      if (summary) summary.textContent = `${pos}・${height} cm・臂展 ${wingspan} cm・${birthplace}`;
+      if (meta) meta.textContent = `${nameInput?.value.trim() || "籃球癡漢"}・${pos}`;
+    };
+    const showCustom = () => {
+      syncCustomSummary();
+      quickPanel.classList.add("hidden");
+      customPanel.classList.remove("hidden");
+      customPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+    const showQuick = () => {
+      syncCustomSummary();
+      customPanel.classList.add("hidden");
+      quickPanel.classList.remove("hidden");
+      quickPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+    customButton.addEventListener("click", showCustom);
+    customPanel.querySelector(".blCustomBack")?.addEventListener("click", showQuick);
+    customPanel.querySelector(".blCustomApply")?.addEventListener("click", showQuick);
+    customPanel.querySelector(".blCustomStart")?.addEventListener("click", () => window.safeStartCareer?.());
+    customPanel.addEventListener("input", syncCustomSummary);
+    customPanel.addEventListener("change", syncCustomSummary);
+    customPanel.addEventListener("click", () => setTimeout(syncCustomSummary, 0));
+    positionGrid?.addEventListener("click", () => setTimeout(syncCustomSummary, 0));
+    nameInput?.addEventListener("input", syncCustomSummary);
+    syncCustomSummary();
   }
 
   function trainingScore(player, key, credit, priority, priorPicks = 0) {

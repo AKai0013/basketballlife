@@ -32,9 +32,9 @@
 <link rel="stylesheet" href="./css/base.css?v=8.1.0-rc7">
 <link rel="stylesheet" href="./css/career.css?v=8.1.0-rc7">
 <link rel="stylesheet" href="./css/events.css?v=8.1.0-rc7">
-<link rel="stylesheet" href="./css/leaderboard.css?v=8.1.0-rc7">
+<link rel="stylesheet" href="./css/leaderboard.css?v=20260821-home2">
 <link rel="stylesheet" href="./css/home.css?v=8.1.0-rc7">
-<link rel="stylesheet" href="./css/growth-preview.css?v=8.1.0-rc7">
+<link rel="stylesheet" href="./css/growth-preview.css?v=20260821-home2">
 <script src="./js/boot.js?v=8.1.0-rc7"></script>
 </head>
 <body><div class="wrap">
@@ -74,8 +74,8 @@
   <div class="setupSection">
     <div class="setupSectionHead"><div><b>球員身材</b><small>依位置採 NBA 型態的合理範圍；身高與臂展同時帶來優勢與代價。</small></div></div>
     <div class="bodyChoiceGrid">
-      <div class="bodyRange"><div class="bodyRangeTop"><span>身高</span><b id="heightValue">188 cm</b></div><input id="heightInput" type="range" oninput="updateSetupHeight(this.value)"><div class="bodyRangeScale"><span id="heightMin"></span><span id="heightMax"></span></div></div>
-      <div class="bodyRange"><div class="bodyRangeTop"><span>臂展</span><b id="wingspanValue">198 cm</b></div><input id="wingspanInput" type="range" oninput="updateSetupWingspan(this.value)"><div class="bodyRangeScale"><span id="wingspanMin"></span><span id="wingspanMax"></span></div></div>
+      <div class="bodyRange"><div class="bodyRangeTop"><span>身高</span><b id="heightValue">188 cm</b></div><input id="heightInput" type="range" step="1" aria-label="身高（公分）" oninput="updateSetupHeight(this.value)"><div class="bodyRangeScale"><span id="heightMin"></span><span id="heightMax"></span></div><div class="bodyRangeAdjust"><button type="button" data-body-step onclick="adjustSetupHeight(-1)" aria-label="身高減少 1 公分">−1 cm</button><button type="button" data-body-step onclick="adjustSetupHeight(1)" aria-label="身高增加 1 公分">＋1 cm</button></div></div>
+      <div class="bodyRange"><div class="bodyRangeTop"><span>臂展</span><b id="wingspanValue">198 cm</b></div><input id="wingspanInput" type="range" step="1" aria-label="臂展（公分）" oninput="updateSetupWingspan(this.value)"><div class="bodyRangeScale"><span id="wingspanMin"></span><span id="wingspanMax"></span></div><div class="bodyRangeAdjust"><button type="button" data-body-step onclick="adjustSetupWingspan(-1)" aria-label="臂展減少 1 公分">−1 cm</button><button type="button" data-body-step onclick="adjustSetupWingspan(1)" aria-label="臂展增加 1 公分">＋1 cm</button></div></div>
     </div>
     <div id="bodyImpact" class="bodyImpact"></div>
   </div>
@@ -174,7 +174,7 @@
 <script src="./js/state.js?v=8.1.0-rc7"></script>
 <script src="./js/events/event-memory.js?v=8.1.0-rc7"></script>
 <script src="./js/storage.js?v=8.1.0-rc7"></script>
-<script src="./js/ui/home-view.js?v=8.1.0-rc7"></script>
+<script src="./js/ui/home-view.js?v=20260821-home2"></script>
 <script src="./js/career/career-engine.js?v=8.1.0-rc7"></script>
 <script src="./js/ui/career-view.js?v=8.1.0-rc7"></script>
 <script src="./js/career/contract-engine.js?v=8.1.0-rc7"></script>
@@ -186,6 +186,6 @@
 <script src="./js/career/season-engine.js?v=8.1.0-rc7"></script>
 <script src="./js/app.js?v=8.1.0-rc7"></script>
 <script src="./js/leaderboard/return-cache.js?v=8.1.0-rc7"></script>
-<script defer src="./js/ui/growth-preview.js?v=8.1.0-rc7"></script>
+<script defer src="./js/ui/growth-preview.js?v=20260821-home2"></script>
 <script defer src="./js/leaderboard/public-career.js?v=8.1.0-rc7"></script>
 </body></html>

@@ -1548,11 +1548,12 @@ body.retirementMode .header .who{gap:6px}
 .setupSection{border:1px solid #273b49;border-radius:14px;background:linear-gradient(145deg,#0b151d,#101c25);padding:14px}
 .setupSectionHead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px}
 .setupSectionHead b{font-size:14px;color:#f0b16c}.setupSectionHead small{display:block;margin-top:3px;color:#8fa1af;line-height:1.45}
-.bodyChoiceGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.bodyChoiceGrid{display:grid;grid-template-columns:1fr;gap:10px}
 .bodyRange{padding:10px;border:1px solid #243744;border-radius:11px;background:#091219}
 .bodyRangeTop{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:7px;font-size:11px;color:#a9bac6}
 .bodyRangeTop b{font-size:16px;color:#f1eee9}.bodyRange input[type="range"]{width:100%;accent-color:#e58b3e}
 .bodyRangeScale{display:flex;justify-content:space-between;margin-top:5px;font-size:9px;color:#667b8b}
+.bodyRangeAdjust{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}.bodyRangeAdjust button{min-height:30px;border:1px solid #354b5b;border-radius:8px;background:#13232e;color:#d8e2e8;font-size:11px;font-weight:900;cursor:pointer}.bodyRangeAdjust button:hover,.bodyRangeAdjust button:focus-visible{border-color:#e58b3e;color:#f3b16d}.bodyRangeAdjust button:disabled{cursor:not-allowed;opacity:.45}
 .bodyImpact{margin-top:10px;padding:9px 10px;border-left:3px solid #d8833b;background:#111c24;color:#b8c5ce;font-size:10px;line-height:1.55}
 .birthplaceSelect{width:100%;min-height:43px;border:1px solid #365162;border-radius:10px;background:#0a141b;color:#eef0ed;padding:0 11px;font:inherit}
 @media(max-width:680px){
