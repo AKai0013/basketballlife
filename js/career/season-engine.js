@@ -262,6 +262,7 @@ function showResults(){
  p.seasonHistory.push({
    year:p.year,age:p.age,team:p.team,path:p.path,
    competition:p.path==="歐洲聯賽"?(p.contract?.europeLeague||"歐洲國內頂級聯賽"):"",continentalCup:p.path==="歐洲聯賽"?(p.contract?.continentalCup||""):"",
+   europeDomesticGames:p.path==="歐洲聯賽"?Number(p.contract?.europeDomesticGames||0):0,europeCupGames:p.path==="歐洲聯賽"?Number(p.contract?.europeCupGames||0):0,europeSeasonGames:p.path==="歐洲聯賽"?Number(p.contract?.europeSeasonGames||scheduledGames):0,
    salary:isProPath()?Number(p.contract?.salary||0):0,contractType:isProPath()?String(p.contract?.type||""):"",
    scheduledGames,missedGames:missedThisSeason,
    injuryMissedGames:injuryMissed,injuryName:injuryMissed>0?(p.injury?.name||"傷病"):"",

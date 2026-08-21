@@ -83,6 +83,20 @@ function seasonScheduleRange(path=p?.path||"HBL"){
  if(path==="歐洲聯賽"&&Number(p?.contract?.europeSeasonGames)>0)return [p.contract.europeSeasonGames,p.contract.europeSeasonGames];
  return STUDENT_SCHEDULES[path]||LEAGUE_CFG[path]?.games||[24,30];
 }
+const EUROPE_CUP_SCHEDULE_GAMES={EuroLeague:18,EuroCup:14,"Basketball Champions League":12,"僅國內賽事":0};
+function seasonScheduleRangeForRecord(season={}){
+ const path=String(season?.path||"");
+ if(path!=="歐洲聯賽")return seasonScheduleRange(path);
+ const explicit=Number(season?.europeSeasonGames);
+ if(Number.isInteger(explicit)&&explicit>0)return [explicit,explicit];
+ const profile=typeof EUROPE_LEAGUES!=="undefined"?EUROPE_LEAGUES.find(league=>league.label===season?.competition):null;
+ if(profile){
+  const cupGames=EUROPE_CUP_SCHEDULE_GAMES[String(season?.continentalCup||"僅國內賽事")]||0;
+  const total=Number(profile.games||0)+cupGames;
+  if(total>0)return [total,total];
+ }
+ return LEAGUE_CFG[path]?.games||[38,38];
+}
 function scheduledGamesForSeason(path=p?.path||"HBL",year=p?.year||2026){
  const [lo,hi]=seasonScheduleRange(path);
  if(lo===hi)return lo;
