@@ -610,7 +610,7 @@
        if(!Number.isInteger(scheduled)||scheduled<0||scheduled>82||games+missed!==scheduled)errors.push(`賽程加總異常 ${year||"?"}`);
        if(versionAtLeast(sourceVersion,7,50,5)&&typeof seasonScheduleRange==="function"){
          const path=String(season?.path||"");
-         const [lo,hi]=seasonScheduleRange(path);
+         const [lo,hi]=typeof seasonScheduleRangeForRecord==="function"?seasonScheduleRangeForRecord(season):seasonScheduleRange(path);
          const expected=lo===hi?lo:ri(RNG(`${String(record.seed).toUpperCase()}-schedule-${year}-${path}`),lo,hi);
         // Public career rows already stored in Supabase may have been created
         // before the fixed CBA/SBL schedule correction, even when a later

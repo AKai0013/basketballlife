@@ -176,3 +176,39 @@ test("an elite 48-year-old gets a continuous lower-league market instead of NBA 
   assert.ok(offers.some(row=>row.league==="韓國職業"));
   assert.ok(offers.some(row=>row.league==="日本職業"));
 });
+
+test("European schedule integrity follows the stored domestic league and continental cup",()=>{
+  const context={p:{path:"SBL／半職業"},window:{}};
+  vm.runInNewContext(read("data/teams.js"),context);
+  vm.runInNewContext(read("data/leagues.js"),context);
+  vm.runInNewContext(read("js/career/career-engine.js"),context);
+  assert.equal(context.seasonScheduleRangeForRecord({path:"歐洲聯賽",competition:"法國 LNB Élite",continentalCup:"EuroCup"}).join(","),"44,44");
+  assert.equal(context.seasonScheduleRangeForRecord({path:"歐洲聯賽",competition:"西班牙 Liga ACB",continentalCup:"EuroLeague"}).join(","),"52,52");
+  assert.match(read("js/leaderboard/leaderboard-api.js"),/seasonScheduleRangeForRecord\(season\)/);
+});
+
+test("a decorated senior national-team career reaches the national Hall of Fame ballot",()=>{
+  const internationalHistory=Array.from({length:6},(_,index)=>({
+    year:2037+index*2,level:"SENIOR",event:`成人國際賽 ${index+1}`,finish:index===0?"冠軍":"四強",
+    games:index===0?8:7,mins:32,pts:28.8,reb:5.9,ast:4.7,stl:1.2,blk:.4,fg:52,three:41
+  }));
+  const context={
+    p:{name:"測試球員",seed:"AAAAAAEN",year:2060,nationalCaps:6,careerNationalAwards:3,internationalHistory,seasonHistory:[],teamsPlayed:[]},
+    calcCareerRating:()=>105000,careerLeagueProfiles:()=>({}),hasTitle:()=>false,pushNews:()=>{},overall:()=>90,
+    RNG:()=>()=>.5,ri:()=>0,document:{addEventListener:()=>{}}
+  };
+  vm.runInNewContext(read("js/ui/retirement-view.js"),context);
+  context.evaluateHallOfFame();
+  const ballot=context.p.hallVotes.find(row=>row.league==="國家隊名人堂");
+  assert.ok(ballot);
+  assert.equal(ballot.nationalGames,43);
+  assert.equal(ballot.inducted,true);
+  assert.ok(context.p.hallOfFame.includes("國家隊名人堂"));
+});
+
+test("the full career poster separates GP and PTS and uses the full canvas width",()=>{
+  const source=read("js/ui/retirement-view.js");
+  assert.match(source,/const x1=590,x2=908,x3=1226,x4=W-1,yBottom=710/);
+  assert.match(source,/const hx=\[618,740,784,821,851,878,904\]/);
+  assert.match(source,/rule\(1254,52,x4-26,52\)/);
+});
