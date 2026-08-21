@@ -503,6 +503,19 @@ function marketReturnTerms(base,offers,originLeague){
  }
  return {offer:repriceContract(base,.90,Math.min(2,base.years),"母隊回歸約"),mode:"discount"};
 }
+function ensureMinimumMarketOffers(candidates,offers,count=3){
+ const rows=[...(offers||[])],minimum=Math.min(count,(candidates||[]).length);
+ if(rows.length>=minimum)return rows;
+ const selected=new Set(rows.map(c=>`${c.league}|${c.team}`));
+ const remaining=[...(candidates||[])].sort((a,b)=>leagueMarketRank(b.league)-leagueMarketRank(a.league)||(b.salary||0)-(a.salary||0));
+ for(const candidate of remaining){
+   const key=`${candidate.league}|${candidate.team}`;
+   if(selected.has(key))continue;
+   rows.push(candidate);selected.add(key);
+   if(rows.length>=minimum)break;
+ }
+ return rows;
+}
 function listenFreeAgencyMarket(){
  const sc=scoutingScore(),origin=p.marketOriginTeam,originLeague=p.marketOriginLeague,r=RNG(p.seed+"listen-market-"+p.year+"-"+origin);
  const candidates=proOffersForScore(sc,"listen-"+p.year).filter(c=>c.team!==origin);
@@ -515,12 +528,9 @@ function listenFreeAgencyMarket(){
       let chance=Math.max(.20,Math.min(.96,.46+edge*.055+exposurePull+tierPull+underLevel-(p.age>=38?.08:0)));
       return r()<chance;
    });
- // A player who still clears a real roster threshold cannot randomly receive zero interest.
- // If every interest roll misses, the best viable club supplies a one-year proof contract.
- if(!offers.length&&candidates.length){
-   const fallback=[...candidates].sort((a,b)=>leagueMarketRank(b.league)-leagueMarketRank(a.league)||b.salary-a.salary)[0];
-   offers=[repriceContract(fallback,.84,1,"測試／證明短約")];
- }
+ // 只要真的跨過多個聯賽門檻，自由市場至少要留下三個可比較方向，
+ // 避免畫面只剩最高與最低聯賽兩個不連續選項。
+ offers=ensureMinimumMarketOffers(candidates,offers,3);
  // 新人市場允許球員以發展身分提早進入職業，合約到期時不能突然
  // 改用成熟球員門檻，讓職業前三季因一次落差直接被迫退休。
  if(!offers.length){
@@ -619,6 +629,12 @@ function earlyCareerProfessionalSeasons(){
  const completed=(p.seasonHistory||[]).filter(row=>paths.has(row.path)).length;
  return Math.max(Number(p.careerSeason)||0,completed);
 }
+function rookieRenewalPerformanceEligible(){
+ const ss=p.seasonStats||{},schedule=Math.max(1,scheduledGamesForSeason(p.path,p.year));
+ const games=Number(ss.games||0),mins=Number(ss.mins||0);
+ const impact=Number(ss.pts||0)+Number(ss.ast||0)*.75+Number(ss.reb||0)*.38+Number(ss.stl||0)*1.5+Number(ss.blk||0)*1.2;
+ return games>=Math.max(8,Math.round(schedule*.35))&&(mins>=8||impact>=7);
+}
 function youngMarketBridgeEligible(){
  return isProPath()&&p.age<=26&&earlyCareerProfessionalSeasons()<=3&&overall()>=42&&scoutingScore()>=42;
 }
@@ -650,22 +666,33 @@ function leagueRosterOverallFloor(league){
  return floors[league]??60;
 }
 function contractRosterOverallFloor(league,incumbent=false){
- // 老將門檻逐年上升，但不再在42歲突然跳高。45歲後只有仍具真正
- // 輪替能力的少數球員能續命，48～49歲則保留給歷史級極端案例。
+ // 年齡會縮小市場，但不能把所有聯賽一起抬到 NBA 等級。亞洲與台灣
+ // 聯賽仍會評估高齡但有即戰力的老將；NBA、歐洲頂級市場最嚴格。
  const agePremium={37:1,38:2,39:3,40:5,41:7,42:9,43:11,44:13,45:16,46:19,47:22,48:25,49:28};
- const veteranPremium=agePremium[p.age]||(p.age>=50?99:0);
+ const rawPremium=agePremium[p.age]||(p.age>=50?99:0);
+ const leagueScale={
+   "SBL／半職業":.12,"台灣職業":.20,"韓國職業":.26,"日本職業":.30,"CBA":.34,
+   "NBA G League":1,"歐洲聯賽":.45,"NBA":1
+ }[league]??.35;
+ const veteranPremium=p.age>=50?99:Math.round(rawPremium*leagueScale);
  return leagueRosterOverallFloor(league)-(incumbent?2:0)+veteranPremium;
 }
 function canReceiveStandardContract(league,score=scoutingScore(),incumbent=false){
  const cfg=LEAGUE_CFG[league];if(!cfg)return false;
  if(p.age>=50)return false;
  const resumeBonus=collegeReturnMarketBonus(league);
- const ovrFloor=contractRosterOverallFloor(league,incumbent)-Math.min(2,Math.ceil(resumeBonus/2));
- const scoutFloor=cfg.market-(incumbent?3:0)-resumeBonus;
+ const rookieWindow=incumbent&&p.age<=29&&earlyCareerProfessionalSeasons()<=3;
+ const productiveRookie=rookieWindow&&rookieRenewalPerformanceEligible();
+ const rookieOvrRelief=productiveRookie?7:rookieWindow?3:0;
+ const rookieScoutRelief=productiveRookie?9:rookieWindow?4:0;
+ const marketEase=league==="NBA"?0:["NBA G League","歐洲聯賽"].includes(league)?1:2;
+ const ovrFloor=contractRosterOverallFloor(league,incumbent)-marketEase-Math.min(2,Math.ceil(resumeBonus/2))-rookieOvrRelief;
+ const scoutFloor=cfg.market-marketEase-(incumbent?3:0)-resumeBonus-rookieScoutRelief;
  const ov=overall(),provenAbility=ov>=ovrFloor+8&&score>=scoutFloor-10;
  return ov>=ovrFloor&&(score>=scoutFloor||provenAbility);
 }
 function gLeaguePathwayEligible(score=scoutingScore()){
+ if(p.age>32)return false;
  const ov=overall(),standard=canReceiveStandardContract("NBA G League",score,false)&&ov>=76;
  if(standard)return true;
  if(p.age>30)return false;
@@ -700,9 +727,13 @@ function nbaPerformanceOfferKind(score=scoutingScore()){
  }
  if(p.path==="NBA"){
    const currentTwoWay=p.contract?.type==="NBA雙向合約";
-   // A real NBA rotation season outweighs the hidden prospect grade. Twenty-plus
-   // minutes with useful production earns a standard offer somewhere in the league.
-   if(games>=24&&mins>=18&&impact>=13&&ov>=72&&score>=76)return "standard";
+   const rotationSeason=games>=24&&mins>=18&&impact>=13;
+   const decorated=(awards.length>0)||(p.careerMVP||0)>=1||(p.careerFirstTeam||0)>=2;
+   const historic=(p.careerMVP||0)>=2||(p.careerFirstTeam||0)>=4;
+   // 實際輪替表現可以保住 NBA 工作，但不能讓高齡球員完全繞過老化市場。
+   if(p.age<=40&&rotationSeason&&ov>=72&&score>=76)return "standard";
+   if(p.age<=44&&games>=35&&mins>=20&&impact>=15&&ov>=82&&score>=84&&decorated)return "standard";
+   if(p.age<=49&&games>=45&&mins>=24&&impact>=18&&ov>=88&&score>=90&&historic)return "standard";
    if(currentTwoWay&&p.age<=33&&games>=12&&mins>=8&&impact>=8&&ov>=68&&score>=72)return "two-way";
  }
  return "";
@@ -781,14 +812,14 @@ function collegeDraftAssessment(){
 }
 function collegeDraftRoutes(){
  return [
-  {id:"nba",label:"NBA 選秀",league:"NBA",method:"正式選秀",targetScore:80,targetOvr:75,minScore:72,minOvr:68,base:24,cap:72,boost:{"NCAA D1":8,"NCAA D2":3,"日本大學":1,"UBA 強權":1}},
-  {id:"europe",label:"歐洲新人市場",league:"歐洲聯賽",method:"球探邀請／試訓",targetScore:76,targetOvr:72,minScore:66,minOvr:63,base:32,cap:88,boost:{"NCAA D1":6,"NCAA D2":4,"日本大學":3,"UBA 強權":1}},
-  {id:"gleague",label:"NBA G League 球員池",league:"NBA G League",method:"選秀／球員池",targetScore:73,targetOvr:69,minScore:64,minOvr:61,base:35,cap:90,boost:{"NCAA D1":6,"NCAA D2":4,"日本大學":2,"UBA 強權":1}},
-  {id:"cba",label:"CBA 新秀／試訓市場",league:"CBA",method:"選秀／球團試訓",targetScore:70,targetOvr:67,minScore:59,minOvr:57,base:38,cap:90,boost:{"NCAA D1":5,"NCAA D2":3,"日本大學":2,"UBA 強權":2}},
-  {id:"japan",label:"B.League 新人選拔",league:"日本職業",method:"新人選拔／特別指定",targetScore:67,targetOvr:64,minScore:56,minOvr:54,base:41,cap:92,boost:{"NCAA D1":5,"NCAA D2":3,"日本大學":7,"UBA 強權":2}},
-  {id:"korea",label:"KBL 亞洲球員選拔",league:"韓國職業",method:"亞洲名額評估",targetScore:64,targetOvr:62,minScore:54,minOvr:52,base:42,cap:92,boost:{"NCAA D1":4,"NCAA D2":3,"日本大學":3,"UBA 強權":2}},
-  {id:"taiwan",label:"台灣職籃新人選秀",league:"台灣職業",method:"正式新人選秀",targetScore:56,targetOvr:54,minScore:44,minOvr:43,base:49,cap:94,boost:{"NCAA D1":8,"NCAA D2":6,"日本大學":3,"UBA 強權":5,"UBA":3}},
-  {id:"sbl",label:"SBL 新人測試",league:"SBL／半職業",method:"測試／選拔",targetScore:47,targetOvr:45,minScore:0,minOvr:0,base:60,cap:95,boost:{"NCAA D1":6,"NCAA D2":5,"日本大學":3,"UBA 強權":4,"UBA":3}}
+  {id:"nba",label:"NBA 選秀",league:"NBA",method:"正式選秀",targetScore:80,targetOvr:75,minScore:72,minOvr:68,base:20,cap:68,boost:{"NCAA D1":8,"NCAA D2":3,"日本大學":1,"UBA 強權":1}},
+  {id:"europe",label:"歐洲新人市場",league:"歐洲聯賽",method:"球探邀請／試訓",targetScore:76,targetOvr:72,minScore:68,minOvr:65,base:28,cap:84,boost:{"NCAA D1":6,"NCAA D2":4,"日本大學":3,"UBA 強權":1}},
+  {id:"gleague",label:"NBA G League 球員池",league:"NBA G League",method:"選秀／球員池",targetScore:73,targetOvr:69,minScore:66,minOvr:63,base:31,cap:86,boost:{"NCAA D1":6,"NCAA D2":4,"日本大學":2,"UBA 強權":1}},
+  {id:"cba",label:"CBA 新秀／試訓市場",league:"CBA",method:"選秀／球團試訓",targetScore:70,targetOvr:67,minScore:62,minOvr:60,base:34,cap:86,boost:{"NCAA D1":5,"NCAA D2":3,"日本大學":2,"UBA 強權":2}},
+  {id:"japan",label:"B.League 新人選拔",league:"日本職業",method:"新人選拔／特別指定",targetScore:67,targetOvr:64,minScore:59,minOvr:57,base:36,cap:88,boost:{"NCAA D1":5,"NCAA D2":3,"日本大學":7,"UBA 強權":2}},
+  {id:"korea",label:"KBL 亞洲球員選拔",league:"韓國職業",method:"亞洲名額評估",targetScore:64,targetOvr:62,minScore:57,minOvr:55,base:37,cap:88,boost:{"NCAA D1":4,"NCAA D2":3,"日本大學":3,"UBA 強權":2}},
+  {id:"taiwan",label:"台灣職籃新人選秀",league:"台灣職業",method:"正式新人選秀",targetScore:56,targetOvr:54,minScore:48,minOvr:46,base:43,cap:90,boost:{"NCAA D1":8,"NCAA D2":6,"日本大學":3,"UBA 強權":5,"UBA":3}},
+  {id:"sbl",label:"SBL 新人測試",league:"SBL／半職業",method:"測試／選拔",targetScore:47,targetOvr:45,minScore:40,minOvr:40,base:54,cap:92,boost:{"NCAA D1":6,"NCAA D2":5,"日本大學":3,"UBA 強權":4,"UBA":3}}
  ];
 }
 function collegeDraftRouteAssessment(route,a=collegeDraftAssessment()){

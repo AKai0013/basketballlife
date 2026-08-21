@@ -42,6 +42,15 @@ function tournamentFinishName(score,tournamentName){
  }
  return finishName(score);
 }
+function isRegularSeasonTournament(name){return name==="例行賽"||String(name||"").endsWith("例行賽")}
+function isPlayoffTournament(name){return name==="季後賽"||String(name||"").endsWith("季後賽")}
+function tournamentFinishWithQualification(score,tournamentName,previousResults=[]){
+ if(isPlayoffTournament(tournamentName)){
+   const regular=[...(previousResults||[])].reverse().find(row=>isRegularSeasonTournament(row.name));
+   if(regular?.finish==="未晉級季後賽")return "未晉級";
+ }
+ return tournamentFinishName(score,tournamentName);
+}
 function seasonRewardScale(){return p.path==="HBL"?1:isCollegePath()?.90:isProPath()?.65:.80}
 function finishReward(name,weight){
  const base={冠軍:5,亞軍:4,四強:3,八強:2,複賽:1,預賽:0}[name]||0;
