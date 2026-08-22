@@ -171,6 +171,41 @@ function seasonKeyBattleOutcome(score){
  if(score>=46)return {label:"關鍵失誤",tone:"miss",rep:-2,market:-2,respect:-2};
  return {label:"失利",tone:"fail",rep:-4,market:-4,respect:-6};
 }
+function keyBattleSuccessChance(low,high,threshold=62){
+ const min=Number(low)||0,max=Number(high)||0;
+ if(max<threshold)return 0;
+ if(min>=threshold)return 100;
+ return Math.max(0,Math.min(100,Math.round((max-threshold)/Math.max(1,max-min)*100)));
+}
+function keyBattlePreview(low,high,threshold=62){
+ const min=Math.round(low),max=Math.round(high);
+ return {success:keyBattleSuccessChance(min,max,threshold),min,max,expected:Math.round((min+max)/2)};
+}
+function seasonKeyBattleBase(approach="team"){
+ const tactic={attack:7,team:2,manage:-4}[approach]??2;
+ const healthPenalty=p.injury?-8:(p.bodyLoad||0)>=70?-4:0;
+ const form=Math.min(8,(p.seasonEventSuccess||0)*1.6)+Math.max(-4,Math.min(4,(p.confidence||50)-50)*.08);
+ const teamDirection=p.teamWorld?.direction==="contend"?3:p.teamWorld?.direction==="turmoil"?-2:0;
+ return (overall()||40)*.60+(p.clutch||50)*.16+(p.rep||0)*.10+form+healthPenalty+teamDirection+tactic;
+}
+function seasonKeyBattlePreview(approach="team"){
+ const base=seasonKeyBattleBase(approach);
+ return keyBattlePreview(base-9,base+9,62);
+}
+function nationalBattleOffset(battleMode="team",managed=false){
+ return battleMode==="attack"?(managed?7:7):battleMode==="manage"?-3:2;
+}
+function nationalKeyBattlePreview(level,profile,mode="full",battleMode="team"){
+ const managed=mode==="managed",reference=Number(profile?.reference||0),prestige=Number(profile?.prestige||0);
+ const battleOffset=nationalBattleOffset(battleMode,managed);
+ const fixed=(Number(overall()||40)-reference)*.32+Number(p.rep||0)*.10+(hasTitle("national_ace")?3:0)+prestige-(managed?2:0)+battleOffset;
+ const preview=keyBattlePreview(48+fixed,85+fixed,profile?.kind==="qualifier"?75:profile?.kind==="invitation"?68:72);
+ const finish=nationalFinish(preview.expected,profile?.kind);
+ return {...preview,expectedFinish:finish,reward:level==="SENIOR"?nationalReward(finish):youthNationalReward(finish)};
+}
+function keyBattlePreviewHTML(preview,national=false){
+ return `<span class="eventChancePreview">預估成功率 ${preview.success}%｜${national?`預估獎勵 ${preview.reward} 點｜`:"預估表現值 "}${preview.min}–${preview.max} 點</span>`;
+}
 function buildSeasonKeyBattle(){
  if(typeof ensureV8CareerState==="function")ensureV8CareerState(p);
  if(typeof ensureV8TeamWorld==="function")ensureV8TeamWorld(p);
@@ -668,17 +703,14 @@ function showSeasonKeyBattle(event={}){
  document.getElementById("currentPanel")?.classList.add("eventRare");
  const safeTitle=escapeFeedText(key.title||"本季關鍵戰"),safeOpponent=escapeFeedText(key.opponent||"本季最難纏的對手"),safeDirection=escapeFeedText(key.lastTeamDirection||"球隊本季方向尚未明確");
  special.innerHTML=`<div class="specialStage keyBattle"><div class="specialKicker">🏀 SEASON KEY BATTLE</div><b>${safeTitle}</b><br><span class="mut">對手焦點：${safeOpponent}｜球隊方向：${safeDirection}</span>${key.contractYear?`<br><span class="gold">合約年｜本戰表現會進入球探與市場評估</span>`:""}${key.injury?`<br><span class="bad">傷病背景｜${escapeFeedText(key.injury)}</span>`:""}</div>`;
- choices.innerHTML=`<div class="twoChoices"><button class="choice" onclick="resolveSeasonKeyBattle('attack')"><b>🔥 全力搶代表作</b><small>提高關鍵戰表現與市場聲量，但疲勞、身體負荷與失誤代價一起上升。</small></button><button class="choice" onclick="resolveSeasonKeyBattle('team')"><b>🏀 以球隊勝負為優先</b><small>把決策放在攻守與團隊節奏，表現與風險維持平衡。</small></button><button class="choice" onclick="resolveSeasonKeyBattle('manage')"><b>🛡️ 控制負荷、保留健康</b><small>降低本戰個人聲量與市場加成，換取更完整的健康與下一站選擇。</small></button></div>`;
+ const attackPreview=seasonKeyBattlePreview("attack"),teamPreview=seasonKeyBattlePreview("team"),managePreview=seasonKeyBattlePreview("manage");
+ choices.innerHTML=`<div class="twoChoices"><button class="choice eventChoice" onclick="resolveSeasonKeyBattle('attack')"><b>🔥 全力搶代表作</b><small>提高關鍵戰表現與市場聲量，但疲勞、身體負荷與失誤代價一起上升。</small>${keyBattlePreviewHTML(attackPreview)}</button><button class="choice eventChoice" onclick="resolveSeasonKeyBattle('team')"><b>🏀 以球隊勝負為優先</b><small>把決策放在攻守與團隊節奏，表現與風險維持平衡。</small>${keyBattlePreviewHTML(teamPreview)}</button><button class="choice eventChoice" onclick="resolveSeasonKeyBattle('manage')"><b>🛡️ 控制負荷、保留健康</b><small>降低本戰個人聲量與市場加成，換取更完整的健康與下一站選擇。</small>${keyBattlePreviewHTML(managePreview)}</button></div>`;
  next.classList.add("hidden");
 }
 function resolveSeasonKeyBattle(approach="team"){
  const key=p.pendingSeasonKeyBattle||buildSeasonKeyBattle().keyBattle;
  const r=RNG(`${p.seed}-season-key-battle-${p.year}-${p.team}`),label=seasonKeyBattleApproachLabel(approach);
- const tactic={attack:7,team:2,manage:-4}[approach]??2;
- const healthPenalty=p.injury?-8:(p.bodyLoad||0)>=70?-4:0;
- const form=Math.min(8,(p.seasonEventSuccess||0)*1.6)+Math.max(-4,Math.min(4,(p.confidence||50)-50)*.08);
- const teamDirection=p.teamWorld?.direction==="contend"?3:p.teamWorld?.direction==="turmoil"?-2:0;
- const score=Math.round((overall()||40)*.60+(p.clutch||50)*.16+(p.rep||0)*.10+form+healthPenalty+teamDirection+tactic+(r()*18-9));
+ const score=Math.round(seasonKeyBattleBase(approach)+(r()*18-9));
  const outcome=seasonKeyBattleOutcome(score),rival=p.careerCast?.rival;
  const fatigueDelta=approach==="attack"?(p.injury?10:7):approach==="manage"?-4:2;
  const loadDelta=approach==="attack"?(p.injury?10:5):approach==="manage"?-8:2;
@@ -711,7 +743,8 @@ function showNationalKeyBattle(event={}){
  text.textContent=`${label}正在進行 ${profile.event}。這一場會留下本屆代表隊履歷；你要用什麼方式打完？`;
  document.getElementById("currentPanel")?.classList.add("eventRare");
  special.innerHTML=`<div class="specialStage national"><div class="specialKicker">🇹🇼 ${label}｜代表戰</div><b>${profile.event}</b><br><span class="mut">${managed?"已選擇負荷管理；關鍵戰仍要決定最後的比賽取向。":"完整參賽；關鍵戰的取向會影響結果、疲勞與傷病風險。"}</span></div>`;
- choices.innerHTML=`<div class="twoChoices"><button class="choice" onclick="resolveNationalCallup('${level}','${profile.id}','${pending.mode||"full"}','attack')"><b>主動扛起關鍵球</b><small>提高代表戰表現與國際評價，也把疲勞與傷病風險推到最高。</small></button><button class="choice" onclick="resolveNationalCallup('${level}','${profile.id}','${pending.mode||"full"}','team')"><b>先守住球隊節奏</b><small>以防守、傳導與正確選擇為優先，個人數據與風險維持平衡。</small></button><button class="choice" onclick="resolveNationalCallup('${level}','${profile.id}','${pending.mode||"full"}','manage')"><b>${managed?"維持負荷管理":"留力打完最後一節"}</b><small>保護身體與下一段球季，代價是關鍵戰的個人影響力與國際聲量較低。</small></button></div>`;
+ const nationalMode=pending.mode||"full",attackPreview=nationalKeyBattlePreview(level,profile,nationalMode,"attack"),teamPreview=nationalKeyBattlePreview(level,profile,nationalMode,"team"),managePreview=nationalKeyBattlePreview(level,profile,nationalMode,"manage");
+ choices.innerHTML=`<div class="twoChoices"><button class="choice eventChoice" onclick="resolveNationalCallup('${level}','${profile.id}','${nationalMode}','attack')"><b>主動扛起關鍵球</b><small>提高代表戰表現與國際評價，也把疲勞與傷病風險推到最高。</small>${keyBattlePreviewHTML(attackPreview,true)}</button><button class="choice eventChoice" onclick="resolveNationalCallup('${level}','${profile.id}','${nationalMode}','team')"><b>先守住球隊節奏</b><small>以防守、傳導與正確選擇為優先，個人數據與風險維持平衡。</small>${keyBattlePreviewHTML(teamPreview,true)}</button><button class="choice eventChoice" onclick="resolveNationalCallup('${level}','${profile.id}','${nationalMode}','manage')"><b>${managed?"維持負荷管理":"留力打完最後一節"}</b><small>保護身體與下一段球季，代價是關鍵戰的個人影響力與國際聲量較低。</small>${keyBattlePreviewHTML(managePreview,true)}</button></div>`;
  next.classList.add("hidden");
 }
 function prepareNationalCallup(level="SENIOR",competitionId="",mode="full"){

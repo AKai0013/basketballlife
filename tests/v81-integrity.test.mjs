@@ -96,6 +96,8 @@ test("national callups create one player-chosen key battle without changing the 
   assert.match(events,/function prepareNationalCallup\(/);
   assert.match(events,/function showNationalKeyBattle\(/);
   assert.match(events,/國家隊關鍵戰/);
+  assert.match(events,/function nationalKeyBattlePreview\(/);
+  assert.match(events,/keyBattlePreviewHTML\(attackPreview,true\)/);
   assert.match(events,/battleMode,battleLabel,battleScore/);
   assert.match(events,/recordV8Story\("game",battleStory,5/);
   assert.match(events,/function declineNationalCallup\(/);
@@ -107,6 +109,8 @@ test("every non-national season gets a contextual player-chosen key battle",()=>
   assert.match(events,/function showSeasonKeyBattle\(/);
   assert.match(events,/function resolveSeasonKeyBattle\(/);
   assert.match(events,/kind:"seasonKeyBattle"/);
+  assert.match(events,/function seasonKeyBattlePreview\(/);
+  assert.match(events,/keyBattlePreviewHTML\(attackPreview\)/);
   assert.match(events,/buildSeasonSpecialQueue\(\)[\s\S]*?nt\s*\?/);
   for(const approach of ["全力搶代表作","以球隊勝負為優先","控制負荷、保留健康"])assert.match(events,new RegExp(approach));
   assert.match(season,/const keyBattle=p\.seasonKeyBattleResult\|\|null/);
@@ -164,6 +168,15 @@ test("leaderboard separates V8.1, version champions and old personal careers",()
   assert.match(middleware,/ranking_era IN \('v8','v81'\) AND weekly_active=1/);
   assert.match(middleware,/searchParams\.get\("mine"\) === "1"\) return false/);
   assert.match(api,/ROW_NUMBER\(\) OVER\(PARTITION BY weekly_id/);
+});
+
+test("retirement ranks use complete global rank metadata instead of top-50 plus mine",()=>{
+  const api=read("functions/api/[[path]].js"),board=read("js/leaderboard/leaderboard-api.js");
+  assert.match(api,/ROW_NUMBER\(\) OVER\(ORDER BY/);
+  assert.match(api,/COUNT\(\*\) OVER\(\) AS ranking_total/);
+  assert.match(board,/global_rank/);
+  assert.match(board,/ranking_total/);
+  assert.doesNotMatch(board,/rankAllCareers\(powerRecords,"power"\)/);
 });
 
 test("new seed tiers use stable 1 and 2 percent buckets",()=>{

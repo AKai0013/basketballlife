@@ -99,7 +99,9 @@ async function careers(request,env,path){
     const metric=orderColumn[url.searchParams.get("metric")]?url.searchParams.get("metric"):"power",weeklyId=text(url.searchParams.get("weekly_id"),30);
     if(url.searchParams.get("mine")==="1"){
       const auth=await authenticate(request,env);if(auth.error)return auth.error;
-      const rows=(await env.DB.prepare(`SELECT ${summaryColumns} FROM career_records WHERE is_public=1 AND user_id=? ORDER BY updated_at DESC LIMIT 80`).bind(auth.profile.user_id).all()).results.map(x=>hydrate(x,true));
+      const clause=era==="v7"?"ranking_era='v750' AND weekly_active=0":era==="v8"?"ranking_era='v8' AND weekly_active=0":era==="weekly"?"ranking_era IN ('v8','v81') AND weekly_active=1 AND weekly_id=?":"ranking_era='v81' AND weekly_active=0";
+      const sql=`SELECT * FROM (SELECT ${summaryColumns},ROW_NUMBER() OVER(ORDER BY ${orderColumn[metric]} DESC,career_rating DESC) AS global_rank,COUNT(*) OVER() AS ranking_total FROM career_records WHERE is_public=1 AND ${clause}) WHERE user_id=? ORDER BY updated_at DESC LIMIT 80`;
+      const rows=(await env.DB.prepare(sql).bind(...(era==="weekly"?[weeklyId,auth.profile.user_id]:[auth.profile.user_id])).all()).results.map(x=>hydrate(x,true));
       return json({rows});
     }
     if(url.searchParams.get("champions")==="1"){
