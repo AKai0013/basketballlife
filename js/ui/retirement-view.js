@@ -275,25 +275,26 @@ function hallBallotHeadline(v){
 }
 function hallBallotText(v){
  const c=hallLeagueContext(v);
+ const playerName=escapeFeedText(p.name);
  if(c.league.includes("國家隊")){
    const resume=`成人國家隊累積 <b>${c.gp} 場</b>、主要榮譽 <b>${c.nationalAwards} 次</b>${c.bestFinish?`，最佳成績 <b>${c.bestFinish}</b>`:""}`;
-   if(v.vote>=90)return `退役 <b>5 年</b>後（${c.ballotYear} 年），${p.name} 以 ${c.votes}／${c.electorate} 票（<b>${v.vote}%</b>）首輪入選國家隊名人堂。評審特別肯定${resume}，認定這段國際賽生涯不只長久，更留下足以代表一個時代的成績。`;
-   if(v.vote>=75)return `退役 <b>5 年</b>後（${c.ballotYear} 年），${p.name} 以 ${c.votes}／${c.electorate} 票（<b>${v.vote}%</b>）跨過 75% 門檻，正式入選國家隊名人堂。${resume}，成為這次票選最重要的入選理由。`;
-   return `${p.name} 進入國家隊名人堂票選，最終取得 ${c.votes}／${c.electorate} 票（<b>${v.vote}%</b>）。${resume}，但整體票數仍未跨過 75% 入選門檻。`;
+   if(v.vote>=90)return `退役 <b>5 年</b>後（${c.ballotYear} 年），${playerName} 以 ${c.votes}／${c.electorate} 票（<b>${v.vote}%</b>）首輪入選國家隊名人堂。評審特別肯定${resume}，認定這段國際賽生涯不只長久，更留下足以代表一個時代的成績。`;
+   if(v.vote>=75)return `退役 <b>5 年</b>後（${c.ballotYear} 年），${playerName} 以 ${c.votes}／${c.electorate} 票（<b>${v.vote}%</b>）跨過 75% 門檻，正式入選國家隊名人堂。${resume}，成為這次票選最重要的入選理由。`;
+   return `${playerName} 進入國家隊名人堂票選，最終取得 ${c.votes}／${c.electorate} 票（<b>${v.vote}%</b>）。${resume}，但整體票數仍未跨過 75% 入選門檻。`;
  }
  if(v.vote>=90){
-   return `退役 <b>5 年</b>後（${c.ballotYear} 年），${p.name} 正式進入 ${c.league} 候選名單。首輪票選拿下 <b>${c.votes}／${c.electorate} 票</b>（得票率 <b>${v.vote}%</b>），幾乎沒有懸念地完成「一票入魂」。評審回顧${c.route}時，將 <b>${c.peakText}</b>、${c.gp?`累積 <b>${c.gp} 場</b>出賽、`:""}代表性球季與長期影響力列為主要理由。${c.teamText!=="所屬球隊"?`名單上的隊徽，記錄著 ${c.teamText} 那段最具代表性的歲月。`:""}你不只是進入殿堂，也正式成為這個聯盟歷史故事的一部分。`;
+   return `退役 <b>5 年</b>後（${c.ballotYear} 年），${playerName} 正式進入 ${c.league} 候選名單。首輪票選拿下 <b>${c.votes}／${c.electorate} 票</b>（得票率 <b>${v.vote}%</b>），幾乎沒有懸念地完成「一票入魂」。評審回顧${c.route}時，將 <b>${c.peakText}</b>、${c.gp?`累積 <b>${c.gp} 場</b>出賽、`:""}代表性球季與長期影響力列為主要理由。${c.teamText!=="所屬球隊"?`名單上的隊徽，記錄著 ${c.teamText} 那段最具代表性的歲月。`:""}你不只是進入殿堂，也正式成為這個聯盟歷史故事的一部分。`;
  }
  if(v.vote>=75){
-   return `退役 <b>5 年</b>後（${c.ballotYear} 年），${p.name} 首次取得 ${c.league} 候選資格，最終獲得 <b>${c.votes}／${c.electorate} 票</b>（${v.vote}%），跨過 75% 門檻正式入選。票選過程並非毫無爭議，但${c.route}累積出的巔峰表現與代表性履歷，最終說服多數評審。這張入選通知，替你的球員生涯補上最後一塊歷史拼圖。`;
+   return `退役 <b>5 年</b>後（${c.ballotYear} 年），${playerName} 首次取得 ${c.league} 候選資格，最終獲得 <b>${c.votes}／${c.electorate} 票</b>（${v.vote}%），跨過 75% 門檻正式入選。票選過程並非毫無爭議，但${c.route}累積出的巔峰表現與代表性履歷，最終說服多數評審。這張入選通知，替你的球員生涯補上最後一塊歷史拼圖。`;
  }
  if(v.vote>=65){
-   return `退役後進入 ${c.league} 票選時，${p.name} 拿到 <b>${c.votes}／${c.electorate} 票</b>（${v.vote}%），距離 75% 門檻只差一步。支持者反覆提起${c.route}中的高峰時刻，但部分評審仍認為生涯長度、頂級獎項或聯盟統治力稍嫌不足。這不是一份被遺忘的履歷，而是一段「非常接近殿堂」的生涯。`;
+   return `退役後進入 ${c.league} 票選時，${playerName} 拿到 <b>${c.votes}／${c.electorate} 票</b>（${v.vote}%），距離 75% 門檻只差一步。支持者反覆提起${c.route}中的高峰時刻，但部分評審仍認為生涯長度、頂級獎項或聯盟統治力稍嫌不足。這不是一份被遺忘的履歷，而是一段「非常接近殿堂」的生涯。`;
  }
  if(v.vote>=45){
-   return `${p.name} 在 ${c.league} 票選獲得 <b>${c.votes}／${c.electorate} 票</b>（${v.vote}%）。${c.route}確實留下過足以被球迷記住的片段，但評審最終認為整體累積還不足以進入殿堂。多年後回頭看，你仍會出現在那個年代的代表球員名單裡，只是歷史地位停在「明星級生涯」，沒有跨進最高一層。`;
+   return `${playerName} 在 ${c.league} 票選獲得 <b>${c.votes}／${c.electorate} 票</b>（${v.vote}%）。${c.route}確實留下過足以被球迷記住的片段，但評審最終認為整體累積還不足以進入殿堂。多年後回頭看，你仍會出現在那個年代的代表球員名單裡，只是歷史地位停在「明星級生涯」，沒有跨進最高一層。`;
  }
- return `${p.name} 在 ${c.league} 票選僅取得 <b>${c.votes}／${c.electorate} 票</b>（${v.vote}%）。評審認為${c.route}缺乏足夠的長期累積、頂級巔峰或代表性榮譽，因此沒有形成入選共識。職業生涯並不因此失去價值，只是名人堂的大門這一次沒有打開。`;
+ return `${playerName} 在 ${c.league} 票選僅取得 <b>${c.votes}／${c.electorate} 票</b>（${v.vote}%）。評審認為${c.route}缺乏足夠的長期累積、頂級巔峰或代表性榮譽，因此沒有形成入選共識。職業生涯並不因此失去價值，只是名人堂的大門這一次沒有打開。`;
 }
 function hallBallotLegacyLine(v){
  if(v.inducted && v.vote>=90)return `◆ 歷史地位解鎖｜${v.league}首輪入選`;
@@ -577,21 +578,22 @@ function retirementExitClass(){
 function retirementDayNarrative(){
  const last=[...(p.seasonHistory||[])].reverse().find(x=>isProfessionalPathValue(x.path))||p.seasonHistory?.[p.seasonHistory.length-1];
  const team=last?.team||p.team||"最後一支球隊",league=last?leagueDisplay(last.path):leagueDisplay(p.path);
+ const playerName=escapeFeedText(p.name),reason=escapeFeedText(p.retirementReason),safeTeam=escapeFeedText(team),safeLeague=escapeFeedText(league);
  const cls=retirementExitClass();
 
  if(cls==="ceremony"){
    return `<div class="legacyNarrative"><b>◆ 引退之夜</b><br>
-   ${p.name} 在 ${p.year} 年正式結束球員生涯。最後一次主場出賽前，球團關閉主場燈光，大螢幕播放你的代表性生涯片段；隊友在球員通道列隊，你最後一次走上球場向觀眾致意。<br>
-   <span class="mut">最後所屬：${team}｜${league}｜退休時 ${p.age} 歲｜原因：${p.retirementReason}</span></div>`;
+   ${playerName} 在 ${p.year} 年正式結束球員生涯。最後一次主場出賽前，球團關閉主場燈光，大螢幕播放你的代表性生涯片段；隊友在球員通道列隊，你最後一次走上球場向觀眾致意。<br>
+   <span class="mut">最後所屬：${safeTeam}｜${safeLeague}｜退休時 ${p.age} 歲｜原因：${reason}</span></div>`;
  }
  if(cls==="farewell"){
    return `<div class="legacyNarrative"><b>◆ 最後一戰</b><br>
-   ${p.name} 在 ${p.year} 年決定結束球員生涯。球團沒有舉辦大型儀式，但在本季最後一場主場賽事結束後，隊友與現場球迷留下來向你致意。你在場中央簡短向球迷道謝，為這段職業旅程畫下句點。<br>
-   <span class="mut">最後所屬：${team}｜${league}｜退休時 ${p.age} 歲｜原因：${p.retirementReason}</span></div>`;
+   ${playerName} 在 ${p.year} 年決定結束球員生涯。球團沒有舉辦大型儀式，但在本季最後一場主場賽事結束後，隊友與現場球迷留下來向你致意。你在場中央簡短向球迷道謝，為這段職業旅程畫下句點。<br>
+   <span class="mut">最後所屬：${safeTeam}｜${safeLeague}｜退休時 ${p.age} 歲｜原因：${reason}</span></div>`;
  }
  return `<div class="legacyNarrative"><b>◆ 生涯落幕</b><br>
- ${p.name} 的球員生涯沒有以盛大的引退儀式結束。最後一次公開測試／市場評估結束後，經紀團隊確認沒有合適的新合約，你回到球隊整理置物櫃，和幾名熟悉的隊友簡單道別。幾天後，你正式對外宣布離開球員舞台。<br>
- <span class="mut">最後所屬：${team}｜${league}｜離開球員舞台時 ${p.age} 歲｜原因：${p.retirementReason}</span></div>`;
+ ${playerName} 的球員生涯沒有以盛大的引退儀式結束。最後一次公開測試／市場評估結束後，經紀團隊確認沒有合適的新合約，你回到球隊整理置物櫃，和幾名熟悉的隊友簡單道別。幾天後，你正式對外宣布離開球員舞台。<br>
+ <span class="mut">最後所屬：${safeTeam}｜${safeLeague}｜離開球員舞台時 ${p.age} 歲｜原因：${reason}</span></div>`;
 }
 function uniqueHonorYears(items){
  return [...new Set((Array.isArray(items)?items:[]).map(x=>Number(x?.year)).filter(Number.isFinite))].sort((a,b)=>a-b);

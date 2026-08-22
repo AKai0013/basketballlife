@@ -1,5 +1,6 @@
 function showCareerChapter(type){
  if(["newSchoolYear","renewal","newTeam"].includes(type))p.seasonNaturalInjuryChecked=false;
+ const playerName=escapeFeedText(p.name);
  p.stage="transition";resetMain();render();
  flow.innerHTML="";
  if(type==="highschoolStart"){
@@ -9,7 +10,7 @@ function showCareerChapter(type){
    special.innerHTML=`<div class="chapterCard">
      <div class="chapterEyebrow">CAREER BEGINS</div>
      <div class="chapterYear">${p.year} 年夏天</div>
-     <div class="chapterHero">${p.age} 歲的 <b>${p.name}</b> 正式加入<br><span class="chapterTeam">${p.team} 籃球隊</span></div>
+     <div class="chapterHero">${p.age} 歲的 <b>${playerName}</b> 正式加入<br><span class="chapterTeam">${p.team} 籃球隊</span></div>
      <div class="mut">三年的高中籃球生涯，從今天開始。沒有人知道你最後會走到哪裡。</div>
      <div class="chapterMeta"><span>#${p.jerseyNumber??7}・${p.pos}・${p.handedness||"右手"}</span><span>${p.heightCm} cm・臂展 ${p.wingspanCm} cm</span><span>${escapeFeedText(p.birthplace)}出身</span><span>高一新生</span><span>HBL</span></div>
    </div>`;
@@ -32,7 +33,7 @@ function showCareerChapter(type){
    special.innerHTML=`<div class="chapterCard">
      <div class="chapterEyebrow">CONTRACT EXTENSION</div>
      <div class="chapterYear">${p.year} 年</div>
-     <div class="chapterHero">${p.name} 與 <span class="chapterTeam">${p.team}</span> 完成續約</div>
+     <div class="chapterHero">${playerName} 與 <span class="chapterTeam">${p.team}</span> 完成續約</div>
      <div class="chapterMeta"><span>${p.pos}</span><span>${p.age}歲</span><span>${contractText()}</span></div>
    </div>`;
    next.textContent="準備新賽季 →";next.classList.remove("hidden");p.transition="toTraining";
@@ -43,7 +44,7 @@ function showCareerChapter(type){
    special.innerHTML=`<div class="chapterCard">
      <div class="chapterEyebrow">NEW CHAPTER</div>
      <div class="chapterYear">${p.year} 年</div>
-     <div class="chapterHero">${p.name} 正式加入<br><span class="chapterTeam">${p.team}</span></div>
+     <div class="chapterHero">${playerName} 正式加入<br><span class="chapterTeam">${p.team}</span></div>
      <div class="mut">${p.path} 生涯正式開始。${p.contract?`<br><span class="gold">${contractText()}</span>`:""}</div>
      <div class="chapterMeta"><span>${p.pos}</span><span>${p.age}歲</span><span>${p.path}</span></div>
    </div>`;

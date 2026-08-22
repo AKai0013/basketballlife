@@ -259,6 +259,7 @@ function showResults(){
   signatureGame.impact=Math.round(signatureGame.pts+signatureGame.reb*1.2+signatureGame.ast*1.5+signatureGame.stl*3+signatureGame.blk*3);
   completeSignatureGame(signatureGame,signatureR,representative);
  }
+ const keyBattle=p.seasonKeyBattleResult||null;
  p.seasonHistory.push({
    year:p.year,age:p.age,team:p.team,path:p.path,
    competition:p.path==="歐洲聯賽"?(p.contract?.europeLeague||"歐洲國內頂級聯賽"):"",continentalCup:p.path==="歐洲聯賽"?(p.contract?.continentalCup||""):"",
@@ -267,7 +268,7 @@ function showResults(){
    scheduledGames,missedGames:missedThisSeason,
    injuryMissedGames:injuryMissed,injuryName:injuryMissed>0?(p.injury?.name||"傷病"):"",
    suspensionGames:conductMissed,
-   games,mins,pts,reb,ast,stl,blk,fg,three,ovr:overall(),seasonFatigueGain,seasonBodyLoadGain,signatureGame,tourneys:resultRows,seasonAwards:[...awards,...proAwards],awardAudit:p.lastSeasonAwardAudit?{...p.lastSeasonAwardAudit}:null
+   games,mins,pts,reb,ast,stl,blk,fg,three,ovr:overall(),seasonFatigueGain,seasonBodyLoadGain,signatureGame,keyBattle,tourneys:resultRows,seasonAwards:[...awards,...proAwards],awardAudit:p.lastSeasonAwardAudit?{...p.lastSeasonAwardAudit}:null
  });
  const seasonStory=finalizeV8SeasonStory();
  updateCareerTotals(p.seasonStats);
@@ -291,9 +292,11 @@ const missReasonParts=[];
  ${p.injury?.remainingGames>0?`<br><span class="bad">目前仍預估缺席 ${p.injury.remainingGames} 場，傷勢將延續至下一階段。</span>`:""}
  </div>` : "";
  let veteranMinutesHTML=isProPath()&&p.age>=32?`<div class="notice"><b>⏱️ ${veteranProfile.label}</b><br>教練團預計將你本季的上場時間控制在 <b>${maxMins} 分鐘</b>左右，並依年齡、身體負荷與傷後狀態隨時調整。</div>`:"";
+ let keyBattleHTML=keyBattle?`<div class="keyBattleResult ${keyBattle.kind==="national"?"national":"regular"}"><div class="resultSectionTitle">本季關鍵戰｜${escapeFeedText(keyBattle.outcome||"已完成")}</div><b>${escapeFeedText(keyBattle.title||"本季關鍵戰")}</b>｜${escapeFeedText(keyBattle.opponent||"代表性對手")}<br><span class="mut">${escapeFeedText(keyBattle.battleLabel||"以球隊勝負為優先")}｜${escapeFeedText(keyBattle.teamResult||"本戰結果已記錄")}${keyBattle.marketDelta?`｜球探評價 ${keyBattle.marketDelta>0?"+":""}${keyBattle.marketDelta}`:""}</span></div>`:"";
  const rolePromiseMiss=isProPath()&&promisedFloor&&mins<promisedFloor-2;
  special.innerHTML=`
  ${rolePromiseMiss?`<div class="notice fail"><b>⚠️ 角色承諾未兌現</b><br>合約承諾：${p.roleState.promisedLabel}（${p.roleState.promisedMinutes||"未明確"}）｜實際：${p.roleState.currentLabel}（${mins}分鐘）。此落差可能觸發後續協商。</div>`:""}
+ ${keyBattleHTML}
  ${injurySeasonHTML}
  ${veteranMinutesHTML}
  <div class="tourneyList">

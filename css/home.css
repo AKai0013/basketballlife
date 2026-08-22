@@ -255,3 +255,36 @@ body.retirementMode .retirementFeatureMoments>b{display:block;margin-bottom:10px
   .avatarSetupPreview{width:64px!important}
   .avatarSetupRow .btn{grid-column:2!important}
 }
+
+/* Keep player-facing event information identical across desktop and phone layouts. */
+#game .choice.eventChoice .eventChancePreview{
+  display:inline-flex!important;
+  position:static!important;
+  width:auto!important;
+  max-width:100%!important;
+  margin:9px 7px 0 0!important;
+  padding:3px 7px!important;
+  border:1px solid #355165!important;
+  border-radius:999px!important;
+  color:#9bc9e8!important;
+  font-size:10px!important;
+  font-weight:900!important;
+  line-height:1.35!important;
+  white-space:normal!important;
+}
+#game[data-stage="points"] .pointrow .pointValue,
+#game[data-stage="points"] .pointrow small{
+  display:inline!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+@media(max-width:620px){
+  #game .choice.eventChoice .eventChancePreview{
+    margin-top:8px!important;
+    font-size:10.5px!important;
+  }
+  #game[data-stage="points"] .pointrow small{
+    display:block!important;
+    font-size:10px!important;
+  }
+}

@@ -140,6 +140,60 @@ test("late-career European seasons do not reopen an NBA-Europe loop",()=>{
   assert.equal(context.nbaPathwayOfferKind(90),"");
 });
 
+test("a regular season key battle carries team, rival, contract and injury context",()=>{
+  const context={p:{
+    year:2039,age:27,path:"NBA",team:"測試隊",seed:"KEYB0001",
+    contract:{remaining:1,terminated:false},
+    seasonHistory:[{tourneys:[{name:"季後賽",finish:"四強",reward:2}]}],
+    careerCast:{rival:{name:"宿敵甲",respect:42}},
+    teamWorld:{direction:"contend",directionLabel:"爭冠窗口"},
+    injury:{name:"膝蓋扭傷",level:"中傷"},bodyLoad:64
+  }};
+  context.isProPath=()=>true;
+  context.ensureV8CareerState=()=>{};
+  context.ensureV8TeamWorld=()=>context.p.teamWorld;
+  vm.runInNewContext(read("js/events/event-engine.js"),context);
+  const key=context.buildSeasonKeyBattle();
+  assert.equal(key.kind,"seasonKeyBattle");
+  assert.match(key.desc,/合約年/);
+  assert.match(key.desc,/膝蓋扭傷/);
+  assert.equal(key.keyBattle.opponent,"宿敵甲");
+  assert.equal(key.keyBattle.contractYear,true);
+});
+
+test("event choices keep the same player-facing order for the same save state",()=>{
+  const context={p:{seed:"ORDER0001",year:2034,eventIndex:2}};
+  vm.runInNewContext(read("js/events/event-engine.js"),context);
+  const options=[["高風險打法","提高上限","risk"],["穩健打法","維持平衡","normal"],["保守打法","降低風險","safe"]];
+  const first=context.mapEventOptions(options).map(row=>row.slice(0,2));
+  const second=context.mapEventOptions(options).map(row=>row.slice(0,2));
+  assert.deepEqual(second,first);
+});
+
+test("a key battle market result changes scouting without affecting old saves",()=>{
+  const context={p:{
+    path:"NBA",age:27,stats:{shoot:60,finish:60,pass:60,handle:60,defense:60,rebound:60,ath:60,iq:60},
+    caps:{shoot:60,finish:60,pass:60,handle:60,defense:60,rebound:60,ath:60,iq:60},growth:70,
+    seasonStats:{pts:15,ast:4,reb:4,stl:1,blk:.2},lastSeasonAwards:[],injuryHistory:[],injury:null,
+    rep:0,conductMarketPenalty:0,genius:false,seasonHistory:[]
+  },overall:()=>65,isProPath:()=>true,leagueStrength:()=>1,LEAGUE_CFG:{NBA:{exposure:10}},seedMarketBonus:()=>0,confidencePerformanceMod:()=>0,hasTitle:()=>false};
+  vm.runInNewContext(read("js/career/contract-engine.js"),context);
+  const base=context.scoutingScore();
+  context.p.seasonHistory=[{keyBattle:{marketDelta:5}}];
+  assert.equal(context.scoutingScore()-base,5);
+});
+
+test("late-career NBA return stays closed even after older NBA seasons leave the recent-history window",()=>{
+  const context={p:{
+    path:"歐洲聯賽",age:40,seasonHistory:[{year:2035,path:"NBA"},{year:2036,path:"歐洲聯賽"},{year:2037,path:"歐洲聯賽"},{year:2038,path:"歐洲聯賽"}],
+    contract:{continentalCup:"EuroLeague"},lastSeasonAwards:[],seasonStats:{games:30,mins:24,pts:18,ast:6,reb:5,stl:1,blk:.4}
+  }};
+  vm.runInNewContext(read("js/career/contract-engine.js"),context);
+  context.overall=()=>90;
+  context.scoutingScore=()=>92;
+  assert.equal(context.nbaPathwayOfferKind(92),"");
+});
+
 test("an ordinary 47-year-old NBA rotation player cannot bypass veteran decline",()=>{
   const context={p:{
     path:"NBA",age:47,contract:{type:"標準合約"},careerMVP:0,careerFirstTeam:0,lastSeasonAwards:[],
@@ -181,11 +235,8 @@ test("an elite 48-year-old gets a continuous lower-league market instead of NBA 
     {league:"日本職業",team:"B.League",salary:1800}
   ];
   context.leagueMarketRank=league=>({"SBL／半職業":1,"台灣職業":2,"韓國職業":3,"日本職業":4}[league]||0);
-  const offers=context.ensureMinimumMarketOffers(candidates,[candidates[0]],3);
-  assert.equal(offers.length,3);
-  assert.equal(new Set(offers.map(row=>row.league)).size,3);
-  assert.ok(offers.some(row=>row.league==="韓國職業"));
-  assert.ok(offers.some(row=>row.league==="日本職業"));
+  assert.equal(typeof context.ensureMinimumMarketOffers,"undefined");
+  assert.doesNotMatch(read("js/career/contract-engine.js"),/ensureMinimumMarketOffers/);
 });
 
 test("European schedule integrity follows the stored domestic league and continental cup",()=>{
