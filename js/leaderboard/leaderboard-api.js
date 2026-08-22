@@ -841,11 +841,15 @@
  async function retirementRankSummary(id){
    try{
      const era=p?.weeklyChallenge?.active?"weekly":"v81";
-     const powerRecords=(await loadLeaderboardRecords(true,"power",era)).filter(isOfficialRankingRecord);
-     const peakRecords=(await loadLeaderboardRecords(true,"peak",era)).filter(isOfficialRankingRecord);
-     const powerIndex=rankAllCareers(powerRecords,"power").findIndex(r=>r.id===id);
-     const peakIndex=rankAllCareers(peakRecords,"peak").findIndex(r=>r.id===id);
-     return {power:powerIndex>=0?powerIndex+1:null,peak:peakIndex>=0?peakIndex+1:null,total:Number(state.leaderboardStats?.careers||powerRecords.length)};
+     const weeklyId=era==="weekly"?weeklyChallengeProfile().id:"";
+     const rankFor=async metric=>{
+       const query=new URLSearchParams({mine:"1",era,metric,weekly_id:weeklyId});
+       const data=await apiRequest(`careers?${query.toString()}`,{timeout:12000});
+       const row=(data?.rows||[]).find(record=>String(record?.id||"")===String(id));
+       return {rank:Number(row?.global_rank)||null,total:Number(row?.ranking_total)||null};
+     };
+     const [power,peak]=await Promise.all([rankFor("power"),rankFor("peak")]);
+     return {power:power.rank,peak:peak.rank,total:power.total||peak.total||Number(state.leaderboardStats?.careers)||null};
    }catch(_){return {power:null,peak:null,total:null}}
  }
 

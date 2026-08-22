@@ -161,6 +161,21 @@ test("a regular season key battle carries team, rival, contract and injury conte
   assert.equal(key.keyBattle.contractYear,true);
 });
 
+test("key battle previews expose deterministic success and value ranges before resolution",()=>{
+  const context={p:{year:2039,age:27,path:"NBA",team:"測試隊",seed:"KEYB0002",confidence:62,clutch:74,rep:12,seasonEventSuccess:2,bodyLoad:20,teamWorld:{direction:"contend"}}};
+  context.overall=()=>78;
+  vm.runInNewContext(read("js/events/event-engine.js"),context);
+  const attack=context.seasonKeyBattlePreview("attack"),team=context.seasonKeyBattlePreview("team"),manage=context.seasonKeyBattlePreview("manage");
+  for(const preview of [attack,team,manage]){
+    assert.ok(preview.min<=preview.expected&&preview.expected<=preview.max);
+    assert.ok(preview.success>=0&&preview.success<=100);
+  }
+  assert.ok(attack.expected>team.expected);
+  assert.ok(manage.expected<team.expected);
+  assert.match(context.keyBattlePreviewHTML(attack),/預估成功率/);
+  assert.match(context.keyBattlePreviewHTML(attack),/預估表現值/);
+});
+
 test("event choices keep the same player-facing order for the same save state",()=>{
   const context={p:{seed:"ORDER0001",year:2034,eventIndex:2}};
   vm.runInNewContext(read("js/events/event-engine.js"),context);
