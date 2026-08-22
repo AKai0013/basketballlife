@@ -129,6 +129,17 @@ test("an OVR 82 European standout enters the NBA pathway",()=>{
   assert.equal(context.nbaPerformanceOfferKind(86),"standard");
 });
 
+test("late-career European seasons do not reopen an NBA-Europe loop",()=>{
+  const context={p:{
+    path:"歐洲聯賽",age:42,seasonHistory:[{path:"NBA"}],contract:{continentalCup:"EuroLeague"},lastSeasonAwards:[],
+    seasonStats:{games:30,mins:22,pts:15,ast:5,reb:4,stl:1,blk:.3}
+  }};
+  vm.runInNewContext(read("js/career/contract-engine.js"),context);
+  context.overall=()=>89;
+  context.scoutingScore=()=>90;
+  assert.equal(context.nbaPathwayOfferKind(90),"");
+});
+
 test("an ordinary 47-year-old NBA rotation player cannot bypass veteran decline",()=>{
   const context={p:{
     path:"NBA",age:47,contract:{type:"標準合約"},careerMVP:0,careerFirstTeam:0,lastSeasonAwards:[],

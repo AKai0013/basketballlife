@@ -707,6 +707,11 @@ function gLeaguePathwayEligible(score=scoutingScore()){
  if(p.seedTier==="A"&&p.age<=29)return ov>=75&&score>=78;
  return false;
 }
+function lateCareerNbaReturnBlocked(){
+ if(p.path!=="歐洲聯賽"||p.age<40)return false;
+ const history=Array.isArray(p.seasonHistory)?p.seasonHistory:[];
+ return history.slice(-3).some(row=>row?.path==="NBA");
+}
 function nbaPerformanceOfferKind(score=scoutingScore()){
  const ss=p.seasonStats||{},ov=overall(),games=Number(ss.games||0),mins=Number(ss.mins||0);
  const impact=Number(ss.pts||0)+Number(ss.ast||0)*.75+Number(ss.reb||0)*.38+Number(ss.stl||0)*1.6+Number(ss.blk||0)*1.3;
@@ -740,6 +745,7 @@ function nbaPerformanceOfferKind(score=scoutingScore()){
 }
 function nbaPathwayOfferKind(score=scoutingScore()){
  const ov=overall();
+ if(lateCareerNbaReturnBlocked())return "";
  const earnedByPerformance=nbaPerformanceOfferKind(score);
  if(earnedByPerformance)return earnedByPerformance;
  const standardResume=(
