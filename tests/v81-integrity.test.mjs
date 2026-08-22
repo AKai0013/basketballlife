@@ -84,6 +84,16 @@ test("V8.1 explains draft outcomes and records a specific signature game",()=>{
   assert.match(preview,/代表戰數據/);
 });
 
+test("national callups create one player-chosen key battle without changing the next-station flow",()=>{
+  const events=read("js/events/event-engine.js");
+  assert.match(events,/function prepareNationalCallup\(/);
+  assert.match(events,/function showNationalKeyBattle\(/);
+  assert.match(events,/國家隊關鍵戰/);
+  assert.match(events,/battleMode,battleLabel,battleScore/);
+  assert.match(events,/recordV8Story\("game",battleStory,5/);
+  assert.match(events,/function declineNationalCallup\(/);
+});
+
 test("retirement story uses structured career facts and home has a visible community invitation",()=>{
   const preview=read("js/ui/growth-preview.js"),html=read("index.html"),styles=read("css/leaderboard.css");
   const story=preview.match(/function retirementStoryText[\s\S]*?function retirementPublicProfile/)?.[0]||"";

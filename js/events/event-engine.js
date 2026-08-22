@@ -321,8 +321,9 @@ function showSpecialEvent(){
    const level=e.nationalLevel||"SENIOR";
    const profile=e.nationalCompetition||nationalCompetitionById(level),label=nationalLevelLabel(level);
    const typeLabel=profile.kind==="qualifier"?"資格賽窗口":profile.kind==="invitation"?"國際邀請賽":"正式錦標賽";
-   special.innerHTML=`<div class="specialStage national"><div class="specialKicker">🇹🇼 ${level==="SENIOR"?"NATIONAL TEAM":"DEVELOPMENT TEAM"}</div><span class="mut">${typeLabel}</span></div>`;
-  choices.innerHTML=`<button class="choice" onclick="resolveNationalCallup('${level}','${profile.id}','full')"><b>完整接受徵召</b><small>爭取完整角色與國際賽履歷，但疲勞和傷病風險最高。</small></button><button class="choice" onclick="resolveNationalCallup('${level}','${profile.id}','managed')"><b>報到並要求負荷管理</b><small>降低疲勞與風險，也會減少上場時間、數據及國家隊評價。</small></button><button class="choice" onclick="declineNationalCallup('${level}','${profile.id}')"><b>婉拒本次徵召</b><small>保留職業球季體能；本次沒有國際賽紀錄，未來入選評價略降。</small></button>`;
+    if(p.pendingNationalCallup){showNationalKeyBattle(e);return}
+    special.innerHTML=`<div class="specialStage national"><div class="specialKicker">🇹🇼 ${level==="SENIOR"?"NATIONAL TEAM":"DEVELOPMENT TEAM"}</div><span class="mut">${typeLabel}</span></div>`;
+   choices.innerHTML=`<button class="choice" onclick="prepareNationalCallup('${level}','${profile.id}','full')"><b>完整接受徵召</b><small>爭取完整角色與國際賽履歷；下一步還要決定本屆關鍵戰怎麼打。</small></button><button class="choice" onclick="prepareNationalCallup('${level}','${profile.id}','managed')"><b>報到並要求負荷管理</b><small>降低整體疲勞與傷病風險，再用一場關鍵戰決定你要把多少力氣留在場上。</small></button><button class="choice" onclick="declineNationalCallup('${level}','${profile.id}')"><b>婉拒本次徵召</b><small>保留職業球季體能；本次沒有國際賽紀錄，未來入選評價略降。</small></button>`;
    return;
  }
  if(e.relationshipEvent){
@@ -548,6 +549,7 @@ function resolveV8Relationship(action){
  recordV8Story(action==="duelRival"?"game":"turning",story,4,{person});finishSpecialEvent(html,story);
 }
 function finishSpecialEvent(html,logText){
+ delete p.pendingNationalCallup;
  special.innerHTML=html||"";
  choices.innerHTML="";
  if(logText)logIt(logText);
@@ -586,10 +588,29 @@ function simulateNationalBoxScore(level,profile,finish,r){
  const role=mins>=28?"先發主力":mins>=20?"主要輪替":mins>=13?"替補輪替":"板凳末端";
  return {games,mins,pts,reb,ast,stl,blk,fg,three,role};
 }
-function resolveNationalCallup(level="SENIOR",competitionId="",mode="full"){
+function showNationalKeyBattle(event={}){
+ const pending=p.pendingNationalCallup||{},level=pending.level||event.nationalLevel||"SENIOR",profile=nationalCompetitionById(level,pending.competitionId||event.nationalCompetition?.id),label=nationalLevelLabel(level),managed=pending.mode==="managed";
+ chapter.textContent=`${p.year} · ${p.age}歲 · ${p.path} · 國家隊關鍵戰`;
+ title.textContent="國家隊關鍵戰";
+ text.textContent=`${label}正在進行 ${profile.event}。這一場會留下本屆代表隊履歷；你要用什麼方式打完？`;
+ document.getElementById("currentPanel")?.classList.add("eventRare");
+ special.innerHTML=`<div class="specialStage national"><div class="specialKicker">🇹🇼 ${label}｜代表戰</div><b>${profile.event}</b><br><span class="mut">${managed?"已選擇負荷管理；關鍵戰仍要決定最後的比賽取向。":"完整參賽；關鍵戰的取向會影響結果、疲勞與傷病風險。"}</span></div>`;
+ choices.innerHTML=`<div class="twoChoices"><button class="choice" onclick="resolveNationalCallup('${level}','${profile.id}','${pending.mode||"full"}','attack')"><b>主動扛起關鍵球</b><small>提高代表戰表現與國際評價，也把疲勞與傷病風險推到最高。</small></button><button class="choice" onclick="resolveNationalCallup('${level}','${profile.id}','${pending.mode||"full"}','team')"><b>先守住球隊節奏</b><small>以防守、傳導與正確選擇為優先，個人數據與風險維持平衡。</small></button><button class="choice" onclick="resolveNationalCallup('${level}','${profile.id}','${pending.mode||"full"}','manage')"><b>${managed?"維持負荷管理":"留力打完最後一節"}</b><small>保護身體與下一段球季，代價是關鍵戰的個人影響力與國際聲量較低。</small></button></div>`;
+ next.classList.add("hidden");
+}
+function prepareNationalCallup(level="SENIOR",competitionId="",mode="full"){
+ if(mode!=="managed"&&mode!=="full")return declineNationalCallup(level,competitionId);
+ p.pendingNationalCallup={level,competitionId,mode};
+ showNationalKeyBattle((p.specialQueue||[])[p.specialIndex]||{});
+}
+function resolveNationalCallup(level="SENIOR",competitionId="",mode="full",battleMode="team"){
+ const pending=p.pendingNationalCallup;
+ if(pending){level=pending.level||level;competitionId=pending.competitionId||competitionId;mode=pending.mode||mode;}
  const senior=level==="SENIOR";
  const managed=mode==="managed";
  const label=nationalLevelLabel(level),profile=nationalCompetitionById(level,competitionId);
+ const battleLabels={attack:"主動扛起關鍵球",team:"先守住球隊節奏",manage:managed?"維持負荷管理":"留力打完最後一節"};
+ const battleLabel=battleLabels[battleMode]||battleLabels.team,battleOffset={attack:7,team:2,manage:-3}[battleMode]??2,battleRiskFactor=battleMode==="attack"?(managed?1.12:1.28):battleMode==="manage"?.55:1;
  let r=RNG(`${p.seed}-national-result-${level}-${profile.id}-${p.year}`),event=profile.event;
 
  p.nationalCallups++;
@@ -599,11 +620,11 @@ function resolveNationalCallup(level="SENIOR",competitionId="",mode="full"){
  p.nationalSelectionStreak=(p.lastNationalCallupYear||0)===p.year-1?(p.nationalSelectionStreak||0)+1:1;
  p.lastNationalCallupYear=p.year;
 
- const fatigueGain=managed?Math.max(3,Math.round(profile.fatigue*.55)):profile.fatigue;
+ const fatigueGain=Math.max(0,(managed?Math.max(3,Math.round(profile.fatigue*.55)):profile.fatigue)+(battleMode==="attack"?(managed?2:4):battleMode==="manage"?-2:0));
  p.fatigue=Math.min(100,p.fatigue+fatigueGain);
 
  const reference=profile.reference;
- let teamForm=ri(r,48,73),score=teamForm+(overall()-reference)*.32+p.rep*.10+r()*12+(hasTitle("national_ace")?3:0)+profile.prestige-(managed?2:0);
+ let teamForm=ri(r,48,73),score=teamForm+(overall()-reference)*.32+p.rep*.10+r()*12+(hasTitle("national_ace")?3:0)+profile.prestige-(managed?2:0)+battleOffset;
  let finish=nationalFinish(score,profile.kind);
  let reward=senior?nationalReward(finish):youthNationalReward(finish);
  if(senior&&chainHas("national"))reward+=2;
@@ -626,15 +647,17 @@ function resolveNationalCallup(level="SENIOR",competitionId="",mode="full"){
    for(const key of ["pts","reb","ast","stl","blk"])box[key]=Math.max(0,Math.round(box[key]*ratio*10)/10);
    box.role=box.mins>=20?"負荷管理輪替":box.mins>=13?"限時替補":"板凳末端";
  }
- p.internationalHistory.push({year:p.year,level,event,competitionId:profile.id,competitionKind:profile.kind,finish,reward,...box});
+ p.internationalHistory.push({year:p.year,level,event,competitionId:profile.id,competitionKind:profile.kind,finish,reward,battleMode,battleLabel,battleScore:Math.round(score),...box});
 
  // Restore V7.43 international-event injury balance.
- let injuryHTML="",risk=Math.max(2,(3.5+(100-p.durability)*.09+p.fatigue*.07)*injuryRiskFactor("season")*(managed?.48:1));
+ let injuryHTML="",risk=Math.max(2,(3.5+(100-p.durability)*.09+p.fatigue*.07)*injuryRiskFactor("season")*(managed?.48:1)*battleRiskFactor);
  if(!p.injury&&r()*100<risk){
    createInjury(r,Math.max(22,risk));
    injuryHTML=`<br><span class="bad">國際賽負荷造成 ${p.injury.name}（${p.injury.level}）。</span>`;
  }
 
+ const battleStory=`${label} ${event}關鍵戰採取「${battleLabel}」，最終${finish}`;
+ recordV8Story("game",battleStory,5,{national:true,international:true,competition:event});
  pushNews(`🇹🇼 ${p.name} 代表${label}參加${event}，最終${finish}`,{
    type:"national",
    importance:senior&&["冠軍","亞軍"].includes(finish)?5:0,
@@ -644,8 +667,8 @@ function resolveNationalCallup(level="SENIOR",competitionId="",mode="full"){
  let chainHTML=senior&&p.nationalCaps>=5&&!chainHas("national")?unlockChain("national"):"";
  let nationalTitleHTML=titleChecks();
  finishSpecialEvent(
-  `<div class="specialStage national"><b>🇹🇼 ${label}｜${event}｜${finish}</b><br>${box.role}${managed?"（負荷管理）":""}｜完成 ${box.games} 場比賽｜球隊評價 +${repGain}｜疲勞 +${fatigueGain}<div class="legacyTableWrap" style="margin-top:10px"><table class="legacyTable"><tr><th>GP</th><th>MPG</th><th>PTS</th><th>REB</th><th>AST</th><th>STL</th><th>BLK</th><th>FG%</th><th>3P%</th></tr><tr><td>${box.games}</td><td>${box.mins.toFixed(1)}</td><td>${box.pts.toFixed(1)}</td><td>${box.reb.toFixed(1)}</td><td>${box.ast.toFixed(1)}</td><td>${box.stl.toFixed(1)}</td><td>${box.blk.toFixed(1)}</td><td>${box.fg.toFixed(1)}</td><td>${box.three.toFixed(1)}</td></tr></table></div>${reward?`國際賽獎勵能力點 <b class="gold">+${reward}</b>`:"本次未獲額外能力點"}${injuryHTML}</div>${chainHTML}${nationalTitleHTML}`,
-  `${label}：${event} ${finish}${managed?"（負荷管理）":""}｜${box.games} 場、${box.pts.toFixed(1)} 分、${box.reb.toFixed(1)} 籃板、${box.ast.toFixed(1)} 助攻｜獎勵點 +${reward}`
+  `<div class="specialStage national"><b>🇹🇼 ${label}｜${event}｜${finish}</b><br><b>本屆關鍵戰：${battleLabel}</b><br>${box.role}${managed?"（負荷管理）":""}｜完成 ${box.games} 場比賽｜球隊評價 +${repGain}｜疲勞 +${fatigueGain}<div class="legacyTableWrap" style="margin-top:10px"><table class="legacyTable"><tr><th>GP</th><th>MPG</th><th>PTS</th><th>REB</th><th>AST</th><th>STL</th><th>BLK</th><th>FG%</th><th>3P%</th></tr><tr><td>${box.games}</td><td>${box.mins.toFixed(1)}</td><td>${box.pts.toFixed(1)}</td><td>${box.reb.toFixed(1)}</td><td>${box.ast.toFixed(1)}</td><td>${box.stl.toFixed(1)}</td><td>${box.blk.toFixed(1)}</td><td>${box.fg.toFixed(1)}</td><td>${box.three.toFixed(1)}</td></tr></table></div>${reward?`國際賽獎勵能力點 <b class="gold">+${reward}</b>`:"本次未獲額外能力點"}${injuryHTML}</div>${chainHTML}${nationalTitleHTML}`,
+  `${label}：${event} ${finish}${managed?"（負荷管理）":""}｜關鍵戰：${battleLabel}｜${box.games} 場、${box.pts.toFixed(1)} 分、${box.reb.toFixed(1)} 籃板、${box.ast.toFixed(1)} 助攻｜獎勵點 +${reward}`
  );
 }
 
