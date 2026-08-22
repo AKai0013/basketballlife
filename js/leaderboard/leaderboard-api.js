@@ -855,6 +855,7 @@
 
  let retirementAutoPublishTimer=0;
  let retirementAutoPublishPromise=null;
+ let retirementRankRefreshId="";
 
  function showEnrollmentSuccess(id,ranks={}){
    p.retirementRankSummary={power:ranks.power||null,peak:ranks.peak||null,total:ranks.total||null};
@@ -880,7 +881,13 @@
      const known=state.verifiedCareerIds.has(gp.publicCareerId)?{id:gp.publicCareerId}:await findCareerRecord(gp.publicCareerId).catch(()=>null);
      if(known?.id){
        state.verifiedCareerIds.add(known.id);gp.leaderboardChoice="public";
-       if(!gp.retirementRankSummary?.power)showEnrollmentSuccess(known.id,await retirementRankSummary(known.id));
+       if(retirementRankRefreshId!==known.id){
+         const ranks=await retirementRankSummary(known.id);
+         if(ranks.power||ranks.peak){
+           retirementRankRefreshId=known.id;
+           showEnrollmentSuccess(known.id,ranks);
+         }
+       }
        return known.id;
      }
      // A local save can outlive a failed/rolled-back database insert. Reuse the
