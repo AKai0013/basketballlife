@@ -16,11 +16,11 @@ test("V8.1 mobile and PWA shell is complete",()=>{
   assert.equal(manifest.orientation,"portrait-primary");
   assert.match(read("css/growth-preview.css"),/max-width:520px!important/);
   assert.match(read("js/ui/career-view.js"),/function focusCurrentScreen\(/);
-  assert.match(html,/css\/home\.css\?v=8\.1\.0-sync1/);
-  assert.match(html,/js\/events\/event-engine\.js\?v=8\.1\.0-sync1/);
-  assert.doesNotMatch(html,/\?v=8\.1\.0-rc[78]|\?v=20260821-home2/);
+  assert.match(html,/css\/home\.css\?v=8\.1\.0-sync2/);
+  assert.match(html,/js\/events\/event-engine\.js\?v=8\.1\.0-sync2/);
+  assert.doesNotMatch(html,/\?v=8\.1\.0-(?:rc[78]|sync1)|\?v=20260821-home2/);
   const assetVersions=[...html.matchAll(/(?:href|src)="\.\/[^"?]+\?v=([^"&]+)"/g)].map(match=>match[1]);
-  assert.deepEqual([...new Set(assetVersions)],["8.1.0-sync1"]);
+  assert.deepEqual([...new Set(assetVersions)],["8.1.0-sync2"]);
   assert.match(read("css/home.css"),/choice\.eventChoice \.eventChancePreview/);
   assert.match(read("css/home.css"),/data-stage="points".*pointrow/s);
 });
