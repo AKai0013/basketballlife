@@ -1134,13 +1134,20 @@
    }
 
    const query=new URLSearchParams({era:rankingEra,metric,weekly_id:weeklyId});
-   const [data,mineData]=await Promise.all([
+   const rankQuery=new URLSearchParams({mine:"1",era:rankingEra,metric,weekly_id:weeklyId});
+   const [data,mineData,rankData]=await Promise.all([
      apiRequest(`careers?${query.toString()}`,{timeout:15000}),
-     apiRequest("careers?mine=1",{timeout:12000}).catch(()=>({rows:[]}))
+     apiRequest("careers?mine=1",{timeout:12000}).catch(()=>({rows:[]})),
+     apiRequest(`careers?${rankQuery.toString()}`,{timeout:12000}).catch(()=>({rows:[]}))
    ]);
    state.myPublicCareerRows=dedupeLeaderboardRecords((mineData?.rows||[]).map(normalizeLeaderboardSummary)).filter(isOfficialRankingRecord);
    const rows=[...(Array.isArray(data?.rows)?data.rows:[]),...state.myPublicCareerRows].map(normalizeLeaderboardSummary);
    const visibleRows=dedupeLeaderboardRecords(rows).filter(isOfficialRankingRecord);
+   const rankMeta=new Map((rankData?.rows||[]).map(record=>[String(record?.id||""),{global_rank:Number(record?.global_rank)||null,ranking_total:Number(record?.ranking_total)||null}]));
+   visibleRows.forEach(record=>{
+     const meta=rankMeta.get(String(record?.id||""));
+     if(meta?.global_rank)Object.assign(record,meta);
+   });
    state.leaderboardStats=data?.stats||null;
 
    if(rankingEra==="weekly"&&!state.weeklyArchiveRows){
@@ -1256,7 +1263,8 @@
  }
 
  function rankRow(record,index,def,metricKey,isMine=false,isPersonalBest=false){
-   const medal=index===0?"🥇":index===1?"🥈":index===2?"🥉":`#${index+1}`;
+   const storedRank=Number(record?.global_rank),rank= isMine&&Number.isFinite(storedRank)&&storedRank>0?storedRank:index+1;
+   const medal=rank===1?"🥇":rank===2?"🥈":rank===3?"🥉":`#${rank}`;
    const value=def.value(record);
    const hof=(record.hall_of_fame||[]).length,jersey=(record.jersey_retired||[]).length;
    const secondary=metricKey==="power"

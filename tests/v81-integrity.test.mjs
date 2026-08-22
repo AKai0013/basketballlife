@@ -176,6 +176,8 @@ test("retirement ranks use complete global rank metadata instead of top-50 plus 
   assert.match(api,/COUNT\(\*\) OVER\(\) AS ranking_total/);
   assert.match(board,/global_rank/);
   assert.match(board,/ranking_total/);
+  assert.match(board,/const rankQuery=new URLSearchParams\(\{mine:"1",era:rankingEra,metric,weekly_id:weeklyId\}\)/);
+  assert.match(board,/const storedRank=Number\(record\?\.global_rank\)/);
   assert.doesNotMatch(board,/rankAllCareers\(powerRecords,"power"\)/);
 });
 
