@@ -44,7 +44,7 @@ function startCareer(){
  hallOfFame:[],jerseyRetired:[],careerRating:0,retirementSummaryReady:false,missedSeasons:0,peakAge:16,
  geniusAwakeningShown:false,bankedPoints:0,careerBasketballSalary:0,careerSigningBonus:0,
  bodyVulnerability:0,bodyNote:"",preseasonPlanNotice:"",
- specialQueue:[],specialIndex:0,romanceStage:0,romanceNextYear:0,romanceLastResult:"",nationalCallups:0,u18Caps:0,u20Caps:0,youthNationalAwards:0,lastNationalCallupYear:0,nationalSelectionStreak:0,familyHarmony:60,scandalCount:0,divorced:false,
+ specialQueue:[],specialIndex:0,seasonKeyBattleResult:null,pendingSeasonKeyBattle:null,romanceStage:0,romanceNextYear:0,romanceLastResult:"",nationalCallups:0,u18Caps:0,u20Caps:0,youthNationalAwards:0,lastNationalCallupYear:0,nationalSelectionStreak:0,familyHarmony:60,scandalCount:0,divorced:false,
  conductMarketPenalty:0,conductSuspensionGames:0,nationalTeamBanUntil:0,conductPenaltySetYear:0,offCourtHistory:[],offCourtEventKinds:[],lastOffCourtEventYear:0,financialLosses:0,
  specialBonusPoints:0,internationalHistory:[],championshipHistory:[],awardHistoryByLeague:{},lastSeasonAwards:[],hallVotes:[],
     bodyLoad:0,oldInjuries:{},oldInjuryFloors:{},oldInjuryLastYear:{},rehabBoost:0,medicalHistory:[],medicalPressureHistory:[],lastMedicalPressureYear:0,majorInjuryCount:0,careerThreatInjuries:0,recoverySeasons:0,seasonInjuryRiskTarget:0,seasonInjurySurvival:1,seasonInjuryChecksDone:0,seasonInjuryExtra:0,seasonMedicalEventShown:false,seasonNaturalInjuryChecked:false,

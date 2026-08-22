@@ -16,6 +16,13 @@ test("V8.1 mobile and PWA shell is complete",()=>{
   assert.equal(manifest.orientation,"portrait-primary");
   assert.match(read("css/growth-preview.css"),/max-width:520px!important/);
   assert.match(read("js/ui/career-view.js"),/function focusCurrentScreen\(/);
+  assert.match(html,/css\/home\.css\?v=8\.1\.0-sync1/);
+  assert.match(html,/js\/events\/event-engine\.js\?v=8\.1\.0-sync1/);
+  assert.doesNotMatch(html,/\?v=8\.1\.0-rc[78]|\?v=20260821-home2/);
+  const assetVersions=[...html.matchAll(/(?:href|src)="\.\/[^"?]+\?v=([^"&]+)"/g)].map(match=>match[1]);
+  assert.deepEqual([...new Set(assetVersions)],["8.1.0-sync1"]);
+  assert.match(read("css/home.css"),/choice\.eventChoice \.eventChancePreview/);
+  assert.match(read("css/home.css"),/data-stage="points".*pointrow/s);
 });
 
 test("README describes the current V8.1 game instead of retired leaderboard eras",()=>{
@@ -92,6 +99,37 @@ test("national callups create one player-chosen key battle without changing the 
   assert.match(events,/battleMode,battleLabel,battleScore/);
   assert.match(events,/recordV8Story\("game",battleStory,5/);
   assert.match(events,/function declineNationalCallup\(/);
+});
+
+test("every non-national season gets a contextual player-chosen key battle",()=>{
+  const events=read("js/events/event-engine.js"),season=read("js/career/season-engine.js"),contracts=read("js/career/contract-engine.js"),preview=read("js/ui/growth-preview.js");
+  assert.match(events,/function buildSeasonKeyBattle\(/);
+  assert.match(events,/function showSeasonKeyBattle\(/);
+  assert.match(events,/function resolveSeasonKeyBattle\(/);
+  assert.match(events,/kind:"seasonKeyBattle"/);
+  assert.match(events,/buildSeasonSpecialQueue\(\)[\s\S]*?nt\s*\?/);
+  for(const approach of ["全力搶代表作","以球隊勝負為優先","控制負荷、保留健康"])assert.match(events,new RegExp(approach));
+  assert.match(season,/const keyBattle=p\.seasonKeyBattleResult\|\|null/);
+  assert.match(season,/keyBattleHTML/);
+  assert.match(preview,/context\.season\.keyBattle/);
+  assert.match(contracts,/latestKeyBattle/);
+  assert.match(contracts,/keyBattleMarketDelta/);
+});
+
+test("special-event pacing keeps a final-season choice and caps ordinary queues",()=>{
+  const events=read("js/events/event-engine.js");
+  assert.match(events,/kind:"lastDance",title:"最後一舞，怎麼打？"/);
+  assert.match(events,/function resolveLastDanceChoice\(/);
+  assert.match(events,/\.slice\(0,3\)\.filter\(keepRecurringSpecial\)/);
+  assert.match(events,/priority\[a\.kind\]/);
+});
+
+test("player-entered names are escaped at dynamic HTML display boundaries",()=>{
+  const eventView=read("js/ui/event-view.js"),retirement=read("js/ui/retirement-view.js");
+  assert.match(eventView,/const playerName=escapeFeedText\(p\.name\)/);
+  assert.match(eventView,/\$\{playerName\} 與/);
+  assert.match(retirement,/const playerName=escapeFeedText\(p\.name\)/);
+  assert.match(retirement,/const playerName=escapeFeedText\(p\.name\),reason=escapeFeedText/);
 });
 
 test("retirement story uses structured career facts and home has a visible community invitation",()=>{

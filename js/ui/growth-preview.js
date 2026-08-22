@@ -465,6 +465,7 @@
     const rows = [];
     const add = value => { const text = seasonStorySentence(value); if (text && !rows.includes(text)) rows.push(text); };
     if (context.bestTournament) add(`${context.bestTournament.name}｜${context.bestTournament.finish}`);
+    if (context.season.keyBattle) add(`${context.season.keyBattle.title || "本季關鍵戰"}｜${context.season.keyBattle.outcome || "已完成"}｜${context.season.keyBattle.opponent || "代表性對手"}`);
     context.awards.slice(0, 2).forEach(add);
     if (context.injuryMissed) add(`${context.season.injuryName || "傷病"}｜缺席 ${context.injuryMissed} 場`);
     if (context.suspensionGames) add(`場外處分｜停賽 ${context.suspensionGames} 場`);

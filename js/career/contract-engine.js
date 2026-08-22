@@ -503,19 +503,6 @@ function marketReturnTerms(base,offers,originLeague){
  }
  return {offer:repriceContract(base,.90,Math.min(2,base.years),"母隊回歸約"),mode:"discount"};
 }
-function ensureMinimumMarketOffers(candidates,offers,count=3){
- const rows=[...(offers||[])],minimum=Math.min(count,(candidates||[]).length);
- if(rows.length>=minimum)return rows;
- const selected=new Set(rows.map(c=>`${c.league}|${c.team}`));
- const remaining=[...(candidates||[])].sort((a,b)=>leagueMarketRank(b.league)-leagueMarketRank(a.league)||(b.salary||0)-(a.salary||0));
- for(const candidate of remaining){
-   const key=`${candidate.league}|${candidate.team}`;
-   if(selected.has(key))continue;
-   rows.push(candidate);selected.add(key);
-   if(rows.length>=minimum)break;
- }
- return rows;
-}
 function listenFreeAgencyMarket(){
  const sc=scoutingScore(),origin=p.marketOriginTeam,originLeague=p.marketOriginLeague,r=RNG(p.seed+"listen-market-"+p.year+"-"+origin);
  const candidates=proOffersForScore(sc,"listen-"+p.year).filter(c=>c.team!==origin);
@@ -528,9 +515,8 @@ function listenFreeAgencyMarket(){
       let chance=Math.max(.20,Math.min(.96,.46+edge*.055+exposurePull+tierPull+underLevel-(p.age>=38?.08:0)));
       return r()<chance;
    });
- // 只要真的跨過多個聯賽門檻，自由市場至少要留下三個可比較方向，
- // 避免畫面只剩最高與最低聯賽兩個不連續選項。
- offers=ensureMinimumMarketOffers(candidates,offers,3);
+ // 只有通過本季市場機率判定的球隊才算正式報價；
+ // 沒有報價時維持市場遇冷，避免把候選方向誤寫成球團承諾。
  // 新人市場允許球員以發展身分提早進入職業，合約到期時不能突然
  // 改用成熟球員門檻，讓職業前三季因一次落差直接被迫退休。
  if(!offers.length){
@@ -655,7 +641,9 @@ function scoutingScore(){
  let upside=Math.max(-2.5,Math.min(3.5,(p.growth-70)*.075));
  let injuryPenalty=Math.min(12,p.injuryHistory.length*1.8)+(p.injury&&p.injury.level==="重傷"?5:0);
  const conductPenalty=Math.max(0,Number(p.conductMarketPenalty)||0);
- return Math.max(30,Math.min(99,Math.round(ov*.63+talent*.11+production+awardBonus+levelBonus+exposureBonus+p.rep*.12+upside+seedMarketBonus()+confidencePerformanceMod()*2+(p.genius?3:0)-injuryPenalty-conductPenalty)));
+ const latestKeyBattle=(p.seasonHistory||[]).slice(-1)[0]?.keyBattle;
+ const keyBattleMarketDelta=Math.max(-5,Math.min(5,Number(latestKeyBattle?.marketDelta)||0));
+ return Math.max(30,Math.min(99,Math.round(ov*.63+talent*.11+production+awardBonus+levelBonus+exposureBonus+p.rep*.12+upside+seedMarketBonus()+confidencePerformanceMod()*2+(p.genius?3:0)-injuryPenalty-conductPenalty+keyBattleMarketDelta)));
 }
 function leagueRosterOverallFloor(league){
  const floors={
@@ -710,7 +698,9 @@ function gLeaguePathwayEligible(score=scoutingScore()){
 function lateCareerNbaReturnBlocked(){
  if(p.path!=="歐洲聯賽"||p.age<40)return false;
  const history=Array.isArray(p.seasonHistory)?p.seasonHistory:[];
- return history.slice(-3).some(row=>row?.path==="NBA");
+ // 生涯末期一旦已經有 NBA 履歷，轉往歐洲後不再重新開 NBA 跳脫門，
+ // 避免隔幾季又回 NBA、再回歐洲的循環。
+ return history.some(row=>row?.path==="NBA");
 }
 function nbaPerformanceOfferKind(score=scoutingScore()){
  const ss=p.seasonStats||{},ov=overall(),games=Number(ss.games||0),mins=Number(ss.mins||0);
