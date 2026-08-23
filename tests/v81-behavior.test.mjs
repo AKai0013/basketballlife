@@ -162,26 +162,30 @@ test("a regular season key battle carries team, rival, contract and injury conte
   assert.equal(key.keyBattle.contractYear,true);
 });
 
-test("key battle previews expose deterministic success and value ranges before resolution",()=>{
+test("key battle previews compare the same team and personal outcomes for every strategy",()=>{
   const context={p:{year:2039,age:27,path:"NBA",team:"測試隊",seed:"KEYB0002",confidence:62,clutch:74,rep:12,seasonEventSuccess:2,bodyLoad:20,teamWorld:{direction:"contend"}}};
   context.overall=()=>78;
   vm.runInNewContext(read("js/events/event-engine.js"),context);
   const attack=context.seasonKeyBattlePreview("attack"),team=context.seasonKeyBattlePreview("team"),manage=context.seasonKeyBattlePreview("manage");
   for(const preview of [attack,team,manage]){
     assert.ok(preview.min<=preview.expected&&preview.expected<=preview.max);
+    assert.ok(preview.teamWinChance>=0&&preview.teamWinChance<=100);
+    assert.ok(preview.signatureChance>=0&&preview.signatureChance<=100);
+    assert.ok(preview.contributionChance>=preview.signatureChance);
   }
   assert.ok(attack.expected>team.expected);
   assert.ok(manage.expected<team.expected);
-  assert.ok(attack.objectiveChance>=0&&attack.objectiveChance<=100);
-  assert.ok(attack.contributionChance>=attack.objectiveChance);
-  assert.ok(team.objectiveChance>=0&&team.objectiveChance<=100);
-  assert.equal(manage.objectiveChance,null);
-  assert.match(context.seasonKeyBattlePreviewHTML(attack),/代表作機率/);
-  assert.match(context.seasonKeyBattlePreviewHTML(attack),/關鍵貢獻機率/);
-  assert.match(context.seasonKeyBattlePreviewHTML(team),/守住關鍵戰機率/);
-  assert.match(context.seasonKeyBattlePreviewHTML(manage),/負荷控制必定生效/);
-  assert.doesNotMatch(context.seasonKeyBattlePreviewHTML(manage),/成功率/);
-  assert.match(context.seasonKeyBattlePreviewHTML(manage),/預估表現值/);
+  assert.ok(attack.max-attack.min>team.max-team.min);
+  assert.ok(team.max-team.min>manage.max-manage.min);
+  assert.ok(team.teamWinChance>attack.teamWinChance&&attack.teamWinChance>manage.teamWinChance);
+  assert.ok(attack.signatureChance>=team.signatureChance&&team.signatureChance>=manage.signatureChance);
+  for(const preview of [attack,team,manage]){
+    const html=context.seasonKeyBattlePreviewHTML(preview);
+    assert.match(html,/球隊勝率/);
+    assert.match(html,/代表作/);
+    assert.match(html,/關鍵貢獻以上/);
+    assert.doesNotMatch(html,/預估表現值/);
+  }
 });
 
 test("key battle objectives use league-relative performance without treating load control as failure",()=>{
@@ -190,17 +194,30 @@ test("key battle objectives use league-relative performance without treating loa
   vm.runInNewContext(read("js/events/event-engine.js"),context);
   const highSchoolAttack=context.seasonKeyBattlePreview("attack"),highSchoolTeam=context.seasonKeyBattlePreview("team"),highSchoolManage=context.seasonKeyBattlePreview("manage");
   assert.ok(highSchoolAttack.contributionChance>0&&highSchoolAttack.contributionChance<100);
-  assert.ok(highSchoolTeam.objectiveChance>0&&highSchoolTeam.objectiveChance<100);
-  assert.equal(highSchoolManage.objectiveChance,null);
-  const managedObjective=context.seasonKeyBattleObjective("manage",40),missedSignature=context.seasonKeyBattleObjective("attack",77),madeSignature=context.seasonKeyBattleObjective("attack",78);
+  assert.ok(highSchoolTeam.teamWinChance>highSchoolAttack.teamWinChance);
+  assert.ok(highSchoolAttack.teamWinChance>highSchoolManage.teamWinChance);
+  const managedObjective=context.seasonKeyBattleObjective("manage",40),missedSignature=context.seasonKeyBattleObjective("attack",73),madeSignature=context.seasonKeyBattleObjective("attack",74);
   assert.equal(managedObjective.label,"完成負荷控制");assert.equal(managedObjective.success,true);
   assert.equal(missedSignature.label,"未能打出代表作");assert.equal(missedSignature.success,false);
   assert.equal(madeSignature.label,"打出代表作");assert.equal(madeSignature.success,true);
+  assert.equal(context.seasonKeyBattleObjective("team",80,false).label,"未能守住關鍵戰");
+  assert.equal(context.seasonKeyBattleObjective("team",40,true).label,"守住關鍵戰");
 
   context.p.path="CBA";context.p.clutch=94;context.p.rep=100;context.p.teamWorld.direction="contend";context.overall=()=>81;
   const veteranAttack=context.seasonKeyBattlePreview("attack"),veteranTeam=context.seasonKeyBattlePreview("team");
-  assert.ok(veteranAttack.objectiveChance<100);
-  assert.ok(veteranTeam.objectiveChance>0&&veteranTeam.objectiveChance<=100);
+  assert.ok(veteranAttack.signatureChance<100);
+  assert.ok(veteranTeam.teamWinChance>veteranAttack.teamWinChance&&veteranTeam.teamWinChance<=90);
+});
+
+test("an average HBL player has a real but bounded signature-game chance when going all in",()=>{
+  const context={p:{path:"HBL",pos:"PG",stats:{shoot:44,finish:44,handle:44,pass:44,defense:44,rebound:44,ath:44,iq:44},confidence:41,clutch:50,rep:-5,seasonEventSuccess:4,bodyLoad:20,teamWorld:{direction:"turmoil"}}};
+  context.overall=()=>44;
+  vm.runInNewContext(read("js/events/event-engine.js"),context);
+  const attack=context.seasonKeyBattlePreview("attack"),team=context.seasonKeyBattlePreview("team"),manage=context.seasonKeyBattlePreview("manage");
+  assert.ok(attack.signatureChance>=15&&attack.signatureChance<=35);
+  assert.ok(team.signatureChance>0&&team.signatureChance<attack.signatureChance);
+  assert.ok(manage.signatureChance<=team.signatureChance);
+  assert.ok(attack.contributionChance>attack.signatureChance);
 });
 
 test("load control resolves its health goal separately from court performance",()=>{
@@ -220,6 +237,22 @@ test("load control resolves its health goal separately from court performance",(
   assert.equal(context.p.seasonInjuryExtra,0);
   assert.match(resultHTML,/完成負荷控制/);
   assert.match(resultHTML,/場上表現/);
+});
+
+test("team-first strategy can win even when personal performance is below the contribution line",()=>{
+  let resultHTML="";
+  const context={
+    p:{year:2027,age:17,path:"HBL",team:"測試高中",seed:"KEYB0005",pos:"PG",stats:{shoot:44,finish:44,handle:44,pass:44,defense:44,rebound:44,ath:44,iq:44},confidence:50,clutch:50,rep:0,seasonEventSuccess:0,fatigue:0,bodyLoad:0,seasonInjuryExtra:0,teamWorld:{direction:"development"},careerCast:{},pendingSeasonKeyBattle:{title:"排名戰",background:"season",opponent:"宿敵"}},
+    overall:()=>44,RNG:()=>()=>0,isProPath:()=>false,recordV8Story:()=>{},escapeFeedText:value=>String(value),finishSpecialEvent:html=>{resultHTML=html}
+  };
+  vm.runInNewContext(read("js/events/event-engine.js"),context);
+  context.finishSpecialEvent=html=>{resultHTML=html};
+  context.resolveSeasonKeyBattle("team");
+  assert.ok(context.p.seasonKeyBattleResult.score<62);
+  assert.equal(context.p.seasonKeyBattleResult.teamWon,true);
+  assert.equal(context.p.seasonKeyBattleResult.objective,"守住關鍵戰");
+  assert.equal(context.p.seasonKeyBattleResult.objectiveSuccess,true);
+  assert.match(resultHTML,/球隊守住關鍵戰/);
 });
 
 test("event choices keep the same player-facing order for the same save state",()=>{
