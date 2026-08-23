@@ -145,15 +145,17 @@ function showResults(){
  }
 
  let levelPenalty=isProPath()?Math.max(-4,Math.min(5,(ov-leagueTarget())*.18)):0;
+ const abilityProfile=typeof v811AbilityProfile==="function"?v811AbilityProfile(p):null;
+ const seasonContext=abilityProfile&&typeof v811SeasonContext==="function"?v811SeasonContext(p,abilityProfile):{scoringLift:0,fgLift:0,threeLift:0,reboundLift:0,assistLift:0,stealLift:0,blockLift:0,situation:"一般攻守平衡"};
  // 先算每36分鐘產量，再依真正上場時間換算，讓「35分鐘卻像12分鐘角色」不再太常出現。
  // 切入以控球創造路線、終結完成進球；綜合體能只提供較小的爆發／對抗輔助。
- let scoringSkill=p.stats.shoot*.38+p.stats.finish*.45+p.stats.handle*.10+p.stats.ath*.07;
+ let scoringSkill=p.stats.shoot*.38+p.stats.finish*.45+p.stats.handle*.10+p.stats.ath*.07+seasonContext.scoringLift;
  let veteranEfficiencyPenalty=isProPath()?Math.max(0,p.age-33)*.55:0;
  let scoring36=8+(scoringSkill-40)*.43+levelPenalty*1.15+mental*1.0+(p.planStatMod||0)*1.2+ri(r,-2,2)-veteranEfficiencyPenalty;
  let rawPts=Math.max(3,scoring36)*(mins/36)-injPenalty*.20;
- let rawReb=(2.1+(p.stats.rebound-35)*.082+(p.stats.ath-50)*.018)*(mins/30)+ri(r,-1,1);
- let rawAst=(1.6+((p.stats.pass+p.stats.handle+p.stats.iq)/3-35)*.070)*(mins/30)+levelPenalty*.08+mental*.18+ri(r,-1,1);
- let rawStl=(.35+(p.stats.defense-35)*.021+(p.stats.iq-35)*.008)*(mins/30)+r()*.20;
+ let rawReb=(2.1+(p.stats.rebound-35)*.082+(p.stats.ath-50)*.018+seasonContext.reboundLift)*(mins/30)+ri(r,-1,1);
+ let rawAst=(1.6+((p.stats.pass+p.stats.handle+p.stats.iq)/3-35)*.070+seasonContext.assistLift)*(mins/30)+levelPenalty*.08+mental*.18+ri(r,-1,1);
+ let rawStl=(.35+(p.stats.defense-35)*.021+(p.stats.iq-35)*.008+seasonContext.stealLift)*(mins/30)+r()*.20;
 
  let pts=Math.max(1,Math.round(rawPts*bias.pts*10)/10);
  // 不同層級的比賽節奏、球權集中度與賽程長度不同。即使能力封頂，
@@ -163,12 +165,12 @@ function showResults(){
  let reb=Math.max(.5,Math.round(rawReb*bias.reb*10)/10);
  let ast=Math.max(0,Math.round(rawAst*bias.ast*10)/10);
  let stl=Math.max(.2,Math.round(rawStl*bias.stl*10)/10);
- let blk=Math.max(.1,Math.round(((.25+(p.stats.defense-35)*.014+(p.stats.rebound-35)*.010)*(p.pos==="C"?1.65:p.pos==="PF"?1.25:.65)*(mins/30)+r()*.18)*10)/10);
+ let blk=Math.max(.1,Math.round(((.25+(p.stats.defense-35)*.014+(p.stats.rebound-35)*.010+seasonContext.blockLift)*(p.pos==="C"?1.65:p.pos==="PF"?1.25:.65)*(mins/30)+r()*.18)*10)/10);
 
  // 命中率改成比較合理的籃球區間；舊版太容易人人FG 60%+、3PT 50%+。
  let posFg=p.pos==="C"?4:p.pos==="PF"?2:p.pos==="PG"?-1:0;
- let fg=Math.max(34,Math.min(62,Math.round(36+p.stats.finish*.14+p.stats.shoot*.025+p.stats.handle*.015+p.stats.ath*.025+posFg+mental*.9+ri(r,-2,2))));
- let three=Math.max(20,Math.min(47,Math.round(20+p.stats.shoot*.245+p.stats.iq*.02+mental*.8+ri(r,-2,2))));
+ let fg=Math.max(34,Math.min(62,Math.round(36+p.stats.finish*.14+p.stats.shoot*.025+p.stats.handle*.015+p.stats.ath*.025+seasonContext.fgLift+posFg+mental*.9+ri(r,-2,2))));
+ let three=Math.max(20,Math.min(47,Math.round(20+p.stats.shoot*.19+p.stats.iq*.018+(abilityProfile?.shooting?.threePoint||50)*.045+(abilityProfile?.shooting?.catchShoot||50)*.035+seasonContext.threeLift+mental*.8+ri(r,-2,2))));
  if(games===0){mins=0;pts=0;reb=0;ast=0;stl=0;blk=0;fg=0;three=0;}
 
  // 賽程越密、上場越久，疲勞與身體負荷越高；體能只在這裡提供耐力／恢復優勢。
@@ -225,7 +227,7 @@ function showResults(){
     :p.seedTier==="S+"?(p.age<=21?3:p.age<=24?2:0)
     :p.seedTier==="S"?(p.age<=21?2:p.age<=23?1:0):0;
  const developmentPoints=stageDevelopmentPoints+(p.path!=="HBL"?eliteDevelopmentPoints:0);
- p.seasonStats={games,mins,pts,reb,ast,stl,blk,fg,three,tourneys:resultRows,awards};
+ p.seasonStats={games,mins,pts,reb,ast,stl,blk,fg,three,tourneys:resultRows,awards,abilityProfile:typeof v811AbilitySnapshot==="function"?v811AbilitySnapshot(abilityProfile):null,abilitySituation:seasonContext.situation};
  let proAwards=determineAwards(p.seasonStats,resultRows);
  const won=(x)=>proAwards.some(a=>a.includes(x));
  if(pts>=20&&!won("得分王"))awards.push("得分榜前段");
@@ -268,7 +270,7 @@ function showResults(){
    scheduledGames,missedGames:missedThisSeason,
    injuryMissedGames:injuryMissed,injuryName:injuryMissed>0?(p.injury?.name||"傷病"):"",
    suspensionGames:conductMissed,
-   games,mins,pts,reb,ast,stl,blk,fg,three,ovr:overall(),seasonFatigueGain,seasonBodyLoadGain,signatureGame,keyBattle,tourneys:resultRows,seasonAwards:[...awards,...proAwards],awardAudit:p.lastSeasonAwardAudit?{...p.lastSeasonAwardAudit}:null
+   games,mins,pts,reb,ast,stl,blk,fg,three,ovr:overall(),seasonFatigueGain,seasonBodyLoadGain,signatureGame,keyBattle,abilityProfile:typeof v811AbilitySnapshot==="function"?v811AbilitySnapshot(abilityProfile):null,abilitySituation:seasonContext.situation,tourneys:resultRows,seasonAwards:[...awards,...proAwards],awardAudit:p.lastSeasonAwardAudit?{...p.lastSeasonAwardAudit}:null
  });
  const seasonStory=finalizeV8SeasonStory();
  updateCareerTotals(p.seasonStats);
@@ -312,9 +314,10 @@ const missReasonParts=[];
      <span><small>助攻</small><b>${ast}</b></span>
      <span><small>抄截</small><b>${stl}</b></span>
      <span><small>阻攻</small><b>${blk}</b></span>
-     <span><small>FG</small><b>${fg}%</b></span>
-     <span><small>3PT</small><b>${three}%</b></span>
+   <span><small>FG</small><b>${fg}%</b></span>
+   <span><small>3PT</small><b>${three}%</b></span>
    </div>
+   <div class="mut" style="margin-top:8px">本季球探解讀：${seasonContext.situation}</div>
  </div>
  <div class="awards"><div class="resultSectionTitle">個人成就</div><div class="awardBody">${[...awards,...proAwards].length?[...awards,...proAwards].map(x=>`<div>• <b>${x}</b></div>`).join(""):"本季沒有獲得額外個人獎項。"}</div></div>
  ${seasonStory.length?`<div class="awards"><div class="resultSectionTitle">本季留下的故事</div><div class="awardBody">${seasonStory.map(x=>`<div>• <b>${x.text}</b></div>`).join("")}</div></div>`:""}

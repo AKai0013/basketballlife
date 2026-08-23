@@ -48,7 +48,7 @@ function hydrate(row,summary=false){
 function validateCareer(input){
   const data=input?.career_data||{},integrity=data.integrity||{},seasons=Array.isArray(input?.season_history)?input.season_history:[];
   if(!/^[0-9a-f-]{36}$/i.test(text(input?.id,80)))return "公開生涯 ID 格式錯誤";
-  if(data.ranking_era!=="v81"||data.publisher_version!=="8.1.0")return "V8.1 現役榜只接受 BasketballLife V8.1 生涯";
+  if(data.ranking_era!=="v81"||!new Set(["8.1.0","8.1.1"]).has(data.publisher_version))return "V8.1 現役榜只接受 BasketballLife V8.1 生涯";
   if(integrity.schema!=="v8-core-1"||integrity.verdict!=="passed")return "生涯完整性封套錯誤";
   if(number(input.retired_age)>60||number(input.retired_age)<16||number(input.peak_overall)>99)return "生涯數值超出合理範圍";
   if(number(input.final_year)-number(input.retired_age)!==2010)return "年份與退休年齡不一致";

@@ -35,7 +35,7 @@ function startCareer(){
  const jerseyNumber=Math.max(0,Math.min(99,Math.round(Number(document.getElementById("jerseyNumberInput")?.value)||7)));
  const handedness=document.getElementById("handednessInput")?.value||"右手";
  const weekly=weeklyChallengeProfile(),weeklyChallenge=weeklySetupActive&&seed===weekly.seed&&chosenPos===weekly.pos&&chosenHeight===weekly.height&&chosenWingspan===weekly.wingspan?{active:true,id:weekly.id,label:weekly.label,seed:weekly.seed,pos:weekly.pos,height:weekly.height,wingspan:weekly.wingspan}:{active:false};
- p={name:n,pos:chosenPos,seed,avatarSeed:selectedAvatarSeed(),heightCm:chosenHeight,wingspanCm:chosenWingspan,birthplace,jerseyNumber,handedness,readingMode:"standard",weeklyChallenge,careerVersion:"8.1.0",seedTier:tier.key,seedTierLabel:tier.label,seedTierDesc:tier.desc,
+ p={name:n,pos:chosenPos,seed,avatarSeed:selectedAvatarSeed(),heightCm:chosenHeight,wingspanCm:chosenWingspan,birthplace,jerseyNumber,handedness,readingMode:"standard",weeklyChallenge,careerVersion:"8.1.1",seedTier:tier.key,seedTierLabel:tier.label,seedTierDesc:tier.desc,
  age:16,year:2026,path:"HBL",grade:1,stage:"training",stats:s,caps,growth:ri(r,tier.growth[0],tier.growth[1]),
  durability:ri(r,38,94),clutch:ri(r,35,96),discipline:ri(r,38,94),confidence:50,health:100,fatigue:0,six:0,genius:false,geniusType:"",round:0,eventIndex:0,
  seasonEventCount:ri(r,2,4),dice:[],used:[],trainingUndo:[],trainingProgress:{shoot:0,finish:0,handle:0,pass:0,defense:0,rebound:0,ath:0,iq:0},pointUndo:[],seasonPoints:0,bonusPoints:0,rep:0,injury:null,injuryHistory:[],log:[],seasonStats:null,team:"",geniusResolved:false,geniusFailed:false,transition:null,geniusCostDiscount:0,titles:[],titleHistory:[],seasonPointFocus:[],clutchWins:0,eventSuccesses:0,healthySeasons:0,championships:0,severeInjuryRecovered:false,offers:[],strategyStats:{risk:{pick:0,success:0,streak:0,best:0},balance:{pick:0,success:0,streak:0,best:0},safe:{pick:0,success:0,streak:0,best:0}},seasonEventSuccess:0,geniusFailureShown:false,careerSeason:0,contract:null,seasonPlan:null,planRiskMod:0,planGrowthMod:0,planStatMod:0,nationalCaps:0,relationship:"單身",lifeEventCount:0,news:[],seasonHistory:[],careerAwards:[],careerSalary:0,careerGames:0,careerPtsTotal:0,careerRebTotal:0,careerAstTotal:0,chainTitles:[],retired:false,retirementReason:"",peakOverall:0,ageDeclineStage:0,careerMVP:0,careerFirstTeam:0,careerSecondTeam:0,careerDPOY:0,careerScoringTitles:0,careerAssistTitles:0,
@@ -138,14 +138,15 @@ function toggleAbilityHelp(el){
 document.addEventListener("pointerdown",event=>{if(!event.target.closest?.(".abilityHelpCard")&&!event.target.closest?.("#abilityHelpPopover"))closeAbilityHelp()});
 window.addEventListener("resize",()=>closeAbilityHelp());window.addEventListener("scroll",()=>closeAbilityHelp(),true);
 function abilityPanel(){
- return `<div class="trainingStats">${Object.entries(p.stats).map(([k,v])=>{
+ const derived=typeof v811AbilityProfile==="function"?v811AbilityProfile(p):null;
+ return `<div class="trainingPanel"><div class="trainingStats">${Object.entries(p.stats).map(([k,v])=>{
    const talent=p.caps[k],over=v>talent,maxed=v>=99;
    const cost=maxed?0:pointCost(k),progress=Math.floor(p.trainingProgress?.[k]||0),need=Math.max(0,cost-progress);
    const detail=maxed
      ? `<div class="trainingCostDetail"><b>已達 99</b>｜無法再提升</div>`
      : `<div class="trainingCostDetail"><b>${v}→${v+1} 需要 ${cost} 點</b>｜已存 ${progress}/${cost}｜還差 ${need} 點</div>`;
     return `<div class="stat abilityHelpCard" data-ability="${k}" tabindex="0" role="button" aria-expanded="false" aria-label="${L[k]}：${ABILITY_HELP[k]||"影響球場表現。"}" onclick="pinAbilityHelp(this)" onmouseenter="showAbilityHelp(this)" onmouseleave="leaveAbilityHelp(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleAbilityHelp(this)}"><div class="sl"><b>${L[k]} <span class="abilityHelpMark">?</span></b><span class="abilityValue"><span class="abilityScore">${v} / ${talent}</span>${over?` <span class="breakthroughTag">突破 +${v-talent}</span>`:""}</span></div><div class="track"><div class="fill" style="width:${Math.min(v,99)}%"></div></div>${detail}</div>`;
- }).join("")}</div>`;
+ }).join("")}</div>${typeof v811AbilityPanelHTML==="function"?v811AbilityPanelHTML(derived):""}</div>`;
 }
 
 
@@ -180,7 +181,7 @@ function compactFeedSpecial(stage){
  if(stage==="points")return "";
 
  // Strip controls and oversized duplicate skill grids from archived screens.
- clone.querySelectorAll(".trainingStats,#assign,#dicepool,#diceMsg,.undo,.retireBtns").forEach(x=>x.remove());
+ clone.querySelectorAll(".trainingPanel,.trainingStats,#assign,#dicepool,#diceMsg,.undo,.retireBtns").forEach(x=>x.remove());
  return clone.innerHTML;
 }
 function archiveCurrentFeedCard(){

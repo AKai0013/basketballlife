@@ -437,8 +437,8 @@
    return `${location.origin}${location.pathname}?career=${encodeURIComponent(id)}`;
  }
 
- const GAME_VERSION="8.1.0";
- const CAREER_PUBLISHER_VERSION="8.1.0";
+ const GAME_VERSION="8.1.1";
+ const CAREER_PUBLISHER_VERSION="8.1.1";
  const CAREER_INTEGRITY_SCHEMA="v8-core-1";
  const INVALID_CAREER_IDS=new Set([
    "e9040a1c-5dc3-49f6-944c-8172cb8a518d"

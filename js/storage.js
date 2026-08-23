@@ -65,7 +65,7 @@ function saveCareerNow(){
  if(!p||careerSaveRestoring)return false;
  try{
    const save={
-      schema:CAREER_SAVE_SCHEMA,gameVersion:"8.1.0",savedAt:Date.now(),
+      schema:CAREER_SAVE_SCHEMA,gameVersion:"8.1.1",savedAt:Date.now(),
      player:p,chosenPos,selectedDie,screen:currentCareerScreen()
    };
    localStorage.setItem(CAREER_SAVE_KEY,JSON.stringify(save));
@@ -131,7 +131,11 @@ function continueCareer(){
      // Old decision screens contain obsolete route buttons; rebuild them with D1/D2 logic.
      p.usCollegeRouteMigrated=false;
      showCollegeDecision();
-   }else if(p.stage==="events"){
+    }else if(/遊戲暫時無法繼續|Uncaught (?:TypeError|ReferenceError|SyntaxError)/.test(String(save.screen?.special||save.screen?.text||""))&&p.stage==="decision"&&p.contract&&Number(p.contract.remaining||0)<=0&&typeof showContractExpiryDecision==="function"){
+      // A runtime error screen may itself have been autosaved. Rebuild the
+      // contract decision instead of restoring the stale error HTML forever.
+      showContractExpiryDecision();
+    }else if(p.stage==="events"){
      // Saved screens contain rendered HTML from the version that created them.
      // Rebuild unresolved event choices so old 50/68/82 answer labels cannot
      // survive after the event-choice redesign. Remove the saved current title
@@ -146,9 +150,12 @@ function continueCareer(){
    }else if(p.stage==="special"&&p.specialQueue?.length){
      // Special-event choices also receive current copy and visual treatment.
      showSpecialEvent();
+   }else if(p.stage==="training"&&typeof rebuildTrainingScreenFromSave==="function"){
+     // Rebuild old training HTML so duplicate legacy ability panels cannot
+     // survive a resume; saved dice and progress remain unchanged.
+     rebuildTrainingScreenFromSave();
    }else{
      restoreCareerScreen(save.screen);
-     if(p.stage==="training"&&p.diceRolling)startDiceReveal();
    }
    setCareerSaveStatus("已繼續上次進度");
    window.scrollTo({top:0,behavior:"auto"});

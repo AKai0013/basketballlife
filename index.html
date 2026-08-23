@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="screen-orientation" content="portrait">
-<link rel="manifest" href="./manifest.webmanifest?v=8.1.0-sync2">
+<link rel="manifest" href="./manifest.webmanifest?v=8.1.1-sync4">
 <link rel="canonical" href="https://basketballlife.pages.dev/">
 <link rel="icon" type="image/svg+xml" href="./basketballlife-icon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
@@ -29,13 +29,13 @@
 <meta name="twitter:title" content="BasketballLife｜籃球人生模擬器">
 <meta name="twitter:description" content="從 HBL 出發，寫下屬於你的台灣籃球生涯。">
 <meta name="twitter:image" content="https://basketballlife.pages.dev/basketballlife-share.png">
-<link rel="stylesheet" href="./css/base.css?v=8.1.0-sync2">
-<link rel="stylesheet" href="./css/career.css?v=8.1.0-sync2">
-<link rel="stylesheet" href="./css/events.css?v=8.1.0-sync2">
-<link rel="stylesheet" href="./css/leaderboard.css?v=8.1.0-sync2">
-<link rel="stylesheet" href="./css/home.css?v=8.1.0-sync2">
-<link rel="stylesheet" href="./css/growth-preview.css?v=8.1.0-sync2">
-<script src="./js/boot.js?v=8.1.0-sync2"></script>
+<link rel="stylesheet" href="./css/base.css?v=8.1.1-sync4">
+<link rel="stylesheet" href="./css/career.css?v=8.1.1-sync4">
+<link rel="stylesheet" href="./css/events.css?v=8.1.1-sync4">
+<link rel="stylesheet" href="./css/leaderboard.css?v=8.1.1-sync4">
+<link rel="stylesheet" href="./css/home.css?v=8.1.1-sync4">
+<link rel="stylesheet" href="./css/growth-preview.css?v=8.1.1-sync4">
+<script src="./js/boot.js?v=8.1.1-sync4"></script>
 </head>
 <body><div class="wrap">
 <div class="brandRow">
@@ -49,7 +49,7 @@
     </div>
     <button id="leaderboardBtn" class="topRankBtn" type="button" onclick="BasketballLifeOnline.openLeaderboard()">🏆 排行榜</button>
     <button id="playerNicknameBtn" class="playerNicknameBtn" type="button" onclick="BasketballLifeOnline.showNicknameModal()" title="修改玩家暱稱">玩家暱稱</button>
-    <a class="versionLink" href="https://github.com/AKai0013/basketballlife/blob/main/README.md" target="_blank" rel="noopener noreferrer" aria-label="查看 V8.1 版本資訊"><b>V8.1</b><span>正式版</span></a>
+    <a class="versionLink" href="https://github.com/AKai0013/basketballlife/blob/main/README.md" target="_blank" rel="noopener noreferrer" aria-label="查看 V8.1.1 版本資訊"><b>V8.1.1</b><span>正式版</span></a>
     <div id="onlineStatus" class="onlineStatus offline"><span class="onlineDot"></span><span id="onlineStatusText">單機可玩｜Online 背景連線</span></div>
   </div>
 </div>
@@ -162,30 +162,31 @@
 </section>
 </div>
 
-<script src="./data/seed-config.js?v=8.1.0-sync2"></script>
-<script src="./data/players.js?v=8.1.0-sync2"></script>
-<script src="./data/teams.js?v=8.1.0-sync2"></script>
-<script src="./data/leagues.js?v=8.1.0-sync2"></script>
-<script src="./data/awards.js?v=8.1.0-sync2"></script>
-<script src="./data/injuries.js?v=8.1.0-sync2"></script>
-<script src="./data/events.js?v=8.1.0-sync2"></script>
-<script src="./js/api.js?v=8.1.0-sync2"></script>
-<script src="./js/leaderboard/leaderboard-api.js?v=8.1.0-sync2"></script>
-<script src="./js/state.js?v=8.1.0-sync2"></script>
-<script src="./js/events/event-memory.js?v=8.1.0-sync2"></script>
-<script src="./js/storage.js?v=8.1.0-sync2"></script>
-<script src="./js/ui/home-view.js?v=8.1.0-sync2"></script>
-<script src="./js/career/career-engine.js?v=8.1.0-sync2"></script>
-<script src="./js/ui/career-view.js?v=8.1.0-sync2"></script>
-<script src="./js/career/contract-engine.js?v=8.1.0-sync2"></script>
-<script src="./js/career/injury-engine.js?v=8.1.0-sync2"></script>
-<script src="./js/ui/retirement-view.js?v=8.1.0-sync2"></script>
-<script src="./js/career/retirement-engine.js?v=8.1.0-sync2"></script>
-<script src="./js/ui/event-view.js?v=8.1.0-sync2"></script>
-<script src="./js/events/event-engine.js?v=8.1.0-sync2"></script>
-<script src="./js/career/season-engine.js?v=8.1.0-sync2"></script>
-<script src="./js/app.js?v=8.1.0-sync2"></script>
-<script src="./js/leaderboard/return-cache.js?v=8.1.0-sync2"></script>
-<script defer src="./js/ui/growth-preview.js?v=8.1.0-sync2"></script>
-<script defer src="./js/leaderboard/public-career.js?v=8.1.0-sync2"></script>
+<script src="./data/seed-config.js?v=8.1.1-sync4"></script>
+<script src="./js/career/ability-profile.js?v=8.1.1-sync4"></script>
+<script src="./data/players.js?v=8.1.1-sync4"></script>
+<script src="./data/teams.js?v=8.1.1-sync4"></script>
+<script src="./data/leagues.js?v=8.1.1-sync4"></script>
+<script src="./data/awards.js?v=8.1.1-sync4"></script>
+<script src="./data/injuries.js?v=8.1.1-sync4"></script>
+<script src="./data/events.js?v=8.1.1-sync4"></script>
+<script src="./js/api.js?v=8.1.1-sync4"></script>
+<script src="./js/leaderboard/leaderboard-api.js?v=8.1.1-sync4"></script>
+<script src="./js/state.js?v=8.1.1-sync4"></script>
+<script src="./js/events/event-memory.js?v=8.1.1-sync4"></script>
+<script src="./js/storage.js?v=8.1.1-sync4"></script>
+<script src="./js/ui/home-view.js?v=8.1.1-sync4"></script>
+<script src="./js/career/career-engine.js?v=8.1.1-sync4"></script>
+<script src="./js/ui/career-view.js?v=8.1.1-sync4"></script>
+<script src="./js/career/contract-engine.js?v=8.1.1-sync4"></script>
+<script src="./js/career/injury-engine.js?v=8.1.1-sync4"></script>
+<script src="./js/ui/retirement-view.js?v=8.1.1-sync4"></script>
+<script src="./js/career/retirement-engine.js?v=8.1.1-sync4"></script>
+<script src="./js/ui/event-view.js?v=8.1.1-sync4"></script>
+<script src="./js/events/event-engine.js?v=8.1.1-sync4"></script>
+<script src="./js/career/season-engine.js?v=8.1.1-sync4"></script>
+<script src="./js/app.js?v=8.1.1-sync4"></script>
+<script src="./js/leaderboard/return-cache.js?v=8.1.1-sync4"></script>
+<script defer src="./js/ui/growth-preview.js?v=8.1.1-sync4"></script>
+<script defer src="./js/leaderboard/public-career.js?v=8.1.1-sync4"></script>
 </body></html>
