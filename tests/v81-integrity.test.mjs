@@ -16,11 +16,11 @@ test("V8.1 mobile and PWA shell is complete",()=>{
   assert.equal(manifest.orientation,"portrait-primary");
   assert.match(read("css/growth-preview.css"),/max-width:520px!important/);
   assert.match(read("js/ui/career-view.js"),/function focusCurrentScreen\(/);
-  assert.match(html,/css\/home\.css\?v=8\.1\.1-sync4/);
-  assert.match(html,/js\/events\/event-engine\.js\?v=8\.1\.1-sync4/);
+  assert.match(html,/css\/home\.css\?v=8\.1\.1-sync6/);
+  assert.match(html,/js\/events\/event-engine\.js\?v=8\.1\.1-sync6/);
   assert.doesNotMatch(html,/\?v=8\.1\.0-(?:rc[78]|sync1)|\?v=20260821-home2/);
   const assetVersions=[...html.matchAll(/(?:href|src)="\.\/[^"?]+\?v=([^"&]+)"/g)].map(match=>match[1]);
-  assert.deepEqual([...new Set(assetVersions)],["8.1.1-sync4"]);
+  assert.deepEqual([...new Set(assetVersions)],["8.1.1-sync6"]);
   assert.match(read("css/home.css"),/choice\.eventChoice \.eventChancePreview/);
   assert.match(read("css/home.css"),/data-stage="points".*pointrow/s);
 });
@@ -143,7 +143,7 @@ test("every non-national season gets a contextual player-chosen key battle",()=>
   assert.match(events,/function resolveSeasonKeyBattle\(/);
   assert.match(events,/kind:"seasonKeyBattle"/);
   assert.match(events,/function seasonKeyBattlePreview\(/);
-  assert.match(events,/keyBattlePreviewHTML\(attackPreview\)/);
+  assert.match(events,/seasonKeyBattlePreviewHTML\(attackPreview\)/);
   assert.match(events,/buildSeasonSpecialQueue\(\)[\s\S]*?nt\s*\?/);
   for(const approach of ["全力搶代表作","以球隊勝負為優先","控制負荷、保留健康"])assert.match(events,new RegExp(approach));
   assert.match(season,/const keyBattle=p\.seasonKeyBattleResult\|\|null/);

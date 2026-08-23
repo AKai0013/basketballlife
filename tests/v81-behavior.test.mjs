@@ -169,12 +169,57 @@ test("key battle previews expose deterministic success and value ranges before r
   const attack=context.seasonKeyBattlePreview("attack"),team=context.seasonKeyBattlePreview("team"),manage=context.seasonKeyBattlePreview("manage");
   for(const preview of [attack,team,manage]){
     assert.ok(preview.min<=preview.expected&&preview.expected<=preview.max);
-    assert.ok(preview.success>=0&&preview.success<=100);
   }
   assert.ok(attack.expected>team.expected);
   assert.ok(manage.expected<team.expected);
-  assert.match(context.keyBattlePreviewHTML(attack),/預估成功率/);
-  assert.match(context.keyBattlePreviewHTML(attack),/預估表現值/);
+  assert.ok(attack.objectiveChance>=0&&attack.objectiveChance<=100);
+  assert.ok(attack.contributionChance>=attack.objectiveChance);
+  assert.ok(team.objectiveChance>=0&&team.objectiveChance<=100);
+  assert.equal(manage.objectiveChance,null);
+  assert.match(context.seasonKeyBattlePreviewHTML(attack),/代表作機率/);
+  assert.match(context.seasonKeyBattlePreviewHTML(attack),/關鍵貢獻機率/);
+  assert.match(context.seasonKeyBattlePreviewHTML(team),/守住關鍵戰機率/);
+  assert.match(context.seasonKeyBattlePreviewHTML(manage),/負荷控制必定生效/);
+  assert.doesNotMatch(context.seasonKeyBattlePreviewHTML(manage),/成功率/);
+  assert.match(context.seasonKeyBattlePreviewHTML(manage),/預估表現值/);
+});
+
+test("key battle objectives use league-relative performance without treating load control as failure",()=>{
+  const context={p:{year:2026,age:16,path:"HBL",team:"測試高中",seed:"KEYB0003",confidence:50,clutch:50,rep:0,seasonEventSuccess:0,bodyLoad:0,teamWorld:{direction:"development"}}};
+  context.overall=()=>42;
+  vm.runInNewContext(read("js/events/event-engine.js"),context);
+  const highSchoolAttack=context.seasonKeyBattlePreview("attack"),highSchoolTeam=context.seasonKeyBattlePreview("team"),highSchoolManage=context.seasonKeyBattlePreview("manage");
+  assert.ok(highSchoolAttack.contributionChance>0&&highSchoolAttack.contributionChance<100);
+  assert.ok(highSchoolTeam.objectiveChance>0&&highSchoolTeam.objectiveChance<100);
+  assert.equal(highSchoolManage.objectiveChance,null);
+  const managedObjective=context.seasonKeyBattleObjective("manage",40),missedSignature=context.seasonKeyBattleObjective("attack",77),madeSignature=context.seasonKeyBattleObjective("attack",78);
+  assert.equal(managedObjective.label,"完成負荷控制");assert.equal(managedObjective.success,true);
+  assert.equal(missedSignature.label,"未能打出代表作");assert.equal(missedSignature.success,false);
+  assert.equal(madeSignature.label,"打出代表作");assert.equal(madeSignature.success,true);
+
+  context.p.path="CBA";context.p.clutch=94;context.p.rep=100;context.p.teamWorld.direction="contend";context.overall=()=>81;
+  const veteranAttack=context.seasonKeyBattlePreview("attack"),veteranTeam=context.seasonKeyBattlePreview("team");
+  assert.ok(veteranAttack.objectiveChance<100);
+  assert.ok(veteranTeam.objectiveChance>0&&veteranTeam.objectiveChance<=100);
+});
+
+test("load control resolves its health goal separately from court performance",()=>{
+  let resultHTML="";
+  const context={
+    p:{year:2027,age:17,path:"HBL",team:"測試高中",seed:"KEYB0004",confidence:41,clutch:50,rep:-5,seasonEventSuccess:0,fatigue:20,bodyLoad:20,seasonInjuryExtra:4,teamWorld:{direction:"turmoil"},careerCast:{},pendingSeasonKeyBattle:{title:"排名戰",background:"season",opponent:"宿敵"}},
+    overall:()=>44,RNG:()=>()=>.5,isProPath:()=>false,recordV8Story:()=>{},escapeFeedText:value=>String(value),finishSpecialEvent:html=>{resultHTML=html}
+  };
+  vm.runInNewContext(read("js/events/event-engine.js"),context);
+  context.finishSpecialEvent=html=>{resultHTML=html};
+  context.resolveSeasonKeyBattle("manage");
+  assert.equal(context.p.seasonKeyBattleResult.objective,"完成負荷控制");
+  assert.equal(context.p.seasonKeyBattleResult.objectiveSuccess,true);
+  assert.equal(context.p.seasonKeyBattleResult.performanceOutcome,context.p.seasonKeyBattleResult.outcome);
+  assert.equal(context.p.fatigue,16);
+  assert.equal(context.p.bodyLoad,12);
+  assert.equal(context.p.seasonInjuryExtra,0);
+  assert.match(resultHTML,/完成負荷控制/);
+  assert.match(resultHTML,/場上表現/);
 });
 
 test("event choices keep the same player-facing order for the same save state",()=>{
