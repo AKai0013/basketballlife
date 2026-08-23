@@ -171,6 +171,11 @@ function seasonKeyBattleOutcome(score){
  if(score>=46)return {label:"關鍵失誤",tone:"miss",rep:-2,market:-2,respect:-2};
  return {label:"失利",tone:"fail",rep:-4,market:-4,respect:-6};
 }
+function seasonKeyBattleObjective(approach,score){
+ if(approach==="attack")return {label:score>=78?"打出代表作":"未能打出代表作",success:score>=78};
+ if(approach==="manage")return {label:"完成負荷控制",success:true};
+ return {label:score>=62?"守住關鍵戰":"未能守住關鍵戰",success:score>=62};
+}
 function keyBattleSuccessChance(low,high,threshold=62){
  const min=Number(low)||0,max=Number(high)||0;
  if(max<threshold)return 0;
@@ -181,16 +186,35 @@ function keyBattlePreview(low,high,threshold=62){
  const min=Math.round(low),max=Math.round(high);
  return {success:keyBattleSuccessChance(min,max,threshold),min,max,expected:Math.round((min+max)/2)};
 }
+function seasonKeyBattleLeagueReference(path=p.path){
+ return ({HBL:44,UBA:55,"UBA 強權":59,"NCAA D2":58,"NCAA D1":64,日本大學:57,"SBL／半職業":64,台灣職業:72,日本職業:74,韓國職業:73,CBA:77,"NBA G League":79,歐洲聯賽:78,NBA:84})[path]??70;
+}
 function seasonKeyBattleBase(approach="team"){
  const tactic={attack:7,team:2,manage:-4}[approach]??2;
  const healthPenalty=p.injury?-8:(p.bodyLoad||0)>=70?-4:0;
- const form=Math.min(8,(p.seasonEventSuccess||0)*1.6)+Math.max(-4,Math.min(4,(p.confidence||50)-50)*.08);
- const teamDirection=p.teamWorld?.direction==="contend"?3:p.teamWorld?.direction==="turmoil"?-2:0;
- return (overall()||40)*.60+(p.clutch||50)*.16+(p.rep||0)*.10+form+healthPenalty+teamDirection+tactic;
+ const form=Math.min(5,(p.seasonEventSuccess||0)*1.1)+Math.max(-2,Math.min(2,((p.confidence??50)-50)*.05));
+ const teamDirection=p.teamWorld?.direction==="contend"?2:p.teamWorld?.direction==="turmoil"?-2:0;
+ const leagueForm=(Number(overall())||40)-seasonKeyBattleLeagueReference();
+ const clutch=(Number(p.clutch??50)-50)*.08,market=Math.max(-3,Math.min(3,Number(p.rep||0)*.06));
+ return 57+leagueForm*.75+clutch+market+form+healthPenalty+teamDirection+tactic;
+}
+function seasonKeyBattleChance(base,threshold){
+ const low=Number(base)-9,high=Number(base)+9,cutoff=Number(threshold)-.5;
+ if(high<=cutoff)return 0;
+ if(low>=cutoff)return 100;
+ return Math.max(0,Math.min(100,Math.round((high-cutoff)/(high-low)*100)));
+}
+function seasonKeyBattleEffectText(approach){
+ if(approach==="attack")return `疲勞 +${p.injury?10:7}｜身體負荷 +${p.injury?10:5}｜後續傷病風險上升`;
+ if(approach==="manage")return "疲勞最多 -4｜身體負荷最多 -8｜後續傷病風險下降";
+ return "疲勞 +2｜身體負荷 +2";
 }
 function seasonKeyBattlePreview(approach="team"){
  const base=seasonKeyBattleBase(approach);
- return keyBattlePreview(base-9,base+9,62);
+ const preview={min:Math.round(base-9),max:Math.round(base+9),expected:Math.round(base),effectText:seasonKeyBattleEffectText(approach)};
+ if(approach==="attack")return {...preview,objectiveLabel:"代表作機率",objectiveChance:seasonKeyBattleChance(base,78),contributionChance:seasonKeyBattleChance(base,62)};
+ if(approach==="manage")return {...preview,objectiveLabel:"負荷控制必定生效",objectiveChance:null};
+ return {...preview,objectiveLabel:"守住關鍵戰機率",objectiveChance:seasonKeyBattleChance(base,62)};
 }
 function nationalBattleOffset(battleMode="team",managed=false){
  return battleMode==="attack"?(managed?7:7):battleMode==="manage"?-3:2;
@@ -205,6 +229,11 @@ function nationalKeyBattlePreview(level,profile,mode="full",battleMode="team"){
 }
 function keyBattlePreviewHTML(preview,national=false){
  return `<span class="eventChancePreview">預估成功率 ${preview.success}%｜${national?`預估獎勵 ${preview.reward} 點｜`:"預估表現值 "}${preview.min}–${preview.max} 點</span>`;
+}
+function seasonKeyBattlePreviewHTML(preview){
+ const objective=preview.objectiveChance===null?preview.objectiveLabel:`${preview.objectiveLabel} ${preview.objectiveChance}%`;
+ const contribution=Number.isFinite(preview.contributionChance)?`｜關鍵貢獻機率 ${preview.contributionChance}%`:"";
+ return `<span class="eventChancePreview">${objective}${contribution}｜預估表現值 ${preview.min}–${preview.max} 點｜${preview.effectText}</span>`;
 }
 function buildSeasonKeyBattle(){
  if(typeof ensureV8CareerState==="function")ensureV8CareerState(p);
@@ -704,14 +733,14 @@ function showSeasonKeyBattle(event={}){
  const safeTitle=escapeFeedText(key.title||"本季關鍵戰"),safeOpponent=escapeFeedText(key.opponent||"本季最難纏的對手"),safeDirection=escapeFeedText(key.lastTeamDirection||"球隊本季方向尚未明確");
  special.innerHTML=`<div class="specialStage keyBattle"><div class="specialKicker">🏀 SEASON KEY BATTLE</div><b>${safeTitle}</b><br><span class="mut">對手焦點：${safeOpponent}｜球隊方向：${safeDirection}</span>${key.contractYear?`<br><span class="gold">合約年｜本戰表現會進入球探與市場評估</span>`:""}${key.injury?`<br><span class="bad">傷病背景｜${escapeFeedText(key.injury)}</span>`:""}</div>`;
  const attackPreview=seasonKeyBattlePreview("attack"),teamPreview=seasonKeyBattlePreview("team"),managePreview=seasonKeyBattlePreview("manage");
- choices.innerHTML=`<div class="twoChoices"><button class="choice eventChoice" onclick="resolveSeasonKeyBattle('attack')"><b>🔥 全力搶代表作</b><small>提高關鍵戰表現與市場聲量，但疲勞、身體負荷與失誤代價一起上升。</small>${keyBattlePreviewHTML(attackPreview)}</button><button class="choice eventChoice" onclick="resolveSeasonKeyBattle('team')"><b>🏀 以球隊勝負為優先</b><small>把決策放在攻守與團隊節奏，表現與風險維持平衡。</small>${keyBattlePreviewHTML(teamPreview)}</button><button class="choice eventChoice" onclick="resolveSeasonKeyBattle('manage')"><b>🛡️ 控制負荷、保留健康</b><small>降低本戰個人聲量與市場加成，換取更完整的健康與下一站選擇。</small>${keyBattlePreviewHTML(managePreview)}</button></div>`;
+ choices.innerHTML=`<div class="twoChoices"><button class="choice eventChoice" onclick="resolveSeasonKeyBattle('attack')"><b>🔥 全力搶代表作</b><small>提高關鍵戰表現與市場聲量，但疲勞、身體負荷與失誤代價一起上升。</small>${seasonKeyBattlePreviewHTML(attackPreview)}</button><button class="choice eventChoice" onclick="resolveSeasonKeyBattle('team')"><b>🏀 以球隊勝負為優先</b><small>把決策放在攻守與團隊節奏，表現與風險維持平衡。</small>${seasonKeyBattlePreviewHTML(teamPreview)}</button><button class="choice eventChoice" onclick="resolveSeasonKeyBattle('manage')"><b>🛡️ 控制負荷、保留健康</b><small>降低本戰個人聲量與市場加成，換取更完整的健康與下一站選擇。</small>${seasonKeyBattlePreviewHTML(managePreview)}</button></div>`;
  next.classList.add("hidden");
 }
 function resolveSeasonKeyBattle(approach="team"){
  const key=p.pendingSeasonKeyBattle||buildSeasonKeyBattle().keyBattle;
  const r=RNG(`${p.seed}-season-key-battle-${p.year}-${p.team}`),label=seasonKeyBattleApproachLabel(approach);
  const score=Math.round(seasonKeyBattleBase(approach)+(r()*18-9));
- const outcome=seasonKeyBattleOutcome(score),rival=p.careerCast?.rival;
+ const outcome=seasonKeyBattleOutcome(score),objective=seasonKeyBattleObjective(approach,score),rival=p.careerCast?.rival;
  const fatigueDelta=approach==="attack"?(p.injury?10:7):approach==="manage"?-4:2;
  const loadDelta=approach==="attack"?(p.injury?10:5):approach==="manage"?-8:2;
  p.fatigue=Math.max(0,Math.min(100,(p.fatigue||0)+fatigueDelta));
@@ -728,13 +757,13 @@ function resolveSeasonKeyBattle(approach="team"){
    p.relationshipHistory.push({year:p.year,person:rival.name,type:"rival",action:approach,story:`本季關鍵戰與${rival.name}的宿敵關係${rivalRespectDelta>=0?"升溫":"惡化"} ${Math.abs(rivalRespectDelta)} 點`});
  }
  const marketDelta=typeof isProPath==="function"&&isProPath()?outcome.market:0;
- const result={year:p.year,kind:"regular",title:key.title,background:key.background,opponent:key.opponent,approach,battleLabel:label,outcome:outcome.label,score,teamResult:score>=62?"球隊守住關鍵戰":"球隊未能守住關鍵戰",marketDelta,rivalRespectDelta,injury:!!p.injury};
+ const result={year:p.year,kind:"regular",title:key.title,background:key.background,opponent:key.opponent,approach,battleLabel:label,outcome:outcome.label,performanceOutcome:outcome.label,objective:objective.label,objectiveSuccess:objective.success,score,teamResult:score>=62?"球隊守住關鍵戰":"球隊未能守住關鍵戰",marketDelta,rivalRespectDelta,injury:!!p.injury};
  p.seasonKeyBattleResult=result;
  const marketText=marketDelta>0?`球探評價 +${marketDelta}`:marketDelta<0?`球探評價 ${marketDelta}`:"球探評價維持";
  const rivalText=rival?.name?`｜${rival.name} 尊重 ${rivalRespectDelta>=0?"上升":"下降"} ${Math.abs(rivalRespectDelta)}`:"";
- const story=`本季關鍵戰對上${key.opponent}，你選擇${label}，留下「${outcome.label}」${rivalText}`;
+ const story=`本季關鍵戰對上${key.opponent}，你選擇${label}，${objective.label}；場上表現為「${outcome.label}」${rivalText}`;
  recordV8Story("game",story, outcome.tone==="great"?5:3,{keyBattle:true,opponent:key.opponent,approach});
- finishSpecialEvent(`<div class="specialStage keyBattle ${outcome.tone}"><div class="specialKicker">🏀 本季關鍵戰結果</div><b>${escapeFeedText(outcome.label)}｜${escapeFeedText(key.opponent||"關鍵對手")}</b><br>${escapeFeedText(story)}<br><span class="mut">${escapeFeedText(label)}｜${result.teamResult}｜疲勞 ${fatigueDelta>=0?"+":""}${fatigueDelta}｜身體負荷 ${loadDelta>=0?"+":""}${loadDelta}｜${marketText}${rivalText}</span></div>`,story);
+ finishSpecialEvent(`<div class="specialStage keyBattle ${outcome.tone}"><div class="specialKicker">🏀 本季關鍵戰結果</div><b>${escapeFeedText(objective.label)}｜${escapeFeedText(key.opponent||"關鍵對手")}</b><br><span class="mut">場上表現：${escapeFeedText(outcome.label)}</span><br>${escapeFeedText(story)}<br><span class="mut">${escapeFeedText(label)}｜${result.teamResult}｜疲勞 ${fatigueDelta>=0?"+":""}${fatigueDelta}｜身體負荷 ${loadDelta>=0?"+":""}${loadDelta}｜${marketText}${rivalText}</span></div>`,story);
 }
 function showNationalKeyBattle(event={}){
  const pending=p.pendingNationalCallup||{},level=pending.level||event.nationalLevel||"SENIOR",profile=nationalCompetitionById(level,pending.competitionId||event.nationalCompetition?.id),label=nationalLevelLabel(level),managed=pending.mode==="managed";
