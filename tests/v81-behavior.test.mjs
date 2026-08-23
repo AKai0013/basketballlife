@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"..");
 const read=relative=>fs.readFileSync(path.join(root,relative),"utf8");
+const runContract=(context)=>{vm.runInNewContext(read("js/career/ability-profile.js"),context);vm.runInNewContext(read("js/career/contract-engine.js"),context)};
 
 test("a team that misses the regular-season cutoff cannot become playoff champion",()=>{
   const context={p:{path:"SBL／半職業"},window:{BL_LEAGUE_CFG:{},BL_STUDENT_SCHEDULES:{}}};
@@ -56,7 +57,7 @@ test("contract medical discount is recent, bounded, and zero for a healthy playe
     scheduledGamesForSeason:()=>30,
     leagueMarketRank:league=>({"SBL／半職業":1,"台灣職業":2,"韓國職業":3,"日本職業":4,CBA:4,"NBA G League":5,"歐洲聯賽":6,NBA:7}[league]||0)
   };
-  vm.runInNewContext(read("js/career/contract-engine.js"),context);
+  runContract(context);
   assert.equal(context.contractInjuryDiscount(),0);
   assert.equal(context.collegeResumeProfile("NCAA D1").level,"starter");
   assert.equal(context.collegeReturnMarketBonus("台灣職業"),8);
@@ -69,7 +70,7 @@ test("contract medical discount is recent, bounded, and zero for a healthy playe
 
 test("young professionals do not fall out of the market after one rookie season",()=>{
   const context={p:{age:24,careerSeason:2,seasonHistory:[{path:"台灣職業"}],seasonStats:{games:24,mins:12,pts:7,ast:2,reb:3}}};
-  vm.runInNewContext(read("js/career/contract-engine.js"),context);
+  runContract(context);
   context.isProPath=()=>true;
   context.scheduledGamesForSeason=()=>36;
   context.overall=()=>46;
@@ -102,7 +103,7 @@ test("college entry is stricter while productive rookies keep a fair renewal run
     path:"台灣職業",age:28,year:2032,careerSeason:3,seasonHistory:[],
     seasonStats:{games:28,mins:14,pts:8,ast:3,reb:3,stl:.7,blk:.2}
   }};
-  vm.runInNewContext(read("js/career/contract-engine.js"),context);
+  runContract(context);
   context.LEAGUE_CFG={"台灣職業":{market:67}};
   context.collegeReturnMarketBonus=()=>0;
   context.scheduledGamesForSeason=()=>36;
@@ -122,7 +123,7 @@ test("an OVR 82 European standout enters the NBA pathway",()=>{
     path:"歐洲聯賽",age:27,contract:{continentalCup:"EuroLeague"},lastSeasonAwards:[],
     seasonStats:{games:30,mins:22,pts:15,ast:5,reb:4,stl:1,blk:.3}
   }};
-  vm.runInNewContext(read("js/career/contract-engine.js"),context);
+  runContract(context);
   context.overall=()=>82;
   assert.equal(context.nbaPerformanceOfferKind(84),"two-way");
   context.overall=()=>84;
@@ -134,7 +135,7 @@ test("late-career European seasons do not reopen an NBA-Europe loop",()=>{
     path:"歐洲聯賽",age:42,seasonHistory:[{path:"NBA"}],contract:{continentalCup:"EuroLeague"},lastSeasonAwards:[],
     seasonStats:{games:30,mins:22,pts:15,ast:5,reb:4,stl:1,blk:.3}
   }};
-  vm.runInNewContext(read("js/career/contract-engine.js"),context);
+  runContract(context);
   context.overall=()=>89;
   context.scoutingScore=()=>90;
   assert.equal(context.nbaPathwayOfferKind(90),"");
@@ -192,7 +193,7 @@ test("a key battle market result changes scouting without affecting old saves",(
     seasonStats:{pts:15,ast:4,reb:4,stl:1,blk:.2},lastSeasonAwards:[],injuryHistory:[],injury:null,
     rep:0,conductMarketPenalty:0,genius:false,seasonHistory:[]
   },overall:()=>65,isProPath:()=>true,leagueStrength:()=>1,LEAGUE_CFG:{NBA:{exposure:10}},seedMarketBonus:()=>0,confidencePerformanceMod:()=>0,hasTitle:()=>false};
-  vm.runInNewContext(read("js/career/contract-engine.js"),context);
+  runContract(context);
   const base=context.scoutingScore();
   context.p.seasonHistory=[{keyBattle:{marketDelta:5}}];
   assert.equal(context.scoutingScore()-base,5);
@@ -203,7 +204,7 @@ test("late-career NBA return stays closed even after older NBA seasons leave the
     path:"歐洲聯賽",age:40,seasonHistory:[{year:2035,path:"NBA"},{year:2036,path:"歐洲聯賽"},{year:2037,path:"歐洲聯賽"},{year:2038,path:"歐洲聯賽"}],
     contract:{continentalCup:"EuroLeague"},lastSeasonAwards:[],seasonStats:{games:30,mins:24,pts:18,ast:6,reb:5,stl:1,blk:.4}
   }};
-  vm.runInNewContext(read("js/career/contract-engine.js"),context);
+  runContract(context);
   context.overall=()=>90;
   context.scoutingScore=()=>92;
   assert.equal(context.nbaPathwayOfferKind(92),"");
@@ -214,7 +215,7 @@ test("an ordinary 47-year-old NBA rotation player cannot bypass veteran decline"
     path:"NBA",age:47,contract:{type:"標準合約"},careerMVP:0,careerFirstTeam:0,lastSeasonAwards:[],
     seasonStats:{games:50,mins:22,pts:12,ast:4,reb:4,stl:1,blk:.3}
   }};
-  vm.runInNewContext(read("js/career/contract-engine.js"),context);
+  runContract(context);
   context.overall=()=>80;
   assert.equal(context.nbaPerformanceOfferKind(84),"");
 
@@ -226,7 +227,7 @@ test("an ordinary 47-year-old NBA rotation player cannot bypass veteran decline"
 
 test("an elite 48-year-old gets a continuous lower-league market instead of NBA plus SBL",()=>{
   const context={p:{path:"NBA",age:48,careerMVP:0,careerFirstTeam:0,lastSeasonAwards:[],seasonStats:{}}};
-  vm.runInNewContext(read("js/career/contract-engine.js"),context);
+  runContract(context);
   context.LEAGUE_CFG={
     "SBL／半職業":{market:54},"台灣職業":{market:67},"韓國職業":{market:74},
     "日本職業":{market:78},CBA:{market:79},"NBA G League":{market:80},
@@ -306,4 +307,100 @@ test("the full career poster separates GP and PTS and uses the full canvas width
 test("loading an existing retired save reapplies the current Hall of Fame rules",()=>{
   const source=read("js/storage.js");
   assert.match(source,/if\(p\.retired\|\|p\.stage==="retired"\)[\s\S]*?evaluateCareerLegacyTitles\(\);[\s\S]*?evaluateHallOfFame\(\);/);
+});
+
+test("V8.1.1 role evaluation recognizes non-traditional player identities",()=>{
+  const context={p:{pos:"PG",stats:{rebound:92,ath:86,defense:82,handle:66,pass:64,iq:62,shoot:58,finish:60}}};
+  runContract(context);
+  assert.equal(context.playerRoleProfile().id,"rebounding_guard");
+
+  context.p={pos:"C",stats:{pass:94,iq:90,handle:72,rebound:78,defense:60,ath:62,shoot:58,finish:66}};
+  assert.equal(context.playerRoleProfile().id,"point_center");
+});
+
+test("V8.1.1 derived abilities create readable specialties without new saved skills",()=>{
+  const shooter={pos:"SF",stats:{shoot:92,finish:66,handle:82,pass:64,defense:70,rebound:55,ath:78,iq:84},caps:{shoot:96,handle:90,iq:92}};
+  const postBig={pos:"C",stats:{shoot:54,finish:91,handle:58,pass:68,defense:86,rebound:90,ath:82,iq:76},caps:{finish:96,rebound:94,defense:92}};
+  const context={p:shooter};
+  vm.runInNewContext(read("js/career/ability-profile.js"),context);
+  const shooterProfile=context.v811AbilityProfile(shooter),bigProfile=context.v811AbilityProfile(postBig);
+  assert.ok(shooterProfile.shooting.threePoint>=80);
+  assert.ok(shooterProfile.traits.some(item=>item.id==="three_point_spacer"));
+  assert.ok(bigProfile.finishing.post>=80);
+  assert.ok(bigProfile.traits.some(item=>item.id==="post_finisher"));
+  assert.equal(context.v811SeasonContext(postBig,bigProfile).situation,"對上小陣容時，低位、籃下與內線錯位能放大價值");
+  assert.equal(Object.hasOwn(shooter,"derivedAbilities"),false);
+  assert.ok(shooterProfile.growthDirection.label);
+});
+
+test("testing free agency preserves the known mother-team renewal anchor",()=>{
+  const base={league:"NBA",team:"母隊",salary:3000,years:2,role:"先發球員",teamDirection:"contend",type:"先發合約"};
+  const context={
+    p:{age:30,path:"NBA",team:"母隊"}
+  };
+  runContract(context);
+  context.finalizeContract=contract=>contract;
+  context.leagueMarketRank=league=>({SBL:1,"台灣職業":2,NBA:7}[league]||0);
+
+  for(const offers of [[],[{league:"台灣職業",salary:800}],[{league:"NBA",salary:3400}]]){
+    const result=context.marketReturnTerms(base,offers,"NBA");
+    assert.equal(JSON.stringify(result.offer),JSON.stringify(base));
+    assert.notEqual(result.mode,"discount");
+    assert.notEqual(result.mode,"cold");
+  }
+});
+
+test("old saves without injury history can still open the contract market",()=>{
+  const context={
+    p:{path:"NBA",age:37,year:2047,seed:"12345678",seedTier:"S",stats:{shoot:81,finish:78,handle:76,pass:74,defense:80,rebound:70,ath:72,iq:79},caps:{shoot:86,finish:84,handle:82,pass:80,defense:85,rebound:78,ath:80,iq:84},seasonStats:{games:48,mins:24,pts:14,ast:4,reb:5,stl:1,blk:.5},lastSeasonAwards:[],seasonHistory:[],rep:0,growth:75,injury:null,genius:false},
+    overall:()=>81,isProPath:()=>true,leagueStrength:()=>7,LEAGUE_CFG:{NBA:{market:90,exposure:10}},seedMarketBonus:()=>0,confidencePerformanceMod:()=>0,hasTitle:()=>false
+  };
+  runContract(context);
+  assert.doesNotThrow(()=>context.scoutingScore());
+});
+
+test("contract cards keep role data separate from derived ability data",()=>{
+  const context={
+    p:{path:"NBA",age:37,year:2047,seed:"12345678",pos:"PG",stats:{shoot:81,finish:78,handle:76,pass:74,defense:80,rebound:70,ath:72,iq:79},caps:{shoot:86,finish:84,handle:82,pass:80,defense:85,rebound:78,ath:80,iq:84},injury:null,health:96,seasonHistory:[],roleState:{}},
+    LEAGUE_CFG:{NBA:{label:"NBA",exposure:10,trait:"頂級職業聯盟"}},V8_TEAM_DIRECTIONS:[],
+    moneyText:value=>String(value),contractCompetitionLabel:()=>"NBA",teamDirectionEffect:()=>"球隊評估中",leagueMarketRank:()=>7
+  };
+  runContract(context);
+  const html=context.contractOfferHTML({league:"NBA",team:"測試隊",salary:3000,bonus:0,years:1,type:"標準合約",role:"輪替球員",teamDirection:"playoff"});
+  assert.match(html,/成長方向：/);
+  assert.doesNotMatch(html,/undefined/);
+});
+
+test("veteran minutes respond to readiness instead of age alone",()=>{
+  const context={
+    p:{
+      path:"NBA",age:41,stats:{ath:86},durability:92,health:96,bodyLoad:18,
+      seasonStats:{games:48,scheduledGames:50,mins:26,pts:18,ast:6,reb:6,stl:1.2,blk:.5},
+      roleState:{current:"core"},injury:null,rep:12
+    },
+    isProPath:()=>true,overall:()=>90,leagueTarget:()=>80
+  };
+  vm.runInNewContext(read("js/career/retirement-engine.js"),context);
+  const ready=context.veteranMinutesProfile();
+  assert.equal(ready.label,"正常主力輪替");
+
+  context.p.stats.ath=55;context.p.durability=50;context.p.health=60;context.p.bodyLoad=82;
+  context.p.seasonStats={games:12,scheduledGames:50,mins:12,pts:6,ast:1,reb:2,stl:.2,blk:0};
+  context.p.roleState={current:"garbage"};context.p.injury={level:"大傷"};
+  const burdened=context.veteranMinutesProfile();
+  assert.equal(burdened.label,"身體狀態管理");
+  assert.ok(ready.cap>burdened.cap);
+  assert.ok(ready.penalty<burdened.penalty);
+});
+
+test("a healthy 50-year-old physical outlier is not age-capped",()=>{
+  const context={
+    p:{path:"NBA",age:50,stats:{ath:99},durability:99,health:100,bodyLoad:8,injury:null,rep:20,roleState:{current:"core"},seasonStats:{games:50,scheduledGames:50,mins:30,pts:24,ast:7,reb:8,stl:1.4,blk:.8}},
+    isProPath:()=>true,overall:()=>96,leagueTarget:()=>80
+  };
+  vm.runInNewContext(read("js/career/retirement-engine.js"),context);
+  const profile=context.veteranMinutesProfile();
+  assert.equal(profile.cap,36);
+  assert.equal(profile.penalty,0);
+  assert.equal(profile.label,"正常主力輪替");
 });

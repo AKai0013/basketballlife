@@ -86,6 +86,45 @@ function showTraining(){
    next.textContent="進入本季事件 →";next.classList.remove("hidden");
  }
 }
+function rebuildTrainingScreenFromSave(){
+ // Saved training screens may contain HTML from an older version. Rebuild the
+ // current view from the saved dice/progress without rerolling or changing stats.
+ if(!Array.isArray(p.dice)||!p.dice.length){showTraining();return}
+ p.stage="training";resetMain();render();chapter.textContent=`${p.year} · ${p.age}歲 · ${p.path} · 新賽季`;
+ title.textContent="季初特訓";
+ text.textContent="骰到幾就是幾點；升級需求與季末能力點完全相同，未用完的點數會保留在該能力。";
+ p.used=Array.from({length:p.dice.length},(_,i)=>!!p.used?.[i]);
+ if(!Array.isArray(p.trainingUndo))p.trainingUndo=[];
+ p.diceRolling=!!p.diceRolling;
+ if(!Number.isFinite(p.diceRevealCount))p.diceRevealCount=p.diceRolling?0:p.dice.length;
+ if(!p.trainingRevealSummary)p.trainingRevealSummary=" 骰子數字已全部揭曉。";
+ const planNotice=p.preseasonPlanNotice?`<div class="notice ${p.injury?"fail":""}"><b>開季規劃結果</b><br>${p.preseasonPlanNotice}</div>`:"";
+ p.preseasonPlanNotice="";
+ let resolution="";
+ if(p.genius&&!p.geniusAwakeningShown){
+   resolution=`<div class="notice awake"><b>✨ 潛能覺醒</b><br>你在22歲前完成五次最高強度特訓，隱藏特質 <b class="gold">${p.geniusType}</b> 正式覺醒。</div>`;
+   p.geniusAwakeningShown=true;
+ }else if(p.geniusFailed&&!p.geniusFailureShown){
+   resolution=`<div class="notice fail"><b>潛能覺醒失敗</b><br>22歲前未能累積5次高標值「6」。這條隱藏成長路線已關閉。</div>`;
+   p.geniusFailureShown=true;
+ }
+ const count=p.dice.length;
+ special.innerHTML=`${planNotice}<div class="dicewrap"><div class="trainingTitle">季初特訓</div><div class="trainingSummary">自主訓練擲出 <b class="gold">${count}</b> 顆骰。<span id="diceRevealSummary">${p.diceRolling?"骰子翻滾中……":p.trainingRevealSummary}</span></div><div id="dicepool" class="dicepool"></div><div id="assign" class="assign"></div><button id="undoTraining" class="undo" onclick="undoTrainingPoint()" disabled>↶ 返回上一步</button><div id="diceMsg" class="mut" style="font-size:12px;margin-top:8px">選擇本顆骰子要訓練的能力。</div>${abilityPanel()}</div>${resolution?`<div id="trainingRevealResolution" class="hidden">${resolution}</div>`:""}`;
+ if(Object.values(p.stats).every(v=>v>=99)){
+   p.used=p.used.map(()=>true);p.diceRolling=false;
+   renderDice();
+   if(diceMsg)diceMsg.textContent="八項能力皆已達 99，本季特訓自動完成。";
+   next.textContent="進入本季事件 →";next.classList.remove("hidden");
+ }else if(p.diceRolling)startDiceReveal();
+ else{
+   renderDice();
+   if(p.used.every(Boolean)){
+     assign.innerHTML="";
+     next.textContent="進入本季事件 →";
+     next.classList.remove("hidden");
+   }
+ }
+}
 function trainingCreditFromDie(val){
  // V7.47: the die face IS the training-point value.
  // A 3 gives exactly 3 points; a 6 gives exactly 6 points.
@@ -209,7 +248,7 @@ function assignTraining(k){
  }
 
  render();renderDice();
- const panel=special.querySelector(".trainingStats");if(panel)panel.outerHTML=abilityPanel();
+ const panel=special.querySelector(".trainingPanel");if(panel)panel.outerHTML=abilityPanel();
  if(p.used.every(Boolean)){assign.innerHTML="";next.textContent="進入本季事件 →";next.classList.remove("hidden")}
 }
 function undoTrainingPoint(){
@@ -221,7 +260,7 @@ function undoTrainingPoint(){
  next.classList.add("hidden");
  diceMsg.textContent=`已返回：第 ${last.idx+1} 顆骰子的分配已取消。`;
  render();renderDice();
- const panel=special.querySelector(".trainingStats");if(panel)panel.outerHTML=abilityPanel();
+ const panel=special.querySelector(".trainingPanel");if(panel)panel.outerHTML=abilityPanel();
 }
 
 function awaken(){

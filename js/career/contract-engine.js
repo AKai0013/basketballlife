@@ -238,6 +238,10 @@ function contractMarketScore(league,scout){
  let score=(scout-cfg.market)+(p.rep||0)*.10+confidencePerformanceMod()*2+Math.min(7,aw*1.2);
  score+=(p.careerMVP||0)*2.5+(p.careerFinalsMVP||0)*2.1+(p.careerDPOY||0)*1.8+(p.careerFirstTeam||0)*.8+(p.careerAllStar||0)*.35;
  if(hasTitle("asia_journey"))score+=2;
+ const abilityProfile=v811AbilityProfile(p),role=abilityProfile.role;
+ score+=abilityProfile.marketFit;
+ if(["core","starter"].includes(p.roleState?.current))score+=1.5;
+ if(p.roleState?.current==="garbage")score-=2;
  const recentInjuries=(p.injuryHistory||[]).filter(x=>p.year-(Number(x.year)||0)<=3);
  score-=Math.min(7,recentInjuries.length*.65+recentInjuries.filter(x=>["大傷","重傷"].includes(x.level)).length*1.4);
  score+=collegeReturnMarketBonus(league);
@@ -295,10 +299,12 @@ function makeContract(league,scout,salt,forcedTeam=null,renewal=false){
  const europeCup=europeProfile?selectEuropeanCup(europeProfile,scout,salt):null;
  if(europeProfile)salary=Math.max(20,Math.round(salary*europeProfile.salaryFactor*(europeCup?.label==="EuroLeague"?1.08:europeCup?.label==="EuroCup"?1.03:1)));
  const direction=v8Pick(V8_TEAM_DIRECTIONS,`${p.seed}-${team}-${p.year}-direction`).id;
+ const teamNeed=v811TeamNeedProfile(p,direction,league);
  if(direction==="finance")salary=Math.max(20,Math.round(salary*.90));
  const injuryDiscount=contractInjuryDiscount();
  if(injuryDiscount>0){salary=Math.max(20,Math.round(salary*(1-injuryDiscount)));bonus=Math.max(0,Math.round(bonus*(1-injuryDiscount*.65)))}
- let c={league,team,salary,bonus,years,startYear:p.year,remaining:years,type,role:info.role,renewal,teamDirection:direction,injuryDiscount};
+ if(teamNeed.bonus){salary=Math.max(20,Math.round(salary*(1+teamNeed.bonus*.008)));bonus=Math.max(0,Math.round(bonus*(1+teamNeed.bonus*.004)))}
+ let c={league,team,salary,bonus,years,startYear:p.year,remaining:years,type,role:info.role,renewal,teamDirection:direction,teamNeedLabel:teamNeed.label,injuryDiscount};
  if(europeProfile)applyEuropeanContractProfile(c,europeProfile,europeCup);
  c.rolePromise=contractRolePromise(type,mult,direction);c.promisedMinutes=contractRoleMinutes(c.rolePromise);c.option=buildContractOption(c,r);
  const agentPriority=p.pendingAgentPriority||"";
@@ -341,6 +347,9 @@ function contractOfferHTML(c){
  c=normalizeV8Contract(c);
  const cfg=LEAGUE_CFG[c.league]||{label:c.league,exposure:0,trait:"職業聯盟"};
  const directionLabel=(V8_TEAM_DIRECTIONS.find(x=>x.id===c.teamDirection)||{}).label||"球隊評估中";
+ const profile=playerRoleProfile();
+ const derived=typeof v811AbilityProfile==="function"?v811AbilityProfile(p):null;
+ const traits=derived?.traits||[],growthLabel=derived?.growthDirection?.label||"多面向發展";
  return `<div>
    <span class="contractTypeBadge">${c.type||"職業合約"}</span>
    <span class="contractRoleBadge">${c.role||"輪替球員"}</span>
@@ -354,7 +363,8 @@ function contractOfferHTML(c){
     <div class="contractMetaCell"><small>成長資源</small><b>${c.developmentResources}</b></div>
     <div class="contractMetaCell"><small>轉隊成本</small><b>${c.transferCost}</b></div>
    </div>
-   <div class="contractSub">保障總值 <b>${moneyText(c.total||((c.salary||0)*(c.years||1)+(c.bonus||0)))}</b>｜簽約金 ${moneyText(c.bonus||0)}｜${teamDirectionEffect(c.teamDirection)}</div>
+   <div class="contractSub">保障總值 <b>${moneyText(c.total||((c.salary||0)*(c.years||1)+(c.bonus||0)))}</b>｜簽約金 ${moneyText(c.bonus||0)}｜球員定位 ${profile.label}（${profile.strengths}）｜${teamDirectionEffect(c.teamDirection)}</div>
+   <div class="balanceNote">球隊需求：${c.teamNeedLabel||v811TeamNeedProfile(p,c.teamDirection,c.league).label}｜${traits.length?`已形成特性：${traits.slice(0,2).map(item=>item.label).join("、")}`:"目前以多面向能力評估"}｜成長方向：${growthLabel}</div>
    ${c.injuryDiscount?`<div class="balanceNote">🩺 醫療風險折價 ${Math.round(c.injuryDiscount*100)}%｜球隊因近期傷勢與目前舊傷風險下修報價；健康出賽能逐年恢復市場評價。</div>`:""}
    ${c.agentNote?`<div class="balanceNote">📑 經紀人的談判結果：${c.agentNote}</div>`:""}
   </div>`;
@@ -454,14 +464,14 @@ function showContractExpiryDecision(){
    return;
  }
  title.textContent="續留，還是聆聽自由市場？";
-   text.innerHTML=`與 <b>${p.team}</b> 的舊合約已經結束。母隊正式提出續約；經紀團隊提醒你，也可以測試自由市場，但原本的角色承諾與報價不一定會一直保留。`;
+   text.innerHTML=`與 <b>${p.team}</b> 的舊合約已經結束。母隊正式提出續約；經紀團隊提醒你，也可以測試自由市場，原本的母隊續約條件會保留為市場比較基準。`;
  special.innerHTML=`<div class="contractDecision">
    <b>🏠 母隊續約｜${offer.team}</b>
    ${contractOfferHTML(offer)}
  </div>
  <div class="choices">
    <button class="choice" onclick="acceptContract(p.pendingRenewalOffer)"><b>接受母隊續約</b><small>${offer.type}｜直接續留，不進入自由市場。</small></button>
-   <button class="choice" onclick="listenFreeAgencyMarket()"><b>聆聽其他球隊報價</b><small>比較聯盟、薪資、年限、球隊角色與 NBA 機會；若市場冷清，原本的母隊報價可能降低。</small></button>
+   <button class="choice" onclick="listenFreeAgencyMarket()"><b>聆聽其他球隊報價</b><small>比較聯盟、薪資、年限、球隊角色與 NBA 機會；測試市場不會自動降低原續約基準。</small></button>
    <button class="choice" onclick="chooseVoluntaryRetirement()"><b>在合約到期後退休</b><small>不進入自由市場，以現在累積的成績與故事結束球員生涯。</small></button>
  </div>`;
  choices.innerHTML="";
@@ -491,17 +501,18 @@ function chooseVoluntaryRetirement(){
 function marketReturnTerms(base,offers,originLeague){
  if(!base)return {offer:null,mode:"none"};
  const rows=Array.isArray(offers)?offers:[];
- if(!rows.length){
-   const offer=repriceContract(base,.75,1,"母隊回歸約");offer.bonus=0;finalizeContract(offer);
-   return {offer,mode:"cold"};
- }
+ const anchored=()=>finalizeContract({...base});
+ if(!rows.length)return {offer:anchored(),mode:"anchored"};
  const originRank=leagueMarketRank(originLeague),higher=rows.some(c=>leagueMarketRank(c.league)>originRank);
  if(higher){
    // A formal offer from a stronger league validates the player's market value.
    // Returning home is a player choice, so the club honors its original renewal proposal.
-   return {offer:finalizeContract({...base}),mode:"validated"};
+   return {offer:anchored(),mode:"validated"};
  }
- return {offer:repriceContract(base,.90,Math.min(2,base.years),"母隊回歸約"),mode:"discount"};
+ // Testing the market is not a rejection of the known renewal offer. Keep the
+ // original terms as the player's safe return point; a later age, health, or
+ // performance change can trigger a genuinely new negotiation.
+ return {offer:anchored(),mode:"anchored"};
 }
 function listenFreeAgencyMarket(){
  const sc=scoutingScore(),origin=p.marketOriginTeam,originLeague=p.marketOriginLeague,r=RNG(p.seed+"listen-market-"+p.year+"-"+origin);
@@ -533,14 +544,14 @@ function listenFreeAgencyMarket(){
  chapter.textContent=`${p.year} · ${p.age}歲 · 自由市場`;
  title.textContent=offers.length?"市場報價出爐":"市場遇冷";
  text.innerHTML=offers.length
-   ? `經紀團隊帶回 ${offers.length} 份正式報價。除了薪資與年限，也要比較<b>聯盟層級、球隊角色與未來機會</b>；老將若仍能打，也可能透過轉換聯盟延續生涯。${back?(returnTerms.mode==="validated"?"你已取得更高層級正式報價，原隊認定市場價值獲得證明，因此原續約條件仍然有效。":"外隊報價沒有高於原聯盟，母隊的新條件會小幅調整。 "):""}`
+   ? `經紀團隊帶回 ${offers.length} 份正式報價。除了薪資與年限，也要比較<b>聯盟層級、球隊角色與未來機會</b>；老將若仍能打，也可能透過轉換聯盟延續生涯。${back?(returnTerms.mode==="validated"?"你已取得更高層級正式報價，原隊認定市場價值獲得證明，因此原續約條件仍然有效。":"測試市場不會自動削弱原本的母隊續約基準；你可以把外隊條件與原合約公平比較。 "):""}`
    : `母隊與其他球隊都沒有提出正式合約。現在還不會直接退休；你將透過公開測試爭取最後的現役資格。`;
 
  let cards=offers.map(proOfferCard).join("");
  special.innerHTML=`<div class="offerGrid">${cards}
    ${back?`<div class="${offers.length?"marketReturn":"marketEmpty"}">
      <b>↩ 回到 ${origin}</b>${contractOfferHTML(back)}
-     <div class="mut" style="margin-top:7px">${returnTerms.mode==="validated"?"更高層級球隊的正式邀請已證明你的市場價值；即使選擇回歸，母隊仍維持原續約薪資、年限與角色。":returnTerms.mode==="discount"?"外隊只提供同級或較低層級機會；測試市場後回歸，母隊將原報價小幅下修。":"市場沒有其他正式報價，這是母隊最後的一年保底機會。"}</div>
+     <div class="mut" style="margin-top:7px">${returnTerms.mode==="validated"?"更高層級球隊的正式邀請已證明你的市場價值；即使選擇回歸，母隊仍維持原續約薪資、年限與角色。":"這是你在測試市場前已取得的母隊續約基準；沒有更好報價時，回歸不會因為比較市場而自動扣薪。"}</div>
      <button class="btn" style="margin-top:9px" onclick="acceptContract(p.marketReturnOffer)">接受回歸合約</button>
    </div>`:""}
    ${!offers.length&&!back?`<div class="offerCard"><b>參加公開測試</b><div class="mut">標準合約市場已經關閉。測試通過仍能取得一年證明約；測試失敗才會進入正式退場程序。</div><button class="btn" style="margin-top:9px" onclick="openTryout()">參加最後測試</button></div>`:""}
@@ -639,7 +650,7 @@ function scoutingScore(){
  let levelBonus=isProPath()?Math.max(0,(leagueStrength()-1)*18):p.path==="NCAA D1"?4:p.path==="NCAA D2"?2:0;
  let exposureBonus=isProPath()?Math.min(4,(LEAGUE_CFG[p.path]?.exposure||0)*.38):0;
  let upside=Math.max(-2.5,Math.min(3.5,(p.growth-70)*.075));
- let injuryPenalty=Math.min(12,p.injuryHistory.length*1.8)+(p.injury&&p.injury.level==="重傷"?5:0);
+ let injuryPenalty=Math.min(12,(p.injuryHistory||[]).length*1.8)+(p.injury&&p.injury.level==="重傷"?5:0);
  const conductPenalty=Math.max(0,Number(p.conductMarketPenalty)||0);
  const latestKeyBattle=(p.seasonHistory||[]).slice(-1)[0]?.keyBattle;
  const keyBattleMarketDelta=Math.max(-5,Math.min(5,Number(latestKeyBattle?.marketDelta)||0));

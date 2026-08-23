@@ -10,17 +10,17 @@ const read=relative=>fs.readFileSync(path.join(root,relative),"utf8");
 test("V8.1 mobile and PWA shell is complete",()=>{
   const html=read("index.html"),manifest=JSON.parse(read("manifest.webmanifest"));
   assert.match(html,/rel="manifest"/);
-  assert.match(html,/>V8\.1</);
+  assert.match(html,/>V8\.1\.1</);
   assert.match(html,/href="https:\/\/github\.com\/AKai0013\/basketballlife\/blob\/main\/README\.md"/);
   assert.equal(manifest.display,"standalone");
   assert.equal(manifest.orientation,"portrait-primary");
   assert.match(read("css/growth-preview.css"),/max-width:520px!important/);
   assert.match(read("js/ui/career-view.js"),/function focusCurrentScreen\(/);
-  assert.match(html,/css\/home\.css\?v=8\.1\.0-sync2/);
-  assert.match(html,/js\/events\/event-engine\.js\?v=8\.1\.0-sync2/);
+  assert.match(html,/css\/home\.css\?v=8\.1\.1-sync4/);
+  assert.match(html,/js\/events\/event-engine\.js\?v=8\.1\.1-sync4/);
   assert.doesNotMatch(html,/\?v=8\.1\.0-(?:rc[78]|sync1)|\?v=20260821-home2/);
   const assetVersions=[...html.matchAll(/(?:href|src)="\.\/[^"?]+\?v=([^"&]+)"/g)].map(match=>match[1]);
-  assert.deepEqual([...new Set(assetVersions)],["8.1.0-sync2"]);
+  assert.deepEqual([...new Set(assetVersions)],["8.1.1-sync4"]);
   assert.match(read("css/home.css"),/choice\.eventChoice \.eventChancePreview/);
   assert.match(read("css/home.css"),/data-stage="points".*pointrow/s);
 });
@@ -64,14 +64,14 @@ test("injury burden decays and every college grade uses selectable newcomer mark
 });
 
 test("attribute effects and NCAA return roles depend on actual college minutes",()=>{
-  const config=read("data/seed-config.js"),season=read("js/career/season-engine.js"),roles=read("js/events/event-memory.js"),contracts=read("js/career/contract-engine.js");
+  const config=read("data/seed-config.js"),season=read("js/career/season-engine.js"),roles=read("js/events/event-memory.js"),contracts=read("js/career/contract-engine.js"),ability=read("js/career/ability-profile.js");
   assert.match(config,/shoot:"外線與中距離手感/);
   assert.match(config,/finish:"切入、籃下與對抗得分/);
   assert.match(config,/ath:"速度、第一步、彈跳、爆發、對抗與耐力/);
   assert.match(season,/staminaMinutes/);
   assert.match(season,/seasonFatigueGain/);
   assert.match(season,/p\.stats\.finish\*\.45/);
-  assert.match(season,/p\.stats\.shoot\*\.245/);
+  assert.match(season,/abilityProfile\?\.shooting\?\.threePoint/);
   assert.match(season,/p\.stats\.ath\*\.07/);
   assert.match(read("js/ui/career-view.js"),/function toggleAbilityHelp\(/);
   assert.match(read("js/ui/career-view.js"),/function abilityHelpPopover\(/);
@@ -101,6 +101,39 @@ test("national callups create one player-chosen key battle without changing the 
   assert.match(events,/battleMode,battleLabel,battleScore/);
   assert.match(events,/recordV8Story\("game",battleStory,5/);
   assert.match(events,/function declineNationalCallup\(/);
+});
+
+test("V8.1.1 keeps old publisher compatibility while exposing the new evaluation layer",()=>{
+  const api=read("functions/api/[[path]].js"),board=read("js/leaderboard/leaderboard-api.js"),storage=read("js/storage.js"),career=read("js/ui/career-view.js"),contracts=read("js/career/contract-engine.js"),retirement=read("js/career/retirement-engine.js"),ability=read("js/career/ability-profile.js");
+  assert.match(api,/new Set\(\["8\.1\.0","8\.1\.1"\]\)/);
+  assert.match(board,/GAME_VERSION="8\.1\.1"/);
+  assert.match(board,/CAREER_PUBLISHER_VERSION="8\.1\.1"/);
+  assert.match(storage,/gameVersion:"8\.1\.1"/);
+  assert.match(career,/careerVersion:"8\.1\.1"/);
+  assert.match(career,/v811AbilityPanelHTML/);
+  assert.match(ability,/function playerRoleProfile\(/);
+  assert.match(ability,/function v811AbilityProfile\(/);
+  for(const label of ["三分","接球投籃","持球投籃","中距離","低位","護框","成長方向"])assert.match(ability,new RegExp(label));
+  assert.match(contracts,/測試市場不會自動削弱原本的母隊續約基準/);
+  assert.match(contracts,/mode:"anchored"/);
+  assert.match(storage,/遊戲暫時無法繼續/);
+  assert.match(storage,/showContractExpiryDecision\(\)/);
+  assert.match(retirement,/let readiness=0/);
+  assert.match(retirement,/durability/);
+});
+
+test("V8.1.1 veteran labels and training panels use the corrected ownership",()=>{
+  const retirement=read("js/career/retirement-engine.js"),career=read("js/ui/career-view.js"),events=read("js/ui/event-view.js"),storage=read("js/storage.js");
+  assert.match(retirement,/const needsLoadManagement=/);
+  assert.match(retirement,/身體狀態管理/);
+  assert.doesNotMatch(retirement,/老將負荷管理|暮年限時/);
+  assert.match(career,/class="trainingPanel"/);
+  assert.match(career,/\.trainingPanel,.trainingStats/);
+  assert.match(events,/special\.querySelector\("\.trainingPanel"\)/);
+  assert.doesNotMatch(events,/special\.querySelector\("\.trainingStats"\)/);
+  assert.match(events,/function rebuildTrainingScreenFromSave\(\)/);
+  assert.match(events,/p\.used\.every\(Boolean\)[\s\S]*?進入本季事件/);
+  assert.match(storage,/p\.stage==="training"&&typeof rebuildTrainingScreenFromSave==="function"/);
 });
 
 test("every non-national season gets a contextual player-chosen key battle",()=>{

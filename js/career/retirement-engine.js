@@ -92,16 +92,33 @@ function applyAging(){
  return "";
 }
 function veteranMinutesProfile(ov=overall()){
- if(!isProPath()||p.age<=31)return {penalty:0,cap:36,label:"一般輪替"};
- const age=p.age,years=age-31;
- let penalty=years*1.25+Math.max(0,(p.bodyLoad||0)-45)*.045;
- let cap=age===32?35:age===33?34:age===34?33:age===35?31:age===36?29:age===37?27:age===38?25:age===39?23:21;
+ if(!isProPath())return {penalty:0,cap:36,label:"一般輪替"};
+ const stats=p.stats||{},season=p.seasonStats||{};
+ const ath=Number(stats.ath)||50,durability=Number(p.durability)||60,health=Number(p.health)||100,bodyLoad=Number(p.bodyLoad)||0;
+ const games=Number(season.games)||0,scheduled=Number(season.scheduledGames)||0,availability=scheduled?games/scheduled:games>=35?1:games>=24?.82:games>=12?.60:0;
+ const recentImpact=(Number(season.pts)||0)+(Number(season.ast)||0)*.7+(Number(season.reb)||0)*.35+(Number(season.stl)||0)*1.4+(Number(season.blk)||0)*1.2;
+ let readiness=0;
+ if(ath>=80)readiness+=2;else if(ath>=70)readiness+=1;
+ if(durability>=85)readiness+=2;else if(durability>=72)readiness+=1;
+ if(health>=90)readiness+=1;else if(health<70)readiness-=2;
+ if(bodyLoad>=75)readiness-=2;else if(bodyLoad<=30)readiness+=1;
+ if(availability>=.8&&Number(season.mins)>=22)readiness+=1;
+ if(recentImpact>=15)readiness+=1;
+ if(["core","starter"].includes(p.roleState?.current))readiness+=1;
+ if(p.injury)readiness-=p.injury.level==="重傷"?3:p.injury.level==="大傷"?2:1;
+ readiness=Math.max(-3,Math.min(7,readiness));
+ // 年齡不再直接壓低上場時間；限制只來自當下的身體狀態、出勤、傷病與角色。
+ let penalty=Math.max(0,Math.max(0,bodyLoad-45)*.045-Math.max(0,readiness)*.35);
+ let cap=36;
+ cap+=readiness;
  if(ov>=leagueTarget()+8&&(p.rep||0)>=10)cap+=2;
  if(p.injury)cap-=p.injury.level==="重傷"?5:p.injury.level==="大傷"?3:2;
- if((p.bodyLoad||0)>=75)cap-=2;
+ if(bodyLoad>=75)cap-=2;
  if(p.lastDanceActive)cap=Math.min(cap,22);
  if(p.retirementDefianceUsed&&!p.lastDanceActive)cap=Math.min(cap,20);
- return {penalty,cap:Math.max(12,cap),label:age>=38?"暮年限時":age>=35?"老將負荷管理":"巔峰後調整"};
+ const needsLoadManagement=readiness<=1||bodyLoad>=65||availability<.75||health<80||!!p.injury||["benchLeader","garbage"].includes(p.roleState?.current);
+ const label=needsLoadManagement?"身體狀態管理":readiness>=5&&["core","starter"].includes(p.roleState?.current)?"正常主力輪替":"依對位輪替";
+  return {penalty,cap:Math.max(12,Math.min(36,cap)),label};
 }
 function retirementPressure(){
  if(p.age<34)return 0;
