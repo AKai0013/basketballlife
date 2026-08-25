@@ -137,6 +137,28 @@ test("50-plus contract risk tightens while continuation uses peak, form, availab
  assert.equal(context.canReceiveStandardContract("NBA",96,true),false);
 });
 
+test("recent high-level elite performance protects a productive OVR 82 veteran market",()=>{
+ const stats={shoot:82,finish:82,handle:82,pass:82,defense:82,rebound:82,ath:82,iq:82};
+ const context=careerContext({path:"NBA",age:39,year:2065,seed:"VETERAN7",peakOverall:92,stats,caps:{...stats},health:96,durability:90,bodyLoad:20,injury:null,injuryHistory:[],seasonStats:{games:70,scheduledGames:82,mins:30,pts:24,ast:7,reb:5,stl:1.5,blk:.5},lastSeasonAwards:["NBA 得分王"],seasonHistory:[{year:2064,path:"NBA",games:70,scheduledGames:82,mins:30,pts:24,ast:7,reb:5,stl:1.5,blk:.5,seasonAwards:["NBA 得分王"]}]});
+ assert.equal(context.recentElitePerformanceProfile().eligible,true);
+ assert.equal(context.canReceiveStandardContract("NBA",80,false),true);
+ context.p.age=50;
+ assert.equal(context.canReceiveStandardContract("NBA",80,false),false);
+});
+
+test("a veteran's first season after a major league drop only reopens the adjacent market tier",()=>{
+ const stats={shoot:82,finish:82,handle:82,pass:82,defense:82,rebound:82,ath:82,iq:82};
+ const context=careerContext({path:"台灣職業",age:40,year:2050,seed:"VETERAN8",stats,caps:{...stats},health:90,durability:86,bodyLoad:24,seasonHistory:[{year:2048,path:"NBA"},{year:2049,path:"台灣職業"}],marketOriginLeague:"台灣職業",marketOriginTeam:"台中球隊"});
+ const profile=context.marketTrajectoryProfile();
+ assert.equal(profile.recovering,true);
+ assert.equal(profile.maxRank,3);
+ assert.equal(context.marketOfferAllowedByTrajectory("韓國職業"),true);
+ assert.equal(context.marketOfferAllowedByTrajectory("CBA"),false);
+ context.p.seasonHistory.push({year:2050,path:"台灣職業"});
+ assert.equal(context.marketTrajectoryProfile().recovering,false);
+ assert.equal(context.marketOfferAllowedByTrajectory("CBA"),true);
+});
+
 test("last dance is available only as a post-market career choice without an upper age cap",()=>{
   const context={p:{
     path:"NBA",age:55,year:2070,lastDanceUsed:false,lastDanceActive:false,careerGames:600,

@@ -541,7 +541,8 @@ function marketReturnTerms(base,offers,originLeague){
 }
 function listenFreeAgencyMarket(){
  const sc=scoutingScore(),origin=p.marketOriginTeam,originLeague=p.marketOriginLeague,r=RNG(p.seed+"listen-market-"+p.year+"-"+origin);
- const candidates=proOffersForScore(sc,"listen-"+p.year).filter(c=>c.team!==origin);
+ const trajectory=marketTrajectoryProfile();
+ const candidates=proOffersForScore(sc,"listen-"+p.year).filter(c=>c.team!==origin&&marketOfferAllowedByTrajectory(c.league));
  let offers=candidates
    .filter(c=>{
       let cfg=LEAGUE_CFG[c.league]||{market:99};
@@ -570,7 +571,7 @@ function listenFreeAgencyMarket(){
  chapter.textContent=`${p.year} · ${p.age}歲 · 自由市場`;
  title.textContent=offers.length?"市場報價出爐":"市場遇冷";
  text.innerHTML=offers.length
-   ? `經紀團隊帶回 ${offers.length} 份正式報價。除了薪資與年限，也要比較<b>聯盟層級、球隊角色與未來機會</b>。${back?(returnTerms.mode==="validated"?"你獲得更高層級球隊邀請，母隊仍維持原本的續約條件。":"母隊報價仍可選擇。 "):""}`
+   ? `經紀團隊帶回 ${offers.length} 份正式報價。除了薪資與年限，也要比較<b>聯盟層級、球隊角色與未來機會</b>。${trajectory.recovering?"上一季剛完成聯盟轉換，本次市場先以相鄰層級重新評估。":""}${back?(returnTerms.mode==="validated"?"你獲得更高層級球隊邀請，母隊仍維持原本的續約條件。":"母隊報價仍可選擇。 "):""}`
    : `母隊與其他球隊都沒有提出正式合約。現在還不會直接退休；你將透過公開測試爭取最後的現役資格。`;
 
  let cards=offers.map(proOfferCard).join("");
@@ -693,6 +694,38 @@ function leagueRosterOverallFloor(league){
 function contractRosterOverallFloor(league,incumbent=false){
  return leagueRosterOverallFloor(league)-(incumbent?2:0);
 }
+function recentElitePerformanceProfile(){
+ const defaultSchedule={"SBL／半職業":30,"台灣職業":36,"韓國職業":54,"日本職業":60,CBA:46,"NBA G League":50,"歐洲聯賽":44,NBA:82};
+ const history=Array.isArray(p.seasonHistory)?p.seasonHistory.slice(-3):[];
+ const current={year:p.year,path:p.path,...(p.seasonStats||{}),seasonAwards:p.lastSeasonAwards||[]};
+ const rows=[...history,current].filter(row=>row&&Number(row.year||0)>=Number(p.year||0)-2);
+ let best=null;
+ for(const row of rows){
+   const league=String(row.path||p.path||""),schedule=Math.max(1,Number(row.scheduledGames)||defaultSchedule[league]||36);
+   const games=Number(row.games)||0,availability=Math.min(1,games/schedule);
+   const impact=(Number(row.pts)||0)+(Number(row.ast)||0)*.75+(Number(row.reb)||0)*.38+(Number(row.stl)||0)*1.6+(Number(row.blk)||0)*1.3;
+   const awards=[...(Array.isArray(row.seasonAwards)?row.seasonAwards:[]),...(row===current?current.seasonAwards:[])].map(String);
+   const eliteAward=awards.some(name=>/年度MVP|年度第一隊|得分王|助攻王|籃板王|最佳防守球員|總冠軍賽MVP/.test(name));
+   const scoringTitle=awards.some(name=>/得分王/.test(name));
+   const eligible=eliteAward&&availability>=.65&&impact>=(scoringTitle?14:16);
+   if(eligible&&(!best||Number(row.year||0)>=Number(best.year||0)))best={year:Number(row.year||0),league,leagueRank:leagueMarketRank(league),availability,impact,scoringTitle,eliteAward};
+ }
+ return best?{eligible:true,...best}:{eligible:false,year:0,league:"",leagueRank:0,availability:0,impact:0,scoringTitle:false,eliteAward:false};
+}
+function marketTrajectoryProfile(){
+ const currentLeague=String(p.marketOriginLeague||p.path||""),currentRank=leagueMarketRank(currentLeague);
+ const rows=(Array.isArray(p.seasonHistory)?p.seasonHistory:[]).filter(row=>row&&leagueMarketRank(row.path)>0);
+ let currentRun=0;
+ for(let i=rows.length-1;i>=0&&String(rows[i].path)===currentLeague;i--)currentRun++;
+ const previous=rows.slice(0,Math.max(0,rows.length-currentRun)).reverse().find(row=>leagueMarketRank(row.path)>0);
+ const previousRank=leagueMarketRank(previous?.path||"");
+ const recovering=Number(p.age||0)>=35&&currentRun===1&&currentRank>0&&previousRank>=currentRank+2;
+ return {recovering,currentLeague,currentRank,currentRun,previousLeague:String(previous?.path||""),previousRank,maxRank:recovering?currentRank+1:99};
+}
+function marketOfferAllowedByTrajectory(league){
+ const profile=marketTrajectoryProfile();
+ return !profile.recovering||leagueMarketRank(league)<=profile.maxRank;
+}
 function veteranContinuationProfile(league=p.path,incumbent=false){
  const ss=p.seasonStats||{},stats=p.stats||{},ov=overall();
  const defaultSchedule={"SBL／半職業":30,"台灣職業":36,"韓國職業":54,"日本職業":60,CBA:46,"NBA G League":50,"歐洲聯賽":44,NBA:82}[league]||36;
@@ -716,10 +749,12 @@ function veteranContinuationProfile(league=p.path,incumbent=false){
  if(p.injury)score-=p.injury.level==="重傷"?3:p.injury.level==="大傷"?2:1;
  const recentMajor=(p.injuryHistory||[]).filter(item=>p.year-(Number(item.year)||0)<=2&&["大傷","重傷"].includes(item.level)).length;
  score-=Math.min(2,recentMajor);
+ const recentElite=recentElitePerformanceProfile();
+ if(recentElite.eligible)score+=2;
  const threshold=rank>=7?5:rank>=6?4:rank>=4?3:rank>=2?2:1;
  const lateCareerReady=peakOvr>=baseFloor+8&&impact>=impactTarget+1&&availability>=.75&&health>=85&&durability>=78&&bodyLoad<=55&&!p.injury;
  const eligible=score>=threshold&&(p.age<50||lateCareerReady);
- return {eligible,score,threshold,ov,peakOvr,baseFloor,ath,health,durability,bodyLoad,availability,impact,lateCareerReady};
+ return {eligible,score,threshold,ov,peakOvr,baseFloor,ath,health,durability,bodyLoad,availability,impact,lateCareerReady,recentElite};
 }
 function veteranContractRiskProfile(league=p.path,incumbent=false){
  if(p.age<35)return null;
@@ -743,11 +778,15 @@ function canReceiveStandardContract(league,score=scoutingScore(),incumbent=false
  const productiveRookie=rookieWindow&&rookieRenewalPerformanceEligible();
  const rookieOvrRelief=productiveRookie?7:rookieWindow?3:0;
  const rookieScoutRelief=productiveRookie?9:rookieWindow?4:0;
+ const recentElite=recentElitePerformanceProfile();
+ const eliteOvrRelief=recentElite.eligible&&p.age<50?(league==="NBA"?4:2):0;
+ const eliteScoutRelief=recentElite.eligible&&p.age<50?(league==="NBA"?4:2):0;
  const marketEase=league==="NBA"?0:["NBA G League","歐洲聯賽"].includes(league)?1:2;
- const ovrFloor=contractRosterOverallFloor(league,incumbent)-marketEase-Math.min(2,Math.ceil(resumeBonus/2))-rookieOvrRelief;
- const scoutFloor=cfg.market-marketEase-(incumbent?3:0)-resumeBonus-rookieScoutRelief;
+ const ovrFloor=contractRosterOverallFloor(league,incumbent)-marketEase-Math.min(2,Math.ceil(resumeBonus/2))-rookieOvrRelief-eliteOvrRelief;
+ const scoutFloor=cfg.market-marketEase-(incumbent?3:0)-resumeBonus-rookieScoutRelief-eliteScoutRelief;
  const ov=overall(),provenAbility=ov>=ovrFloor+8&&score>=scoutFloor-10;
- const abilityEligible=ov>=ovrFloor&&(score>=scoutFloor||provenAbility);
+ const performanceBridge=recentElite.eligible&&p.age<50&&league==="NBA"&&ov>=82&&score>=78;
+ const abilityEligible=ov>=ovrFloor&&(score>=scoutFloor||provenAbility||performanceBridge);
  if(!abilityEligible)return false;
  return p.age<35||veteranContinuationProfile(league,incumbent).eligible;
 }
