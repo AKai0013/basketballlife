@@ -396,16 +396,12 @@ function fitGameToViewport(){
    layout.style.height=available+"px";
    story.style.height=available+"px";
 
-   // Long interactive stages get first priority.
-   const longStage=["training","points","results","decision"].includes(stage);
-
    if(history){
-     history.style.flexBasis=retiredStage?"0px":(longStage?"44px":"86px");
-     history.style.minHeight=retiredStage?"0px":(longStage?"38px":"58px");
+     history.style.flexBasis="0px";
+     history.style.minHeight="0px";
    }
    if(current){
-     const historyReserve=retiredStage?0:(longStage?48:74);
-     current.style.maxHeight=Math.max(330,available-historyReserve)+"px";
+     current.style.maxHeight=Math.max(330,available)+"px";
    }
 
    document.documentElement.style.setProperty("--actual-game-height",available+"px");
