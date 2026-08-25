@@ -41,6 +41,7 @@
 <body><div class="wrap">
 <div class="brandRow">
   <div class="brand"><img class="brandLogo" src="./basketballlife-logo.png" alt="" onerror="this.remove()"><span class="brandText">Basketball<b>Life</b></span></div>
+  <div id="liveTickerTopSlot" class="liveTickerSlot"><div id="liveTicker" class="liveTicker" hidden><div class="liveLabel">BL LIVE</div><div class="liveViewport"><div id="liveTrack" class="liveTrack" aria-live="polite"></div></div></div></div>
   <div class="brandActions">
     <span id="careerSaveStatus" class="careerSaveStatus hidden" aria-live="polite">本機自動存檔</span>
     <button id="quickRestartBtn" class="quickRestartBtn hidden" type="button" onclick="toggleQuickRestartMenu(event)" title="重新開始這段生涯" aria-label="重新開始">↻</button>
@@ -54,7 +55,6 @@
     <div id="onlineStatus" class="onlineStatus offline"><span class="onlineDot"></span><span id="onlineStatusText">單機模式</span></div>
   </div>
 </div>
-<div id="liveTicker" class="liveTicker" hidden><div class="liveLabel">BL LIVE</div><div class="liveViewport"><div id="liveTrack" class="liveTrack" aria-live="polite"></div></div></div>
 
 <section id="setup" class="card setup">
 <button id="weeklyChallenge" class="weeklyChallenge" type="button" onclick="applyWeeklyChallenge()"><small>本週 SEED</small><b id="weeklyChallengeTitle">載入中…</b><span id="weeklyChallengeMeta">點擊套用</span></button>

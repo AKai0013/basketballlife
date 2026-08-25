@@ -234,6 +234,18 @@ function resetLiveTicker(){
  liveSessionNews=[];
  refreshTicker();
 }
+function syncLiveTickerPlacement(){
+ const ticker=document.getElementById("liveTicker");
+ if(!ticker)return null;
+ const game=document.getElementById("game"),setup=document.getElementById("setup"),community=document.getElementById("communityPage");
+ const gameVisible=!!game&&!game.classList.contains("hidden")&&!document.body.classList.contains("retirementMode");
+ const communityVisible=!!community&&!community.classList.contains("hidden");
+ const setupVisible=!!setup&&!setup.classList.contains("hidden");
+ const slot=document.getElementById(gameVisible||communityVisible||setupVisible?"liveTickerTopSlot":"");
+ if(slot&&ticker.parentElement!==slot)slot.appendChild(ticker);
+ if(!slot)ticker.hidden=true;
+ return slot;
+}
 function setGlobalTickerNews(items=[]){
  globalTickerNews=Array.isArray(items)?items.map(normalizeTickerItem):[];
  refreshTicker();
@@ -248,6 +260,8 @@ window.BasketballLifeTicker={
 
 function refreshTicker(){
  const el=document.getElementById("liveTrack"),wrap=document.getElementById("liveTicker");if(!el)return;
+ const slot=syncLiveTickerPlacement();
+ if(!slot)return;
  const merged=[...liveSessionNews,...globalTickerNews]
    .map(normalizeTickerItem)
    .filter(x=>(x.importance||0)>=GLOBAL_TICKER_MIN_IMPORTANCE&&isHeadlineTickerItem(x))
