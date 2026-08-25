@@ -107,6 +107,7 @@ function continueCareer(){
  if(!save){updateContinueCareerPanel(null);return false}
  careerSaveRestoring=true;
  try{
+   resetLiveTicker();
    p=normalizeCareerPlayer(save.player);
    chosenPos=POSITIONS.includes(save.chosenPos)?save.chosenPos:p.pos;
    selectedDie=Number.isInteger(save.selectedDie)?save.selectedDie:null;

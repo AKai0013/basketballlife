@@ -40,6 +40,7 @@ function startCareer(){
  const jerseyNumber=Math.max(0,Math.min(99,Math.round(Number(document.getElementById("jerseyNumberInput")?.value)||7)));
  const handedness=document.getElementById("handednessInput")?.value||"右手";
  const weeklyChallenge=weeklySetupMatches?{active:true,id:weeklyBoard.id,label:weekly.label,seed:weekly.seed,pos:weekly.pos,height:weekly.height,wingspan:weekly.wingspan}:{active:false};
+ resetLiveTicker();
  p={name:n,pos:chosenPos,seed,avatarSeed:selectedAvatarSeed(),heightCm:chosenHeight,wingspanCm:chosenWingspan,birthplace,jerseyNumber,handedness,readingMode:"standard",weeklyChallenge,careerVersion:legacyWeeklyChallenge?"8.1.1":"9.0.0",...(legacyWeeklyChallenge?{}:{talentVersion:1,talentProfile:talent.profile,seedTierMapVersion}),seedTier:tier.key,seedTierLabel:tier.label,seedTierDesc:tier.desc,
  age:16,year:2026,path:"HBL",grade:1,stage:"training",stats:s,caps,growth:talent.growth,
  durability:ri(r,38,94),clutch:ri(r,35,96),discipline:ri(r,38,94),confidence:50,health:100,fatigue:0,six:0,genius:false,geniusType:"",round:0,eventIndex:0,
