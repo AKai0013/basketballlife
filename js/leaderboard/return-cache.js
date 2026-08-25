@@ -139,7 +139,7 @@
       url.search = "";
       url.hash = "";
       url.searchParams.set("leaderboard", saved.metric || "power");
-      url.searchParams.set("era", saved.era || "v81");
+      url.searchParams.set("era", saved.era || "v9");
       return url.pathname + url.search;
     }
 
@@ -153,7 +153,7 @@
     bl.openCareer = async function (...args) {
       if (!restoring && isLeaderboardView()) {
         returnState = {
-          era: state.activeLeaderboardEra || "v81",
+          era: state.activeLeaderboardEra || "v9",
           metric: state.activeMetric || "power",
           scrollY: Math.max(0, window.scrollY || document.documentElement.scrollTop || 0),
         };
@@ -167,7 +167,7 @@
       returnState = null;
       restoring = true;
       try {
-        state.activeLeaderboardEra = saved.era || "v81";
+        state.activeLeaderboardEra = saved.era || "v9";
         state.activeMetric = saved.metric || "power";
         history.replaceState({ bl: "leaderboard" }, "", leaderboardUrl(saved));
         await bl.openLeaderboard(saved.metric || "power", false);

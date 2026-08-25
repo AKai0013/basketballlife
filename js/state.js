@@ -7,8 +7,9 @@ function displayPlayerName(value){
 
 window.addEventListener("error",function(e){
  try{
+  console.error(e.error||e.message||e);
   const box=document.getElementById("special");
-   if(box)box.innerHTML=`<div class="dangerEvent"><b>⚠️ 遊戲暫時無法繼續</b><br>${String(e.message||e.error||"未知錯誤")}<br><span class="mut">目前進度仍保留在本機。請先重新整理；若仍無法繼續，再附上這段錯誤內容回報。</span></div>`;
+   if(box)box.innerHTML=`<div class="dangerEvent"><b>⚠️ 遊戲暫時無法繼續</b><br><span class="mut">目前進度已保留。請重新整理後再試。</span></div>`;
  }catch(_e){}
 });
 
@@ -41,28 +42,7 @@ for(const id of ["dicepool","assign","diceMsg","pointsLeft","pointRows"]){
 function seedTierDefinition(key){return SEED_TIER_DEFS.find(t=>t.key===key)||SEED_TIER_DEFS.find(t=>t.key==="B")}
 function seedTierRank(key){return {C:0,B:1,A:2,S:3,"S+":4,"SS+":5,"SSS+":6}[key]??1}
 function seedTierAtLeast(key,minimum){return seedTierRank(key)>=seedTierRank(minimum)}
-function seedTierProfile(seed){
- const idx=seedPool.indexOf(seed);
- // Preserve the original tier of every legacy fixed seed.
- if(idx>=0){
-   if(idx<3)return seedTierDefinition("S+");
-   if(idx<10)return seedTierDefinition("S");
-   if(idx<22)return seedTierDefinition("A");
-   if(idx<40)return seedTierDefinition("B");
-   return seedTierDefinition("C");
- }
- // Procedural distribution: SSS+ 1%, SS+ 2%, S+ 3%, S 14%, A 24%, B 36%, C 20%.
- let hash=2166136261;
- for(const ch of String(seed||"")){hash^=ch.charCodeAt(0);hash=Math.imul(hash,16777619)}
- const bucket=(hash>>>0)%10000;
- if(bucket<100)return seedTierDefinition("SSS+");
- if(bucket<300)return seedTierDefinition("SS+");
- if(bucket<600)return seedTierDefinition("S+");
- if(bucket<2000)return seedTierDefinition("S");
- if(bucket<4400)return seedTierDefinition("A");
- if(bucket<8000)return seedTierDefinition("B");
- return seedTierDefinition("C");
-}
+function seedTierProfile(seed,mapVersion=V90_SEED_TIER_MAP_VERSION){return v90SeedTierProfile(seed,mapVersion)}
 function proceduralSeed(){
  const bytes=new Uint8Array(8);
  if(globalThis.crypto?.getRandomValues)crypto.getRandomValues(bytes);
@@ -108,7 +88,9 @@ function normalizeCareerPlayer(player){
  if(!player||typeof player!=="object")return player;
  player.name=displayPlayerName(player.name);
  if(typeof player.careerVersion!=="string"||!player.careerVersion)player.careerVersion="legacy";
- const seedProfile=seedTierProfile(player.seed);
+ const isV9Career=player.careerVersion.startsWith("9.");
+ if(isV9Career)player.seedTierMapVersion=Number(player.seedTierMapVersion)===V90_SEED_TIER_MAP_VERSION?V90_SEED_TIER_MAP_VERSION:V90_LEGACY_SEED_TIER_MAP_VERSION;
+ const seedProfile=seedTierProfile(player.seed,isV9Career?player.seedTierMapVersion:V90_LEGACY_SEED_TIER_MAP_VERSION);
  if(!SEED_TIER_DEFS.some(t=>t.key===player.seedTier)){player.seedTier=seedProfile.key;player.seedTierLabel=seedProfile.label;player.seedTierDesc=seedProfile.desc}
  if(typeof player.avatarSeed!=="string"||!player.avatarSeed)player.avatarSeed=newAvatarSeed();
  if(typeof player.publicCareerId!=="string")player.publicCareerId="";
@@ -128,7 +110,7 @@ function normalizeCareerPlayer(player){
    "injuryHistory","log","dice","used","trainingUndo","pointUndo","titles","titleHistory",
    "seasonPointFocus","offers","news","seasonHistory","careerAwards","chainTitles","teamsPlayed",
    "hallOfFame","jerseyRetired","specialQueue","internationalHistory","offCourtHistory","offCourtEventKinds","championshipHistory","lastSeasonAwards","hallVotes","formerPartners",
-   "medicalHistory","medicalPressureHistory","recentEvents","feedHistory","relationshipHistory","chainQueue","storyBeats","seasonStoryCandidates","teamWorldHistory","collegeDraftHistory","draftEntrySelections"
+   "medicalHistory","medicalPressureHistory","recentEvents","feedHistory","relationshipHistory","chainQueue","storyBeats","seasonStoryCandidates","roleHistory","teamWorldHistory","collegeDraftHistory","draftEntrySelections"
  ];
  arrayFields.forEach(k=>{if(!Array.isArray(player[k]))player[k]=[]});
  // V7.50 corrects the US college system: both routes are four-year NCAA divisions.

@@ -65,29 +65,31 @@ function maybeNaturalSeasonInjury(){
 function showHealth(){
  p.stage="health";resetMain();render();
  maybeNaturalSeasonInjury();
- chapter.textContent=`${p.year} · ${p.age}歲 · 健康結算`;title.textContent="健康與傷病";
+ chapter.textContent=`${p.year} · ${p.age}歲 · 球季體檢`;title.textContent="球季健康報告";
  text.textContent=p.injury
-   ? "醫療團隊完成本季傷勢評估。下方會顯示受傷部位、預估缺席場數、恢復時間與舊傷紀錄。"
-   : "醫療團隊完成本季健康檢查。你順利度過球季，身體負荷與舊傷狀況如下。";
+   ? "先確認傷勢、恢復時間與剩餘缺席場次，再決定下一季如何回到球場。"
+   : "本季身體檢查完成。健康狀態、受傷風險與累積負荷都整理在這份報告裡。";
 
  if(p.injury){
    p.healthySeasons=0;
    ensureInjuryRecoveryState();
    const original=p.injury.originalMissedGames??0;
    const remaining=Math.max(0,p.injury.remainingGames??original);
+   const baseRisk=Math.round(p.seasonInjuryRiskTarget||estimatedPlanRisk(p.seasonPlan||"normal"));
    const actualRisk=Math.round((1-Math.max(0,Math.min(1,Number(p.seasonInjurySurvival)||0)))*100);
    const riskSettlement=p.seasonNaturalInjuryChecked?`${actualRisk}%`:`已記錄 ${p.injury.name}`;
-  special.innerHTML=`<div class="injuryCard ${p.injury.level==="輕傷"?"light":p.injury.level==="中傷"?"mid":""}">
-     <b>🏥 ${p.injury.name}</b><br>${p.lastInjurySummary||""}
-     <div class="medicalGrid">
-       <div class="medicalCell"><small>部位</small><b>${p.injury.area}</b></div>
-       <div class="medicalCell"><small>嚴重度</small><b>${p.injury.level}</b></div>
-       <div class="medicalCell"><small>預估缺席</small><b>${original} 場</b></div>
-       <div class="medicalCell"><small>恢復時間</small><b>${p.injury.recovery||"依復健進度"}</b></div>
-       <div class="medicalCell"><small>目前預估剩餘</small><b>${remaining>0?remaining+" 場":"可望復出"}</b></div>
+   const healthScore=Math.max(0,Math.min(100,Math.round(p.health||0)));
+  special.innerHTML=`<section class="v9HealthReport is-injured" style="--health:${healthScore}">
+    <header class="v9HealthHero">
+      <div class="v9HealthHeroCopy"><small>MEDICAL REPORT · ${p.year}</small><span>需要復健</span><h3>${p.injury.name}</h3><p>${p.lastInjurySummary||"醫療團隊已完成傷勢評估。"}</p></div>
+      <div class="v9HealthGauge" role="meter" aria-label="目前健康 ${healthScore}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${healthScore}"><i><b>${healthScore}</b><small>健康</small></i></div>
+    </header>
+    <div class="v9HealthRiskStrip"><article><small>季初風險</small><b>${baseRisk}%</b></article><span>→</span><article><small>球季結果</small><b>${riskSettlement}</b></article><article><small>尚需缺席</small><b>${remaining>0?remaining+" 場":"可望復出"}</b></article></div>
+    <div class="v9MedicalBoard">
+      <section class="injuryCard v9InjuryFocus ${p.injury.level==="輕傷"?"light":p.injury.level==="中傷"?"mid":""}"><div class="v9ReportLabel">傷勢資料</div><div class="medicalGrid"><div class="medicalCell"><small>部位</small><b>${p.injury.area}</b></div><div class="medicalCell"><small>嚴重度</small><b>${p.injury.level}</b></div><div class="medicalCell"><small>原估缺席</small><b>${original} 場</b></div><div class="medicalCell"><small>恢復時間</small><b>${p.injury.recovery||"依復健進度"}</b></div></div></section>
+      <aside class="medicalPanel v9MedicalHistory"><div class="v9ReportLabel">身體紀錄</div><div class="medicalHistory">${oldInjuryHTML()}</div><p>接下來以治療與復健為主，恢復時間會隨進度更新。</p></aside>
     </div>
-  </div><div class="medicalPanel"><div class="cardLabel">本季健康評估</div><b class="medicalValue">季初受傷風險 ${Math.round(p.seasonInjuryRiskTarget||estimatedPlanRisk(p.seasonPlan||"normal"))}%｜本季結果：${riskSettlement}</b><div class="mut" style="margin-top:6px">接下來的重點是治療與復健；醫療團隊會依剩餘賽程持續更新可復出時間。</div></div>
-   <div class="medicalPanel"><div class="cardLabel">舊傷紀錄</div><div class="medicalHistory">${oldInjuryHTML()}</div></div>`;
+  </section>`;
   }else{
     p.healthySeasons++;
     p.bodyLoad=Math.round(Math.max(0,(p.bodyLoad||0)-14-(p.seasonPlan==="care"?8:0)));
@@ -96,10 +98,19 @@ function showHealth(){
    let comebackHTML=rehabSeasonEffect();
    let baseRisk=Math.round(p.seasonInjuryRiskTarget||estimatedPlanRisk(p.seasonPlan||"normal"));
    let actualRisk=Math.round((1-Math.max(0,Math.min(1,Number(p.seasonInjurySurvival)||1)))*100);
-   special.innerHTML=`<div class="healthok"><div class="healthHeadline">本季平安出賽</div><div class="healthSub">季初預估受傷風險 <b>${baseRisk}%</b>｜球季結束時為 <b>${actualRisk}%</b>。你沒有新增需要停賽治療的傷勢。</div></div>
-    <div class="medicalPanel"><div class="cardLabel">身體負荷</div><b class="medicalValue">${p.bodyLoad}/100｜${medicalRiskLabel()}</b>
-    <div class="bodyLoadBar"><div class="bodyLoadFill" style="width:${Math.round(p.bodyLoad||0)}%"></div></div>
-    <div style="margin-top:8px">${oldInjuryHTML()}</div>${fadedOldInjuries.length?`<div class="mut" style="margin-top:7px">連續健康出賽讓 ${fadedOldInjuries.join("、")} 的舊傷警報解除；其餘部位也正在持續改善。</div>`:""}</div>${ironHTML}${comebackHTML}`;
+   const healthScore=Math.max(0,Math.min(100,Math.round(p.health||100)));
+   const load=Math.max(0,Math.min(100,Math.round(p.bodyLoad||0)));
+   special.innerHTML=`<section class="v9HealthReport is-clear" style="--health:${healthScore};--load:${load}">
+    <header class="v9HealthHero">
+      <div class="v9HealthHeroCopy"><small>MEDICAL REPORT · ${p.year}</small><span>可以出賽</span><h3>球季完整收官</h3><p>沒有新增需要停賽治療的傷勢，身體狀態已完成季末整理。</p></div>
+      <div class="v9HealthGauge" role="meter" aria-label="目前健康 ${healthScore}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${healthScore}"><i><b>${healthScore}</b><small>健康</small></i></div>
+    </header>
+    <div class="v9HealthRiskStrip"><article><small>季初風險</small><b>${baseRisk}%</b></article><span>→</span><article><small>季末風險</small><b>${actualRisk}%</b></article><article><small>連續健康球季</small><b>${p.healthySeasons}</b></article></div>
+    <div class="v9MedicalBoard">
+      <section class="medicalPanel v9LoadPanel"><div class="v9ReportLabel">身體負荷</div><div class="v9LoadValue"><b>${load}</b><span>/100<br>${medicalRiskLabel()}</span></div><div class="bodyLoadBar" role="meter" aria-label="身體負荷 ${load}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${load}"><div class="bodyLoadFill" style="width:${load}%"></div></div>${fadedOldInjuries.length?`<p>${fadedOldInjuries.join("、")} 的舊傷警報已解除。</p>`:"<p>目前沒有新增傷勢警報。</p>"}</section>
+      <aside class="medicalPanel v9MedicalHistory"><div class="v9ReportLabel">身體紀錄</div><div class="medicalHistory">${oldInjuryHTML()}</div></aside>
+    </div>
+   </section>${ironHTML}${comebackHTML}`;
  }
  next.textContent="查看賽季成果 →";next.classList.remove("hidden");
 }
@@ -140,6 +151,7 @@ function showResults(){
  if(isProPath()){
    const actual=mins>=30?{id:"core",label:"先發核心"}:mins>=25?{id:"starter",label:"固定先發"}:mins>=20?{id:"sixth",label:"最佳第六人"}:mins>=14?{id:"worker",label:"主要輪替／防守工兵"}:mins>=9?{id:"benchLeader",label:"板凳領袖"}:{id:"garbage",label:"垃圾時間球員"};
    p.roleState.current=actual.id;p.roleState.currentLabel=actual.label;p.roleState.actualMinutes=mins;p.roleState.updatedYear=p.year;
+   recordV8RoleHistory(p,actual,"球季實際角色",mins);
    promisedFloor=/核心/.test(p.roleState.promisedLabel||"")?29:/固定先發/.test(p.roleState.promisedLabel||"")?25:/先發競爭/.test(p.roleState.promisedLabel||"")?21:/主要|季後賽/.test(p.roleState.promisedLabel||"")?17:0;
    if(promisedFloor&&mins<promisedFloor-2){p.careerCast.coach.trust=Math.max(0,p.careerCast.coach.trust-4);recordV8Story("turning",`教練團未兌現「${p.roleState.promisedLabel}」承諾，本季僅安排 ${mins} 分鐘`,5,{person:p.careerCast.coach.name});queueV8Chain("coachConflict",p.year+1,1,{source:"rolePromise",promised:p.roleState.promisedLabel,actual:actual.label});}
  }
@@ -222,10 +234,16 @@ function showResults(){
  let stageDevelopmentPoints=p.path==="HBL"
    ? Math.max(3,Math.min(6,3+Math.floor((p.growth-55)/15)))
    : (isCollegePath()&&p.age<=21?1:0);
- const eliteDevelopmentPoints=p.seedTier==="SSS+"?(p.age<=21?5:p.age<=24?3:0)
-    :p.seedTier==="SS+"?(p.age<=21?4:p.age<=24?3:0)
-    :p.seedTier==="S+"?(p.age<=21?3:p.age<=24?2:0)
-    :p.seedTier==="S"?(p.age<=21?2:p.age<=23?1:0):0;
+ const v9Talent=p.talentProfile?.model==="v9-specialist-1";
+ const eliteDevelopmentPoints=v9Talent
+   ? (p.seedTier==="SSS+"?(p.age<=21?4:p.age<=24?2:0)
+     :p.seedTier==="SS+"?(p.age<=21?3:p.age<=24?2:0)
+     :p.seedTier==="S+"?(p.age<=21?2:p.age<=24?1:0)
+     :p.seedTier==="S"&&p.age<=22?1:0)
+   : (p.seedTier==="SSS+"?(p.age<=21?5:p.age<=24?3:0)
+     :p.seedTier==="SS+"?(p.age<=21?4:p.age<=24?3:0)
+     :p.seedTier==="S+"?(p.age<=21?3:p.age<=24?2:0)
+     :p.seedTier==="S"?(p.age<=21?2:p.age<=23?1:0):0);
  const developmentPoints=stageDevelopmentPoints+(p.path!=="HBL"?eliteDevelopmentPoints:0);
  p.seasonStats={games,mins,pts,reb,ast,stl,blk,fg,three,tourneys:resultRows,awards,abilityProfile:typeof v811AbilitySnapshot==="function"?v811AbilitySnapshot(abilityProfile):null,abilitySituation:seasonContext.situation};
  let proAwards=determineAwards(p.seasonStats,resultRows);
@@ -270,16 +288,16 @@ function showResults(){
    scheduledGames,missedGames:missedThisSeason,
    injuryMissedGames:injuryMissed,injuryName:injuryMissed>0?(p.injury?.name||"傷病"):"",
    suspensionGames:conductMissed,
-   games,mins,pts,reb,ast,stl,blk,fg,three,ovr:overall(),seasonFatigueGain,seasonBodyLoadGain,signatureGame,keyBattle,abilityProfile:typeof v811AbilitySnapshot==="function"?v811AbilitySnapshot(abilityProfile):null,abilitySituation:seasonContext.situation,tourneys:resultRows,seasonAwards:[...awards,...proAwards],awardAudit:p.lastSeasonAwardAudit?{...p.lastSeasonAwardAudit}:null
+   games,mins,pts,reb,ast,stl,blk,fg,three,ovr:overall(),role:isProPath()?p.roleState.current:"",roleLabel:isProPath()?p.roleState.currentLabel:"",seasonFatigueGain,seasonBodyLoadGain,signatureGame,keyBattle,abilityProfile:typeof v811AbilitySnapshot==="function"?v811AbilitySnapshot(abilityProfile):null,abilitySituation:seasonContext.situation,tourneys:resultRows,seasonAwards:[...awards,...proAwards],awardAudit:p.lastSeasonAwardAudit?{...p.lastSeasonAwardAudit}:null
  });
  const seasonStory=finalizeV8SeasonStory();
  updateCareerTotals(p.seasonStats);
  let titleHTML=titleChecks();
  p.bonusPoints=total;p.specialBonusPoints=0;
 
- chapter.textContent=`${p.year} · ${p.path} · 年度賽季`;
- title.textContent="年度賽事與個人成績";
- text.innerHTML=`<div class="seasonResultIntro"><b>${leagueDisplay(p.path)}</b>｜本季賽事結束。</div>${proHeaderHTML()}`;
+ chapter.textContent=`${p.year} · ${p.path} · 球季總結`;
+ title.textContent="本季成績單";
+ text.innerHTML=`<div class="seasonResultIntro"><b>${leagueDisplay(p.path)}</b>｜從代表作、出勤到成長，一次看完這個球季。</div>${proHeaderHTML()}`;
 
 const missReasonParts=[];
  if(injuryMissed>0)missReasonParts.push(`因 ${p.injury?.name||"傷病"} 缺席 ${injuryMissed} 場`);
@@ -293,48 +311,33 @@ const missReasonParts=[];
  原定賽程 ${scheduledGames} 場｜${missReasonParts.join("｜")}｜實際出賽 <b>${games}</b> 場
  ${p.injury?.remainingGames>0?`<br><span class="bad">目前仍預估缺席 ${p.injury.remainingGames} 場，傷勢將延續至下一階段。</span>`:""}
  </div>` : "";
- let veteranMinutesHTML=isProPath()&&p.age>=32?`<div class="notice"><b>⏱️ ${veteranProfile.label}</b><br>教練團預計將你本季的上場時間控制在 <b>${maxMins} 分鐘</b>左右，並依年齡、身體負荷與傷後狀態隨時調整。</div>`:"";
+ let veteranMinutesHTML=isProPath()&&veteranProfile.label==="身體狀態管理"?`<div class="notice"><b>⏱️ ${veteranProfile.label}</b><br>依目前健康、出勤與身體負荷，教練團將單場負荷控制在 <b>${maxMins} 分鐘</b>左右。</div>`:"";
  let keyBattleHTML=keyBattle?`<div class="keyBattleResult ${keyBattle.kind==="national"?"national":"regular"}"><div class="resultSectionTitle">本季關鍵戰｜${escapeFeedText(keyBattle.objective||keyBattle.outcome||"已完成")}</div><b>${escapeFeedText(keyBattle.title||"本季關鍵戰")}</b>｜${escapeFeedText(keyBattle.opponent||"代表性對手")}<br><span class="mut">${escapeFeedText(keyBattle.battleLabel||"以球隊勝負為優先")}｜${keyBattle.performanceOutcome?`場上表現：${escapeFeedText(keyBattle.performanceOutcome)}｜`:""}${escapeFeedText(keyBattle.teamResult||"本戰結果已記錄")}${keyBattle.marketDelta?`｜球探評價 ${keyBattle.marketDelta>0?"+":""}${keyBattle.marketDelta}`:""}</span></div>`:"";
  const rolePromiseMiss=isProPath()&&promisedFloor&&mins<promisedFloor-2;
- special.innerHTML=`
- ${rolePromiseMiss?`<div class="notice fail"><b>⚠️ 角色承諾未兌現</b><br>合約承諾：${p.roleState.promisedLabel}（${p.roleState.promisedMinutes||"未明確"}）｜實際：${p.roleState.currentLabel}（${mins}分鐘）。此落差可能觸發後續協商。</div>`:""}
- ${keyBattleHTML}
- ${injurySeasonHTML}
- ${veteranMinutesHTML}
- <div class="tourneyList">
-   ${resultRows.map(x=>`<div class="tourney"><div class="name">${x.name}</div><div class="finish">${x.finish}</div><div class="reward">+${x.reward}點</div></div>`).join("")}
+ const availability=scheduledGames?Math.round(games/scheduledGames*100):0;
+ const allAwards=[...awards,...proAwards];
+ special.innerHTML=`<section class="v9SeasonReport">
+ <header class="v9SeasonHero"><div class="v9SeasonHeroCopy"><small>SEASON WRAP · ${p.year}</small><span>${leagueDisplay(p.path)}</span><h3>${p.team||leagueDisplay(p.path)}</h3><p>${games} 場出賽・${mins} 分鐘・${seasonContext.situation}</p></div><div class="v9SeasonHeroScore"><small>場均得分</small><b>${pts}</b><span>${reb} 籃板 · ${ast} 助攻</span></div></header>
+ <div class="v9SeasonPulse"><article><small>出賽率</small><b>${availability}%</b><span>${games}/${scheduledGames} 場</span></article><article><small>場均時間</small><b>${mins}</b><span>分鐘</span></article><article><small>投籃命中率</small><b>${fg}%</b><span>FG</span></article><article><small>三分命中率</small><b>${three}%</b><span>3PT</span></article></div>
+ <div class="v9SeasonAlerts">${rolePromiseMiss?`<div class="notice fail"><b>角色承諾未兌現</b><br>合約承諾：${p.roleState.promisedLabel}（${p.roleState.promisedMinutes||"未明確"}）｜實際：${p.roleState.currentLabel}（${mins}分鐘）。</div>`:""}${injurySeasonHTML}${veteranMinutesHTML}</div>
+ <section class="v9SeasonJourney"><div class="v9ReportLabel">賽事旅程</div><div class="tourneyList">${resultRows.map((x,index)=>`<div class="tourney"><small>${String(index+1).padStart(2,"0")}</small><div class="name">${x.name}</div><div class="finish">${x.finish}</div><div class="reward">+${x.reward} 點</div></div>`).join("")}</div></section>
+ ${keyBattleHTML}<div class="v9SeasonStorySlot"></div>
+ <div class="v9SeasonMainGrid">
+  <section class="seasonStatLine"><div class="v9ReportLabel">完整數據</div><div class="statSummary"><span><small>出賽</small><b>${games}</b></span><span><small>時間</small><b>${mins}</b></span><span><small>得分</small><b>${pts}</b></span><span><small>籃板</small><b>${reb}</b></span><span><small>助攻</small><b>${ast}</b></span><span><small>抄截</small><b>${stl}</b></span><span><small>阻攻</small><b>${blk}</b></span><span><small>FG</small><b>${fg}%</b></span><span><small>3PT</small><b>${three}%</b></span></div></section>
+  <aside class="v9SeasonSide"><div class="awards"><div class="v9ReportLabel">個人成就</div><div class="awardBody">${allAwards.length?allAwards.map(x=>`<div><b>${x}</b></div>`).join(""):"本季沒有額外個人獎項。"}</div></div>${seasonStory.length?`<div class="awards"><div class="v9ReportLabel">本季故事</div><div class="awardBody">${seasonStory.map(x=>`<div><b>${x.text}</b></div>`).join("")}</div></div>`:""}${chainHTML}${titleHTML}</aside>
  </div>
- <div class="seasonStatLine">
-   <div class="resultSectionTitle">本季數據</div>
-   <div class="statSummary">
-     <span><small>出賽</small><b>${games}</b></span>
-     <span><small>時間</small><b>${mins}</b></span>
-     <span><small>得分</small><b>${pts}</b></span>
-     <span><small>籃板</small><b>${reb}</b></span>
-     <span><small>助攻</small><b>${ast}</b></span>
-     <span><small>抄截</small><b>${stl}</b></span>
-     <span><small>阻攻</small><b>${blk}</b></span>
-   <span><small>FG</small><b>${fg}%</b></span>
-   <span><small>3PT</small><b>${three}%</b></span>
-   </div>
-   <div class="mut" style="margin-top:8px">本季球探解讀：${seasonContext.situation}</div>
- </div>
- <div class="awards"><div class="resultSectionTitle">個人成就</div><div class="awardBody">${[...awards,...proAwards].length?[...awards,...proAwards].map(x=>`<div>• <b>${x}</b></div>`).join(""):"本季沒有獲得額外個人獎項。"}</div></div>
- ${seasonStory.length?`<div class="awards"><div class="resultSectionTitle">本季留下的故事</div><div class="awardBody">${seasonStory.map(x=>`<div>• <b>${x.text}</b></div>`).join("")}</div></div>`:""}
- ${chainHTML}${titleHTML}<div class="breakdown">
-   <div class="resultSectionTitle">本季成長</div>
-   本季共獲得 <b class="gold">${total} 點能力點</b>。
+ <footer class="breakdown"><div><div class="v9ReportLabel">球季成長</div><b class="v9GrowthTotal">+${total}</b><span>能力點</span></div>
    <details class="decisionDetails"><summary>查看能力點來源</summary><div>
     賽事成績：<b class="gold">${tourneyPoints} 點</b><br>
     個人表現：<b class="gold">${statPoints} 點</b><br>
     個人成就：<b class="gold">${awardPoints} 點</b><br>
     國際賽：<b class="gold">${internationalPoints} 點</b><br>
     ${stageDevelopmentPoints?`${p.path==="HBL"?"高中養成":"學生階段發展"}：<b class="gold">${stageDevelopmentPoints} 點</b><br>`:""}
-    ${p.path!=="HBL"&&eliteDevelopmentPoints?`菁英潛力兌現：<b class="gold">${eliteDevelopmentPoints} 點</b><br>`:""}
+    ${p.path!=="HBL"&&eliteDevelopmentPoints?`${v9Talent?"核心潛力兌現":"菁英潛力兌現"}：<b class="gold">${eliteDevelopmentPoints} 點</b><br>`:""}
     ${planGrowthPoints?`賽季策略影響：<b class="${planGrowthPoints>0?"gold":"bad"}">${planGrowthPoints>0?"+":""}${planGrowthPoints} 點</b><br>`:""}
     ${healthyAttackBonus?`健康完成高強度球季：<b class="gold">+1 點</b><br>`:""}
    </div></details>
- </div>`;
+ </footer></section>`;
 
  if(p.lastDanceActive){
    const growth=special.querySelector(".breakdown");
@@ -349,7 +352,7 @@ function showPointDistribution(){
  p.stage="points";resetMain();render();
  chapter.textContent=`${p.year} · 賽季成長`;
  title.textContent="分配能力點";
- text.innerHTML=`分配本季能力點；超過自然天賦線後，成本會提高。`;
+ text.textContent="使用本季獲得的能力點。超過一般培養範圍後，每次提升會需要更多點數。";
  if(p.bankedPoints>0){p.bonusPoints+=p.bankedPoints;p.bankedPoints=0;}
  p.currentSeasonSpend={};
  p.pointUndo=[];
@@ -384,13 +387,19 @@ function breakthroughSurcharge(k){
 }
 function pointCost(k){
  let seedDiscount=0;
- // Growth is now visible in actual development, not only scouting. Elite seeds
- // accelerate most strongly from college age through the first pro contract,
- // then return to the same late-career costs as everyone else.
- if(p.seedTier==="SSS+")seedDiscount=p.age<=22?4:p.age<=26?5:p.age<=29?3:0;
- else if(p.seedTier==="SS+")seedDiscount=p.age<=22?3:p.age<=26?4:p.age<=29?3:0;
- else if(p.seedTier==="S+")seedDiscount=p.age<=22?2:p.age<=26?3:p.age<=29?2:0;
- else if(p.seedTier==="S")seedDiscount=p.age<=22?1:p.age<=26?2:p.age<=28?1:0;
+ if(p.talentProfile?.model==="v9-specialist-1"){
+   const affinity=typeof v90TalentAffinity==="function"?v90TalentAffinity(p,k):"foundation";
+   const coreBase={"SSS+":4,"SS+":3,"S+":2,S:1,A:1}[p.seedTier]||0;
+   const agePhase=p.age<=22?0:p.age<=26?1:p.age<=29?-1:-99;
+   const coreDiscount=agePhase===-99?0:Math.max(0,coreBase+agePhase);
+   seedDiscount=affinity==="core"?coreDiscount:affinity==="support"?Math.max(0,coreDiscount-2):0;
+ }else{
+   // Existing V8.1 careers retain their original development curve.
+   if(p.seedTier==="SSS+")seedDiscount=p.age<=22?4:p.age<=26?5:p.age<=29?3:0;
+   else if(p.seedTier==="SS+")seedDiscount=p.age<=22?3:p.age<=26?4:p.age<=29?3:0;
+   else if(p.seedTier==="S+")seedDiscount=p.age<=22?2:p.age<=26?3:p.age<=29?2:0;
+   else if(p.seedTier==="S")seedDiscount=p.age<=22?1:p.age<=26?2:p.age<=28?1:0;
+ }
  return Math.max(1,basePointCost(p.stats[k])+breakthroughSurcharge(k)-(p.geniusCostDiscount||0)-seedDiscount+skillCostModifier(k)+chainSkillDiscount(k));
 }
 function renderPoints(){
@@ -405,13 +414,16 @@ function renderPoints(){
  if(undoBtn)undoBtn.disabled=!(p.pointUndo&&p.pointUndo.length);
  pointRows.innerHTML=Object.keys(p.stats).map(k=>{
    let v=p.stats[k],talent=p.caps[k],cost=pointCost(k),over=v>=talent,nextV=v+1;
+   const progress=Math.max(0,Math.min(100,Math.round(v)));
+   const capProgress=Math.max(0,Math.min(100,Math.round(talent||99)));
    let note=over
-     ? `<span class="gold">突破</span>｜基礎${basePointCost(v)}＋突破${breakthroughSurcharge(k)}`
-     : `天賦線 ${talent}｜基礎${basePointCost(v)}`;
+     ? `<span class="gold">突破培養</span>`
+     : `一般培養至 ${talent}`;
    return `<div class="pointrow">
      <div>
        <div class="pointName"><b>${L[k]}</b><span class="pointValue">${v} / ${talent}</span>${v>talent?`<span class="gold" style="font-size:9px">+${v-talent}</span>`:""}</div>
-       <small>${note}｜${v<99?`${v}→${nextV} 需 ${cost}點`:"已達99"}</small>
+       <span class="pointTrack" style="--value:${progress}%;--cap:${capProgress}%" role="progressbar" aria-label="${L[k]}目前 ${v}，培養上限 ${talent}" aria-valuemin="0" aria-valuemax="99" aria-valuenow="${v}"><i></i></span>
+       <small>${note}｜${v<99?`${v}→${nextV} 需要 ${cost} 點`:"已達 99"}</small>
      </div>
      <button aria-label="提升${L[k]}" ${v>=99||p.bonusPoints<cost?"disabled style='opacity:.28'":""} onclick="buyPoint('${k}')">＋</button>
    </div>`;
@@ -515,7 +527,7 @@ function finishSeason(){
  // 高中：三年後第一次人生岔路
  if(p.path==="HBL"){
    p.year++;p.age++;p.grade++;p.round++;p.eventIndex=0;
-   if(p.age>=22&&!p.genius&&!p.geniusResolved){p.geniusFailed=true;p.geniusResolved=true;logIt(`潛能覺醒失敗：22歲前高標值「6」累計 ${p.six}/5 次。`);}
+   if(p.age>=22&&!p.genius&&!p.geniusResolved){p.geniusFailed=true;p.geniusResolved=true;logIt(`潛能覺醒失敗：22歲前最高點數「6」累計 ${p.six}/5 次。`);}
    if(p.grade>3){showGraduation();return}
    p.seasonEventCount=ri(RNG(p.seed+"events-"+p.year),2,4);render();showCareerChapter("newSchoolYear");return;
  }

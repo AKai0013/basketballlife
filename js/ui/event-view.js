@@ -56,7 +56,7 @@ function showTraining(){
  if(p.eventIndex===0)p.seasonEventSuccess=0;
  p.stage="training";resetMain();render();chapter.textContent=`${p.year} · ${p.age}歲 · ${p.path} · 新賽季`;
  title.textContent="季初特訓";
- text.textContent="骰到幾就是幾點；升級需求與季末能力點完全相同，未用完的點數會保留在該能力。";
+ text.textContent="把本季訓練點數投入最適合你的能力，未完成的進度會保留到下一次成長。";
  let planNotice=p.preseasonPlanNotice?`<div class="notice ${p.injury?"fail":""}"><b>開季規劃結果</b><br>${p.preseasonPlanNotice}</div>`:"";
  p.preseasonPlanNotice="";
  let r=RNG(p.seed+"training-"+p.year+"-"+p.path);
@@ -68,17 +68,17 @@ function showTraining(){
    p.six=Math.min(5,p.six+sixes);
    if(p.six>=5)awaken();
  }
- let highText=(!p.genius&&!p.geniusResolved&&p.age<22&&p.six>0)?` 高標值「6」累計 <b class="gold">${p.six}/5</b> 次。`:"";
- p.trainingRevealSummary=highText||" 骰子數字已全部揭曉。";
+ let highText=(!p.genius&&!p.geniusResolved&&p.age<22&&p.six>0)?` 最高點數「6」累計 <b class="gold">${p.six}/5</b> 次。`:"";
+ p.trainingRevealSummary=highText||" 點數已全部揭曉。";
  let resolution="";
  if(p.genius&&!p.geniusAwakeningShown){
    resolution=`<div class="notice awake"><b>✨ 潛能覺醒</b><br>你在22歲前完成五次最高強度特訓，隱藏特質 <b class="gold">${p.geniusType}</b> 正式覺醒。</div>`;
    p.geniusAwakeningShown=true;
  }else if(p.geniusFailed&&!p.geniusFailureShown){
-   resolution=`<div class="notice fail"><b>潛能覺醒失敗</b><br>22歲前未能累積5次高標值「6」。這條隱藏成長路線已關閉。</div>`;
+   resolution=`<div class="notice fail"><b>潛能覺醒失敗</b><br>22歲前未能累積 5 次最高點數「6」。這條隱藏成長路線已關閉。</div>`;
    p.geniusFailureShown=true;
  }
- special.innerHTML=`${planNotice}<div class="dicewrap"><div class="trainingTitle">季初特訓</div><div class="trainingSummary">自主訓練擲出 <b class="gold">${count}</b> 顆骰。<span id="diceRevealSummary">骰子翻滾中……</span></div><div id="dicepool" class="dicepool"></div><div id="assign" class="assign"></div><button id="undoTraining" class="undo" onclick="undoTrainingPoint()" disabled>↶ 返回上一步</button><div id="diceMsg" class="mut" style="font-size:12px;margin-top:8px">選擇本顆骰子要訓練的能力。</div>${abilityPanel()}</div>${resolution?`<div id="trainingRevealResolution" class="hidden">${resolution}</div>`:""}`;
+ special.innerHTML=`${planNotice}<div class="v9TrainingShell">${abilityPanel()}<div class="dicewrap"><div class="trainingTitle"><small>SEASON TRAINING</small>選擇養成方向</div><div class="trainingSummary">本季有 <b class="gold">${count}</b> 次訓練機會。<span id="diceRevealSummary">訓練點數揭曉中……</span></div><div id="dicepool" class="dicepool"></div><div id="assign" class="assign"></div><button id="undoTraining" class="undo" onclick="undoTrainingPoint()" disabled>↶ 返回上一步</button><div id="diceMsg" class="mut">選擇這次要加強的能力。</div></div></div>${resolution?`<div id="trainingRevealResolution" class="hidden">${resolution}</div>`:""}`;
  startDiceReveal();
  if(Object.values(p.stats).every(v=>v>=99)){
    p.used=p.used.map(()=>true);p.diceRolling=false;
@@ -92,12 +92,15 @@ function rebuildTrainingScreenFromSave(){
  if(!Array.isArray(p.dice)||!p.dice.length){showTraining();return}
  p.stage="training";resetMain();render();chapter.textContent=`${p.year} · ${p.age}歲 · ${p.path} · 新賽季`;
  title.textContent="季初特訓";
- text.textContent="骰到幾就是幾點；升級需求與季末能力點完全相同，未用完的點數會保留在該能力。";
+ text.textContent="把本季訓練點數投入最適合你的能力，未完成的進度會保留到下一次成長。";
  p.used=Array.from({length:p.dice.length},(_,i)=>!!p.used?.[i]);
  if(!Array.isArray(p.trainingUndo))p.trainingUndo=[];
  p.diceRolling=!!p.diceRolling;
  if(!Number.isFinite(p.diceRevealCount))p.diceRevealCount=p.diceRolling?0:p.dice.length;
- if(!p.trainingRevealSummary)p.trainingRevealSummary=" 骰子數字已全部揭曉。";
+ if(!p.trainingRevealSummary)p.trainingRevealSummary=" 點數已全部揭曉。";
+ p.trainingRevealSummary=String(p.trainingRevealSummary)
+   .replace(/高標值「6」/g,"最高點數「6」")
+   .replace(/骰子數字已全部揭曉/g,"點數已全部揭曉");
  const planNotice=p.preseasonPlanNotice?`<div class="notice ${p.injury?"fail":""}"><b>開季規劃結果</b><br>${p.preseasonPlanNotice}</div>`:"";
  p.preseasonPlanNotice="";
  let resolution="";
@@ -105,11 +108,11 @@ function rebuildTrainingScreenFromSave(){
    resolution=`<div class="notice awake"><b>✨ 潛能覺醒</b><br>你在22歲前完成五次最高強度特訓，隱藏特質 <b class="gold">${p.geniusType}</b> 正式覺醒。</div>`;
    p.geniusAwakeningShown=true;
  }else if(p.geniusFailed&&!p.geniusFailureShown){
-   resolution=`<div class="notice fail"><b>潛能覺醒失敗</b><br>22歲前未能累積5次高標值「6」。這條隱藏成長路線已關閉。</div>`;
+   resolution=`<div class="notice fail"><b>潛能覺醒失敗</b><br>22歲前未能累積 5 次最高點數「6」。這條隱藏成長路線已關閉。</div>`;
    p.geniusFailureShown=true;
  }
  const count=p.dice.length;
- special.innerHTML=`${planNotice}<div class="dicewrap"><div class="trainingTitle">季初特訓</div><div class="trainingSummary">自主訓練擲出 <b class="gold">${count}</b> 顆骰。<span id="diceRevealSummary">${p.diceRolling?"骰子翻滾中……":p.trainingRevealSummary}</span></div><div id="dicepool" class="dicepool"></div><div id="assign" class="assign"></div><button id="undoTraining" class="undo" onclick="undoTrainingPoint()" disabled>↶ 返回上一步</button><div id="diceMsg" class="mut" style="font-size:12px;margin-top:8px">選擇本顆骰子要訓練的能力。</div>${abilityPanel()}</div>${resolution?`<div id="trainingRevealResolution" class="hidden">${resolution}</div>`:""}`;
+ special.innerHTML=`${planNotice}<div class="v9TrainingShell">${abilityPanel()}<div class="dicewrap"><div class="trainingTitle"><small>SEASON TRAINING</small>選擇養成方向</div><div class="trainingSummary">本季有 <b class="gold">${count}</b> 次訓練機會。<span id="diceRevealSummary">${p.diceRolling?"訓練點數揭曉中……":p.trainingRevealSummary}</span></div><div id="dicepool" class="dicepool"></div><div id="assign" class="assign"></div><button id="undoTraining" class="undo" onclick="undoTrainingPoint()" disabled>↶ 返回上一步</button><div id="diceMsg" class="mut">選擇這次要加強的能力。</div></div></div>${resolution?`<div id="trainingRevealResolution" class="hidden">${resolution}</div>`:""}`;
  if(Object.values(p.stats).every(v=>v>=99)){
    p.used=p.used.map(()=>true);p.diceRolling=false;
    renderDice();
@@ -164,7 +167,7 @@ function renderDice(){
  const allMax=Object.values(p.stats).every(v=>v>=99);
  const revealCount=Number.isFinite(p.diceRevealCount)?p.diceRevealCount:p.dice.length;
  const revealSummary=document.getElementById("diceRevealSummary");
- if(revealSummary)revealSummary.innerHTML=p.diceRolling?`正在揭曉 ${revealCount}/${p.dice.length}……`:(p.trainingRevealSummary||"骰子數字已全部揭曉。");
+ if(revealSummary)revealSummary.innerHTML=p.diceRolling?`正在揭曉 ${revealCount}/${p.dice.length}……`:(p.trainingRevealSummary||"點數已全部揭曉。");
  if(!p.diceRolling)document.getElementById("trainingRevealResolution")?.classList.remove("hidden");
  dicepool.innerHTML=p.dice.map((d,i)=>{
    const revealed=!p.diceRolling||i<revealCount;
@@ -179,6 +182,7 @@ function renderDice(){
    const ub=document.getElementById("undoTraining");if(ub)ub.disabled=true;
    return;
  }
+ if(diceMsg&&p.used.every(used=>!used))diceMsg.textContent="骰子已全部揭曉，請選擇第一顆骰子要訓練的能力。";
 
  if(allMax && current>=0){
    assign.innerHTML=`<div class="trainingMaxNotice">八項能力皆已達 <b>99</b>，剩餘骰子無法再提升能力。</div>`;
@@ -194,12 +198,17 @@ function renderDice(){
      const prog=Math.floor(p.trainingProgress[k]||0);
      const need=Math.max(0,cost-prog);
      const breaking=!maxed&&p.stats[k]>=p.caps[k];
-     return `<button class="${maxed?"maxed":breaking?"breaking":""}" ${(current<0||maxed)?"disabled":""} onclick="assignTraining('${k}')">
-       <span class="trainChoiceName"><b>${L[k]}</b>${maxed?"":`<span>${p.stats[k]}→${p.stats[k]+1}</span>`}</span>
-       ${maxed
-         ? `<span class="maxTag">已滿</span>`
-         : `<span class="trainCostTag">升級需 ${cost} 點｜已存 ${prog}/${cost}</span><span class="trainNeedTag">還差 ${need} 點｜本骰可加 ${credit} 點</span>`}
-     </button>`;
+     const affinity=typeof v90TalentAffinity==="function"?v90TalentAffinity(p,k):"legacy";
+     const affinityLabel=affinity==="core"?"核心適性":affinity==="support"?"延伸適性":"一般養成";
+    const progress=maxed?100:Math.max(0,Math.min(100,Math.round(p.stats[k])));
+    const capProgress=Math.max(0,Math.min(100,Math.round(p.caps[k]||99)));
+    return `<button class="${maxed?"maxed":breaking?"breaking":""}" ${(current<0||maxed)?"disabled":""} onclick="assignTraining('${k}')">
+       <span class="trainChoiceName"><b>${L[k]}</b><small>${affinityLabel}</small></span>
+        <span class="trainChoiceProgress" style="--value:${progress}%;--cap:${capProgress}%" role="progressbar" aria-label="${L[k]}目前 ${p.stats[k]}，培養上限 ${p.caps[k]}" aria-valuemin="0" aria-valuemax="99" aria-valuenow="${p.stats[k]}"><i></i></span>
+        ${maxed
+          ? `<span class="maxTag">已滿</span>`
+          : `<span class="trainCostTag"><b>${p.stats[k]}</b><em>→ ${p.stats[k]+1}</em></span><span class="trainNeedTag">還差 ${need} 點｜本次 +${credit}</span>`}
+      </button>`;
    }).join("");
  }
  const ub=document.getElementById("undoTraining"); if(ub)ub.disabled=p.trainingUndo.length===0;

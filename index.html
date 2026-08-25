@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>BasketballLife｜籃球人生模擬器</title>
 <meta name="description" content="從 HBL 出發，經歷升學、職業合約、旅外、國家隊與退休，寫下屬於你的台灣籃球生涯。">
 <meta name="theme-color" content="#0b151e">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="screen-orientation" content="portrait">
-<link rel="manifest" href="./manifest.webmanifest?v=8.1.1-sync7">
+<link rel="manifest" href="./manifest.webmanifest?v=9.0.0">
 <link rel="canonical" href="https://basketballlife.pages.dev/">
 <link rel="icon" type="image/svg+xml" href="./basketballlife-icon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
@@ -29,13 +29,14 @@
 <meta name="twitter:title" content="BasketballLife｜籃球人生模擬器">
 <meta name="twitter:description" content="從 HBL 出發，寫下屬於你的台灣籃球生涯。">
 <meta name="twitter:image" content="https://basketballlife.pages.dev/basketballlife-share.png">
-<link rel="stylesheet" href="./css/base.css?v=8.1.1-sync7">
-<link rel="stylesheet" href="./css/career.css?v=8.1.1-sync7">
-<link rel="stylesheet" href="./css/events.css?v=8.1.1-sync7">
-<link rel="stylesheet" href="./css/leaderboard.css?v=8.1.1-sync7">
-<link rel="stylesheet" href="./css/home.css?v=8.1.1-sync7">
-<link rel="stylesheet" href="./css/growth-preview.css?v=8.1.1-sync7">
-<script src="./js/boot.js?v=8.1.1-sync7"></script>
+<link rel="stylesheet" href="./css/base.css?v=9.0.0">
+<link rel="stylesheet" href="./css/career.css?v=9.0.0">
+<link rel="stylesheet" href="./css/events.css?v=9.0.0">
+<link rel="stylesheet" href="./css/leaderboard.css?v=9.0.0">
+<link rel="stylesheet" href="./css/home.css?v=9.0.0">
+<link rel="stylesheet" href="./css/growth-preview.css?v=9.0.0">
+<link rel="stylesheet" href="./css/v9-ui.css?v=9.0.0">
+<script src="./js/boot.js?v=9.0.0"></script>
 </head>
 <body><div class="wrap">
 <div class="brandRow">
@@ -49,8 +50,8 @@
     </div>
     <button id="leaderboardBtn" class="topRankBtn" type="button" onclick="BasketballLifeOnline.openLeaderboard()">🏆 排行榜</button>
     <button id="playerNicknameBtn" class="playerNicknameBtn" type="button" onclick="BasketballLifeOnline.showNicknameModal()" title="修改玩家暱稱">玩家暱稱</button>
-    <a class="versionLink" href="https://github.com/AKai0013/basketballlife/blob/main/README.md" target="_blank" rel="noopener noreferrer" aria-label="查看 V8.1.1 版本資訊"><b>V8.1.1</b><span>正式版</span></a>
-    <div id="onlineStatus" class="onlineStatus offline"><span class="onlineDot"></span><span id="onlineStatusText">單機可玩｜Online 背景連線</span></div>
+    <span class="versionLink" aria-label="目前版本 V9.0"><b>V9.0</b></span>
+    <div id="onlineStatus" class="onlineStatus offline"><span class="onlineDot"></span><span id="onlineStatusText">單機模式</span></div>
   </div>
 </div>
 <div id="liveTicker" class="liveTicker"><div class="liveLabel">BL LIVE</div><div class="liveViewport"><div id="liveTrack" class="liveTrack">新的籃球人生即將開始。</div></div></div>
@@ -80,7 +81,7 @@
     <div id="bodyImpact" class="bodyImpact"></div>
   </div>
   <div class="setupSection">
-    <div class="setupSectionHead"><div><b>球員身份</b><small>設定跟隨整段生涯的背號與慣用手，不提供額外能力加成。</small></div></div>
+    <div class="setupSectionHead"><div><b>球員身份</b><small>選擇陪你走完整段生涯的背號與慣用手。</small></div></div>
     <div class="identityChoiceGrid">
       <div><label for="jerseyNumberInput">背號</label><input id="jerseyNumberInput" type="number" min="0" max="99" value="7"></div>
       <div><label for="handednessInput">慣用手</label><select id="handednessInput"><option value="右手">右手</option><option value="左手">左手</option></select></div>
@@ -88,13 +89,13 @@
     <div class="avatarSetupRow"><div id="avatarSetupPreview" class="avatarSetupPreview"></div><div><b>球員外觀</b><small>64 位完整人物可選；選定後會陪你走完整段生涯。</small></div><button class="btn" type="button" onclick="openAvatarPicker()">更換外觀</button></div>
   </div>
   <div class="setupSection birthplaceSection">
-    <div class="setupSectionHead"><div><b>出生地</b><small>台灣 22 縣市皆可選擇；它會成為你的生涯背景，但不改變初始能力。</small></div></div>
+    <div class="setupSectionHead"><div><b>出生地</b><small>選擇你的家鄉，讓它成為生涯故事的一部分。</small></div></div>
     <div id="birthplaceInput" class="birthplaceGrid" role="group" aria-label="選擇出生地"></div>
   </div>
 </div>
 <label for="seed">世界 Seed（可輸入或隨機抽取）</label><div class="seed"><input id="seed" class="seedcode" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="seedHelp seedError" oninput="normalizeSeedInput()"><button id="seedRerollBtn" class="btn" type="button" onclick="newSeed()">重新抽取</button></div>
 <div id="seedError" class="seedError" aria-live="polite"></div>
-<p id="seedHelp" class="seedHelp">輸入或貼上 8 碼英文字母／數字。相同 Seed ＋位置＋身材，會得到相同的先天條件與主要命運分歧；隱藏等級將在退休時揭曉。</p>
+<p id="seedHelp" class="seedHelp">輸入或貼上 8 碼英文字母／數字。相同 Seed 與球員設定會展開相同的生涯起點；天賦等級將在退休時揭曉。</p>
 <button id="startCareerBtn" class="start" onclick="safeStartCareer()">踏上球場｜高一・HBL</button>
 <div id="continueCareerPanel" class="continueCareerPanel hidden">
   <div class="continueCareerHead">
@@ -105,7 +106,7 @@
     <button class="btn deleteBtn" type="button" onclick="clearCareerSave(true)">刪除存檔</button>
   </div>
 </div>
-<a class="communityInviteCard" href="https://discord.gg/v6n7PH7DJ" target="_blank" rel="noopener noreferrer" aria-label="加入 BasketballLife Discord 玩家社群"><span>BASKETBALLLIFE COMMUNITY</span><b>加入玩家休息室</b><small>分享你的生涯、回報問題、參與版本討論</small><em>加入 Discord →</em></a>
+<a class="communityInviteCard" href="https://discord.gg/v6n7PH7DJ" target="_blank" rel="noopener noreferrer" aria-label="加入 BasketballLife Discord 玩家社群"><span>BASKETBALLLIFE COMMUNITY</span><b>加入玩家休息室</b><small>分享生涯、挑戰 Seed、交流攻略</small><em>加入 Discord →</em></a>
 <div class="creatorCredit homeCreatorCredit"><span>Produced by</span> <a href="https://www.threads.com/@basketballlife_k?xmt=AQG0tS6gtXrN8CWiBiJqphKuoz5VwtJFONP4svLNEbhjdt0" target="_blank" rel="noopener noreferrer">BasketballLife_K</a></div>
 </section>
 <div id="avatarPicker" class="avatarPicker hidden" role="dialog" aria-modal="true" aria-label="選擇完整人物"><div class="avatarPickerPanel"><div class="avatarPickerHead"><div><b>選擇球員外觀</b><small class="mut">64 位球員以相同比例排列，點選後立即套用。</small></div><button class="btn" type="button" onclick="closeAvatarPicker()">完成</button></div><div id="avatarPickerGrid" class="avatarPickerGrid"></div></div></div>
@@ -130,16 +131,16 @@
     <input id="onlineNicknameInput" maxlength="20" autocomplete="nickname" placeholder="2～20 個字，例如：MAX">
     <div id="nicknameError" class="nicknameError"></div>
     <button id="nicknameSaveBtn" class="start onlineSaveBtn" type="button" onclick="BasketballLifeOnline.saveNickname()">確認暱稱</button>
-    <div class="onlinePrivacy">匿名登入不需要 Email 或密碼；本機瀏覽器會保留登入 session。</div>
+    <div class="onlinePrivacy">不用註冊，也能保留你的玩家身分。</div>
   </div>
 </div>
 
 <section id="game" class="hidden">
 <div class="header">
-<div class="box who"><div id="playerAvatar" class="playerAvatar" aria-hidden="true"></div><div class="playerIdentity"><small>PLAYER</small><div class="playerIdentityName"><b id="pname"></b></div><div class="playerIdentityMeta"><span id="ppos"></span><span id="teamname"></span></div></div></div>
-<div class="box"><small>AGE</small><b id="age"></b></div>
-<div class="box"><small>YEAR</small><b id="year"></b></div>
-<div class="box"><small>綜合能力</small><b id="ovr"></b></div>
+<div class="box who"><div id="playerAvatar" class="playerAvatar" aria-hidden="true"></div><div class="playerIdentity"><small>球員</small><div class="playerIdentityName"><b id="pname"></b></div><div class="playerIdentityMeta"><span id="ppos"></span><span id="teamname"></span></div></div></div>
+<div class="box"><small>年齡</small><b id="age"></b></div>
+<div class="box"><small>賽季</small><b id="year"></b></div>
+<div class="box"><small>OVR</small><b id="ovr"></b></div>
 <div class="box"><small>生涯階段</small><b id="path"></b></div>
 </div><div id="proTopStrip" class="proTopStrip hidden"></div>
 <div class="flow" id="flow"></div><div id="titleShelf" class="titleShelf"></div>
@@ -156,37 +157,36 @@
   <button id="next" class="next hidden" onclick="nextStep()">繼續 →</button>
 </div>
 </main>
-
-
 </div>
 </section>
 </div>
 
-<script src="./data/seed-config.js?v=8.1.1-sync7"></script>
-<script src="./js/career/ability-profile.js?v=8.1.1-sync7"></script>
-<script src="./data/players.js?v=8.1.1-sync7"></script>
-<script src="./data/teams.js?v=8.1.1-sync7"></script>
-<script src="./data/leagues.js?v=8.1.1-sync7"></script>
-<script src="./data/awards.js?v=8.1.1-sync7"></script>
-<script src="./data/injuries.js?v=8.1.1-sync7"></script>
-<script src="./data/events.js?v=8.1.1-sync7"></script>
-<script src="./js/api.js?v=8.1.1-sync7"></script>
-<script src="./js/leaderboard/leaderboard-api.js?v=8.1.1-sync7"></script>
-<script src="./js/state.js?v=8.1.1-sync7"></script>
-<script src="./js/events/event-memory.js?v=8.1.1-sync7"></script>
-<script src="./js/storage.js?v=8.1.1-sync7"></script>
-<script src="./js/ui/home-view.js?v=8.1.1-sync7"></script>
-<script src="./js/career/career-engine.js?v=8.1.1-sync7"></script>
-<script src="./js/ui/career-view.js?v=8.1.1-sync7"></script>
-<script src="./js/career/contract-engine.js?v=8.1.1-sync7"></script>
-<script src="./js/career/injury-engine.js?v=8.1.1-sync7"></script>
-<script src="./js/ui/retirement-view.js?v=8.1.1-sync7"></script>
-<script src="./js/career/retirement-engine.js?v=8.1.1-sync7"></script>
-<script src="./js/ui/event-view.js?v=8.1.1-sync7"></script>
-<script src="./js/events/event-engine.js?v=8.1.1-sync7"></script>
-<script src="./js/career/season-engine.js?v=8.1.1-sync7"></script>
-<script src="./js/app.js?v=8.1.1-sync7"></script>
-<script src="./js/leaderboard/return-cache.js?v=8.1.1-sync7"></script>
-<script defer src="./js/ui/growth-preview.js?v=8.1.1-sync7"></script>
-<script defer src="./js/leaderboard/public-career.js?v=8.1.1-sync7"></script>
+<script src="./data/seed-config.js?v=9.0.0"></script>
+<script src="./data/seed-talent-v9.js?v=9.0.0"></script>
+<script src="./js/career/ability-profile.js?v=9.0.0"></script>
+<script src="./data/players.js?v=9.0.0"></script>
+<script src="./data/teams.js?v=9.0.0"></script>
+<script src="./data/leagues.js?v=9.0.0"></script>
+<script src="./data/awards.js?v=9.0.0"></script>
+<script src="./data/injuries.js?v=9.0.0"></script>
+<script src="./data/events.js?v=9.0.0"></script>
+<script src="./js/api.js?v=9.0.0"></script>
+<script src="./js/leaderboard/leaderboard-api.js?v=9.0.0"></script>
+<script src="./js/state.js?v=9.0.0"></script>
+<script src="./js/events/event-memory.js?v=9.0.0"></script>
+<script src="./js/storage.js?v=9.0.0"></script>
+<script src="./js/ui/home-view.js?v=9.0.0"></script>
+<script src="./js/career/career-engine.js?v=9.0.0"></script>
+<script src="./js/ui/career-view.js?v=9.0.0"></script>
+<script src="./js/career/contract-engine.js?v=9.0.0"></script>
+<script src="./js/career/injury-engine.js?v=9.0.0"></script>
+<script src="./js/ui/retirement-view.js?v=9.0.0"></script>
+<script src="./js/career/retirement-engine.js?v=9.0.0"></script>
+<script src="./js/ui/event-view.js?v=9.0.0"></script>
+<script src="./js/events/event-engine.js?v=9.0.0"></script>
+<script src="./js/career/season-engine.js?v=9.0.0"></script>
+<script src="./js/app.js?v=9.0.0"></script>
+<script src="./js/leaderboard/return-cache.js?v=9.0.0"></script>
+<script defer src="./js/ui/growth-preview.js?v=9.0.0"></script>
+<script defer src="./js/leaderboard/public-career.js?v=9.0.0"></script>
 </body></html>

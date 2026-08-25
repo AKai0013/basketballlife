@@ -317,16 +317,16 @@ function weeklyChallengeProfile(date=new Date()){
  const utc=new Date(Date.UTC(date.getUTCFullYear(),date.getUTCMonth(),date.getUTCDate()));
  const day=utc.getUTCDay()||7;utc.setUTCDate(utc.getUTCDate()+4-day);
  const yearStart=new Date(Date.UTC(utc.getUTCFullYear(),0,1));
- const week=Math.ceil((((utc-yearStart)/86400000)+1)/7),id=`${utc.getUTCFullYear()}W${String(week).padStart(2,"0")}`;
- const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",base=hash(`BL-WEEKLY-${id}`);let seed=WEEKLY_SEED_OVERRIDES[id]||"",x=base>>>0;
+ const week=Math.ceil((((utc-yearStart)/86400000)+1)/7),periodId=`${utc.getUTCFullYear()}W${String(week).padStart(2,"0")}`,id=`V9-${periodId}`;
+ const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",base=hash(`BL-WEEKLY-${periodId}`);let seed=WEEKLY_SEED_OVERRIDES[periodId]||"",x=base>>>0;
  for(let i=seed.length;i<8;i++){x=(Math.imul(x,1664525)+1013904223)>>>0;seed+=chars[x%chars.length]}
- const pos=POSITIONS[hash(`${id}-position`)%POSITIONS.length];
+ const pos=POSITIONS[hash(`${periodId}-position`)%POSITIONS.length];
  const body=bodyRangeFor(pos),height=body.defaultHeight,wingspan=height+body.defaultReach;
- return {id,seed,pos,height,wingspan,label:`${utc.getUTCFullYear()} 第 ${week} 週`};
+ return {id,periodId,week,seed,pos,height,wingspan,label:`${utc.getUTCFullYear()} 第 ${week} 週`};
 }
 function renderWeeklyChallenge(){
  const row=weeklyChallengeProfile(),titleEl=document.getElementById("weeklyChallengeTitle"),meta=document.getElementById("weeklyChallengeMeta");
- if(titleEl)titleEl.textContent=`第 ${Number(row.id.slice(-2))} 週`;
+ if(titleEl)titleEl.textContent=`第 ${row.week} 週`;
  if(meta)meta.textContent=`${row.pos}・${row.height}cm｜點擊套用`;
 }
 function applyWeeklyChallenge(){

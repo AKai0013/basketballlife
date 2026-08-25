@@ -649,13 +649,14 @@ body.onlineModalOpen{
 .rankMineZone .rankSectionHead span,.rankMineZone .rankSectionHead b{color:#eaa35e}.rankSectionCount{flex:none!important;padding:4px 7px;border:1px solid #3b5260;border-radius:999px;color:#8fa7b4!important;background:#111d24;letter-spacing:0!important}.rankMineZone .rankSectionCount{border-color:#6f4d2d;color:#e1a263!important;background:#21170f}
 .rankMineGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
 .rankMineGrid .rankRow{grid-template-columns:42px minmax(0,1fr) 112px;padding:8px 9px}
-.rankMineGrid .rankIdentity b{font-size:12px}.rankMineGrid .rankIdentity small{font-size:8.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rankMineGrid .rankValue b{font-size:13px}
+.rankMineGrid .rankIdentity b{font-size:12px}.rankMineGrid .rankIdentity small{font-size:8.5px;white-space:normal;overflow:visible}.rankMineGrid .rankValue b{font-size:13px}
 .rankMineMore{margin-top:7px}.rankMineMore>summary{cursor:pointer;color:#d99a58;font-size:9px;font-weight:850}.rankMineMore .rankMineGrid{margin-top:7px}
 .oldVersionCareers{margin:0 0 15px;padding:10px 11px;border:1px solid #3b4b56;border-radius:10px;background:#10171c}.oldVersionCareers>summary{font-size:10px}.oldVersionCareers .rankNo{font-size:9px}
 .rankList{display:flex;flex-direction:column;gap:5px}
 .rankRow{width:100%;display:grid;grid-template-columns:52px minmax(0,1fr) 160px;align-items:center;gap:9px;padding:9px 11px;border:1px solid #2c4351;border-radius:9px;background:#101c25;color:inherit;text-align:left;cursor:pointer}
 .rankRow:hover{border-color:#58758a;background:#13232e}
 .rankRowMine{border-color:#6a4a2d;background:#1b1815}.rankRowMine:hover{border-color:#d18a46;background:#241b14}.rankMinePill{display:inline-block;margin-left:6px;padding:2px 5px;border:1px solid #805833;border-radius:999px;background:#2a1c11;color:#eaa35e;font-size:7.5px;font-style:normal;font-weight:950;vertical-align:2px}
+.rankRepresentativePill{border-color:#8b5c33;background:#2a1b10;color:#f0a45d}.rankArchivePill{border-color:#40515c;background:#111c23;color:#8799a5}
 .rankNo{color:#d99a58;font-size:13px;font-weight:950;text-align:center}
 .rankIdentity b{display:block;color:#f0ece5;font-size:13.5px;font-weight:950}
 .rankIdentity small{display:block;margin-top:2px;color:#8194a2;font-size:9.5px}

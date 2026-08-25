@@ -7,20 +7,24 @@ import { fileURLToPath } from "node:url";
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"..");
 const read=relative=>fs.readFileSync(path.join(root,relative),"utf8");
 
-test("V8.1 mobile and PWA shell is complete",()=>{
+test("V9.0 release wires the approved responsive UI without changing platform settings",()=>{
   const html=read("index.html"),manifest=JSON.parse(read("manifest.webmanifest"));
   assert.match(html,/rel="manifest"/);
-  assert.match(html,/>V8\.1\.1</);
-  assert.match(html,/href="https:\/\/github\.com\/AKai0013\/basketballlife\/blob\/main\/README\.md"/);
+  assert.match(html,/>V9\.0</);
+  assert.match(html,/aria-label="目前版本 V9\.0"/);
+  assert.doesNotMatch(html,/github\.com\/AKai0013\/basketballlife\/blob\/main\/README\.md/);
   assert.equal(manifest.display,"standalone");
   assert.equal(manifest.orientation,"portrait-primary");
-  assert.match(read("css/growth-preview.css"),/max-width:520px!important/);
+  assert.match(html,/css\/v9-ui\.css\?v=9\.0\.0/);
+  assert.doesNotMatch(html,/css\/v9-shell\.css|v9CareerShell|v9PlayerRail|v9CareerWorkspace/);
+  assert.match(read("css/growth-preview.css"),/@media\(max-width:760px\)/);
   assert.match(read("js/ui/career-view.js"),/function focusCurrentScreen\(/);
-  assert.match(html,/css\/home\.css\?v=8\.1\.1-sync7/);
-  assert.match(html,/js\/events\/event-engine\.js\?v=8\.1\.1-sync7/);
+  assert.match(html,/css\/home\.css\?v=9\.0\.0/);
+  assert.match(html,/js\/events\/event-engine\.js\?v=9\.0\.0/);
   assert.doesNotMatch(html,/\?v=8\.1\.0-(?:rc[78]|sync1)|\?v=20260821-home2/);
   const assetVersions=[...html.matchAll(/(?:href|src)="\.\/[^"?]+\?v=([^"&]+)"/g)].map(match=>match[1]);
-  assert.deepEqual([...new Set(assetVersions)],["8.1.1-sync7"]);
+  assert.deepEqual([...new Set(assetVersions)],["9.0.0"]);
+  assert.match(read("css/v9-ui.css"),/\.v9GameNav\{/);
   assert.match(read("css/home.css"),/choice\.eventChoice \.eventChancePreview/);
   assert.match(read("css/home.css"),/data-stage="points".*pointrow/s);
 });
@@ -84,7 +88,7 @@ test("V8.1 explains draft outcomes and records a specific signature game",()=>{
   const contracts=read("js/career/contract-engine.js"),season=read("js/career/season-engine.js"),preview=read("js/ui/growth-preview.js");
   assert.match(contracts,/function collegeDraftRouteFeedback\(/);
   assert.match(contracts,/SCOUTING SUMMARY/);
-  assert.match(contracts,/球隊回覆：本屆未錄取/);
+  assert.match(contracts,/本屆未錄取/);
   assert.doesNotMatch(contracts,/判定 \$\{x\.roll\}/);
   for(const field of ["opponent","scoreFor","scoreAgainst"])assert.match(season,new RegExp(field));
   assert.match(preview,/blSignatureMatchup/);
@@ -103,18 +107,20 @@ test("national callups create one player-chosen key battle without changing the 
   assert.match(events,/function declineNationalCallup\(/);
 });
 
-test("V8.1.1 keeps old publisher compatibility while exposing the new evaluation layer",()=>{
+test("V9.0 keeps V8.1 publisher compatibility while exposing the new talent layer",()=>{
   const api=read("functions/api/[[path]].js"),board=read("js/leaderboard/leaderboard-api.js"),storage=read("js/storage.js"),career=read("js/ui/career-view.js"),contracts=read("js/career/contract-engine.js"),retirement=read("js/career/retirement-engine.js"),ability=read("js/career/ability-profile.js");
   assert.match(api,/new Set\(\["8\.1\.0","8\.1\.1"\]\)/);
-  assert.match(board,/GAME_VERSION="8\.1\.1"/);
-  assert.match(board,/CAREER_PUBLISHER_VERSION="8\.1\.1"/);
-  assert.match(storage,/gameVersion:"8\.1\.1"/);
-  assert.match(career,/careerVersion:"8\.1\.1"/);
+  assert.match(board,/GAME_VERSION="9\.0\.0"/);
+  assert.match(board,/CAREER_PUBLISHER_VERSION="9\.0\.0"/);
+  assert.match(storage,/gameVersion:"9\.0\.0"/);
+  assert.match(career,/careerVersion:"9\.0\.0"/);
+  assert.match(career,/v90GenerateTalent/);
+  assert.match(career,/v90TalentPanelHTML/);
   assert.match(career,/v811AbilityPanelHTML/);
   assert.match(ability,/function playerRoleProfile\(/);
   assert.match(ability,/function v811AbilityProfile\(/);
   for(const label of ["三分","接球投籃","持球投籃","中距離","低位","護框","成長方向"])assert.match(ability,new RegExp(label));
-  assert.match(contracts,/測試市場不會自動削弱原本的母隊續約基準/);
+  assert.match(contracts,/這份母隊報價仍然有效/);
   assert.match(contracts,/mode:"anchored"/);
   assert.match(storage,/遊戲暫時無法繼續/);
   assert.match(storage,/showContractExpiryDecision\(\)/);
@@ -177,30 +183,37 @@ test("retirement story uses structured career facts and home has a visible commu
   assert.match(story,/seasonSignatureGame/);
   assert.doesNotMatch(story,/meaningfulBeat/);
   assert.match(html,/communityInviteCard/);
-  assert.match(html,/分享你的生涯、回報問題、參與版本討論/);
+  assert.match(html,/分享生涯、挑戰 Seed、交流攻略/);
   assert.match(styles,/\.communityInviteCard/);
 });
 
-test("leaderboard separates V8.1, version champions and old personal careers",()=>{
+test("leaderboard separates V9.0, version champions and old personal careers",()=>{
   const board=read("js/leaderboard/leaderboard-api.js"),api=read("functions/api/[[path]].js"),middleware=read("functions/api/_middleware.js");
   assert.doesNotMatch(board,/v7:\{label:"V7 傳奇榜"/);
   assert.match(board,/careers\?mine=1/);
-  assert.match(board,/V8\.1 現役榜/);
+  assert.match(board,/V9\.0 玩家殿堂/);
   assert.match(board,/champions:\{label:"版本冠軍榜"/);
   assert.match(board,/championFeatureMetrics=\["power","peak","championships","salary"\]/);
   assert.match(board,/function changeChampionVersion\(/);
   assert.match(board,/function changeChampionCategory\(/);
   assert.match(read("css/leaderboard.css"),/\.championFocusGrid\{display:grid;grid-template-columns:repeat\(4/);
   assert.match(read("css/leaderboard.css"),/\.championRecordRow\{display:grid/);
-  assert.match(board,/\["v8","v81"\]\.includes/);
+  assert.match(board,/\["v81","v8","v750"\]\.includes/);
   assert.match(board,/查看舊版本公開生涯/);
-  assert.match(board,/ranking_era:String\(p\.careerVersion\|\|""\)\.startsWith\("8\.1"\)\?"v81"/);
+  assert.match(board,/startsWith\("9\."\)\?"v9"/);
   assert.match(api,/searchParams\.get\("mine"\)===?"1"/);
-  assert.match(api,/data\.ranking_era!=="v81"/);
+  assert.match(api,/data\.ranking_era==="v9"/);
+  assert.match(api,/data\.ranking_era==="v81"/);
+  assert.match(middleware,/ranking_era='v9' AND weekly_active=0/);
   assert.match(middleware,/ranking_era='v81' AND weekly_active=0/);
-  assert.match(middleware,/ranking_era IN \('v8','v81'\) AND weekly_active=1/);
+  assert.match(middleware,/ranking_era='v9'/);
   assert.match(middleware,/searchParams\.get\("mine"\) === "1"\) return false/);
-  assert.match(api,/ROW_NUMBER\(\) OVER\(PARTITION BY weekly_id/);
+  assert.match(api,/ROW_NUMBER\(\) OVER\(PARTITION BY user_id/);
+  assert.match(api,/PARTITION BY weekly_id,user_id/);
+  assert.match(api,/public_career_count/);
+  assert.match(board,/每位玩家在這個項目只佔一席/);
+  assert.match(board,/state\.myPublicCareerRows=cached\.myPublicCareerRows\|\|\[\]/);
+  assert.match(board,/rows:visibleRows,myPublicCareerRows:state\.myPublicCareerRows/);
 });
 
 test("retirement ranks use complete global rank metadata instead of top-50 plus mine",()=>{
@@ -212,6 +225,7 @@ test("retirement ranks use complete global rank metadata instead of top-50 plus 
   assert.match(board,/const rankQuery=new URLSearchParams\(\{mine:"1",era:rankingEra,metric,weekly_id:weeklyId\}\)/);
   assert.match(board,/const storedRank=Number\(record\?\.global_rank\)/);
   assert.match(board,/let retirementRankRefreshId=""/);
+  assert.match(board,/if\(ranks\.checked\)/);
   assert.doesNotMatch(board,/if\(!gp\.retirementRankSummary\?\.power\)/);
   assert.doesNotMatch(board,/rankAllCareers\(powerRecords,"power"\)/);
 });
@@ -220,8 +234,11 @@ test("new seed tiers use stable 1 and 2 percent buckets",()=>{
   const config=read("data/seed-config.js"),state=read("js/state.js");
   assert.match(config,/key:"SSS\+"/);
   assert.match(config,/key:"SS\+"/);
-  assert.match(state,/bucket<100.*SSS\+/s);
-  assert.match(state,/bucket<300.*SS\+/s);
+  assert.match(config,/function v90SeedTierKeyFromBucket/);
+  assert.match(config,/bucket<100\)return "SSS\+"/);
+  assert.match(config,/bucket<300\)return "SS\+"/);
+  assert.match(config,/%10000\+5000\)%10000/);
+  assert.match(state,/seedTierProfile\(seed,mapVersion=V90_SEED_TIER_MAP_VERSION\)/);
 });
 
 test("coaches and teammates use names that match the active league region",()=>{

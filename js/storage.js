@@ -65,7 +65,7 @@ function saveCareerNow(){
  if(!p||careerSaveRestoring)return false;
  try{
    const save={
-      schema:CAREER_SAVE_SCHEMA,gameVersion:"8.1.1",savedAt:Date.now(),
+      schema:CAREER_SAVE_SCHEMA,gameVersion:"9.0.0",savedAt:Date.now(),
      player:p,chosenPos,selectedDie,screen:currentCareerScreen()
    };
    localStorage.setItem(CAREER_SAVE_KEY,JSON.stringify(save));
@@ -154,6 +154,9 @@ function continueCareer(){
      // Rebuild old training HTML so duplicate legacy ability panels cannot
      // survive a resume; saved dice and progress remain unchanged.
      rebuildTrainingScreenFromSave();
+   }else if(p.stage==="decision"&&typeof rebuildV9CollegeDraftResultFromSave==="function"&&rebuildV9CollegeDraftResultFromSave(save.screen)){
+     // V9 draft outcomes keep their original rolls, but receive the current
+     // scouting, pick, fit and contract presentation instead of stale saved HTML.
    }else{
      restoreCareerScreen(save.screen);
    }

@@ -118,9 +118,10 @@ function boardSpec(era, weeklyId) {
     };
   }
   if (era === "weekly") {
+    const isV9=String(weeklyId||"").startsWith("V9-");
     return {
       key: `weekly:${weeklyId}`,
-      where: "is_public=1 AND ranking_era IN ('v8','v81') AND weekly_active=1 AND weekly_id=?",
+      where: `is_public=1 AND ${isV9?"ranking_era='v9'":"ranking_era IN ('v8','v81')"} AND weekly_active=1 AND weekly_id=?`,
       binds: [weeklyId],
     };
   }
@@ -131,16 +132,23 @@ function boardSpec(era, weeklyId) {
       binds: [],
     };
   }
+  if (era === "v81") {
+    return {
+      key: "v81",
+      where: "is_public=1 AND ranking_era='v81' AND weekly_active=0 AND weekly_id=''",
+      binds: [],
+    };
+  }
   return {
-    key: "v81",
-    where: "is_public=1 AND ranking_era='v81' AND weekly_active=0 AND weekly_id=''",
+    key: "v9",
+    where: "is_public=1 AND ranking_era='v9' AND weekly_active=0 AND weekly_id=''",
     binds: [],
   };
 }
 
 async function optimizedLeaderboard(request, env) {
   const url = new URL(request.url);
-  const era = ["v81", "v8", "v7", "weekly"].includes(url.searchParams.get("era")) ? url.searchParams.get("era") : "v81";
+  const era = ["v9", "v81", "v8", "v7", "weekly"].includes(url.searchParams.get("era")) ? url.searchParams.get("era") : "v9";
   const metric = optimizedOrderColumn[url.searchParams.get("metric")] ? url.searchParams.get("metric") : "power";
   const order = optimizedOrderColumn[metric];
   const weeklyId = String(url.searchParams.get("weekly_id") || "").trim().slice(0, 30);
@@ -150,7 +158,7 @@ async function optimizedLeaderboard(request, env) {
   await env.DB.prepare("SELECT board_key FROM leaderboard_stats LIMIT 1").first();
 
   if (url.searchParams.get("champions") === "1") {
-    const championEra = era === "v7" ? "v750" : era === "v8" ? "v8" : "";
+    const championEra = era === "v7" ? "v750" : era === "v8" ? "v8" : era === "v81" ? "v81" : "";
     if (!championEra) return { champions: [] };
     const entries = Object.entries(optimizedOrderColumn);
     const results = await env.DB.batch(entries.map(([, column]) => env.DB.prepare(
@@ -163,7 +171,7 @@ async function optimizedLeaderboard(request, env) {
     const rows = (await env.DB.prepare(
       `SELECT ${summaryColumns} FROM (
          SELECT ${summaryColumns},ROW_NUMBER() OVER(PARTITION BY weekly_id ORDER BY ${order} DESC,career_rating DESC) AS weekly_rank
-         FROM career_records WHERE is_public=1 AND ranking_era IN ('v8','v81') AND weekly_active=1 AND weekly_id<>?
+         FROM career_records WHERE is_public=1 AND ranking_era IN ('v8','v81','v9') AND weekly_active=1 AND weekly_id<>?
        ) WHERE weekly_rank<=3 ORDER BY weekly_id DESC,weekly_rank ASC LIMIT 240`
     ).bind(weeklyId).all()).results || [];
     return { rows: rows.map(hydrateSummary) };
@@ -221,8 +229,10 @@ async function refreshBoardStats(env, row) {
   let spec;
   if (row.ranking_era === "v750") {
     spec = boardSpec("v7", "");
-  } else if (row.ranking_era === "v81" && row.weekly_active) {
+  } else if (row.ranking_era === "v9" && row.weekly_active) {
     spec = boardSpec("weekly", String(row.weekly_id || ""));
+  } else if (row.ranking_era === "v9") {
+    spec = boardSpec("v9", "");
   } else if (row.ranking_era === "v81") {
     spec = boardSpec("v81", "");
   } else if (row.ranking_era === "v8") {

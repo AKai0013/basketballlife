@@ -11,32 +11,17 @@ function startCareer(){
  if(previousSave&&!window.confirm("開始新人生會覆蓋目前的本機生涯存檔，確定要繼續嗎？"))return;
  if(previousSave)clearCareerSave(false);
  const n=document.getElementById("playerNameInput").value.trim()||"籃球癡漢",r=RNG(seed+chosenPos);
- const tier=seedTierProfile(seed);
- const tb=()=>ri(r,tier.start[0],tier.start[1]);
-
- let s={
-   shoot:ri(r,31,45)+tb(),finish:ri(r,31,45)+tb(),handle:ri(r,29,45)+tb(),pass:ri(r,29,45)+tb(),
-   defense:ri(r,29,45)+tb(),rebound:ri(r,27,43)+tb(),ath:ri(r,33,48)+tb(),iq:ri(r,30,45)+tb()
- };
- if(chosenPos==="PG"){s.handle+=7;s.pass+=7}
- if(chosenPos==="SG"){s.shoot+=7;s.finish+=4}
- if(chosenPos==="SF"){s.finish+=5;s.defense+=4}
- if(chosenPos==="PF"){s.rebound+=7;s.defense+=4}
- if(chosenPos==="C"){s.rebound+=10;s.defense+=7}
+ const seedTierMapVersion=weeklySetupActive?V90_LEGACY_SEED_TIER_MAP_VERSION:V90_SEED_TIER_MAP_VERSION,tier=seedTierProfile(seed,seedTierMapVersion);
  const bodyMods=bodyAttributeModifiers(chosenPos,chosenHeight,chosenWingspan);
- Object.entries(bodyMods).forEach(([k,v])=>{s[k]+=v});
- Object.keys(s).forEach(k=>s[k]=Math.max(22,Math.min(58,s[k])));
-
- let caps={};
- for(let k in s)caps[k]=Math.min(99,s[k]+ri(r,tier.cap[0],tier.cap[1]));
+ const talent=v90GenerateTalent(seed,chosenPos,tier,bodyMods),s=talent.stats,caps=talent.caps;
 
  const birthplaceChoice=chosenBirthplace;
  const birthplace=birthplaceChoice==="RANDOM"?TAIWAN_BIRTHPLACES[ri(RNG(`${seed}-birthplace`),0,TAIWAN_BIRTHPLACES.length-1)]:birthplaceChoice;
  const jerseyNumber=Math.max(0,Math.min(99,Math.round(Number(document.getElementById("jerseyNumberInput")?.value)||7)));
  const handedness=document.getElementById("handednessInput")?.value||"右手";
  const weekly=weeklyChallengeProfile(),weeklyChallenge=weeklySetupActive&&seed===weekly.seed&&chosenPos===weekly.pos&&chosenHeight===weekly.height&&chosenWingspan===weekly.wingspan?{active:true,id:weekly.id,label:weekly.label,seed:weekly.seed,pos:weekly.pos,height:weekly.height,wingspan:weekly.wingspan}:{active:false};
- p={name:n,pos:chosenPos,seed,avatarSeed:selectedAvatarSeed(),heightCm:chosenHeight,wingspanCm:chosenWingspan,birthplace,jerseyNumber,handedness,readingMode:"standard",weeklyChallenge,careerVersion:"8.1.1",seedTier:tier.key,seedTierLabel:tier.label,seedTierDesc:tier.desc,
- age:16,year:2026,path:"HBL",grade:1,stage:"training",stats:s,caps,growth:ri(r,tier.growth[0],tier.growth[1]),
+ p={name:n,pos:chosenPos,seed,avatarSeed:selectedAvatarSeed(),heightCm:chosenHeight,wingspanCm:chosenWingspan,birthplace,jerseyNumber,handedness,readingMode:"standard",weeklyChallenge,careerVersion:"9.0.0",talentVersion:1,talentProfile:talent.profile,seedTierMapVersion:seedTierMapVersion,seedTier:tier.key,seedTierLabel:tier.label,seedTierDesc:tier.desc,
+ age:16,year:2026,path:"HBL",grade:1,stage:"training",stats:s,caps,growth:talent.growth,
  durability:ri(r,38,94),clutch:ri(r,35,96),discipline:ri(r,38,94),confidence:50,health:100,fatigue:0,six:0,genius:false,geniusType:"",round:0,eventIndex:0,
  seasonEventCount:ri(r,2,4),dice:[],used:[],trainingUndo:[],trainingProgress:{shoot:0,finish:0,handle:0,pass:0,defense:0,rebound:0,ath:0,iq:0},pointUndo:[],seasonPoints:0,bonusPoints:0,rep:0,injury:null,injuryHistory:[],log:[],seasonStats:null,team:"",geniusResolved:false,geniusFailed:false,transition:null,geniusCostDiscount:0,titles:[],titleHistory:[],seasonPointFocus:[],clutchWins:0,eventSuccesses:0,healthySeasons:0,championships:0,severeInjuryRecovered:false,offers:[],strategyStats:{risk:{pick:0,success:0,streak:0,best:0},balance:{pick:0,success:0,streak:0,best:0},safe:{pick:0,success:0,streak:0,best:0}},seasonEventSuccess:0,geniusFailureShown:false,careerSeason:0,contract:null,seasonPlan:null,planRiskMod:0,planGrowthMod:0,planStatMod:0,nationalCaps:0,relationship:"單身",lifeEventCount:0,news:[],seasonHistory:[],careerAwards:[],careerSalary:0,careerGames:0,careerPtsTotal:0,careerRebTotal:0,careerAstTotal:0,chainTitles:[],retired:false,retirementReason:"",peakOverall:0,ageDeclineStage:0,careerMVP:0,careerFirstTeam:0,careerSecondTeam:0,careerDPOY:0,careerScoringTitles:0,careerAssistTitles:0,
  careerReboundTitles:0,careerAllStar:0,careerFinalsMVP:0,careerNationalAwards:0,leagueHistory:{},teamsPlayed:[],tradeCount:0,
@@ -48,7 +33,7 @@ function startCareer(){
  conductMarketPenalty:0,conductSuspensionGames:0,nationalTeamBanUntil:0,conductPenaltySetYear:0,offCourtHistory:[],offCourtEventKinds:[],lastOffCourtEventYear:0,financialLosses:0,
  specialBonusPoints:0,internationalHistory:[],championshipHistory:[],awardHistoryByLeague:{},lastSeasonAwards:[],hallVotes:[],
     bodyLoad:0,oldInjuries:{},oldInjuryFloors:{},oldInjuryLastYear:{},rehabBoost:0,medicalHistory:[],medicalPressureHistory:[],lastMedicalPressureYear:0,majorInjuryCount:0,careerThreatInjuries:0,recoverySeasons:0,seasonInjuryRiskTarget:0,seasonInjurySurvival:1,seasonInjuryChecksDone:0,seasonInjuryExtra:0,seasonMedicalEventShown:false,seasonNaturalInjuryChecked:false,
-    recentEvents:[],eventMemory:{},specialEventMemory:{},feedHistory:[],relationshipHistory:[],chainQueue:[],storyBeats:[],seasonStoryCandidates:[],careerCast:{},teamWorld:{},roleState:{},expandedFeedYear:null,showOlderFeedYears:false,pendingRenewalOffer:null,pendingNBAOffer:null,pendingTryoutOffer:{},declinedTryoutCount:0,marketOriginTeam:"",marketOriginLeague:"",marketReturnOffer:null,marketReturnMode:"",
+    recentEvents:[],eventMemory:{},specialEventMemory:{},feedHistory:[],relationshipHistory:[],chainQueue:[],storyBeats:[],seasonStoryCandidates:[],roleHistory:[],careerCast:{},teamWorld:{},roleState:{},expandedFeedYear:null,showOlderFeedYears:false,pendingRenewalOffer:null,pendingNBAOffer:null,pendingTryoutOffer:{},declinedTryoutCount:0,marketOriginTeam:"",marketOriginLeague:"",marketReturnOffer:null,marketReturnMode:"",
     medicalProtectionUntilYear:0,medicalProtectionReason:"",medicalProtectedArea:"",postOpCareChosen:false,lastMajorInjuryYear:0,
     lastDanceActive:false,lastDanceUsed:false,retirementDefianceUsed:false,retirementDefianceSucceeded:false,retirementPressureUsed:false,retirementCrisisCount:0,retirementCrisisReason:"",homecomingTeam:"",homecomingRegion:"",
     publicCareerId:"",publicCareerUploadId:"",leaderboardChoice:null,retirementRankSummary:null,careerUploadError:null,diceRevealCount:0,diceRolling:false,
@@ -139,14 +124,16 @@ document.addEventListener("pointerdown",event=>{if(!event.target.closest?.(".abi
 window.addEventListener("resize",()=>closeAbilityHelp());window.addEventListener("scroll",()=>closeAbilityHelp(),true);
 function abilityPanel(){
  const derived=typeof v811AbilityProfile==="function"?v811AbilityProfile(p):null;
- return `<div class="trainingPanel"><div class="trainingStats">${Object.entries(p.stats).map(([k,v])=>{
+ const talent=typeof v90TalentPanelHTML==="function"?v90TalentPanelHTML(p):"";
+ const stats=`<details class="trainingAbilityDetails"><summary><span><b>八項能力</b><small>查看能力、上限與升級進度</small></span><strong>詳細資料</strong></summary><div class="trainingStats">${Object.entries(p.stats).map(([k,v])=>{
    const talent=p.caps[k],over=v>talent,maxed=v>=99;
    const cost=maxed?0:pointCost(k),progress=Math.floor(p.trainingProgress?.[k]||0),need=Math.max(0,cost-progress);
    const detail=maxed
      ? `<div class="trainingCostDetail"><b>已達 99</b>｜無法再提升</div>`
      : `<div class="trainingCostDetail"><b>${v}→${v+1} 需要 ${cost} 點</b>｜已存 ${progress}/${cost}｜還差 ${need} 點</div>`;
     return `<div class="stat abilityHelpCard" data-ability="${k}" tabindex="0" role="button" aria-expanded="false" aria-label="${L[k]}：${ABILITY_HELP[k]||"影響球場表現。"}" onclick="pinAbilityHelp(this)" onmouseenter="showAbilityHelp(this)" onmouseleave="leaveAbilityHelp(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleAbilityHelp(this)}"><div class="sl"><b>${L[k]} <span class="abilityHelpMark">?</span></b><span class="abilityValue"><span class="abilityScore">${v} / ${talent}</span>${over?` <span class="breakthroughTag">突破 +${v-talent}</span>`:""}</span></div><div class="track"><div class="fill" style="width:${Math.min(v,99)}%"></div></div>${detail}</div>`;
- }).join("")}</div>${typeof v811AbilityPanelHTML==="function"?v811AbilityPanelHTML(derived):""}</div>`;
+ }).join("")}</div></details>`;
+ return `<div class="trainingPanel">${talent}${stats}${typeof v811AbilityPanelHTML==="function"?v811AbilityPanelHTML(derived):""}</div>`;
 }
 
 
@@ -172,9 +159,9 @@ function compactFeedSpecial(stage){
  if(stage==="training"){
    const diceCount=p?.dice?.length||0;
    const sixText=(!p?.genius&&!p?.geniusResolved&&p?.age<22&&p?.six>0)
-     ? `｜高標值「6」累計 ${p.six}/5`
+     ? `｜最高點數「6」累計 ${p.six}/5`
      : "";
-   return `<div class="feedSimple"><b>自主訓練完成 ${diceCount} 顆骰。</b>${sixText}</div>`;
+   return `<div class="feedSimple"><b>本季完成 ${diceCount} 次自主訓練。</b>${sixText}</div>`;
  }
 
  // Point allocation is an interaction screen rather than a career event.
@@ -352,6 +339,21 @@ function fitGameToViewport(){
    if(!game||game.classList.contains("hidden")||!layout||!story)return;
 
    const vh=window.visualViewport?.height || window.innerHeight || document.documentElement.clientHeight || 900;
+   const stage=game.dataset.stage||"";
+   const retiredStage=stage==="retired";
+   const v9RetiredStage=retiredStage&&String(p?.careerVersion||"").startsWith("9.");
+   document.body.classList.toggle("retirementMode",retiredStage);
+   document.body.classList.toggle("v9RetirementMode",v9RetiredStage);
+
+   if(v9RetiredStage){
+     layout.style.height="";
+     story.style.height="";
+     if(history){history.style.flexBasis="";history.style.minHeight="";}
+     if(current)current.style.maxHeight="";
+     document.documentElement.style.removeProperty("--actual-game-height");
+     document.body.dataset.viewportBand="retirement";
+     return;
+   }
 
    if((window.innerWidth||document.documentElement.clientWidth||999)>0 && (window.innerWidth||document.documentElement.clientWidth)<=700){
      layout.style.height="";
@@ -374,10 +376,7 @@ function fitGameToViewport(){
    story.style.height=available+"px";
 
    // Long interactive stages get first priority.
-   const stage=game.dataset.stage||"";
-   const retiredStage=stage==="retired";
    const longStage=["training","points","results","decision"].includes(stage);
-   document.body.classList.toggle("retirementMode",retiredStage);
 
    if(history){
      history.style.flexBasis=retiredStage?"0px":(longStage?"44px":"86px");

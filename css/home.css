@@ -23,7 +23,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.16;ba
 /* setup / character creation */
 .setup.card{position:relative;margin-top:18px;padding:0!important;border:1px solid #324657!important;border-radius:22px!important;background:linear-gradient(145deg,rgba(17,27,37,.98),rgba(9,15,21,.98))!important;box-shadow:0 32px 90px #0009!important;overflow:visible}
 .setupIdentity{position:relative;display:grid!important;grid-template-columns:116px 1fr!important;gap:24px!important;margin:0!important;padding:34px 38px 30px!important;border-bottom:1px solid var(--v8-line);background:linear-gradient(110deg,rgba(27,49,65,.65),rgba(12,20,28,.1) 70%);border-radius:22px 22px 0 0}
-.setupIdentity:after{content:"V8.1";position:absolute;right:28px;bottom:-12px;color:#172531;font-size:82px;line-height:1;font-weight:1000;letter-spacing:-.09em;z-index:0}.setupIdentity>div{position:relative;z-index:1}
+.setupIdentity:after{content:"V9.0";position:absolute;right:28px;bottom:-12px;color:#172531;font-size:82px;line-height:1;font-weight:1000;letter-spacing:-.09em;z-index:0}.setupIdentity>div{position:relative;z-index:1}
 .setupLogoFrame{width:112px!important;height:112px!important;border-radius:50%!important;background:radial-gradient(circle,#1d303f,#091018)!important;border:1px solid #5b7485!important;box-shadow:inset 0 0 0 10px #0a1219,0 0 0 1px #0a0e12,0 18px 45px #0008!important}
 .setupKicker{color:var(--v8-orange)!important;font-size:10px!important;letter-spacing:.2em!important}.setupIdentity h1{max-width:700px;margin:5px 0 8px!important;font-size:clamp(28px,4vw,46px)!important;line-height:1.08!important;letter-spacing:-.045em!important}.setupIdentity p{max-width:750px;color:#aebdca!important;font-size:14px!important;line-height:1.75!important}.setupPromise span{border-color:#385065!important;background:#0b151e!important;color:#a9bdcc!important}
 .setup>label,.setup>.seed,.setup>.seedError,.setup>.seedHelp,.setup>.start,.setup>.continueCareerPanel,.setup>.creatorCredit,.setup>.posgrid,.setup>input,.setup>.setupBuilder{margin-left:38px!important;margin-right:38px!important}.setup>label{display:block;margin-top:24px!important;color:#dbe4eb!important;font-size:12px!important;letter-spacing:.04em}.setup>input,.seedcode,.birthplaceSelect,.identityChoiceGrid input,.identityChoiceGrid select{min-height:48px!important;border-radius:12px!important;border:1px solid #34495a!important;background:#09121a!important;color:var(--v8-ink)!important;box-shadow:inset 0 1px 0 #ffffff08!important}.posgrid{gap:8px!important}.posgrid button{min-height:62px!important;border-radius:12px!important;background:#111d28!important;border:1px solid #304354!important}.posgrid button.active{background:linear-gradient(135deg,#f5a454,#d97a31)!important;border-color:#f4ad68!important;color:#1c1109!important;box-shadow:0 9px 24px #e4863530!important}
@@ -218,6 +218,26 @@ body.retirementMode .retirementFeature{border-color:#865b31!important;background
 body.retirementMode .retirementFeature .legacyNarrative{margin:12px 0 0!important;padding:17px 18px!important;border:1px solid #594631!important;border-radius:12px!important;background:rgba(7,17,22,.62)!important}
 body.retirementMode .retirementFeatureMoments{margin-top:14px!important;padding-top:14px!important;border-top:1px solid #4b5e58!important}
 body.retirementMode .retirementFeatureMoments>b{display:block;margin-bottom:10px;color:#e0b267;font-size:13px;letter-spacing:.04em}
+body.retirementMode .retirementLegacyProfile{padding:20px;border:1px solid #6a492c;border-radius:14px;background:linear-gradient(135deg,#241a13,#0a161d 72%)}
+body.retirementMode .retirementLegacyProfile>small{display:block;margin-bottom:8px;color:#f19a4a;font-size:11px;font-weight:900;letter-spacing:.14em}
+body.retirementMode .retirementLegacyProfile h3{margin:0;padding-bottom:3px;color:#fff2d7;font-size:clamp(25px,3.2vw,42px);line-height:1.24;letter-spacing:-.035em}
+body.retirementMode .retirementLegacyProfile p{max-width:880px;margin:13px 0 0;color:#c5d0d7;font-size:14px;line-height:1.9}
+body.retirementMode .retirementEvidence{display:flex;flex-wrap:wrap;gap:7px;margin-top:15px}
+body.retirementMode .retirementEvidence span{padding:7px 10px;border:1px solid #3d5666;border-radius:999px;background:#0a151d;color:#d7e1e7;font-size:11px;font-weight:800}
+body.retirementMode .retirementRoleTimeline{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:9px}
+body.retirementMode .retirementRoleStage{position:relative;min-width:0;padding:15px 14px 14px;border:1px solid #304958;border-radius:12px;background:#09141c}
+body.retirementMode .retirementRoleStage:before{content:"";position:absolute;top:-1px;left:14px;width:38px;height:3px;border-radius:0 0 4px 4px;background:#ef9848}
+body.retirementMode .retirementRoleStage b,body.retirementMode .retirementRoleStage span,body.retirementMode .retirementRoleStage small{display:block;overflow-wrap:anywhere}
+body.retirementMode .retirementRoleStage b{margin-bottom:7px;color:#ffe1a8;font-size:16px}
+body.retirementMode .retirementRoleStage span{color:#d2dde3;font-size:12px;line-height:1.55}
+body.retirementMode .retirementRoleStage small{margin-top:4px;color:#8196a4;font-size:10.5px;line-height:1.45}
+body.retirementMode .retirementPeopleGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:9px}
+body.retirementMode .retirementPeopleGrid:has(article:nth-child(4)){grid-template-columns:repeat(2,minmax(0,1fr))}
+body.retirementMode .retirementPeopleGrid article{min-width:0;padding:15px;border:1px solid #304958;border-radius:12px;background:#09141c}
+body.retirementMode .retirementPeopleGrid small,body.retirementMode .retirementPeopleGrid b,body.retirementMode .retirementPeopleGrid span{display:block;overflow-wrap:anywhere}
+body.retirementMode .retirementPeopleGrid small{color:#7fa6b9;font-size:10px;font-weight:800;letter-spacing:.04em}
+body.retirementMode .retirementPeopleGrid b{margin:5px 0 7px;color:#f3d19a;font-size:16px}
+body.retirementMode .retirementPeopleGrid span{color:#aebdc6;font-size:12px;line-height:1.65}
 
 @media(max-width:700px){
  .brandActions{width:100%;margin-left:0!important;justify-content:flex-start!important}
@@ -230,7 +250,277 @@ body.retirementMode .retirementFeatureMoments>b{display:block;margin-bottom:10px
  body.retirementMode .legacyCareerRail{display:flex!important;position:static!important;max-height:420px!important;margin-bottom:8px!important}
  body.retirementMode .legacyMain{padding:8px!important}
  body.retirementMode .legacyMoment{grid-template-columns:1fr!important;gap:3px!important}
+ body.retirementMode .retirementPeopleGrid,body.retirementMode .retirementPeopleGrid:has(article:nth-child(4)){grid-template-columns:1fr}
+body.retirementMode .retirementRoleTimeline{grid-template-columns:1fr}
 }
+
+/* V9 retirement hall: approved dedicated layout, backed by formal career data. */
+body.v9RetirementMode{overflow-y:auto!important}
+body.v9RetirementMode>.wrap{width:min(1160px,calc(100% - 28px))!important;max-width:1160px!important}
+body.v9RetirementMode #game{padding:0 0 42px!important;overflow:visible!important;background:transparent!important;border:0!important;box-shadow:none!important}
+body.v9RetirementMode #game>.header,
+body.v9RetirementMode #proTopStrip,
+body.v9RetirementMode #game>.flow,
+body.v9RetirementMode #titleShelf,
+body.v9RetirementMode #feedHistory,
+body.v9RetirementMode #chapter,
+body.v9RetirementMode #title,
+body.v9RetirementMode #text,
+body.v9RetirementMode #choices,
+body.v9RetirementMode #next,
+body.v9RetirementMode .v9GameNav{display:none!important}
+body.v9RetirementMode #game>.layout,
+body.v9RetirementMode #game>.layout>main.story{display:block!important;width:100%!important;height:auto!important;min-height:0!important;overflow:visible!important}
+body.v9RetirementMode #game>.layout{grid-template-columns:1fr!important}
+body.v9RetirementMode #game>.layout>main.story{padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+body.v9RetirementMode #currentPanel{display:block!important;min-height:0!important;max-height:none!important;overflow:visible!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+body.v9RetirementMode #currentPanel:before{display:none!important}
+body.v9RetirementMode #special{width:100%;margin:0!important}
+body.v9RetirementMode .v9RetirementPage{width:100%;color:#f2eee5}
+body.v9RetirementMode .retirementOnly{width:100%;margin:0 auto;padding-top:10px}
+body.v9RetirementMode .retireHero{position:relative;display:grid;align-content:end;min-height:520px;padding:38px;overflow:hidden;border:1px solid #57432f;border-top:4px solid #e9bd67;border-radius:26px;background:#080d12;isolation:isolate}
+body.v9RetirementMode .retireBackdrop{position:absolute;z-index:-2;inset:0;background:linear-gradient(90deg,#070b0f 4%,#070b0fe8 48%,#070b0f4a),linear-gradient(0deg,#070b0ff2,transparent 58%),url("../assets/images/v9-court-hero-v2.png") 64% center/cover no-repeat}
+body.v9RetirementMode .retireIdentity{position:absolute;top:30px;left:38px;display:flex;align-items:center;gap:14px;max-width:calc(100% - 280px)}
+body.v9RetirementMode .v9RetirePortrait{display:grid;place-items:center;flex:0 0 68px;width:68px;height:68px;overflow:hidden;border:1px solid #8c633f;border-radius:16px;background:#10171d;box-shadow:0 12px 32px #0008}
+body.v9RetirementMode .v9RetirePortrait svg{display:block;width:100%;height:100%}
+body.v9RetirementMode .retireIdentity small,body.v9RetirementMode .retireIdentity h1,body.v9RetirementMode .retireIdentity p{display:block;margin:0;overflow-wrap:anywhere}
+body.v9RetirementMode .retireIdentity small{color:#d39558;font-size:10px;font-weight:900}
+body.v9RetirementMode .retireIdentity h1{margin:3px 0 2px;font-size:29px;line-height:1.08}
+body.v9RetirementMode .retireIdentity p{color:#8e9ca5;font-size:11px}
+body.v9RetirementMode .legacySeal{position:absolute;top:30px;right:38px;display:grid;width:180px;padding:14px;border:1px solid #8f5c2d;border-radius:17px;background:#160f0be8;text-align:center}
+body.v9RetirementMode .legacySeal small{color:#aa8c67;font-size:9px}
+body.v9RetirementMode .legacySeal strong{margin:4px 0;color:#ffd37d;font-size:22px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+body.v9RetirementMode .legacySeal b{color:#f5eddf;font-size:16px}
+body.v9RetirementMode .legacySeal span{margin-top:4px;color:#9a8d7c;font-size:9px}
+body.v9RetirementMode .retireHeadline{max-width:780px}
+body.v9RetirementMode .retireHeadline>.eyebrow{color:#f19a4a;font-size:10px;font-weight:950;letter-spacing:.14em}
+body.v9RetirementMode .retireHeadline h2{max-width:720px;margin:10px 0;font-size:clamp(36px,4.5vw,52px);line-height:1.08;letter-spacing:-.045em}
+body.v9RetirementMode .retireHeadline p{max-width:760px;margin:0;color:#b8c3c9;font-size:13px;line-height:1.75}
+body.v9RetirementMode .retireHeadline .retirementEvidence{display:flex;flex-wrap:wrap;gap:6px;margin-top:13px}
+body.v9RetirementMode .retireHeadline .retirementEvidence span{padding:6px 9px;border:1px solid #55432f;border-radius:999px;background:#15130fd9;color:#dec59b;font-size:9px;font-weight:900}
+body.v9RetirementMode .careerNumbers{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));margin-top:12px;border:1px solid #31414b;border-radius:18px;background:#0c141a;overflow:hidden}
+body.v9RetirementMode .careerNumbers>article{min-width:0;padding:16px;border-right:1px solid #2b3942}
+body.v9RetirementMode .careerNumbers>article:last-child{border-right:0}
+body.v9RetirementMode .careerNumbers small,body.v9RetirementMode .careerNumbers span{display:block;color:#7e8e98;font-size:9px}
+body.v9RetirementMode .careerNumbers b{display:block;margin:5px 0;color:#f2b665;font-size:22px;overflow-wrap:anywhere}
+body.v9RetirementMode .retireTabs{position:sticky;z-index:30;top:8px;display:flex;gap:4px;margin:18px 0 12px;padding:6px;overflow-x:auto;border:1px solid #293943;border-radius:15px;background:#080e13ed;scrollbar-width:none;backdrop-filter:blur(14px)}
+body.v9RetirementMode .retireTabs::-webkit-scrollbar{display:none}
+body.v9RetirementMode .retireTab{flex:1;min-height:46px;border:0;border-radius:10px;background:transparent;color:#82939e;font-size:11px;font-weight:950;cursor:pointer}
+body.v9RetirementMode .retireTab.is-on{background:#2c1b10;color:#ffad68}
+body.v9RetirementMode .retirePanel{display:none;scroll-margin-top:76px}
+body.v9RetirementMode .retirePanel.is-active{display:block}
+body.v9RetirementMode .signatureMoment{display:grid;grid-template-columns:180px minmax(0,1fr);gap:22px;padding:25px;border:1px solid #76502f;border-radius:18px;background:linear-gradient(125deg,#1d140e,#0b141a 55%)}
+body.v9RetirementMode .momentYear{display:grid;align-content:center;padding-right:22px;border-right:1px solid #4b3b2e}
+body.v9RetirementMode .momentYear small,body.v9RetirementMode .momentYear b,body.v9RetirementMode .momentYear span{display:block}
+body.v9RetirementMode .momentYear small{color:#d58e4f;font-size:9px;font-weight:950;letter-spacing:.12em}
+body.v9RetirementMode .momentYear b{margin:4px 0;color:#f4b35f;font-size:38px}
+body.v9RetirementMode .momentYear span{color:#8999a3;font-size:10px;overflow-wrap:anywhere}
+body.v9RetirementMode .momentScore{align-self:center;min-width:0}
+body.v9RetirementMode .momentScore small{color:#d48d4f;font-size:9px;font-weight:900}
+body.v9RetirementMode .momentScore strong{display:block;margin:7px 0;font-size:24px;overflow-wrap:anywhere}
+body.v9RetirementMode .momentScore p{margin:0;color:#94a4ad;font-size:11px;line-height:1.65}
+body.v9RetirementMode .powerBreakdown{display:grid;grid-template-columns:210px minmax(0,1fr);gap:16px;margin-top:10px;padding:18px;border:1px solid #76502f;border-radius:18px;background:linear-gradient(115deg,#21160e,#0b151c 48%)}
+body.v9RetirementMode .powerBreakdown>div{display:grid;align-content:center;padding:8px 20px;border-right:1px solid #57402d}
+body.v9RetirementMode .powerBreakdown>div small,body.v9RetirementMode .powerBreakdown>div b,body.v9RetirementMode .powerBreakdown>div span{display:block}
+body.v9RetirementMode .powerBreakdown>div small{color:#bd9368;font-size:9px;font-weight:950;letter-spacing:.08em}
+body.v9RetirementMode .powerBreakdown>div b{margin:5px 0;color:#f4bd69;font-size:32px;overflow-wrap:anywhere}
+body.v9RetirementMode .powerBreakdown>div span{color:#8798a1;font-size:9px}
+body.v9RetirementMode .powerBreakdown ul{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:0;padding:0;list-style:none}
+body.v9RetirementMode .powerBreakdown li{min-width:0;padding:11px;border:1px solid #33444e;border-radius:11px;background:#0a141b}
+body.v9RetirementMode .powerBreakdown li b,body.v9RetirementMode .powerBreakdown li span{display:block;overflow-wrap:anywhere}
+body.v9RetirementMode .powerBreakdown li b{color:#f0b25f;font-size:14px}
+body.v9RetirementMode .powerBreakdown li span{margin-top:3px;color:#84949e;font-size:9px}
+body.v9RetirementMode .legacyCards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px}
+body.v9RetirementMode .legacyCards article{display:grid;align-content:center;gap:5px;min-height:126px;padding:17px;border:1px solid #2d3d47;border-radius:16px;background:#0b1319}
+body.v9RetirementMode .legacyCards small{color:#d89350;font-size:9px;font-weight:900}
+body.v9RetirementMode .legacyCards b{font-size:15px;overflow-wrap:anywhere}
+body.v9RetirementMode .legacyCards p{margin:0;color:#81919a;font-size:10px;line-height:1.55}
+body.v9RetirementMode .v9TitleShelf{margin-top:10px;padding:17px;border:1px solid #2d3d47;border-radius:16px;background:#0b1319}
+body.v9RetirementMode .seedLegacy{display:grid;grid-template-columns:minmax(260px,.72fr) minmax(0,1.28fr);gap:22px;margin-top:12px;padding:25px;border:1px solid #8b6338;border-radius:20px;background:radial-gradient(circle at 12% 0,#e3a4511f,transparent 35%),linear-gradient(135deg,#18120e,#0b141a 52%,#091118)}
+body.v9RetirementMode .seedLegacyIntro>span{color:#f5b45e;font-size:9px;font-weight:1000;letter-spacing:.18em}
+body.v9RetirementMode .seedLegacyIntro h2{margin:7px 0 9px;font-size:29px}
+body.v9RetirementMode .seedLegacyIntro p{margin:0;color:#9eacb4;font-size:11px;line-height:1.7}
+body.v9RetirementMode .seedTags{display:flex;flex-wrap:wrap;gap:6px;margin-top:15px}
+body.v9RetirementMode .seedTags em{padding:7px 9px;border:1px solid #594a37;border-radius:999px;background:#1b1711;color:#dfc08e;font-size:9px;font-style:normal}
+body.v9RetirementMode .v9TalentFit{margin-top:11px;color:#b8a482;font-size:10px;line-height:1.6}
+body.v9RetirementMode .abilityLegacyGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+body.v9RetirementMode .abilityLegacy{display:grid;grid-template-columns:1fr auto;align-content:center;gap:8px;min-height:84px;padding:14px;border:1px solid #31424c;border-radius:13px;background:#0b151c}
+body.v9RetirementMode .abilityLegacy span{color:#93a2ab;font-size:10px;font-weight:900}
+body.v9RetirementMode .abilityLegacy b{color:#f3b765;font-size:20px}
+body.v9RetirementMode .abilityLegacy i{grid-column:1/-1;height:5px;overflow:hidden;border-radius:99px;background:#26353e}
+body.v9RetirementMode .abilityLegacy i:after{display:block;width:var(--rating);height:100%;border-radius:inherit;background:linear-gradient(90deg,#d86c34,#f1b65f);content:""}
+body.v9RetirementMode .abilityLegacy.is-elite{border-color:#9c6535;background:#1b140f}
+body.v9RetirementMode .abilityLegacy.is-elite:after{grid-column:1/-1;color:#d99753;font-size:8px;font-weight:950;letter-spacing:.08em;content:"能力上限 99"}
+body.v9RetirementMode .fanEchoSection{display:block!important;margin-top:12px;padding:22px;border:1px solid #32434d;border-radius:19px;background:#0a1319}
+body.v9RetirementMode .fanEchoIntro{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:13px}
+body.v9RetirementMode .fanEchoIntro b,body.v9RetirementMode .fanEchoIntro small{display:block}
+body.v9RetirementMode .fanEchoIntro b{font-size:22px}
+body.v9RetirementMode .fanEchoIntro small{margin-top:3px;color:#d58e4f;font-size:9px;font-weight:950}
+body.v9RetirementMode .fanEchoIntro>span{color:#84959f;font-size:10px}
+body.v9RetirementMode .fanEchoGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+body.v9RetirementMode .fanEchoCard{position:relative;min-height:150px;padding:21px 17px 16px;overflow:hidden;border:1px solid #30424c;border-radius:14px;background:#0d1820}
+body.v9RetirementMode .fanEchoQuote{position:absolute;top:4px;right:13px;color:#d3834130;font-family:Georgia,serif;font-size:64px;line-height:1}
+body.v9RetirementMode .fanEchoCard p{position:relative;margin:0;color:#c8d2d6;font-size:11px;line-height:1.72}
+body.v9RetirementMode .fanEchoCard small{display:block;margin-top:13px;padding-top:10px;border-top:1px solid #2b3b45;color:#ce975d;font-size:9px;font-weight:900}
+body.v9RetirementMode .honorLead{max-width:860px;padding:20px 4px}
+body.v9RetirementMode .honorLead>span{color:#e08d4a;font-size:10px;font-weight:950;letter-spacing:.14em}
+body.v9RetirementMode .honorLead h2{margin:8px 0;font-size:32px}
+body.v9RetirementMode .honorLead p{margin:0;color:#8fa0aa;font-size:12px;line-height:1.65}
+body.v9RetirementMode .hallGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+body.v9RetirementMode .hallCard{display:grid;grid-template-columns:minmax(0,1fr) 120px;align-items:center;gap:18px;padding:24px;border:1px solid #69482c;border-radius:18px;background:linear-gradient(130deg,#1d140e,#0b1319 65%)}
+body.v9RetirementMode .hallCard small{color:#da9555;font-size:9px;font-weight:950}
+body.v9RetirementMode .hallCard h3{margin:6px 0;font-size:21px}
+body.v9RetirementMode .hallCard p{margin:0;color:#8d9da6;font-size:11px;line-height:1.6}
+body.v9RetirementMode .hallVote{text-align:right}
+body.v9RetirementMode .hallVote b{color:#f3b565;font-size:28px}
+body.v9RetirementMode .hallVote span{color:#84949e;font-size:9px}
+body.v9RetirementMode .hallVote em{display:block;height:5px;margin-top:9px;overflow:hidden;border-radius:99px;background:#283740}
+body.v9RetirementMode .hallVote em:after{display:block;width:var(--vote);height:100%;border-radius:inherit;background:linear-gradient(90deg,#e07135,#f5bd68);content:""}
+body.v9RetirementMode .jerseyCard{display:grid;grid-template-columns:100px minmax(0,1fr) auto;align-items:center;gap:20px;margin-top:10px;padding:22px;border:1px solid #3a4a54;border-radius:18px;background:#0b1319}
+body.v9RetirementMode .jerseyNumber{display:grid;place-items:center;width:82px;height:82px;border:2px solid #d38a4a;border-radius:22px;background:#1d130d;color:#ffc579;font-size:34px;font-weight:1000}
+body.v9RetirementMode .jerseyCard small{color:#82939d;font-size:9px}
+body.v9RetirementMode .jerseyCard h3{margin:5px 0;font-size:21px}
+body.v9RetirementMode .jerseyCard p{margin:0;color:#8b9ba5;font-size:11px;line-height:1.55}
+body.v9RetirementMode .jerseyCard strong{color:#f0ac60;font-size:13px}
+body.v9RetirementMode .honorGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+body.v9RetirementMode .honorCard{padding:18px;border:1px solid #2c3d47;border-radius:15px;background:#0b1319}
+body.v9RetirementMode .honorCard small,body.v9RetirementMode .honorCard b,body.v9RetirementMode .honorCard span{display:block}
+body.v9RetirementMode .honorCard small{color:#d69050;font-size:9px}
+body.v9RetirementMode .honorCard b{margin:6px 0;font-size:15px}
+body.v9RetirementMode .honorCard span{color:#82939e;font-size:10px;line-height:1.5}
+body.v9RetirementMode .v9RetireDetails{margin-top:10px;padding:15px;border:1px solid #2c3d47;border-radius:14px;background:#0b1319}
+body.v9RetirementMode .v9RetireDetails>summary{color:#d39a5c;font-size:11px;font-weight:900;cursor:pointer}
+body.v9RetirementMode .chapterTimeline{padding:25px 31px;border:1px solid #2d3d47;border-radius:18px;background:#0b1319}
+body.v9RetirementMode .chapterTimeline article{display:grid;grid-template-columns:145px minmax(0,1fr);gap:30px;padding:24px 0;border-bottom:1px solid #293943}
+body.v9RetirementMode .chapterTimeline article:last-child{border-bottom:0}
+body.v9RetirementMode .chapterTimeline time{color:#f0a65e;font-size:12px;font-weight:900}
+body.v9RetirementMode .chapterTimeline span{color:#6f828e;font-size:9px;font-weight:900;letter-spacing:.12em}
+body.v9RetirementMode .chapterTimeline h3{margin:5px 0 6px;font-size:21px}
+body.v9RetirementMode .chapterTimeline p{margin:0;color:#8d9da7;font-size:12px;line-height:1.7}
+body.v9RetirementMode .v9RetirementFinale{margin-top:12px;padding:22px;border:1px solid #68462c;border-radius:18px;background:linear-gradient(110deg,#1c140e,#0b141a)}
+body.v9RetirementMode .v9RetirementFinale>span{color:#e08d4a;font-size:10px;font-weight:950;letter-spacing:.12em}
+body.v9RetirementMode .v9RetirementFinale .legacyNarrative{margin-top:10px}
+body.v9RetirementMode .eraPeople{margin-top:14px}
+body.v9RetirementMode .echoIntro{padding:18px 4px}
+body.v9RetirementMode .echoIntro>span{color:#d99452;font-size:9px;font-weight:950;letter-spacing:.12em}
+body.v9RetirementMode .echoIntro h2{margin:9px 0 5px;font-size:29px}
+body.v9RetirementMode .eraPeopleGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+body.v9RetirementMode .eraPeopleGrid article{padding:20px;border:1px solid #2e404a;border-top:3px solid #9b6839;border-radius:16px;background:#0b141a}
+body.v9RetirementMode .eraPeopleGrid small,body.v9RetirementMode .eraPeopleGrid b,body.v9RetirementMode .eraPeopleGrid span{display:block}
+body.v9RetirementMode .eraPeopleGrid small{color:#d99452;font-size:9px;font-weight:950}
+body.v9RetirementMode .eraPeopleGrid b{margin:7px 0 2px;font-size:19px}
+body.v9RetirementMode .eraPeopleGrid span{color:#b6a17e;font-size:9px}
+body.v9RetirementMode .eraPeopleGrid p{margin:11px 0 0;padding-top:11px;border-top:1px solid #2b3942;color:#8798a2;font-size:11px;line-height:1.65}
+body.v9RetirementMode .recordSummary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+body.v9RetirementMode .recordSummary article{padding:18px;border:1px solid #2d3d47;border-radius:16px;background:#0b1319}
+body.v9RetirementMode .recordSummary small,body.v9RetirementMode .recordSummary span{display:block;color:#7f919c;font-size:9px}
+body.v9RetirementMode .recordSummary b{display:block;margin:4px 0;color:#efb360;font-size:25px;overflow-wrap:anywhere}
+body.v9RetirementMode .leagueGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+body.v9RetirementMode .leagueCard{padding:18px;border:1px solid #2d3d47;border-radius:15px;background:#0b1319}
+body.v9RetirementMode .leagueCard small,body.v9RetirementMode .leagueCard b,body.v9RetirementMode .leagueCard span{display:block}
+body.v9RetirementMode .leagueCard small{color:#d89350;font-size:9px;font-weight:950}
+body.v9RetirementMode .leagueCard b{margin:6px 0;font-size:16px}
+body.v9RetirementMode .leagueCard span{color:#81929d;font-size:10px;line-height:1.5}
+body.v9RetirementMode .v9RecordBlock{margin-top:10px;padding:18px;border:1px solid #2d3d47;border-radius:18px;background:#0b1319}
+body.v9RetirementMode .v9RecordBlock h2{margin:0 0 12px;font-size:20px}
+body.v9RetirementMode .legacyTableWrap{max-width:100%;margin-top:10px;overflow-x:auto;border:1px solid #293a44;border-radius:12px}
+body.v9RetirementMode .legacyTable{min-width:820px;background:#091118}
+body.v9RetirementMode .legacyTable th,body.v9RetirementMode .legacyTable td{padding:12px;border-bottom:1px solid #26363f;white-space:nowrap}
+body.v9RetirementMode .detailFactGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:13px}
+body.v9RetirementMode .detailFactGrid article,body.v9RetirementMode .injuryHistory article{padding:13px;border:1px solid #2c3d47;border-radius:11px;background:#091219}
+body.v9RetirementMode .detailFactGrid small,body.v9RetirementMode .detailFactGrid b,body.v9RetirementMode .detailFactGrid span{display:block}
+body.v9RetirementMode .detailFactGrid small{color:#d18c4d;font-size:9px}
+body.v9RetirementMode .detailFactGrid b{margin:4px 0;font-size:14px}
+body.v9RetirementMode .detailFactGrid span{color:#84959f;font-size:9px;line-height:1.5}
+body.v9RetirementMode .injuryHistory{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:13px}
+body.v9RetirementMode .injuryHistory article.major{border-color:#8d493f;background:#1a1010}
+body.v9RetirementMode .injuryHistory time,body.v9RetirementMode .injuryHistory b,body.v9RetirementMode .injuryHistory span{display:block}
+body.v9RetirementMode .injuryHistory time{color:#d58e4f;font-size:10px;font-weight:950}
+body.v9RetirementMode .injuryHistory b{margin:5px 0;font-size:13px}
+body.v9RetirementMode .injuryHistory span{color:#8999a2;font-size:9px;line-height:1.45}
+body.v9RetirementMode .seedRecord{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:13px}
+body.v9RetirementMode .seedRecord>div{padding:12px;border:1px solid #4c4134;border-radius:11px;background:#15130f}
+body.v9RetirementMode .seedRecord small,body.v9RetirementMode .seedRecord b{display:block}
+body.v9RetirementMode .seedRecord small{color:#b79368;font-size:9px}
+body.v9RetirementMode .seedRecord b{margin-top:4px;color:#efd09d;font-size:13px;overflow-wrap:anywhere}
+body.v9RetirementMode .publishDock{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-top:14px;padding:19px;border:1px solid #68462c;border-radius:18px;background:linear-gradient(100deg,#1d140e,#0d151b)}
+body.v9RetirementMode .publishDock>div:first-child{flex:1 1 auto;min-width:240px}
+body.v9RetirementMode .publishDock>div:first-child>span,body.v9RetirementMode .publishDock>div:first-child>b{display:block}
+body.v9RetirementMode .publishDock>div:first-child>span{color:#d8904e;font-size:9px;font-weight:950;letter-spacing:.1em}
+body.v9RetirementMode .publishDock>div:first-child>b{margin-top:5px;font-size:17px}
+body.v9RetirementMode .publishDock .retirementShareCta{display:block!important;flex:0 1 auto;width:auto;min-width:0;margin:0;padding:0;border:0;background:transparent}
+body.v9RetirementMode .publishDock .retirementShareCtaCopy{display:none}
+body.v9RetirementMode .publishDock .retirementShareCtaButtons{display:flex;flex-wrap:nowrap;justify-content:flex-end;gap:7px}
+body.v9RetirementMode .publishDock .retirementShareBtn{min-height:46px;margin:0!important;white-space:normal}
+body.v9RetirementMode>.v9GameNav{display:none!important}
+body.v9RetirementMode .legacyRankMarkHost{margin-top:10px}
+body.v9RetirementMode .legacyRankMarkHost:has(+ #publicCareerStatus:not(:empty)){display:none}
+body.v9RetirementMode .restartBox{margin-top:10px}
+
+@media(max-width:900px){
+ body.v9RetirementMode .legacyCards{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body.v9RetirementMode .fanEchoGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body.v9RetirementMode .hallGrid,body.v9RetirementMode .leagueGrid{grid-template-columns:1fr}
+ body.v9RetirementMode .honorGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body.v9RetirementMode .seedLegacy{grid-template-columns:1fr}
+ body.v9RetirementMode .injuryHistory,body.v9RetirementMode .seedRecord{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body.v9RetirementMode .publishDock{align-items:flex-start;flex-direction:column}
+ body.v9RetirementMode .publishDock>div:first-child{width:100%;min-width:0}
+ body.v9RetirementMode .publishDock .retirementShareCta{width:100%}
+ body.v9RetirementMode .publishDock .retirementShareCtaButtons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%}
+}
+@media(max-width:680px){
+ body.v9RetirementMode>.wrap{width:100%!important;padding:8px 8px 30px!important}
+ body.v9RetirementMode .retirementOnly{padding-top:2px}
+ body.v9RetirementMode .retireHero{min-height:590px;padding:20px;border-radius:20px}
+ body.v9RetirementMode .retireBackdrop{background:linear-gradient(0deg,#070b0f 0 58%,#070b0f6b),url("../assets/images/v9-court-hero-v2.png") 60% top/auto 315px no-repeat}
+ body.v9RetirementMode .retireIdentity{top:205px;right:20px;left:20px;max-width:none}
+ body.v9RetirementMode .v9RetirePortrait{flex-basis:68px;width:68px;height:68px}
+ body.v9RetirementMode .legacySeal{top:14px;right:14px;width:132px;padding:10px}
+ body.v9RetirementMode .legacySeal strong{font-size:18px}
+ body.v9RetirementMode .legacySeal b{font-size:12px}
+ body.v9RetirementMode .legacySeal span{font-size:8px}
+ body.v9RetirementMode .retireHeadline h2{font-size:31px}
+ body.v9RetirementMode .retireHeadline p{font-size:11px;line-height:1.65}
+ body.v9RetirementMode .careerNumbers{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body.v9RetirementMode .careerNumbers>article{padding:13px;border-bottom:1px solid #2b3942}
+ body.v9RetirementMode .careerNumbers>article:nth-child(2n){border-right:0}
+ body.v9RetirementMode .careerNumbers>article:last-child{grid-column:1/-1;border-bottom:0}
+ body.v9RetirementMode .careerNumbers b{font-size:19px}
+ body.v9RetirementMode .retireTabs{top:6px;margin:10px 0}
+ body.v9RetirementMode .retireTab{flex:0 0 105px;min-height:46px}
+ body.v9RetirementMode .signatureMoment{grid-template-columns:1fr;gap:13px;padding:18px}
+ body.v9RetirementMode .momentYear{padding:0 0 13px;border-right:0;border-bottom:1px solid #4b3b2e}
+ body.v9RetirementMode .momentYear b{font-size:30px}
+ body.v9RetirementMode .momentScore strong{font-size:19px}
+ body.v9RetirementMode .powerBreakdown{grid-template-columns:1fr;padding:14px}
+ body.v9RetirementMode .powerBreakdown>div{padding:3px 5px 12px;border-right:0;border-bottom:1px solid #57402d}
+ body.v9RetirementMode .powerBreakdown>div b{font-size:27px}
+ body.v9RetirementMode .powerBreakdown ul{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body.v9RetirementMode .legacyCards{grid-template-columns:1fr 1fr}
+ body.v9RetirementMode .seedLegacy{padding:18px}
+ body.v9RetirementMode .abilityLegacyGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body.v9RetirementMode .fanEchoSection{padding:16px}
+ body.v9RetirementMode .fanEchoIntro{align-items:flex-start;flex-direction:column;gap:5px}
+ body.v9RetirementMode .fanEchoGrid{grid-template-columns:1fr}
+ body.v9RetirementMode .fanEchoCard{min-height:0}
+ body.v9RetirementMode .fanEchoCard p{font-size:12px}
+ body.v9RetirementMode .hallCard{grid-template-columns:minmax(0,1fr) 84px;padding:18px}
+ body.v9RetirementMode .hallVote b{font-size:23px}
+ body.v9RetirementMode .jerseyCard{grid-template-columns:70px minmax(0,1fr);gap:13px;padding:17px}
+ body.v9RetirementMode .jerseyNumber{width:64px;height:64px;font-size:28px}
+ body.v9RetirementMode .jerseyCard strong{grid-column:2}
+ body.v9RetirementMode .honorGrid{grid-template-columns:1fr}
+ body.v9RetirementMode .chapterTimeline{padding:13px 18px}
+ body.v9RetirementMode .chapterTimeline article{grid-template-columns:1fr;gap:7px;padding:20px 0}
+ body.v9RetirementMode .chapterTimeline h3{font-size:18px}
+ body.v9RetirementMode .eraPeopleGrid{grid-template-columns:1fr}
+ body.v9RetirementMode .recordSummary{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body.v9RetirementMode .recordSummary b{font-size:20px}
+ body.v9RetirementMode .detailFactGrid,body.v9RetirementMode .injuryHistory,body.v9RetirementMode .seedRecord{grid-template-columns:1fr}
+ body.v9RetirementMode .publishDock .retirementShareCtaButtons{display:grid;grid-template-columns:1fr;width:100%}
+}
+@media(max-width:410px){body.v9RetirementMode .legacyCards{grid-template-columns:1fr}}
 
 /* V8 RC17: keep the portrait selector readable in narrow setup cards. */
 .avatarSetupRow{

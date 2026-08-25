@@ -83,9 +83,10 @@ function showEvent(){
  // 順序依種子與年份輪替，避免玩家永遠無腦點固定位置。
  let rot=ri(RNG(p.seed+"choice-order-"+p.year+"-"+p.eventIndex),0,2);
  mapped.push(...mapped.splice(0,rot));
-  choices.innerHTML=mapped.map(o=>{
-    return `<button class="choice eventChoice" onclick="resolveEvent('${o[2]}','${o[0]}')"><b>${o[0]}</b><small>${o[1]}</small><span class="eventChancePreview">預估成功率 ${previewChance(o[2])}%</span></button>`;
-  }).join("");
+ choices.innerHTML=mapped.map(o=>{
+   const chance=previewChance(o[2]);
+   return `<button class="choice eventChoice v9EventChoice" onclick="resolveEvent('${o[2]}','${o[0]}')"><b>${o[0]}</b><small>${o[1]}</small><span class="eventChancePreview v9EventChance" style="--chance:${chance}%" aria-label="預估成功率 ${chance}%"><small>成功機會</small><b>${chance}%</b><i aria-hidden="true"></i></span></button>`;
+ }).join("");
 }
 
 
@@ -248,10 +249,11 @@ function nationalKeyBattlePreview(level,profile,mode="full",battleMode="team"){
  return {...preview,expectedFinish:finish,reward:level==="SENIOR"?nationalReward(finish):youthNationalReward(finish)};
 }
 function keyBattlePreviewHTML(preview,national=false){
- return `<span class="eventChancePreview">預估成功率 ${preview.success}%｜${national?`預估獎勵 ${preview.reward} 點｜`:"預估表現值 "}${preview.min}–${preview.max} 點</span>`;
+ if(national)return `<span class="eventChancePreview v9BattleOdds"><i><small>成功機會</small><b>${preview.success}%</b></i><i><small>預估獎勵</small><b>${preview.reward} 點</b></i><i><small>表現範圍</small><b>${preview.min}–${preview.max}</b></i></span>`;
+ return `<span class="eventChancePreview">預估成功率 ${preview.success}%｜預估表現值 ${preview.min}–${preview.max} 點</span>`;
 }
 function seasonKeyBattlePreviewHTML(preview){
- return `<span class="eventChancePreview">球隊勝率 ${preview.teamWinChance}%｜代表作 ${preview.signatureChance}%｜關鍵貢獻以上 ${preview.contributionChance}%｜${preview.effectText}</span>`;
+ return `<span class="eventChancePreview v9BattleOdds"><i><small>球隊勝率</small><b>${preview.teamWinChance}%</b></i><i><small>代表作</small><b>${preview.signatureChance}%</b></i><i><small>關鍵貢獻以上</small><b>${preview.contributionChance}%</b></i><em>${preview.effectText}</em></span>`;
 }
 function buildSeasonKeyBattle(){
  if(typeof ensureV8CareerState==="function")ensureV8CareerState(p);
@@ -682,6 +684,7 @@ function resolveV8Relationship(action){
  recordV8Story(action==="duelRival"?"game":"turning",story,4,{person});finishSpecialEvent(html,story);
 }
 function finishSpecialEvent(html,logText){
+ const wasKeyBattle=!!document.querySelector("#choices [data-v9-approach]");
  delete p.pendingNationalCallup;
  delete p.pendingSeasonKeyBattle;
  special.innerHTML=html||"";
@@ -690,6 +693,11 @@ function finishSpecialEvent(html,logText){
  p.specialIndex++;
  next.textContent=p.specialIndex<p.specialQueue.length?"下一個特殊事件 →":"進入健康結算 →";
  next.classList.remove("hidden");render();
+ if(wasKeyBattle)requestAnimationFrame(()=>{
+   document.getElementById("currentPanel")?.classList.add("v9BattleResolved");
+   next.focus({preventScroll:true});
+   next.scrollIntoView({block:"nearest",inline:"nearest",behavior:window.matchMedia?.("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});
+ });
 }
 function resolveLastDanceChoice(action){
  p.lastDanceApproach=action;
@@ -751,7 +759,7 @@ function showSeasonKeyBattle(event={}){
  const safeTitle=escapeFeedText(key.title||"本季關鍵戰"),safeOpponent=escapeFeedText(key.opponent||"本季最難纏的對手"),safeDirection=escapeFeedText(key.lastTeamDirection||"球隊本季方向尚未明確");
  special.innerHTML=`<div class="specialStage keyBattle"><div class="specialKicker">🏀 SEASON KEY BATTLE</div><b>${safeTitle}</b><br><span class="mut">對手焦點：${safeOpponent}｜球隊方向：${safeDirection}</span>${key.contractYear?`<br><span class="gold">合約年｜本戰表現會進入球探與市場評估</span>`:""}${key.injury?`<br><span class="bad">傷病背景｜${escapeFeedText(key.injury)}</span>`:""}</div>`;
  const attackPreview=seasonKeyBattlePreview("attack"),teamPreview=seasonKeyBattlePreview("team"),managePreview=seasonKeyBattlePreview("manage");
- choices.innerHTML=`<div class="twoChoices"><button class="choice eventChoice" onclick="resolveSeasonKeyBattle('attack')"><b>🔥 全力搶代表作</b><small>提高關鍵戰表現與市場聲量，但疲勞、身體負荷與失誤代價一起上升。</small>${seasonKeyBattlePreviewHTML(attackPreview)}</button><button class="choice eventChoice" onclick="resolveSeasonKeyBattle('team')"><b>🏀 以球隊勝負為優先</b><small>把決策放在攻守與團隊節奏，表現與風險維持平衡。</small>${seasonKeyBattlePreviewHTML(teamPreview)}</button><button class="choice eventChoice" onclick="resolveSeasonKeyBattle('manage')"><b>🛡️ 控制負荷、保留健康</b><small>降低本戰個人聲量與市場加成，換取更完整的健康與下一站選擇。</small>${seasonKeyBattlePreviewHTML(managePreview)}</button></div>`;
+ choices.innerHTML=`<div class="twoChoices v9KeyBattleChoices"><button class="choice eventChoice" data-v9-approach="attack" onclick="resolveSeasonKeyBattle('attack')"><b>全力搶代表作</b><small>拉高使用率與個人上限，也承擔最大的波動。</small>${seasonKeyBattlePreviewHTML(attackPreview)}</button><button class="choice eventChoice" data-v9-approach="team" onclick="resolveSeasonKeyBattle('team')"><b>以球隊勝負為優先</b><small>閱讀防守、提早出球，讓全隊維持最穩定的進攻。</small>${seasonKeyBattlePreviewHTML(teamPreview)}</button><button class="choice eventChoice" data-v9-approach="manage" onclick="resolveSeasonKeyBattle('manage')"><b>控制負荷、保留健康</b><small>減少高風險對抗，換取更完整的健康與後續賽程。</small>${seasonKeyBattlePreviewHTML(managePreview)}</button></div>`;
  next.classList.add("hidden");
 }
 function resolveSeasonKeyBattle(approach="team"){
@@ -789,9 +797,9 @@ function showNationalKeyBattle(event={}){
  title.textContent="國家隊關鍵戰";
  text.textContent=`${label}正在進行 ${profile.event}。這一場會留下本屆代表隊履歷；你要用什麼方式打完？`;
  document.getElementById("currentPanel")?.classList.add("eventRare");
- special.innerHTML=`<div class="specialStage national"><div class="specialKicker">🇹🇼 ${label}｜代表戰</div><b>${profile.event}</b><br><span class="mut">${managed?"已選擇負荷管理；關鍵戰仍要決定最後的比賽取向。":"完整參賽；關鍵戰的取向會影響結果、疲勞與傷病風險。"}</span></div>`;
+ special.innerHTML=`<div class="specialStage national keyBattle"><div class="specialKicker">🇹🇼 ${label}｜代表戰</div><b>${profile.event}</b><br><span class="mut">${managed?"已選擇負荷管理；關鍵戰仍要決定最後的比賽取向。":"完整參賽；關鍵戰的取向會影響結果、疲勞與傷病風險。"}</span></div>`;
  const nationalMode=pending.mode||"full",attackPreview=nationalKeyBattlePreview(level,profile,nationalMode,"attack"),teamPreview=nationalKeyBattlePreview(level,profile,nationalMode,"team"),managePreview=nationalKeyBattlePreview(level,profile,nationalMode,"manage");
- choices.innerHTML=`<div class="twoChoices"><button class="choice eventChoice" onclick="resolveNationalCallup('${level}','${profile.id}','${nationalMode}','attack')"><b>主動扛起關鍵球</b><small>提高代表戰表現與國際評價，也把疲勞與傷病風險推到最高。</small>${keyBattlePreviewHTML(attackPreview,true)}</button><button class="choice eventChoice" onclick="resolveNationalCallup('${level}','${profile.id}','${nationalMode}','team')"><b>先守住球隊節奏</b><small>以防守、傳導與正確選擇為優先，個人數據與風險維持平衡。</small>${keyBattlePreviewHTML(teamPreview,true)}</button><button class="choice eventChoice" onclick="resolveNationalCallup('${level}','${profile.id}','${nationalMode}','manage')"><b>${managed?"維持負荷管理":"留力打完最後一節"}</b><small>保護身體與下一段球季，代價是關鍵戰的個人影響力與國際聲量較低。</small>${keyBattlePreviewHTML(managePreview,true)}</button></div>`;
+ choices.innerHTML=`<div class="twoChoices v9KeyBattleChoices"><button class="choice eventChoice" data-v9-approach="attack" onclick="resolveNationalCallup('${level}','${profile.id}','${nationalMode}','attack')"><b>主動扛起關鍵球</b><small>提高代表戰表現與國際評價，也把疲勞與傷病風險推到最高。</small>${keyBattlePreviewHTML(attackPreview,true)}</button><button class="choice eventChoice" data-v9-approach="team" onclick="resolveNationalCallup('${level}','${profile.id}','${nationalMode}','team')"><b>先守住球隊節奏</b><small>以防守、傳導與正確選擇為優先，個人數據與風險維持平衡。</small>${keyBattlePreviewHTML(teamPreview,true)}</button><button class="choice eventChoice" data-v9-approach="manage" onclick="resolveNationalCallup('${level}','${profile.id}','${nationalMode}','manage')"><b>${managed?"維持負荷管理":"留力打完最後一節"}</b><small>保護身體與下一段球季，代價是關鍵戰的個人影響力與國際聲量較低。</small>${keyBattlePreviewHTML(managePreview,true)}</button></div>`;
  next.classList.add("hidden");
 }
 function prepareNationalCallup(level="SENIOR",competitionId="",mode="full"){
@@ -864,7 +872,7 @@ function resolveNationalCallup(level="SENIOR",competitionId="",mode="full",battl
  let chainHTML=senior&&p.nationalCaps>=5&&!chainHas("national")?unlockChain("national"):"";
  let nationalTitleHTML=titleChecks();
  finishSpecialEvent(
-  `<div class="specialStage national"><b>🇹🇼 ${label}｜${event}｜${finish}</b><br><b>本屆關鍵戰：${battleLabel}</b><br>${box.role}${managed?"（負荷管理）":""}｜完成 ${box.games} 場比賽｜球隊評價 +${repGain}｜疲勞 +${fatigueGain}<div class="legacyTableWrap" style="margin-top:10px"><table class="legacyTable"><tr><th>GP</th><th>MPG</th><th>PTS</th><th>REB</th><th>AST</th><th>STL</th><th>BLK</th><th>FG%</th><th>3P%</th></tr><tr><td>${box.games}</td><td>${box.mins.toFixed(1)}</td><td>${box.pts.toFixed(1)}</td><td>${box.reb.toFixed(1)}</td><td>${box.ast.toFixed(1)}</td><td>${box.stl.toFixed(1)}</td><td>${box.blk.toFixed(1)}</td><td>${box.fg.toFixed(1)}</td><td>${box.three.toFixed(1)}</td></tr></table></div>${reward?`國際賽獎勵能力點 <b class="gold">+${reward}</b>`:"本次未獲額外能力點"}${injuryHTML}</div>${chainHTML}${nationalTitleHTML}`,
+  `<div class="specialStage national keyBattle"><b>🇹🇼 ${label}｜${event}｜${finish}</b><br><b>本屆關鍵戰：${battleLabel}</b><br>${box.role}${managed?"（負荷管理）":""}｜完成 ${box.games} 場比賽｜球隊評價 +${repGain}｜疲勞 +${fatigueGain}<div class="legacyTableWrap" style="margin-top:10px"><table class="legacyTable"><tr><th>GP</th><th>MPG</th><th>PTS</th><th>REB</th><th>AST</th><th>STL</th><th>BLK</th><th>FG%</th><th>3P%</th></tr><tr><td>${box.games}</td><td>${box.mins.toFixed(1)}</td><td>${box.pts.toFixed(1)}</td><td>${box.reb.toFixed(1)}</td><td>${box.ast.toFixed(1)}</td><td>${box.stl.toFixed(1)}</td><td>${box.blk.toFixed(1)}</td><td>${box.fg.toFixed(1)}</td><td>${box.three.toFixed(1)}</td></tr></table></div>${reward?`國際賽獎勵能力點 <b class="gold">+${reward}</b>`:"本次未獲額外能力點"}${injuryHTML}</div>${chainHTML}${nationalTitleHTML}`,
   `${label}：${event} ${finish}${managed?"（負荷管理）":""}｜關鍵戰：${battleLabel}｜${box.games} 場、${box.pts.toFixed(1)} 分、${box.reb.toFixed(1)} 籃板、${box.ast.toFixed(1)} 助攻｜獎勵點 +${reward}`
  );
 }

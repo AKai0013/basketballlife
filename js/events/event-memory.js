@@ -23,6 +23,7 @@ function ensureV8CareerState(player=p){
  player.chainQueue=Array.isArray(player.chainQueue)?player.chainQueue:[];
  player.storyBeats=Array.isArray(player.storyBeats)?player.storyBeats:[];
  player.seasonStoryCandidates=Array.isArray(player.seasonStoryCandidates)?player.seasonStoryCandidates:[];
+ player.roleHistory=Array.isArray(player.roleHistory)?player.roleHistory:[];
  player.careerCast=player.careerCast&&typeof player.careerCast==="object"&&!Array.isArray(player.careerCast)?player.careerCast:{};
  player.teamWorld=player.teamWorld&&typeof player.teamWorld==="object"&&!Array.isArray(player.teamWorld)?player.teamWorld:{};
  player.roleState=player.roleState&&typeof player.roleState==="object"&&!Array.isArray(player.roleState)?player.roleState:{};
@@ -80,7 +81,21 @@ function refreshV8Role(player=p,reason="年度評估"){
  if(!player)return {};
  const role=v8RoleFor(player),old=player.roleState?.currentLabel||"";
  player.roleState={...(player.roleState||{}),current:role.id,currentLabel:role.label,updatedYear:player.year,reason,promised:player.roleState?.promised||role.id,promisedLabel:player.roleState?.promisedLabel||role.label};
+ recordV8RoleHistory(player,role,reason);
  return player.roleState;
+}
+function recordV8RoleHistory(player=p,role={},reason="年度評估",minutes=null){
+ if(!player||!v8CareerIsProfessional(player))return null;
+ player.roleHistory=Array.isArray(player.roleHistory)?player.roleHistory:[];
+ const id=role.id||role.current||player.roleState?.current||"garbage";
+ const label=role.label||role.currentLabel||player.roleState?.currentLabel||"替補球員";
+ const row={year:Number(player.year)||0,team:player.team||"",path:player.path||"",role:id,label,reason};
+ if(minutes!==null&&Number.isFinite(Number(minutes)))row.mins=Number(minutes);
+ const index=player.roleHistory.findIndex(x=>Number(x?.year)===row.year&&String(x?.team||"")===row.team);
+ if(index>=0)player.roleHistory[index]={...player.roleHistory[index],...row};
+ else player.roleHistory.push(row);
+ player.roleHistory=player.roleHistory.sort((a,b)=>Number(a?.year||0)-Number(b?.year||0)).slice(-80);
+ return row;
 }
 function recordV8Story(type,text,importance=2,meta={}){
  if(!p||!text)return;
@@ -224,7 +239,7 @@ function refreshTicker(){
    .slice(0,8);
  const txt=merged.length
    ? merged.map(x=>x.message).join("　◆　")
-   : "BL LIVE｜只播報頂級聯盟冠軍、MVP／DPOY、成人國家隊重大成績、NBA突破、名人堂與傳奇里程碑。";
+   : "BL LIVE｜記錄生涯重大時刻。";
  el.textContent=txt;
  const seconds=Math.max(55,Math.min(145,Math.round(txt.length*.30)));
  el.style.animationDuration=seconds+"s";

@@ -134,14 +134,19 @@
     const heroCopy = identity?.querySelector("p");
     const heroKicker = identity?.querySelector(".setupKicker");
     const heroPromise = identity?.querySelector(".setupPromise");
-    if (heroKicker) heroKicker.textContent = "BASKETBALLLIFE · CAREER SIMULATOR";
-    if (heroTitle) heroTitle.textContent = "從 HBL 開始，打完你的一生。";
-    if (heroCopy) heroCopy.textContent = "16 歲上場。每一次選擇，都會把你帶向不同的球隊、舞台與結局。";
-    if (heroPromise) heroPromise.innerHTML = "<span>HBL → 職業 → 旅外 → 國家隊 → 引退</span>";
+    setup.classList.add("v9HomeStage");
+    identity?.classList.add("v9HomeHero");
+    if (heroKicker) heroKicker.textContent = "YOUR BASKETBALL STORY";
+    if (heroTitle) heroTitle.innerHTML = "今晚，換你<br>走進球場。";
+    if (heroCopy) heroCopy.textContent = "從 HBL 的第一場比賽開始，讓每一次選擇寫成你的生涯。";
+    if (heroPromise) {
+      heroPromise.classList.add("v9CareerRoute");
+      heroPromise.innerHTML = "<span class=\"active\">HBL</span><i></i><span>職業</span><i></i><span>旅外</span><i></i><span>國家隊</span>";
+    }
 
     const quick = document.createElement("div");
     quick.className = "blQuickStartPromise";
-    quick.innerHTML = `<b>名字＋位置，就能開始。</b><span>其他設定已自動備妥。</span>`;
+    quick.innerHTML = `<b>名字＋位置，就能開始。</b><span>身材、外觀與家鄉可在完整自訂中調整。</span>`;
     setup.insertBefore(quick, start);
     const seedLabel = setup.querySelector(':scope > label[for="seed"]');
     const seed = setup.querySelector(":scope > .seed");
@@ -157,24 +162,63 @@
     const communityInvite = setup.querySelector(":scope > .communityInviteCard");
     const creatorCredit = setup.querySelector(":scope > .creatorCredit");
     const quickPanel = document.createElement("div");
-    quickPanel.className = "blHomeQuickPanel";
+    quickPanel.className = "blHomeQuickPanel v9PlayerEntry";
     setup.insertBefore(quickPanel, nameLabel || quick);
-    [nameLabel, nameInput, positionLabel, positionGrid, quick].forEach((node) => {
-      if (node) quickPanel.appendChild(node);
-    });
-
-    const startActions = document.createElement("div");
-    startActions.className = "blHomeStartActions";
     const customButton = document.createElement("button");
     customButton.type = "button";
     customButton.className = "blOpenCustomButton";
-    customButton.innerHTML = `<b>完整自訂球員 →</b><small id="blCustomSummary">身材・外觀・出生地</small>`;
-    startActions.append(start, customButton);
+    customButton.innerHTML = `<b>完整自訂 <span>→</span></b><small id="blCustomSummary">身材・外觀・出生地</small>`;
+
+    const entryHead = document.createElement("div");
+    entryHead.className = "v9EntryHead";
+    entryHead.innerHTML = `<div><small>CREATE PLAYER</small><h2>建立你的球員</h2></div>`;
+    entryHead.appendChild(customButton);
+    quickPanel.appendChild(entryHead);
+
+    if (nameLabel) {
+      nameLabel.textContent = "球員姓名";
+      quickPanel.appendChild(nameLabel);
+    }
+    if (nameInput) {
+      const nameField = document.createElement("div");
+      nameField.className = "v9NameField";
+      nameField.appendChild(nameInput);
+      const age = document.createElement("span");
+      age.textContent = "16 歲";
+      nameField.appendChild(age);
+      quickPanel.appendChild(nameField);
+    }
+
+    const positionHead = document.createElement("div");
+    positionHead.className = "v9PositionHead";
+    positionHead.innerHTML = `<span>場上位置</span><small>目前選擇：<b id="v9PositionName">控球後衛</b></small>`;
+    if (positionLabel) positionLabel.remove();
+    quickPanel.appendChild(positionHead);
+    if (positionGrid) quickPanel.appendChild(positionGrid);
+    quickPanel.appendChild(quick);
+
+    const syncPositionName = () => {
+      const selected = positionGrid?.querySelector(".pos.on");
+      const label = selected?.querySelector("small")?.textContent?.trim() || "控球後衛";
+      const target = document.getElementById("v9PositionName");
+      if (target) target.textContent = label;
+    };
+
+    const startActions = document.createElement("div");
+    startActions.className = "blHomeStartActions";
+    start.innerHTML = `<span><small>BEGIN CAREER</small>開始這段籃球人生</span><b aria-hidden="true">→</b>`;
+    startActions.appendChild(start);
     quickPanel.appendChild(startActions);
 
-    const seedPanel = document.createElement("div");
+    const seedPanel = document.createElement("details");
     seedPanel.className = "blHomeSeedPanel";
-    [seedLabel, seed, seedError, seedHelp].forEach((node) => { if (node) seedPanel.appendChild(node); });
+    const seedSummary = document.createElement("summary");
+    seedSummary.innerHTML = `<span><b>使用自己的世界 Seed</b><small>相同設定會展開相同的生涯起點</small></span><em>展開</em>`;
+    seedPanel.appendChild(seedSummary);
+    const seedBody = document.createElement("div");
+    seedBody.className = "v9SeedBody";
+    [seedLabel, seed, seedError, seedHelp].forEach((node) => { if (node) seedBody.appendChild(node); });
+    seedPanel.appendChild(seedBody);
     quickPanel.appendChild(seedPanel);
     [continuePanel, communityInvite, creatorCredit].forEach((node) => { if (node) quickPanel.appendChild(node); });
 
@@ -194,6 +238,7 @@
       const meta = document.getElementById("blCustomPlayerMeta");
       if (summary) summary.textContent = `${pos}・${height} cm・臂展 ${wingspan} cm・${birthplace}`;
       if (meta) meta.textContent = `${nameInput?.value.trim() || "籃球癡漢"}・${pos}`;
+      syncPositionName();
     };
     const showCustom = () => {
       syncCustomSummary();
@@ -219,6 +264,132 @@
     syncCustomSummary();
   }
 
+  function v9PlayerProfileMarkup(player) {
+    if (!player) return "";
+    const talent = typeof v90TalentPanelHTML === "function" ? v90TalentPanelHTML(player) : "";
+    const stats = Object.entries(player.stats || {}).map(([key, value]) => {
+      const cap = Number(player.caps?.[key] || 99);
+      const label = typeof L !== "undefined" ? (L[key] || key) : key;
+      return `<div class="v9ProfileStat"><span><b>${safeText(label)}</b><small>上限 ${cap}</small></span><i><em style="--value:${Math.min(99, Number(value) || 0)}%"></em></i><strong>${Number(value) || 0}</strong></div>`;
+    }).join("");
+    return `${talent}<div class="v9ProfileStats">${stats}</div>`;
+  }
+
+  function v9CareerRecordMarkup(player) {
+    const rows = (Array.isArray(player?.log) ? player.log : []).slice(0, 16);
+    if (!rows.length) return `<div class="v9DrawerEmpty">第一段生涯紀錄即將寫下。</div>`;
+    return `<div class="v9RecordList">${rows.map((row) => `<div>${safeText(row)}</div>`).join("")}</div>`;
+  }
+
+  function installV9GameNavigation() {
+    const game = document.getElementById("game");
+    if (!game || document.getElementById("v9GameNav")) return;
+
+    const nav = document.createElement("nav");
+    nav.id = "v9GameNav";
+    nav.className = "v9GameNav";
+    nav.setAttribute("aria-label", "主要功能");
+    nav.innerHTML = `<button type="button" class="active" data-v9-nav="career"><span>◉</span>生涯</button><button type="button" data-v9-nav="ability"><span>◆</span>能力</button><button type="button" data-v9-nav="record"><span>▦</span>紀錄</button><button type="button" data-v9-nav="ranking"><span>♛</span>排行</button>`;
+
+    const drawer = document.createElement("aside");
+    drawer.id = "v9PlayerDrawer";
+    drawer.className = "v9PlayerDrawer hidden";
+    drawer.setAttribute("aria-hidden", "true");
+    drawer.innerHTML = `<button type="button" class="v9DrawerBackdrop" aria-label="關閉球員資料"></button><section role="dialog" aria-modal="true" aria-labelledby="v9DrawerTitle"><header><span><small id="v9DrawerKicker">PLAYER</small><b id="v9DrawerTitle">球員資料</b></span><button type="button" class="v9DrawerClose" aria-label="關閉">×</button></header><div id="v9DrawerBody"></div></section>`;
+
+    const closeDrawer = () => {
+      drawer.classList.add("hidden");
+      drawer.setAttribute("aria-hidden", "true");
+      nav.querySelectorAll("button").forEach((button) => button.classList.toggle("active", button.dataset.v9Nav === "career"));
+    };
+    const openDrawer = (mode) => {
+      const player = currentPlayer();
+      if (!player) return;
+      const kicker = document.getElementById("v9DrawerKicker");
+      const heading = document.getElementById("v9DrawerTitle");
+      const body = document.getElementById("v9DrawerBody");
+      if (mode === "ability") {
+        kicker.textContent = "PLAYER PROFILE";
+        heading.textContent = `${player.name || "球員"}｜能力`;
+        body.innerHTML = v9PlayerProfileMarkup(player);
+      } else {
+        kicker.textContent = "CAREER RECORD";
+        heading.textContent = `${player.name || "球員"}｜生涯紀錄`;
+        body.innerHTML = v9CareerRecordMarkup(player);
+      }
+      drawer.classList.remove("hidden");
+      drawer.setAttribute("aria-hidden", "false");
+      nav.querySelectorAll("button").forEach((button) => button.classList.toggle("active", button.dataset.v9Nav === mode));
+      drawer.querySelector(".v9DrawerClose")?.focus({ preventScroll: true });
+    };
+
+    nav.addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-v9-nav]");
+      if (!button) return;
+      const mode = button.dataset.v9Nav;
+      if (mode === "career") {
+        closeDrawer();
+        document.getElementById("currentPanel")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else if (mode === "ranking") {
+        closeDrawer();
+        window.BasketballLifeOnline?.openLeaderboard?.();
+      } else openDrawer(mode);
+    });
+    drawer.querySelector(".v9DrawerBackdrop")?.addEventListener("click", closeDrawer);
+    drawer.querySelector(".v9DrawerClose")?.addEventListener("click", closeDrawer);
+    document.addEventListener("keydown", (event) => { if (event.key === "Escape" && !drawer.classList.contains("hidden")) closeDrawer(); });
+
+    game.append(nav, drawer);
+    const header = game.querySelector(".header");
+    const restart = document.getElementById("quickRestartBtn");
+    const restartMenu = document.getElementById("quickRestartMenu");
+    if (header && restart) {
+      restart.classList.add("v9HeaderRestart");
+      header.insertBefore(restart, header.firstChild);
+      if (restartMenu) header.insertBefore(restartMenu, restart.nextSibling);
+    }
+  }
+
+  function syncV9GameShell() {
+    const game = document.getElementById("game");
+    const player = currentPlayer();
+    if (!game || !player) return;
+    installV9GameNavigation();
+    const keyBattle = !!game.querySelector("#special .keyBattle");
+    const keyBattleResolved = keyBattle && !game.querySelector("#choices .choice");
+    game.dataset.v9View = keyBattle ? "key-battle" : player.stage || "career";
+    document.getElementById("currentPanel")?.classList.toggle("v9BattleResolved", keyBattleResolved);
+    syncV9PointTracks(game, player);
+    const ovrBox = document.getElementById("ovr")?.closest(".box");
+    if (ovrBox) ovrBox.classList.add("v9OvrBox");
+  }
+
+  function syncV9PointTracks(game, player) {
+    if (game.dataset.v9View !== "points") return;
+    const keys = Object.keys(player.stats || {});
+    game.querySelectorAll("#pointRows .pointrow").forEach((row, index) => {
+      const key = keys[index];
+      if (!key) return;
+      const value = Math.max(0, Math.min(100, Math.round(Number(player.stats[key]) || 0)));
+      const cap = Math.max(0, Math.min(100, Math.round(Number(player.caps?.[key]) || 99)));
+      let track = row.querySelector(".pointTrack");
+      if (!track) {
+        track = document.createElement("span");
+        track.className = "pointTrack";
+        track.innerHTML = "<i></i>";
+        row.querySelector(".pointName")?.insertAdjacentElement("afterend", track);
+      }
+      track.style.setProperty("--value", `${value}%`);
+      track.style.setProperty("--cap", `${cap}%`);
+      track.setAttribute("role", "progressbar");
+      const label = row.querySelector(".pointName b")?.textContent?.trim() || key;
+      track.setAttribute("aria-label", `${label}目前 ${value}，培養上限 ${cap}`);
+      track.setAttribute("aria-valuemin", "0");
+      track.setAttribute("aria-valuemax", "99");
+      track.setAttribute("aria-valuenow", String(value));
+    });
+  }
+
   function trainingScore(player, key, credit, priority, priorPicks = 0) {
     const stat = Number(player.stats?.[key] || 0);
     if (stat >= 99) return -Infinity;
@@ -239,7 +410,11 @@
     if (!player || player.stage !== "training" || player.diceRolling) return false;
     const assign = typeof window.assignTraining === "function" ? window.assignTraining : null;
     if (!assign) return false;
-    const priority = TRAINING_PRIORITY[player.pos] || TRAINING_PRIORITY.PG;
+    const positionPriority = TRAINING_PRIORITY[player.pos] || TRAINING_PRIORITY.PG;
+    const talentPriority=player.talentProfile?.model==="v9-specialist-1"
+      ? [...(player.talentProfile.core||[]),...(player.talentProfile.support||[]),...positionPriority]
+      : positionPriority;
+    const priority=[...new Set(talentPriority)];
     let guard = 0;
     while (Array.isArray(player.used) && player.used.some((used) => !used) && guard < 20) {
       guard += 1;
@@ -258,7 +433,9 @@
     }
     const message = document.getElementById("diceMsg");
     if (message && player.used?.every(Boolean)) {
-      message.textContent = `已依 ${player.pos} 的位置重點分配本季骰子；可用「返回上一步」逐顆調整。`;
+      message.textContent = player.talentProfile?.model==="v9-specialist-1"
+        ? "推薦分配完成；可返回逐項調整。"
+        : `${player.pos} 推薦分配完成；可返回逐項調整。`;
     }
     return !!player.used?.every(Boolean);
   }
@@ -271,7 +448,8 @@
     if (!row) {
       row = document.createElement("div");
       row.className = "blQuickTrainingRow";
-      row.innerHTML = `<button type="button" class="blQuickTrainingBtn">⚡ 一鍵推薦分配</button><small>依場上位置與升級進度分配全部骰子；原本逐顆玩法仍保留。</small>`;
+      const guide=player.talentProfile?.model==="v9-specialist-1"?"依天賦適性與目前進度分配，可返回調整。":"依位置與目前進度分配，可返回調整。";
+      row.innerHTML = `<button type="button" class="blQuickTrainingBtn">⚡ 推薦分配</button><small>${guide}</small>`;
       const assign = dicewrap.querySelector("#assign");
       if (assign) dicewrap.insertBefore(row, assign);
       row.querySelector("button")?.addEventListener("click", quickAllocateTraining);
@@ -280,7 +458,7 @@
     const finished = !!player.used?.length && player.used.every(Boolean);
     if (button) {
       button.disabled = !!player.diceRolling || finished;
-      const label = finished ? "✓ 本季特訓已分配" : player.diceRolling ? "🎲 等待骰子落桌" : "⚡ 一鍵推薦分配";
+      const label = finished ? "✓ 本季特訓完成" : player.diceRolling ? "🎲 等待骰子落桌" : "⚡ 推薦分配";
       if (button.textContent !== label) button.textContent = label;
     }
   }
@@ -479,7 +657,7 @@
     const player = currentPlayer();
     const special = document.getElementById("special");
     const screenTitle = String(document.getElementById("title")?.textContent || "").trim();
-    if (!player || !special || player.stage !== "results" || screenTitle !== "年度賽事與個人成績") return;
+    if (!player || !special || player.stage !== "results" || !["本季成績單", "年度賽事與個人成績"].includes(screenTitle)) return;
     const season = (Array.isArray(player.seasonHistory) ? player.seasonHistory : []).slice(-1)[0];
     if (!season || Number(season.year) !== Number(player.year)) return;
     const marker = `${season.year}-${season.team || player.team || "team"}`;
@@ -504,8 +682,10 @@
     card.dataset.blSeasonStory = marker;
     card.innerHTML = `<div class="blSeasonStoryHead"><div><small>SEASON DATA · ${safeText(context.year || "YEAR")}</small><span>本季關鍵表現</span></div><em>${safeText(season.path || player.path || "CAREER")}</em></div><h3>${safeText(headline)}</h3>${signature ? `<div class="blSignatureMatchup"><b>${safeText(context.team)} ${signature.scoreFor}：${signature.scoreAgainst} ${safeText(signature.opponent)}</b><span>${safeText(signature.result)}｜${signature.minutes} 分鐘</span></div><p class="blSignatureStatline">代表戰數據｜${signature.pts} 分・${signature.reb} 籃板・${signature.ast} 助攻・${signature.stl} 抄截・${signature.blk} 阻攻</p>` : ""}<div class="blSeasonDataGrid"><article><small>代表戰得分</small><b>${signature ? `${signature.pts} 分` : "—"}</b><span>${signature ? `${signature.reb} 籃板・${signature.ast} 助攻` : "本季沒有出賽"}</span></article><article><small>出賽率</small><b>${availability}%</b><span>${context.games}／${context.scheduledGames || context.games} 場</span></article><article><small>數據走勢</small><b>${safeText(trend.value)}</b><span>${safeText(trend.note)}</span></article><article><small>${safeText(primary.label)}</small><b>${safeText(primary.text)}</b><span>本季主要貢獻</span></article></div>${records.length ? `<div class="blSeasonRecordHead"><b>特別紀錄</b><span>本季留下的賽事、獎項與生涯轉折</span></div><div class="blSeasonMoments">${records.map(record => `<span>${safeText(record)}</span>`).join("")}</div>` : ""}`;
 
+    const storySlot = special.querySelector(".v9SeasonStorySlot");
     const tournamentList = special.querySelector(".tourneyList");
-    if (tournamentList) tournamentList.insertAdjacentElement("afterend", card);
+    if (storySlot) storySlot.replaceChildren(card);
+    else if (tournamentList) tournamentList.insertAdjacentElement("afterend", card);
     else special.prepend(card);
   }
 
@@ -684,12 +864,17 @@
     syncFrame = 0;
     const setup = document.getElementById("setup");
     const community = document.getElementById("communityPage");
+    const communityVisible = !!community && !community.classList.contains("hidden");
+    const gameVisible = visible(document.getElementById("game"));
+    const retirementVisible = document.body.classList.contains("retirementMode");
     const homeVisible = !!setup
       && !setup.classList.contains("hidden")
       && (!community || community.classList.contains("hidden"))
-      && !document.body.classList.contains("retirementMode")
-      && !visible(document.getElementById("game"));
+      && !retirementVisible
+      && !gameVisible;
     document.body.classList.toggle("blHomeMode", homeVisible);
+    document.body.classList.toggle("blGameMode", gameVisible && !retirementVisible);
+    document.body.classList.toggle("blCommunityMode", communityVisible);
     if (homeVisible) record("home_view");
 
     const panel = document.getElementById("currentPanel");
@@ -700,6 +885,7 @@
     )) record("major_event");
 
     if (document.body.classList.contains("retirementMode")) record("retirement");
+    if (gameVisible) syncV9GameShell();
     syncQuickTraining();
     syncSeasonStoryCard();
     syncRetirementPublicCard();

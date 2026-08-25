@@ -122,34 +122,33 @@ function veteranMinutesProfile(ov=overall()){
 }
 function retirementPressure(){
  if(p.age<34)return 0;
- let pressure=(p.age-33)*5;
+ let pressure=28;
  pressure+=Math.max(0,leagueTarget()-overall())*2.2;
  pressure+=Math.max(0,(p.bodyLoad||0)-35)*.28;
  if(p.injuryHistory.length>=3)pressure+=6;
  if((p.majorInjuryCount||0)>=2)pressure+=7;
- if(p.age>=40)pressure+=18;
- if((p.contract?.remaining||0)>1&&p.age<50)pressure-=14;
+ if((p.contract?.remaining||0)>1)pressure-=14;
  if((p.careerMVP||0)+(p.careerFirstTeam||0)>=3)pressure-=6;
  if(hasTitle("ironman"))pressure-=8;
  return Math.max(0,Math.min(95,pressure));
 }
 function retirementDefianceChance(){
  if(p.retirementDefianceUsed)return 0;
- if(p.age>=50)return 0;
  if(overall()<contractRosterOverallFloor("SBL／半職業")-2)return 0;
- const relative=overall()-leagueTarget();
- let chance=32+relative*2.4+Math.max(-8,Math.min(14,(p.rep||0)*.35));
+ const relative=overall()-leagueTarget(),risk=typeof veteranContractRiskProfile==="function"?veteranContractRiskProfile("SBL／半職業",false):null;
+ let chance=20+relative*2.4+Math.max(-8,Math.min(14,(p.rep||0)*.35))+(risk?risk.teamPatience*.22:12);
  chance+=(p.careerMVP||0)*3+(p.careerFirstTeam||0)*1.2+(p.careerAllStar||0)*.35;
- chance-=Math.max(0,p.age-34)*3.2+(p.majorInjuryCount||0)*3+Math.max(0,(p.bodyLoad||0)-45)*.18;
+ chance-=(p.majorInjuryCount||0)*3+Math.max(0,(p.bodyLoad||0)-45)*.18;
  return Math.max(8,Math.min(72,Math.round(chance)));
 }
 function retirementMediaPressureChance(){
- if(p.retirementPressureUsed||p.age>=50)return 0;
+ if(p.retirementPressureUsed)return 0;
  const origin=p.marketOriginTeam||p.team;
  const seasons=(p.seasonHistory||[]).filter(x=>x.team===origin&&isProfessionalPathValue(x.path)).length;
- let chance=18+Math.min(16,seasons*2)+Math.max(-6,Math.min(12,(p.rep||0)*.28));
+ const risk=typeof veteranContractRiskProfile==="function"?veteranContractRiskProfile(p.marketOriginLeague||p.path,true):null;
+ let chance=10+Math.min(16,seasons*2)+Math.max(-6,Math.min(12,(p.rep||0)*.28))+(risk?risk.teamPatience*.16:8);
  chance+=(p.careerMVP||0)*2+(p.careerFirstTeam||0)*.8+(p.championships||0)*1.2;
- chance-=Math.max(0,p.age-36)*2.4+(p.majorInjuryCount||0)*2;
+ chance-=(p.majorInjuryCount||0)*2;
  return Math.max(10,Math.min(48,Math.round(chance)));
 }
 function homecomingRegion(place=p.birthplace){
@@ -180,7 +179,7 @@ function hasFarewellResume(){
  return honors>=3||proSeasons>=8||(p.careerGames||0)>=300;
 }
 function canOfferHomecomingLastDance(){
- return !p.lastDanceUsed&&p.age>=36&&p.age<=50&&hasFarewellResume();
+ return !p.lastDanceUsed&&p.age>=36&&hasFarewellResume();
 }
 function startVeteranExtension(contract,kind,resultHTML=""){
  const oldTeam=p.team,agingHTML=p.pendingAgingHTML||"";
@@ -205,7 +204,7 @@ function showRetirementCrisis(reason){
  chapter.textContent=`${p.year} · ${p.age}歲 · 生涯續命抉擇`;
  title.textContent="市場已經沒有標準合約";
  text.innerHTML=`經紀團隊走訪母隊、自由市場與公開測試後，帶回最後的消息：<b>${reason}</b>。標準合約的大門已經關上，現在由你決定如何走完球員生涯的最後一段路。`;
- const lastDanceButton=canOfferHomecomingLastDance()?`<button class="choice" onclick="resolveRetirementCrisis('lastDance')"><b>🏠 接受家鄉告別合約</b><small>${home.team} 願以限時輪替與老將領袖角色，提供一季純告別性質的合約。${home.reason}。</small><span class="retirementOdds">${p.age>=50?"50歲告別特例":"家鄉返鄉"}｜打完正式引退</span></button>`:"";
+ const lastDanceButton=canOfferHomecomingLastDance()?`<button class="choice" onclick="resolveRetirementCrisis('lastDance')"><b>🏠 接受家鄉告別合約</b><small>${home.team} 願以限時輪替與老將領袖角色，提供一季純告別性質的合約。${home.reason}。</small><span class="retirementOdds">家鄉返鄉｜打完正式引退</span></button>`:"";
  const defyButton=!p.retirementDefianceUsed&&chance>0?`<button class="choice" onclick="resolveRetirementCrisis('defy')"><b>🔥 自費參加封閉測試</b><small>再向職業球團證明一次身體與即戰力；成功只能取得一年老將證明約，失敗則正式離開市場。</small><span class="retirementOdds">取得證明約機率 ${chance}%</span></button>`:"";
  const pressureButton=!p.retirementPressureUsed&&pressureChance>0&&(p.marketOriginTeam||p.team)?`<button class="choice" onclick="resolveRetirementCrisis('pressure')"><b>📣 公開施壓母隊</b><small>要求 ${p.marketOriginTeam||p.team} 再給一年；可能換到低角色合約，也會破壞球團與更衣室關係。</small><span class="retirementOdds">母隊讓步機率 ${pressureChance}%｜必定留下負面稱號</span></button>`:"";
  special.innerHTML=`<div class="retirementCrisis"><h3>合約市場最終報告</h3><p>${reason}。</p><div class="retirementCrisisMeta"><span>年齡 ${p.age}</span><span>總評 ${overall()}</span><span>健康狀態 ${healthState}</span><span>市場狀態 ${marketState}</span></div></div>
@@ -263,8 +262,7 @@ function resolveRetirementCrisis(action){
 function maybeForceRetire(){
  if(!isProPath()&&p.path!=="半職業")return false;
  if(p.lastDanceActive){
-   // 50歲告別特例在同一年度完成，避免退休年份與年齡被推成不合法的 2011 年差。
-   if(p.age<50){p.year++;p.age++}
+   p.year++;p.age++;
    retireCareer("完成家鄉最後一舞後，依照告別合約正式退休");return true;
  }
  // 有效合約必須先走完；球隊可以縮減角色，但不能把仍有保障年限的球員直接判定退休。
