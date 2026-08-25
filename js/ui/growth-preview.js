@@ -137,7 +137,7 @@
     setup.classList.add("v9HomeStage");
     identity?.classList.add("v9HomeHero");
     if (heroKicker) heroKicker.textContent = "YOUR BASKETBALL STORY";
-    if (heroTitle) heroTitle.innerHTML = "今晚，換你<br>走進球場。";
+    if (heroTitle) heroTitle.innerHTML = "從這一球開始，<br>寫下你的生涯。";
     if (heroCopy) heroCopy.textContent = "從 HBL 的第一場比賽開始，讓每一次選擇寫成你的生涯。";
     if (heroPromise) {
       heroPromise.classList.add("v9CareerRoute");
