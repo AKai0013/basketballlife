@@ -149,12 +149,14 @@ async function careers(request,env,path){
       return json({champions:rows.filter(Boolean)});
     }
     if(url.searchParams.get("archive")==="1"){
+      const excludedWeeklyIds=[...new Set([weeklyId,"V9-2026W35"])];
+      const weeklyPlaceholders=excludedWeeklyIds.map(()=>"?").join(",");
       const metricColumn=orderColumn[metric];
       const rows=(await env.DB.prepare(`WITH weekly_player_careers AS (
         SELECT ${summaryColumns},${metricColumn} AS metric_value,
           ROW_NUMBER() OVER(PARTITION BY weekly_id,user_id ORDER BY ${metricColumn} DESC,career_rating DESC,updated_at DESC,id ASC) AS player_week_rank
         FROM career_records
-        WHERE is_public=1 AND ranking_era IN ('v8','v81','v9') AND weekly_active=1 AND weekly_id<>?
+        WHERE is_public=1 AND ranking_era IN ('v8','v81','v9') AND weekly_active=1 AND weekly_id NOT IN (${weeklyPlaceholders})
       ),weekly_ranked AS (
         SELECT weekly_player_careers.*,
           ROW_NUMBER() OVER(PARTITION BY weekly_id ORDER BY metric_value DESC,career_rating DESC,updated_at DESC,id ASC) AS weekly_rank
@@ -165,7 +167,7 @@ async function careers(request,env,path){
       FROM weekly_ranked
       WHERE weekly_rank<=3
       ORDER BY weekly_id DESC,weekly_rank ASC
-      LIMIT 240`).bind(weeklyId).all()).results.map(x=>hydrate(x,true));
+      LIMIT 240`).bind(...excludedWeeklyIds).all()).results.map(x=>hydrate(x,true));
       return json({rows});
     }
     const clause=leaderboardScope(era,weeklyId);

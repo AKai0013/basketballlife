@@ -169,12 +169,14 @@ export async function optimizedLeaderboard(request, env) {
   }
 
   if (url.searchParams.get("archive") === "1") {
+    const excludedWeeklyIds = [...new Set([weeklyId, "V9-2026W35"])];
+    const weeklyPlaceholders = excludedWeeklyIds.map(() => "?").join(",");
     const rows = (await env.DB.prepare(
       `WITH weekly_player_careers AS (
          SELECT ${summaryColumns},${order} AS metric_value,
            ROW_NUMBER() OVER(PARTITION BY weekly_id,user_id ORDER BY ${order} DESC,career_rating DESC,updated_at DESC,id ASC) AS player_week_rank
          FROM career_records
-         WHERE is_public=1 AND ranking_era IN ('v8','v81','v9') AND weekly_active=1 AND weekly_id<>?
+         WHERE is_public=1 AND ranking_era IN ('v8','v81','v9') AND weekly_active=1 AND weekly_id NOT IN (${weeklyPlaceholders})
        ),weekly_ranked AS (
          SELECT weekly_player_careers.*,
            ROW_NUMBER() OVER(PARTITION BY weekly_id ORDER BY metric_value DESC,career_rating DESC,updated_at DESC,id ASC) AS weekly_rank
@@ -186,7 +188,7 @@ export async function optimizedLeaderboard(request, env) {
        WHERE weekly_rank<=3
        ORDER BY weekly_id DESC,weekly_rank ASC
        LIMIT 240`
-    ).bind(weeklyId).all()).results || [];
+    ).bind(...excludedWeeklyIds).all()).results || [];
     return { rows: rows.map(hydrateSummary) };
   }
 
