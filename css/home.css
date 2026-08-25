@@ -19,7 +19,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.16;ba
 .brandRow{min-height:44px;margin:0 0 12px;padding:0 4px}.brand{font-size:21px!important;letter-spacing:-.04em}.brandText b{color:var(--v8-orange)}
 .brandActions{gap:8px}.topRankBtn,.versionLink,.onlineStatus,.quickRestartBtn{min-height:32px;border-radius:9px!important;background:#0c141c!important;border:1px solid var(--v8-line)!important;color:#aebdca!important}
 .liveTicker{height:34px;border:1px solid var(--v8-line);border-radius:10px;background:#091119;overflow:hidden}.liveTicker[hidden]{display:none!important}.liveLabel{min-width:74px;background:var(--v8-orange);color:#1b1008;font-size:10px;letter-spacing:.1em}.liveViewport{font-size:11px}
-.liveTrack .tickerItem{font-weight:780;text-shadow:0 1px 7px #0009}.liveTrack .tickerMajor{color:#d5e2ec}.liveTrack .tickerChampionship{color:#ffd166}.liveTrack .tickerNational{color:#ff9d9d}.liveTrack .tickerNba{color:#8dccff}.liveTrack .tickerAward{color:#c7b4ff}.liveTrack .tickerSep{display:inline-block;margin:0 12px;color:#647b8c;font-size:9px}
+.liveTrack .tickerItem{font-weight:780;text-shadow:0 1px 7px #0009}.liveTrack .tickerMajor{color:#d5e2ec}.liveTrack .tickerChampionship{color:#ffd166}.liveTrack .tickerNational{color:#8fd8cf}.liveTrack .tickerNba{color:#8dccff}.liveTrack .tickerAward{color:#c7b4ff}.liveTrack .tickerSep{display:inline-block;margin:0 12px;color:#647b8c;font-size:9px}
 .liveTrack .tickerHof,.liveTrack .tickerJersey{font-weight:950;background:linear-gradient(90deg,#ffe08a,#ff80b5,#ad9aff,#70e7ff,#ffe08a);background-size:300% 100%;background-position:0 50%;-webkit-background-clip:text;background-clip:text;color:#ffe08a;-webkit-text-fill-color:transparent;animation:tickerLegacyGradient 5s linear infinite;text-shadow:none}
 @keyframes tickerLegacyGradient{to{background-position:300% 50%}}
 @media(prefers-reduced-motion:reduce){.liveTrack .tickerHof,.liveTrack .tickerJersey{animation:none;background-position:50% 50%}}
@@ -261,6 +261,7 @@ body.retirementMode .retirementRoleTimeline{grid-template-columns:1fr}
 /* V9 retirement hall: approved dedicated layout, backed by formal career data. */
 body.v9RetirementMode{overflow-y:auto!important}
 body.v9RetirementMode>.wrap{width:min(1160px,calc(100% - 28px))!important;max-width:1160px!important}
+body.v9RetirementMode .brandRow,body.v9RetirementMode .liveTicker{display:none!important}
 body.v9RetirementMode #game{padding:0 0 42px!important;overflow:visible!important;background:transparent!important;border:0!important;box-shadow:none!important}
 body.v9RetirementMode #game>.header,
 body.v9RetirementMode #proTopStrip,

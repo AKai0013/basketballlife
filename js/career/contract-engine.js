@@ -347,6 +347,16 @@ function contractText(){
  if(!p.contract)return "";
  const c=normalizeV8Contract(p.contract);return `${contractCompetitionLabel(c)}｜${c.type||"職業合約"}｜${c.years}年｜年薪 ${moneyText(c.salary)}｜承諾 ${c.rolePromise}｜${contractSecurityLabel(c)}`;
 }
+function draftContractResultLabel(c){
+ const round=String(c?.draftRound||"").trim(),pick=Number(c?.draftPick);
+ if(round&&pick>0)return `${round}｜第 ${pick} 順位`;
+ if(c?.draftEntryType){
+  return /雙向|訓練營|球員池/.test(c.draftEntryType)
+    ? `非選秀入口｜${c.draftEntryType}`
+    : `${c.draftEntryType}｜未記錄順位`;
+ }
+ return c?.draftRouteId?"新人市場合約｜未記錄順位":"";
+}
 function teamDirectionEffect(direction,age=p?.age||25){
  const map={
   contend:"爭冠｜主力責任較高，邊緣輪替較少",
@@ -369,7 +379,7 @@ function contractOfferHTML(c){
    <span class="contractRoleBadge">${c.role||"輪替球員"}</span>
    ${c.league==="歐洲聯賽"?`<div class="europeCompetitionLine"><small>實際參賽舞台</small><b>${contractCompetitionLabel(c)}</b><span>${c.europeCountry||"歐洲"}｜國內 ${c.europeDomesticGames||"—"} 場${c.europeCupGames?`＋跨國賽 ${c.europeCupGames} 場`:""}</span></div>`:""}
    <div class="contractMain">合約條件比較</div>
-   ${c.draftEntryType?`<section class="v9DraftContractEntry"><header><small>正式選秀結果</small><b>${c.draftRound?`${c.draftRound}${c.draftPick?`第 ${c.draftPick} 順位`:""}`:c.draftEntryType}</b></header><div class="v9DraftContractFacts"><span><small>入口身分</small><b>${c.draftEntryType}</b></span><span><small>球隊需求</small><b>${c.draftTeamNeed||"依開季名單評估"}</b></span><span><small>適配程度</small><b>${c.draftFit||"適配"}</b></span><span><small>保障與耐心</small><b>${c.draftGuarantee||"依合約條件"}</b><em>${c.draftPatience||"球隊會依季初表現調整新秀角色"}</em></span></div></section>`:""}
+   ${c.draftRouteId||c.draftEntryType?`<section class="v9DraftContractEntry"><header><small>選秀／新人結果</small><b>${draftContractResultLabel(c)}</b></header><div class="v9DraftContractFacts"><span><small>入口身分</small><b>${c.draftEntryType||"新人市場邀請"}</b></span><span><small>球隊需求</small><b>${c.draftTeamNeed||"依開季名單評估"}</b></span><span><small>適配程度</small><b>${c.draftFit||"適配"}</b></span><span><small>保障與耐心</small><b>${c.draftGuarantee||"依合約條件"}</b><em>${c.draftPatience||"球隊會依季初表現調整新秀角色"}</em></span></div></section>`:""}
    <div class="contractMetaGrid">
     <div class="contractMetaCell"><small>年薪</small><b>${moneyText(c.salary)}</b></div>
     <div class="contractMetaCell"><small>年限</small><b>${c.years} 年｜${contractSecurityLabel(c)}</b></div>
@@ -1032,13 +1042,13 @@ function renderCollegeDraftResult(a,results,{recordStory=true}={}){
  const routes=collegeDraftRoutes().map(x=>collegeDraftRouteAssessment(x,a));
  const offers=results.filter(x=>x.success).map(row=>makeCollegeDraftContract(routes.find(x=>x.id===row.id),a,row.chance,row.draft)).sort((x,y)=>leagueMarketRank(y.league)-leagueMarketRank(x.league));
  p.stage="decision";resetMain();render();flow.innerHTML="";chapter.textContent=`${p.year} · ${p.age}歲 · 大${p.grade}新人市場結果`;
- title.textContent=offers.length?`收到 ${offers.length} 份新秀合約`:"本屆沒有收到球隊邀請";
+ title.textContent=offers.length?`收到 ${offers.length} 份職業入口報價`:"本屆沒有收到球隊邀請";
  text.innerHTML=offers.length?"球探與球隊已做出決定。獲選的市場願意把名額與合約交給你；其餘球隊則在本屆選擇了其他方向。":"球隊同時考量有限名額、位置需求、即戰力、履歷與同屆球員；這一次，沒有市場願意立刻提出合約。";
  const receipt=`<div class="draftResultList">${results.map(x=>`<article class="draftResultRow ${x.success?"pass":"fail"}"><header><div><b>${x.success?"✓":"×"} ${x.label}</b><small>${x.method||leagueDisplay(x.league)}</small></div><strong>${x.success?"獲選／獲邀":"本屆未錄取"}</strong></header><div class="v9DraftOutcomeGrid"><span><small>事前預估</small><b>${x.chance}%</b></span><span><small>正式結果</small><b>${x.success?(x.draft?.round?`${x.draft.round}${x.draft.pick?`第 ${x.draft.pick} 順位`:""}`:x.draft?.entryType||"進入名單"):"未使用名額"}</b></span>${x.draft?`<span><small>球隊需求</small><b>${x.draft.teamNeed}</b></span><span><small>適配程度</small><b>${x.draft.fit}</b></span>`:""}</div><p>${x.feedback}</p></article>`).join("")}</div>`;
  const max=collegeMaxYears(),focus=collegeDraftDevelopmentFocus(a),returnCard=p.grade<max?`<div class="offerCard"><b>🎓 回到 ${p.team}</b><div class="mut">你仍保有目前的比賽履歷。以大${p.grade+1}身分回校後，下一季重點是${focus}。</div><button class="btn" style="margin-top:9px" onclick="stayCollege()">回大學繼續打</button></div>`:`<div class="offerCard"><b>投入畢業公開測試</b><div class="mut">你仍可用畢業球員身分參加台灣職籃與 SBL 公開測試，爭取最後的職業入口。</div><button class="btn" style="margin-top:9px" onclick="openTryout()">參加公開測試</button></div>`;
  const scouting=`<section class="draftScoutingSummary"><small>SCOUTING SUMMARY</small><b>球探總結</b><p>${collegeDraftScoutingSummary(a,results)}</p></section>`;
  if(recordStory)recordV8Story("turning",`大${p.grade}結束後挑戰${results.map(x=>x.label).join("、")}，${offers.length?`收到 ${offers.length} 份新秀合約`:`本屆未獲邀並決定繼續尋找出路`}`,offers.length?4:3,{major:offers.length>0});
- special.innerHTML=`<div class="v9DraftResultShell">${scouting}${receipt}<section class="v9DraftOfferSection"><div class="v9DraftSectionHead"><small>下一步</small><b>${offers.length?"比較新秀合約與保障條件":"繼續尋找職業入口"}</b></div><div class="offerGrid">${offers.map(proOfferCard).join("")}${returnCard}</div></section></div>`;choices.innerHTML="";
+ special.innerHTML=`<div class="v9DraftResultShell">${scouting}${receipt}<section class="v9DraftOfferSection"><div class="v9DraftSectionHead"><small>下一步</small><b>${offers.length?"比較選秀／新人結果、合約與保障條件":"繼續尋找職業入口"}</b></div><div class="offerGrid">${offers.map(proOfferCard).join("")}${returnCard}</div></section></div>`;choices.innerHTML="";
 }
 function rebuildV9CollegeDraftResultFromSave(screen){
  if(!isV9DraftCareer()||p.stage!=="decision")return false;

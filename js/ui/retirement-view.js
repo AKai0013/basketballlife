@@ -1102,7 +1102,9 @@ function retirementTalentRevealHTML(){
  const labels=keys=>(keys||[]).map(key=>L[key]||key).join("、");
  return `<br><span class="mut">天賦型態：${escapeFeedText(profile.label||"多功能球員")}｜核心適性：${escapeFeedText(labels(profile.core))}｜延伸適性：${escapeFeedText(labels(profile.support))}</span>`;
 }
-function isV9RetirementExperience(){return String(p?.careerVersion||"").startsWith("9.")}
+// Retirement presentation is shared by every retired save. The saved
+// careerVersion stays intact for gameplay/save compatibility.
+function isV9RetirementExperience(){return !!(p?.retired||p?.stage==="retired")}
 function v9RetirementTier(){
  const rating=Number(p?.careerRating||0);
  return rating>=70000?"歷史級巨星":rating>=45000?"聯盟傳奇":rating>=28000?"明星級生涯":rating>=15000?"優秀職業球員":"職業旅人";

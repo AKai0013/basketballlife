@@ -362,7 +362,9 @@ function fitGameToViewport(){
    const vh=window.visualViewport?.height || window.innerHeight || document.documentElement.clientHeight || 900;
    const stage=game.dataset.stage||"";
    const retiredStage=stage==="retired";
-   const v9RetiredStage=retiredStage&&String(p?.careerVersion||"").startsWith("9.");
+   // Use the current retirement presentation for legacy and V9 saves alike.
+   // careerVersion remains untouched so old saves keep their original data rules.
+   const v9RetiredStage=retiredStage;
    document.body.classList.toggle("retirementMode",retiredStage);
    document.body.classList.toggle("v9RetirementMode",v9RetiredStage);
 
