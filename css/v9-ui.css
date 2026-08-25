@@ -182,7 +182,7 @@ body.blHomeMode .weeklyChallenge:disabled{cursor:not-allowed;opacity:.72}
   body.blHomeMode .weeklyChallenge{
     top:clamp(385px,31vw,440px)!important;
     right:auto!important;
-    left:clamp(44px,6vw,92px)!important;
+    left:calc(max(0px,(100% - 1280px)/2) + clamp(24px,6vw,82px))!important;
     width:min(330px,calc(100% - 88px))!important;
     min-width:0!important;
   }
