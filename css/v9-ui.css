@@ -329,7 +329,8 @@ body.blGameMode .titleBadge,body.blGameMode .mentalBadge{flex:none!important;min
 body.blGameMode .layout{display:block!important;width:100%!important;margin:0!important}
 body.blGameMode .story.card{padding:0!important;overflow:visible!important;border:0!important;background:transparent!important;box-shadow:none!important}
 body.blGameMode .story.card:after{display:none!important}
-body.blGameMode #feedHistory{margin:0 0 10px!important}
+/* 生涯紀錄集中到右側抽屜；保留 feedHistory 存檔資料以相容舊生涯，但不再佔用事件畫面。 */
+body.blGameMode #feedHistory{display:none!important}
 body.blGameMode #currentPanel{
   position:relative!important;
   display:block!important;

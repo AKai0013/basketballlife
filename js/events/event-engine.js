@@ -1625,7 +1625,10 @@ function resolveEvent(type,label){
    <div class="changes">${deltaHTML}</div>
  </div>${specialExtra}${titleHTML}`;
  choices.innerHTML="";
- logIt(`${eTitle()}：${label} → ${resultLabel(tier)}`);
+ const logChanges=changes.length
+   ? `｜${changes.map(c=>`${c.label} ${c.delta>0?"+":""}${c.delta}`).join("、")}`
+   : "｜數值沒有變化";
+ logIt(`${eTitle()}：${label} → ${resultLabel(tier)}${logChanges}`);
  if(/教練|戰術角色|替補角色/.test(resolvedEventTitle)&&p.careerCast?.coach){
    const trustDelta=tier==="great"?6:tier==="success"?3:tier==="fail"?-4:-9;
    p.careerCast.coach.trust=Math.max(0,Math.min(100,p.careerCast.coach.trust+trustDelta));
