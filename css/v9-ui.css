@@ -371,6 +371,53 @@ body.blGameMode #game[data-stage="plan"] .seasonPlanChoice.risk>.seasonPlanRisk{
 body.blGameMode #game[data-stage="plan"] .seasonPlanChoice.safe>.seasonPlanRisk{border-color:#33554a!important;background:#0d1917!important}
 body.blGameMode #next:not(.hidden){position:static!important;width:100%!important;min-height:58px!important;margin:22px 0 0!important;padding:12px 18px!important;border:1px solid #ffb268!important;border-radius:14px!important;background:linear-gradient(105deg,#ff7130,#f5b55a)!important;color:#1a0e07!important;font-size:16px!important;font-weight:1000!important;box-shadow:0 14px 34px #e86f2733!important}
 
+/* Dynamic mid-career chapter */
+body.blGameMode #game[data-v9-view="midcareer"] #currentPanel:before{content:"CAREER ARC"!important}
+body.blGameMode #game[data-v9-view="midcareer"] #currentPanel{min-height:0!important;background:radial-gradient(circle at 88% 10%,#6137193d,transparent 27rem),linear-gradient(155deg,#111923,#080d12)!important}
+body.blGameMode #game[data-v9-view="midcareer"] #special{display:grid;gap:12px;margin-top:18px}
+body.blGameMode .v9MidcareerProgress{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;width:100%}
+body.blGameMode .v9MidcareerProgress span{position:relative;display:grid;gap:2px;min-width:0;padding:9px 8px;border:1px solid #2b3944;border-radius:10px;background:#0a1218;color:#6f7f89;text-align:center}
+body.blGameMode .v9MidcareerProgress span:not(:last-child):after{content:"";position:absolute;z-index:2;top:50%;left:100%;width:7px;height:1px;background:#34434d}
+body.blGameMode .v9MidcareerProgress b{font-size:12px;line-height:1.1}
+body.blGameMode .v9MidcareerProgress small{font-size:8px;line-height:1.2}
+body.blGameMode .v9MidcareerProgress .done{border-color:#31594e;color:#70d2b0}
+body.blGameMode .v9MidcareerProgress .now{border-color:#9b6237;background:#24170e;color:#ffae64;box-shadow:inset 0 0 0 1px #d67b3422}
+body.blGameMode .v9MidcareerContext,body.blGameMode .v9MidcareerObjective,body.blGameMode .v9MidcareerFollow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 18px;padding:15px 17px;border:1px solid #31414c;border-radius:14px;background:#0a1218}
+body.blGameMode .v9MidcareerContext small,body.blGameMode .v9MidcareerObjective small,body.blGameMode .v9MidcareerFollow small{grid-column:1/-1;color:#dc8849;font-size:9px;font-weight:950;letter-spacing:.09em}
+body.blGameMode .v9MidcareerContext b,body.blGameMode .v9MidcareerObjective b,body.blGameMode .v9MidcareerFollow b{min-width:0;color:#e5ecef;font-size:14px;line-height:1.45;overflow-wrap:anywhere}
+body.blGameMode .v9MidcareerContext span,body.blGameMode .v9MidcareerObjective span{align-self:center;color:#8998a2;font-size:10px;white-space:nowrap}
+body.blGameMode .v9MidcareerFollow p{grid-column:1/-1;margin:3px 0 0;color:#9aa8b1;font-size:11px;line-height:1.55}
+body.blGameMode .v9MidcareerGoals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+body.blGameMode #currentPanel .choice.v9MidcareerGoal{display:grid!important;grid-template-columns:34px minmax(0,1fr)!important;grid-template-rows:auto 1fr!important;align-content:start!important;column-gap:10px!important;min-width:0!important;min-height:154px!important}
+body.blGameMode .v9MidcareerGoal>.v9MidcareerIndex{grid-column:1;grid-row:1/3;color:#ed914f;font-size:12px;font-weight:1000;letter-spacing:.08em}
+body.blGameMode .v9MidcareerGoal>b,body.blGameMode .v9MidcareerGoal>small{grid-column:2;min-width:0;overflow-wrap:anywhere}
+body.blGameMode .v9MidcareerGoal>b{color:#edf1f2;font-size:16px;line-height:1.35}
+body.blGameMode .v9MidcareerGoal>small{margin-top:7px;color:#8d9ba5;font-size:12px;line-height:1.6}
+body.blGameMode .v9MidcareerChoices{display:grid;grid-template-columns:1fr;gap:9px}
+body.blGameMode #currentPanel .choice.v9MidcareerChoice{display:grid!important;grid-template-columns:34px minmax(0,1fr) 188px!important;align-items:center!important;gap:12px!important;width:100%!important;min-width:0!important;min-height:134px!important}
+body.blGameMode .v9MidcareerChoice>.v9MidcareerIndex{align-self:start;padding-top:2px;color:#ed914f;font-size:12px;font-weight:1000;letter-spacing:.08em}
+body.blGameMode .v9MidcareerChoiceCopy{display:grid;min-width:0;gap:6px}
+body.blGameMode .v9MidcareerChoiceCopy>b{color:#edf1f2;font-size:16px;line-height:1.35;overflow-wrap:anywhere}
+body.blGameMode .v9MidcareerChoiceCopy>small{color:#8d9ba5;font-size:12px;line-height:1.55;overflow-wrap:anywhere}
+body.blGameMode .v9MidcareerChoiceCopy>em{color:#c99362;font-size:10px;font-style:normal;font-weight:850;line-height:1.45;overflow-wrap:anywhere}
+body.blGameMode .v9MidcareerOdds{display:grid;grid-template-columns:1fr auto;align-content:center;gap:5px 8px;min-width:0;min-height:82px;padding:12px;border:1px solid #40515e;border-radius:12px;background:#101a21;text-align:left}
+body.blGameMode .v9MidcareerOdds small{color:#83939d;font-size:9px;font-weight:950;letter-spacing:.07em}
+body.blGameMode .v9MidcareerOdds b{justify-self:end;color:#ffac62;font-size:24px;line-height:1}
+body.blGameMode .v9MidcareerOdds em{grid-column:1/-1;color:#9eabb3;font-size:9px;font-style:normal;line-height:1.45;overflow-wrap:anywhere}
+body.blGameMode .v9MidcareerResult{padding:22px;border:1px solid #3c4c57;border-left:4px solid #d88143;border-radius:17px;background:linear-gradient(145deg,#121a21,#091116)}
+body.blGameMode .v9MidcareerResult.success{border-left-color:#58c69d}
+body.blGameMode .v9MidcareerResult>small{color:#d98a4c;font-size:9px;font-weight:950;letter-spacing:.08em}
+body.blGameMode .v9MidcareerResult h3{margin:8px 0 5px;color:#edf1f2;font-size:24px;line-height:1.3}
+body.blGameMode .v9MidcareerResult p{margin:0;color:#a5b0b7;font-size:13px;line-height:1.65}
+body.blGameMode .v9MidcareerResultFacts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:17px}
+body.blGameMode .v9MidcareerResultFacts span{display:grid;gap:5px;padding:12px;border:1px solid #2f3e48;border-radius:11px;background:#0a1218}
+body.blGameMode .v9MidcareerResultFacts small,body.blGameMode .v9MidcareerEffects small{color:#798993;font-size:9px;font-weight:900}
+body.blGameMode .v9MidcareerResultFacts b{color:#f0a25a;font-size:18px}
+body.blGameMode .v9MidcareerEffects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px}
+body.blGameMode .v9MidcareerEffects>span{display:flex;flex-wrap:wrap;gap:6px;padding:12px;border:1px solid #2f3e48;border-radius:11px;background:#0a1218}
+body.blGameMode .v9MidcareerEffects small{width:100%}
+body.blGameMode .v9MidcareerEffects b{padding:5px 7px;border-radius:7px;background:#17232c;color:#cfd9de;font-size:10px}
+
 /* Training */
 body.blGameMode #game[data-v9-view="training"] #currentPanel:before{content:"SEASON TRAINING"!important}
 body.blGameMode #game[data-v9-view="training"] #currentPanel{padding:30px!important}
@@ -671,6 +718,26 @@ body.blCommunityMode .communityLoading,body.blCommunityMode .communityError,body
   body.blGameMode #game[data-stage="plan"] .seasonPlanRisk>small{grid-column:1!important}
   body.blGameMode #game[data-stage="plan"] .seasonPlanRisk>b{grid-column:2!important;grid-row:1!important;justify-self:start!important;font-size:19px!important}
   body.blGameMode #game[data-stage="plan"] .seasonPlanRisk>em{grid-column:3!important;grid-row:1!important;justify-self:end!important}
+
+  body.blGameMode #game[data-v9-view="midcareer"] #special{gap:9px;margin-top:13px}
+  body.blGameMode .v9MidcareerProgress{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+  body.blGameMode .v9MidcareerProgress span{padding:8px 4px}
+  body.blGameMode .v9MidcareerContext,body.blGameMode .v9MidcareerObjective,body.blGameMode .v9MidcareerFollow{grid-template-columns:1fr;padding:13px;gap:4px}
+  body.blGameMode .v9MidcareerContext span,body.blGameMode .v9MidcareerObjective span{white-space:normal}
+  body.blGameMode .v9MidcareerGoals{grid-template-columns:1fr;gap:7px}
+  body.blGameMode #currentPanel .choice.v9MidcareerGoal{min-height:112px!important;padding:14px!important}
+  body.blGameMode #currentPanel .choice.v9MidcareerChoice{grid-template-columns:26px minmax(0,1fr)!important;grid-template-rows:auto auto!important;align-items:start!important;gap:8px!important;min-height:0!important;padding:14px!important}
+  body.blGameMode .v9MidcareerChoice>.v9MidcareerIndex{grid-column:1;grid-row:1/3}
+  body.blGameMode .v9MidcareerChoiceCopy{grid-column:2;grid-row:1}
+  body.blGameMode .v9MidcareerOdds{grid-column:2;grid-row:2;grid-template-columns:auto auto minmax(70px,1fr);align-items:center;width:100%;min-height:48px;margin-top:4px;padding:9px 10px}
+  body.blGameMode .v9MidcareerOdds b{justify-self:start;font-size:19px}
+  body.blGameMode .v9MidcareerOdds em{grid-column:3;justify-self:end;text-align:right}
+  body.blGameMode .v9MidcareerResult{padding:17px 14px}
+  body.blGameMode .v9MidcareerResult h3{font-size:21px}
+  body.blGameMode .v9MidcareerResultFacts{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+  body.blGameMode .v9MidcareerResultFacts span{min-width:0;padding:9px 7px}
+  body.blGameMode .v9MidcareerResultFacts b{font-size:15px;overflow-wrap:anywhere}
+  body.blGameMode .v9MidcareerEffects{grid-template-columns:1fr}
 
   body.blGameMode #game[data-v9-view="training"] #currentPanel{padding:19px 10px 14px!important}
   body.blGameMode #game[data-v9-view="training"] #currentPanel>.chapter,body.blGameMode #game[data-v9-view="training"] #currentPanel>h2,body.blGameMode #game[data-v9-view="training"] #currentPanel>.text{padding-inline:7px}

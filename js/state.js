@@ -157,6 +157,7 @@ function normalizeCareerPlayer(player){
  };
  Object.entries(objectDefaults).forEach(([k,v])=>{if(!player[k]||typeof player[k]!=="object"||Array.isArray(player[k]))player[k]=JSON.parse(JSON.stringify(v))});
  ensureV8CareerState(player);
+ if(isV9Career&&typeof ensureV90MidcareerState==="function")ensureV90MidcareerState(player);
  if(player.partnerName&&!player.partnerProfile.name)player.partnerProfile={id:"legacy",name:player.partnerName,role:"多年伴侶",trait:"相互扶持",bonus:"穩定陪伴讓家庭關係更容易修復",type:"stability"};
  ["risk","balance","safe"].forEach(k=>{
    player.strategyStats[k]=player.strategyStats[k]||{};

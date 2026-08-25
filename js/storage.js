@@ -24,7 +24,7 @@ function readCareerSave(){
 }
 function careerStageLabel(player){
  if(player.retired)return "已退休";
- const labels={transition:"生涯篇章",plan:"賽季規劃",training:"季初特訓",events:"一般事件",special:"特殊事件",health:"健康回報",results:"賽季結算",points:"能力點分配",decision:"生涯抉擇"};
+ const labels={transition:"生涯篇章",plan:"賽季規劃",training:"季初特訓",midcareer:"生涯主線",events:"一般事件",special:"特殊事件",health:"健康回報",results:"賽季結算",points:"能力點分配",decision:"生涯抉擇"};
  return labels[player.stage]||"生涯進行中";
 }
 function formatCareerSaveTime(value){
@@ -135,7 +135,9 @@ function continueCareer(){
       // A runtime error screen may itself have been autosaved. Rebuild the
       // contract decision instead of restoring the stale error HTML forever.
       showContractExpiryDecision();
-    }else if(p.stage==="events"){
+   }else if(p.stage==="midcareer"&&typeof rebuildV90MidcareerScreenFromSave==="function"){
+     rebuildV90MidcareerScreenFromSave();
+   }else if(p.stage==="events"){
      // Saved screens contain rendered HTML from the version that created them.
      // Rebuild unresolved event choices so old 50/68/82 answer labels cannot
      // survive after the event-choice redesign. Remove the saved current title

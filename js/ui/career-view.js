@@ -40,7 +40,7 @@ function startCareer(){
     developmentSeasons:0,developmentLastChanceUsed:false,firstFullProAge:null,pendingSeasonAdvance:false,freshmanDraftAttempted:false,collegeDraftHistory:[],draftEntrySelections:[],proEntrySource:"",proEntryYear:0,franchiseTeam:""};
 
  p.team=HBL_TEAMS[ri(RNG(p.seed+"hbl-team"),0,HBL_TEAMS.length-1)];
- ensureV8CareerState(p);refreshV8Role(p,"生涯起點");
+ ensureV8CareerState(p);ensureV90MidcareerState(p);refreshV8Role(p,"生涯起點");
  document.getElementById("setup").classList.add("hidden");document.getElementById("game").classList.remove("hidden");
  logIt(`16歲，加入 ${p.team} 籃球隊。`);ensureTeamHistory();pushNews(`🆕 ${p.name} 加入 ${p.team}，籃球人生正式開始`);showCareerChapter("highschoolStart");saveCareerNow();
 }

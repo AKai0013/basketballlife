@@ -300,7 +300,12 @@ function nextStep(){
    }
    return
  }
- if(p.stage==="training"){p.stage="events";p.eventIndex=0;p.specialQueue=[];p.specialIndex=0;showEvent();return}
+ if(p.stage==="training"){
+   p.eventIndex=0;p.specialQueue=[];p.specialIndex=0;
+   if(typeof maybeStartV90MidcareerRhythm==="function"&&maybeStartV90MidcareerRhythm())return;
+   p.stage="events";showEvent();return
+ }
+ if(p.stage==="midcareer"){startSpecialPhase();return}
  if(p.stage==="events"){if(p.eventIndex<p.seasonEventCount)showEvent();else startSpecialPhase();return}
  if(p.stage==="special"){if(p.specialIndex<p.specialQueue.length)showSpecialEvent();else showHealth();return}
  if(p.stage==="health"){showResults();return}
