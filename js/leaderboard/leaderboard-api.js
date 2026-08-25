@@ -1146,7 +1146,7 @@
    const metric=leaderboardMetrics[metricKey]?metricKey:"power";
    const rankingEra=leaderboardEras[era]?era:"v9";
    if(rankingEra==="champions"){await loadVersionChampions();return []}
-   const weeklyId=rankingEra==="weekly"?weeklyChallengeProfile().id:"";
+   const weeklyId=rankingEra==="weekly"?weeklyLeaderboardProfile().id:"";
    const cacheKey=`${rankingEra}:${metric}:${weeklyId}`;
    const cached=state.leaderboardCache instanceof Map?state.leaderboardCache.get(cacheKey):null;
    if(!force&&cached&&Date.now()-cached.at<5*60*1000){
@@ -1238,7 +1238,7 @@
  function leaderboardEraRecords(records,era=state.activeLeaderboardEra){
    const official=(records||[]).filter(isOfficialRankingRecord);
    if(era==="v7")return official.filter(r=>String(r?.career_data?.ranking_era||"")==="v750");
-   if(era==="weekly")return official.filter(r=>String(r?.career_data?.ranking_era||"")==="v9"&&weeklyMeta(r).active);
+   if(era==="weekly")return official.filter(r=>weeklyMeta(r).active);
    return official.filter(r=>String(r?.career_data?.ranking_era||"")==="v9"&&!weeklyMeta(r).active);
  }
  function weeklyPersonalBests(records,weeklyId){
@@ -1252,7 +1252,7 @@
  function weeklyArchiveHTML(records){
    const groups=new Map();
    for(const record of records){const meta=weeklyMeta(record);if(!meta.id)continue;if(!groups.has(meta.id))groups.set(meta.id,[]);groups.get(meta.id).push(record)}
-   const current=weeklyChallengeProfile().id;
+   const current=weeklyLeaderboardProfile().id;
    const weeks=[...groups.entries()].filter(([id])=>id!==current).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,24);
    if(!weeks.length)return `<div class="rankEmpty">第一週挑戰結束後，冠軍與代表生涯會永久出現在這裡。</div>`;
    return `<div class="weeklyArchiveGrid">${weeks.map(([id,items])=>{const ranked=rankAllCareers(weeklyPersonalBests(items,id),"power"),winner=ranked[0],representatives=ranked.slice(1,3);return `<article class="weeklyArchiveCard"><small>${esc(weeklyMeta(winner)?.label||id)}</small><b>🏆 ${esc(winner?.nickname||"尚無冠軍")}</b><span>${winner?`${normalizedPower(winner).toLocaleString()} BL POWER｜${esc(displayPlayerName(winner.player_name))}`:""}</span>${representatives.length?`<div>代表生涯：${representatives.map(x=>esc(x.nickname)).join("、")}</div>`:""}${winner?`<button class="btn" onclick="BasketballLifeOnline.openCareer('${esc(winner.id)}')">查看冠軍生涯</button>`:""}</article>`}).join("")}</div>`;
@@ -1345,7 +1345,7 @@
  }
 
  function hallHero(era){
-   const weekly=weeklyChallengeProfile();
+   const weekly=weeklyLeaderboardProfile();
    const copy=era==="weekly"
      ? {kicker:"每週 SEED 挑戰",title:"同一個起點，<br>看誰走得更遠。",text:"使用相同 Seed、位置與身材，直接比較每位玩家最好的公開生涯。"}
      : era==="champions"
@@ -1354,7 +1354,7 @@
    const brief=era==="champions"
      ? `<div class="v9HallBrief"><span>版本紀錄室</span><strong>3 個版本</strong><b>V8.1・V8.0・V7.50</b><small>每個項目保留該版本最後的紀錄保持人。</small></div>`
      : era==="weekly"
-       ? `<div class="v9HallBrief"><span>本週 Seed 挑戰</span><strong>第 ${weekly.week} 週</strong><b>${esc(weekly.pos)}・${weekly.height}cm・點數全用</b><small>每位玩家只保留本週 BL POWER 最高的一段生涯。</small></div>`
+       ? `<div class="v9HallBrief"><span>本週 Seed 挑戰</span><strong>第 ${weekly.week} 週</strong><b>${esc(weekly.pos)}・${weekly.height}cm・點數全用</b><small>${esc(weekly.notice||"每位玩家只保留本週 BL POWER 最高的一段生涯。")}</small></div>`
        : `<div class="v9HallBrief"><span>玩家殿堂規則</span><strong>最佳生涯代表</strong><b>每個項目・一位玩家一席</b><small>不同項目可由不同生涯代表，其餘公開生涯完整保留。</small></div>`;
    return `<section class="v9HallHero"><div><span class="v9HallEyebrow">${copy.kicker}</span><h2>${copy.title}</h2><p>${copy.text}</p></div>${brief}</section>`;
  }
@@ -1433,7 +1433,7 @@
      content.innerHTML=`<div class="v9HallPage">${chrome}<section class="v9HallSection v9HallRecordVault"><div class="v9HallSectionHeading"><div><span>VERSION RECORDS</span><h3>版本紀錄室</h3></div><p>切換版本與分類，查看每個項目的最終紀錄保持人。</p></div>${versionChampionsHTML(state.versionChampionRows||[])}</section></div>`;
      return;
    }
-   const weeklyId=weeklyChallengeProfile().id;
+   const weeklyId=weeklyLeaderboardProfile().id;
    const scoped=era==="weekly"?weeklyPersonalBests(allEra,weeklyId):allEra;
    const rows=rankAllCareers(scoped.filter(record=>Number(record?.global_rank)>0),metricKey);
    const mineEra=leaderboardEraRecords(state.myPublicCareerRows||[],era);

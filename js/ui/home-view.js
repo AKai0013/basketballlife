@@ -313,6 +313,7 @@ function renderPos(){
  document.getElementById("posgrid").innerHTML=POSITIONS.map(x=>`<button type="button" class="pos ${x===chosenPos?"on":""}" aria-pressed="${x===chosenPos}" ${weeklySetupActive?"disabled":""} onclick="selectSetupPosition('${x}')"><b>${x}</b><small>${names[x]}</small></button>`).join("");
 }
 const WEEKLY_SEED_OVERRIDES={"2026W35":"R72ZLBN5"};
+const V9_WEEKLY_LEADERBOARD_START="2026W36";
 function weeklyChallengeProfile(date=new Date()){
  const utc=new Date(Date.UTC(date.getUTCFullYear(),date.getUTCMonth(),date.getUTCDate()));
  const day=utc.getUTCDay()||7;utc.setUTCDate(utc.getUTCDate()+4-day);
@@ -324,12 +325,18 @@ function weeklyChallengeProfile(date=new Date()){
  const body=bodyRangeFor(pos),height=body.defaultHeight,wingspan=height+body.defaultReach;
  return {id,periodId,week,seed,pos,height,wingspan,label:`${utc.getUTCFullYear()} 第 ${week} 週`};
 }
+function weeklyLeaderboardProfile(date=new Date()){
+ const weekly=weeklyChallengeProfile(date),legacy=weekly.periodId<V9_WEEKLY_LEADERBOARD_START;
+ return {...weekly,id:legacy?weekly.periodId:weekly.id,legacy,notice:legacy?"本週沿用 V8.1 週榜，V9 週榜將於下週一 08:00 開始。":""};
+}
 function renderWeeklyChallenge(){
- const row=weeklyChallengeProfile(),titleEl=document.getElementById("weeklyChallengeTitle"),meta=document.getElementById("weeklyChallengeMeta");
+ const row=weeklyChallengeProfile(),leaderboard=weeklyLeaderboardProfile(),button=document.getElementById("weeklyChallenge"),titleEl=document.getElementById("weeklyChallengeTitle"),meta=document.getElementById("weeklyChallengeMeta");
  if(titleEl)titleEl.textContent=`第 ${row.week} 週`;
- if(meta)meta.textContent=`${row.pos}・${row.height}cm｜點擊套用`;
+ if(button)button.disabled=leaderboard.legacy;
+ if(meta)meta.textContent=leaderboard.legacy?"本週結算中・V9 下週開始":`${row.pos}・${row.height}cm｜點擊套用`;
 }
 function applyWeeklyChallenge(){
+ if(weeklyLeaderboardProfile().legacy)return;
  if(weeklySetupActive){exitWeeklyChallenge(true);return}
  const row=weeklyChallengeProfile();weeklySetupApplying=true;setSetupSeedValue(row.seed);chosenPos=row.pos;chosenHeight=row.height;chosenWingspan=row.wingspan;weeklySetupActive=true;weeklySetupApplying=false;
  setWeeklySetupLocked(true);renderPos();refreshSetupBody(false);

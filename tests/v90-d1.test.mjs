@@ -109,6 +109,7 @@ test("V9 D1 API writes, isolates eras, limits top 50 and returns the complete gl
   insertCareer(database,{id:uuid(5002),userId:leaderId,nickname:"多生涯玩家",rating:700000,era:"v9",weekly:1,weeklyId:"V9-2026W35",peak:96});
   insertCareer(database,{id:uuid(5003),userId:weeklyOtherId,nickname:"週榜玩家",rating:600000,era:"v9",weekly:1,weeklyId:"V9-2026W35",peak:95});
   insertCareer(database,{id:uuid(5004),userId:leaderId,nickname:"多生涯玩家",rating:666666,era:"v81",weekly:1,weeklyId:"2026W35",publisher:"8.1.1",peak:96});
+  insertCareer(database,{id:uuid(5005),userId:weeklyOtherId,nickname:"週榜玩家",rating:555555,era:"v81",weekly:1,weeklyId:"2026W34",publisher:"8.1.1",peak:94});
 
   const topResponse=await request("https://local.test/api/careers?metric=power",{DB}),top=await topResponse.json();
   assert.equal(topResponse.status,200);assert.equal(top.rows.length,50);
@@ -147,6 +148,8 @@ test("V9 D1 API writes, isolates eras, limits top 50 and returns the complete gl
   assert.equal(v9Weekly.rows[0].public_career_count,2);
   const oldWeeklyResponse=await request("https://local.test/api/careers?era=weekly&metric=power&weekly_id=2026W35",{DB}),oldWeekly=await oldWeeklyResponse.json();
   assert.deepEqual(oldWeekly.rows.map(row=>row.id),[uuid(5004)]);
+  const transitionArchiveResponse=await request("https://local.test/api/careers?era=weekly&metric=power&weekly_id=2026W35&archive=1",{DB}),transitionArchive=await transitionArchiveResponse.json();
+  assert.deepEqual(transitionArchive.rows.map(row=>row.id),[uuid(5005)]);
 
   const careerId=uuid(6000),body={
     id:careerId,player_name:"V9 D1 測試",position:"SF",seed:"V9QA4VXX",seed_tier:"SSS+",retired_age:25,final_year:2035,
