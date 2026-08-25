@@ -262,9 +262,9 @@ function showProSeasonPlan(){
  text.innerHTML=`${proHeaderHTML()}教練團以「<b>${p.teamWorld.directionLabel}</b>」為本季方向。你要決定今年的身體與出賽策略；這次選擇會直接改變整季傷病風險、訓練成長與比賽數據。`;
  special.innerHTML=`<div class="bodyWarning ${body.cls}"><b>🩺 季前身體回報</b><br>${body.note}<br><span class="mut">身體負荷 ${Math.round(p.bodyLoad||0)}/100｜醫療風險：${medicalRiskLabel()}</span>${medicalProtectionActive()?`<br><span class="mandatory">🛡️ 術後／完整休養保護期｜${medicalProtectionText()}</span>`:""}<div class="bodyLoadBar"><div class="bodyLoadFill" style="width:${Math.round(p.bodyLoad||0)}%"></div></div><div style="margin-top:8px">${oldInjuryHTML()}</div></div>`;
  choices.innerHTML=`
- <button class="choice" onclick="chooseSeasonPlan('attack')"><b>🔥 全力衝刺</b><small>數據與成長上限最高，也最容易搶到合約與獎項；身體警訊可能在關鍵時刻爆開。</small><span class="strategyTag risk">高負荷</span><span class="riskPct">季傷風險 ${ra}%・${injuryRiskBand(ra)}</span></button>
- <button class="choice" onclick="chooseSeasonPlan('normal')"><b>⚖️ 維持主力節奏</b><small>不主動降載，也不額外加操；保留完整數據機會，讓臨場事件決定風險。</small><span class="strategyTag balance">正常輪替</span><span class="riskPct">季傷風險 ${rn}%・${injuryRiskBand(rn)}</span></button>
- <button class="choice" onclick="chooseSeasonPlan('care')"><b>🛡️ 負荷管理</b><small>降低上場與訓練量，能保護身體；但合約年、先發競爭與個人獎項都可能因此受損。</small><span class="strategyTag safe">降載</span><span class="riskPct">季傷風險 ${rc}%・${injuryRiskBand(rc)}</span></button>
+ <button class="choice seasonPlanChoice risk" onclick="chooseSeasonPlan('attack')"><b>🔥 全力衝刺</b><small>數據與成長上限最高，也最容易搶到合約與獎項；身體警訊可能在關鍵時刻爆開。</small><span class="strategyTag risk">高負荷</span><span class="seasonPlanRisk"><small>季傷風險</small><b>${ra}%</b><em>${injuryRiskBand(ra)}</em></span></button>
+ <button class="choice seasonPlanChoice balance" onclick="chooseSeasonPlan('normal')"><b>⚖️ 維持主力節奏</b><small>不主動降載，也不額外加操；保留完整數據機會，讓臨場事件決定風險。</small><span class="strategyTag balance">正常輪替</span><span class="seasonPlanRisk"><small>季傷風險</small><b>${rn}%</b><em>${injuryRiskBand(rn)}</em></span></button>
+ <button class="choice seasonPlanChoice safe" onclick="chooseSeasonPlan('care')"><b>🛡️ 負荷管理</b><small>降低上場與訓練量，能保護身體；但合約年、先發競爭與個人獎項都可能因此受損。</small><span class="strategyTag safe">降載</span><span class="seasonPlanRisk"><small>季傷風險</small><b>${rc}%</b><em>${injuryRiskBand(rc)}</em></span></button>
  `;
 }function chooseSeasonPlan(x){
  p.seasonPlan=x;

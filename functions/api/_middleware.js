@@ -1,14 +1,14 @@
 const CACHE_TTL_SECONDS = 300;
-const CACHE_VERSION = "v8.5";
+const CACHE_VERSION = "v9.0";
 
 function cacheablePath(url) {
   if (url.pathname === "/api/careers" && url.searchParams.get("mine") === "1") return false;
   return url.pathname === "/api/careers" || url.pathname === "/api/news";
 }
 
-function cacheKey(url) {
+function cacheKey(url, revision = "") {
   const keyUrl = new URL(url.toString());
-  keyUrl.searchParams.set("_bl_cache", CACHE_VERSION);
+  keyUrl.searchParams.set("_bl_cache", `${CACHE_VERSION}:${revision}`);
   return new Request(keyUrl.toString(), { method: "GET" });
 }
 
@@ -99,6 +99,7 @@ const optimizedOrderColumn = {
 };
 
 const summaryColumns = "id,user_id,nickname,player_name,position,seed,seed_tier,retired_age,final_year,peak_overall,career_rating,career_games,career_salary,championships,national_caps,hall_of_fame,jersey_retired,awards,titles,ranking_era,publisher_version,upload_id,weekly_active,weekly_id,weekly_label,server_verified,created_at,updated_at,is_public";
+const qualifiedSummaryColumns = alias => summaryColumns.split(",").map(column => `${alias}.${column}`).join(",");
 
 function hydrateSummary(row) {
   if (!row) return null;
@@ -118,9 +119,10 @@ function boardSpec(era, weeklyId) {
     };
   }
   if (era === "weekly") {
+    const isV9=String(weeklyId||"").startsWith("V9-");
     return {
       key: `weekly:${weeklyId}`,
-      where: "is_public=1 AND ranking_era IN ('v8','v81') AND weekly_active=1 AND weekly_id=?",
+      where: `is_public=1 AND ${isV9?"ranking_era='v9'":"ranking_era IN ('v8','v81')"} AND weekly_active=1 AND weekly_id=?`,
       binds: [weeklyId],
     };
   }
@@ -131,16 +133,23 @@ function boardSpec(era, weeklyId) {
       binds: [],
     };
   }
+  if (era === "v81") {
+    return {
+      key: "v81",
+      where: "is_public=1 AND ranking_era='v81' AND weekly_active=0 AND weekly_id=''",
+      binds: [],
+    };
+  }
   return {
-    key: "v81",
-    where: "is_public=1 AND ranking_era='v81' AND weekly_active=0 AND weekly_id=''",
+    key: "v9",
+    where: "is_public=1 AND ranking_era='v9' AND weekly_active=0 AND weekly_id=''",
     binds: [],
   };
 }
 
-async function optimizedLeaderboard(request, env) {
+export async function optimizedLeaderboard(request, env) {
   const url = new URL(request.url);
-  const era = ["v81", "v8", "v7", "weekly"].includes(url.searchParams.get("era")) ? url.searchParams.get("era") : "v81";
+  const era = ["v9", "v81", "v8", "v7", "weekly"].includes(url.searchParams.get("era")) ? url.searchParams.get("era") : "v9";
   const metric = optimizedOrderColumn[url.searchParams.get("metric")] ? url.searchParams.get("metric") : "power";
   const order = optimizedOrderColumn[metric];
   const weeklyId = String(url.searchParams.get("weekly_id") || "").trim().slice(0, 30);
@@ -150,7 +159,7 @@ async function optimizedLeaderboard(request, env) {
   await env.DB.prepare("SELECT board_key FROM leaderboard_stats LIMIT 1").first();
 
   if (url.searchParams.get("champions") === "1") {
-    const championEra = era === "v7" ? "v750" : era === "v8" ? "v8" : "";
+    const championEra = era === "v7" ? "v750" : era === "v8" ? "v8" : era === "v81" ? "v81" : "";
     if (!championEra) return { champions: [] };
     const entries = Object.entries(optimizedOrderColumn);
     const results = await env.DB.batch(entries.map(([, column]) => env.DB.prepare(
@@ -161,19 +170,46 @@ async function optimizedLeaderboard(request, env) {
 
   if (url.searchParams.get("archive") === "1") {
     const rows = (await env.DB.prepare(
-      `SELECT ${summaryColumns} FROM (
-         SELECT ${summaryColumns},ROW_NUMBER() OVER(PARTITION BY weekly_id ORDER BY ${order} DESC,career_rating DESC) AS weekly_rank
-         FROM career_records WHERE is_public=1 AND ranking_era IN ('v8','v81') AND weekly_active=1 AND weekly_id<>?
-       ) WHERE weekly_rank<=3 ORDER BY weekly_id DESC,weekly_rank ASC LIMIT 240`
+      `WITH weekly_player_careers AS (
+         SELECT ${summaryColumns},${order} AS metric_value,
+           ROW_NUMBER() OVER(PARTITION BY weekly_id,user_id ORDER BY ${order} DESC,career_rating DESC,updated_at DESC,id ASC) AS player_week_rank
+         FROM career_records
+         WHERE is_public=1 AND ranking_era IN ('v8','v81','v9') AND weekly_active=1 AND weekly_id<>?
+       ),weekly_ranked AS (
+         SELECT weekly_player_careers.*,
+           ROW_NUMBER() OVER(PARTITION BY weekly_id ORDER BY metric_value DESC,career_rating DESC,updated_at DESC,id ASC) AS weekly_rank
+         FROM weekly_player_careers
+         WHERE player_week_rank=1
+       )
+       SELECT ${qualifiedSummaryColumns("weekly_ranked")},weekly_rank
+       FROM weekly_ranked
+       WHERE weekly_rank<=3
+       ORDER BY weekly_id DESC,weekly_rank ASC
+       LIMIT 240`
     ).bind(weeklyId).all()).results || [];
     return { rows: rows.map(hydrateSummary) };
   }
 
   const spec = boardSpec(era, weeklyId);
   const rowStmt = env.DB.prepare(
-    `SELECT ${summaryColumns} FROM career_records
-     WHERE ${spec.where}
-     ORDER BY ${order} DESC,career_rating DESC LIMIT 50`
+    `WITH player_careers AS (
+       SELECT ${summaryColumns},${order} AS metric_value,
+         ROW_NUMBER() OVER(PARTITION BY user_id ORDER BY ${order} DESC,career_rating DESC,updated_at DESC,id ASC) AS player_career_rank,
+         COUNT(*) OVER(PARTITION BY user_id) AS public_career_count
+       FROM career_records
+       WHERE ${spec.where}
+     ),player_leaders AS (
+       SELECT * FROM player_careers WHERE player_career_rank=1
+     ),ranked_players AS (
+       SELECT player_leaders.*,
+         ROW_NUMBER() OVER(ORDER BY metric_value DESC,career_rating DESC,updated_at DESC,id ASC) AS global_rank,
+         COUNT(*) OVER() AS ranking_total
+       FROM player_leaders
+     )
+     SELECT ${qualifiedSummaryColumns("ranked_players")},public_career_count,player_career_rank,global_rank,ranking_total
+     FROM ranked_players
+     ORDER BY global_rank ASC
+     LIMIT 50`
   );
   const statsStmt = env.DB.prepare(
     "SELECT players,careers,top_power,top_peak FROM leaderboard_stats WHERE board_key=?"
@@ -192,6 +228,15 @@ async function optimizedLeaderboard(request, env) {
       top_peak: toNumber(stats.top_peak),
     },
   };
+}
+
+async function leaderboardRevision(env, url) {
+  if (url.pathname !== "/api/careers" || url.searchParams.get("archive") === "1") return "";
+  const era = ["v9", "v81", "v8", "v7", "weekly"].includes(url.searchParams.get("era")) ? url.searchParams.get("era") : "v9";
+  const weeklyId = String(url.searchParams.get("weekly_id") || "").trim().slice(0, 30);
+  const spec = boardSpec(era, weeklyId);
+  const stats = await env.DB.prepare("SELECT players,careers,top_power,top_peak,updated_at FROM leaderboard_stats WHERE board_key=?").bind(spec.key).first();
+  return stats ? [spec.key,stats.players,stats.careers,stats.top_power,stats.top_peak,stats.updated_at].join(":") : "";
 }
 
 function metricCounts(row) {
@@ -221,8 +266,10 @@ async function refreshBoardStats(env, row) {
   let spec;
   if (row.ranking_era === "v750") {
     spec = boardSpec("v7", "");
-  } else if (row.ranking_era === "v81" && row.weekly_active) {
+  } else if (row.ranking_era === "v9" && row.weekly_active) {
     spec = boardSpec("weekly", String(row.weekly_id || ""));
+  } else if (row.ranking_era === "v9") {
+    spec = boardSpec("v9", "");
   } else if (row.ranking_era === "v81") {
     spec = boardSpec("v81", "");
   } else if (row.ranking_era === "v8") {
@@ -275,7 +322,8 @@ async function maintainPublishedCareer(env, response) {
 
 async function handleCachedGet(context, url) {
   const cache = caches.default;
-  const key = cacheKey(url);
+  const revision = await leaderboardRevision(context.env, url).catch(() => "");
+  const key = cacheKey(url, revision);
   const cached = await cache.match(key);
   if (cached) return sanitizeResponse(cached, url, "HIT");
 
@@ -310,27 +358,6 @@ async function handleCachedGet(context, url) {
   return cacheable;
 }
 
-async function clearCareerListCache() {
-  try{
-    const cache = caches.default;
-    const keys = await cache.keys();
-    await Promise.all(
-      keys
-        .filter(req => {
-          try{
-            const parsed = new URL(req.url);
-            return parsed.pathname === "/api/careers";
-          }catch(_){
-            return false;
-          }
-        })
-        .map(req=>cache.delete(req))
-    );
-  }catch(error){
-    console.warn("BL clear cached leaderboard failed", error);
-  }
-}
-
 export async function onRequest(context) {
   const request = context.request;
   const url = new URL(request.url);
@@ -349,18 +376,7 @@ export async function onRequest(context) {
 
   if (request.method === "POST" && url.pathname === "/api/careers") {
     const response = await context.next();
-    if (response.ok) {
-      context.waitUntil((async () => {
-        await maintainPublishedCareer(context.env, response.clone());
-        await clearCareerListCache();
-      })());
-    }
-    return response;
-  }
-
-  if ((request.method === "PUT" || request.method === "POST") && url.pathname === "/api/session") {
-    const response = await context.next();
-    if (response.ok) context.waitUntil(clearCareerListCache());
+    if (response.ok) await maintainPublishedCareer(context.env, response.clone());
     return response;
   }
 

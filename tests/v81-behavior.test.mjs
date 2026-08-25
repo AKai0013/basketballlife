@@ -20,7 +20,7 @@ test("a team that misses the regular-season cutoff cannot become playoff champio
   assert.equal(context.tournamentFinishWithQualification(99,"年度盃賽",missed),"冠軍");
 });
 
-test("a respected 50-year-old can take one hometown last dance without retiring at 51",()=>{
+test("a respected veteran can take one hometown last dance after age 50",()=>{
   const context={p:{
     path:"NBA",age:50,year:2058,lastDanceUsed:false,lastDanceActive:false,careerGames:320,
     careerMVP:0,careerFirstTeam:0,championships:0,nationalCaps:0,seasonHistory:[]
@@ -36,8 +36,8 @@ test("a respected 50-year-old can take one hometown last dance without retiring 
   let retired=false;
   context.retireCareer=()=>{retired=true};
   assert.equal(context.maybeForceRetire(),true);
-  assert.equal(context.p.age,50);
-  assert.equal(context.p.year,2058);
+  assert.equal(context.p.age,51);
+  assert.equal(context.p.year,2059);
   assert.equal(retired,true);
 });
 
@@ -303,8 +303,12 @@ test("an ordinary 47-year-old NBA rotation player cannot bypass veteran decline"
   assert.equal(context.nbaPerformanceOfferKind(92),"standard");
 });
 
-test("an elite 48-year-old gets a continuous lower-league market instead of NBA plus SBL",()=>{
-  const context={p:{path:"NBA",age:48,careerMVP:0,careerFirstTeam:0,lastSeasonAwards:[],seasonStats:{}}};
+test("a productive 48-year-old gets a continuous lower-league market instead of an age cutoff",()=>{
+  const context={p:{
+    path:"NBA",age:48,year:2056,careerMVP:0,careerFirstTeam:0,lastSeasonAwards:[],
+    stats:{ath:70},health:85,durability:70,bodyLoad:55,injury:null,injuryHistory:[],
+    seasonStats:{games:30,scheduledGames:48,mins:18,pts:8,ast:2,reb:3,stl:.5,blk:.2}
+  }};
   runContract(context);
   context.LEAGUE_CFG={
     "SBL／半職業":{market:54},"台灣職業":{market:67},"韓國職業":{market:74},
@@ -320,7 +324,7 @@ test("an elite 48-year-old gets a continuous lower-league market instead of NBA 
   assert.equal(context.canReceiveStandardContract("CBA",90,false),true);
   assert.equal(context.canReceiveStandardContract("歐洲聯賽",90,false),false);
   assert.equal(context.canReceiveStandardContract("NBA",90,false),false);
-  assert.equal(context.gLeaguePathwayEligible(90),false);
+  assert.equal(context.gLeaguePathwayEligible(90),true);
 
   const candidates=[
     {league:"SBL／半職業",team:"SBL",salary:100},
@@ -444,8 +448,11 @@ test("contract cards keep role data separate from derived ability data",()=>{
     moneyText:value=>String(value),contractCompetitionLabel:()=>"NBA",teamDirectionEffect:()=>"球隊評估中",leagueMarketRank:()=>7
   };
   runContract(context);
-  const html=context.contractOfferHTML({league:"NBA",team:"測試隊",salary:3000,bonus:0,years:1,type:"標準合約",role:"輪替球員",teamDirection:"playoff"});
+  const html=context.contractOfferHTML({league:"NBA",team:"測試隊",salary:3000,bonus:0,years:1,type:"標準合約",role:"輪替球員",teamDirection:"playoff",guaranteeRate:.66,guaranteeLabel:"66%保障",guaranteedTotal:1980,teamPatienceLabel:"逐季觀察"});
   assert.match(html,/成長方向：/);
+  assert.match(html,/66%保障/);
+  assert.match(html,/保障金額 1,980萬/);
+  assert.match(html,/老將市場評估：逐季觀察/);
   assert.doesNotMatch(html,/undefined/);
 });
 

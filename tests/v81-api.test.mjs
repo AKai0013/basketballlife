@@ -36,13 +36,13 @@ test("mine endpoint returns the signed-in player's public careers even outside t
   assert.equal(payload.rows[0].user_id,userId);
 });
 
-test("default leaderboard reads only the V8.1 era",async()=>{
+test("default leaderboard reads only the V9.0 era",async()=>{
   const sqlSeen=[];
   const DB={prepare(sql){sqlSeen.push(sql);return {bind(){return this},async all(){return {results:[]}},async first(){return {players:0,careers:0,top_power:0,top_peak:0}}}}};
   const request=new Request("https://basketballlife.pages.dev/api/careers?metric=power");
   const response=await onRequest({request,env:{DB},params:{path:["careers"]}});
   assert.equal(response.status,200);
-  assert.ok(sqlSeen.some(sql=>sql.includes("ranking_era='v81' AND weekly_active=0")));
+  assert.ok(sqlSeen.some(sql=>sql.includes("ranking_era='v9' AND weekly_active=0")));
 });
 
 test("weekly leaderboard keeps V8.0 challenge records alongside V8.1",async()=>{
@@ -54,8 +54,17 @@ test("weekly leaderboard keeps V8.0 challenge records alongside V8.1",async()=>{
   assert.ok(sqlSeen.some(sql=>sql.includes("ranking_era IN ('v8','v81') AND weekly_active=1")));
 });
 
-test("version champions bind V8.0 and V7.50 separately",async()=>{
-  for(const [era,expected] of [["v8","v8"],["v7","v750"]]){
+test("V9 weekly leaderboard does not mix records from the old growth model",async()=>{
+  const sqlSeen=[];
+  const DB={prepare(sql){sqlSeen.push(sql);return {bind(){return this},async all(){return {results:[]}},async first(){return {players:0,careers:0,top_power:0,top_peak:0}}}}};
+  const request=new Request("https://basketballlife.pages.dev/api/careers?era=weekly&metric=power&weekly_id=V9-2026W34");
+  const response=await onRequest({request,env:{DB},params:{path:["careers"]}});
+  assert.equal(response.status,200);
+  assert.ok(sqlSeen.some(sql=>sql.includes("ranking_era='v9' AND weekly_active=1")));
+});
+
+test("version champions bind V8.1, V8.0 and V7.50 separately",async()=>{
+  for(const [era,expected] of [["v81","v81"],["v8","v8"],["v7","v750"]]){
     const bound=[];
     const DB={prepare(){return {bind(value){bound.push(value);return this},async first(){return null}}}};
     const request=new Request(`https://basketballlife.pages.dev/api/careers?champions=1&era=${era}`);
@@ -66,7 +75,7 @@ test("version champions bind V8.0 and V7.50 separately",async()=>{
   }
 });
 
-test("V8.0 careers cannot be submitted to the V8.1 active board",async()=>{
+test("V8.0 careers cannot be submitted to the V9 or preserved V8.1 boards",async()=>{
   const userId="22222222-2222-4222-8222-222222222222",token="another-test-token-which-is-longer-than-thirty-two";
   const DB={prepare(sql){return {bind(){return this},async first(){if(sql.includes("FROM profiles"))return {user_id:userId,nickname:"AKai",token_hash:await digest(token)};return null}}}};
   const request=new Request("https://basketballlife.pages.dev/api/careers",{method:"POST",headers:{"content-type":"application/json","x-bl-client-id":userId,"x-bl-client-token":token},body:JSON.stringify({
@@ -75,5 +84,22 @@ test("V8.0 careers cannot be submitted to the V8.1 active board",async()=>{
   })});
   const response=await onRequest({request,env:{DB},params:{path:["careers"]}}),payload=await response.json();
   assert.equal(response.status,422);
-  assert.match(payload.error,/V8\.1 現役榜/);
+  assert.match(payload.error,/V9\.0.*V8\.1/);
+});
+
+test("V9 accepts new careers and still accepts valid V8.1 save republication",async()=>{
+  const userId="44444444-4444-4444-8444-444444444444",token="compatibility-test-token-longer-than-thirty-two";
+  for(const [era,publisher,schema] of [["v9","9.0.0","v9-core-1"],["v81","8.1.1","v8-core-1"]]){
+    const id=era==="v9"?"55555555-5555-4555-8555-555555555555":"66666666-6666-4666-8666-666666666666";
+    const stored={id,career_data:JSON.stringify({ranking_era:era,publisher_version:publisher,integrity:{schema,verdict:"passed",career_games:1,season_count:1,server_verified:"passed"}}),season_history:"[]",awards:"[]",titles:"[]",hall_of_fame:"[]",jersey_retired:"[]",league_summary:"{}",is_public:1};
+    const DB={prepare(sql){return {bind(){return this},async first(){
+      if(sql.includes("FROM profiles"))return {user_id:userId,nickname:"AKai",token_hash:await digest(token)};
+      if(sql.includes("FROM career_records"))return stored;
+      return null;
+    },async run(){return {success:true}}}}};
+    const body={id,retired_age:25,final_year:2035,peak_overall:70,career_games:1,season_history:[{games:1}],career_data:{ranking_era:era,publisher_version:publisher,integrity:{schema,verdict:"passed",career_games:1,season_count:1}}};
+    const request=new Request("https://basketballlife.pages.dev/api/careers",{method:"POST",headers:{"content-type":"application/json","x-bl-client-id":userId,"x-bl-client-token":token},body:JSON.stringify(body)});
+    const response=await onRequest({request,env:{DB},params:{path:["careers"]}});
+    assert.equal(response.status,200,`${era} should remain publishable`);
+  }
 });

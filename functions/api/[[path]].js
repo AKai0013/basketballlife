@@ -48,8 +48,11 @@ function hydrate(row,summary=false){
 function validateCareer(input){
   const data=input?.career_data||{},integrity=data.integrity||{},seasons=Array.isArray(input?.season_history)?input.season_history:[];
   if(!/^[0-9a-f-]{36}$/i.test(text(input?.id,80)))return "公開生涯 ID 格式錯誤";
-  if(data.ranking_era!=="v81"||!new Set(["8.1.0","8.1.1"]).has(data.publisher_version))return "V8.1 現役榜只接受 BasketballLife V8.1 生涯";
-  if(integrity.schema!=="v8-core-1"||integrity.verdict!=="passed")return "生涯完整性封套錯誤";
+  const v9=data.ranking_era==="v9"&&data.publisher_version==="9.0.0"&&integrity.schema==="v9-core-1";
+  const v81=data.ranking_era==="v81"&&new Set(["8.1.0","8.1.1"]).has(data.publisher_version)&&integrity.schema==="v8-core-1";
+  if(!v9&&!v81)return "目前排行榜只接受 BasketballLife V9.0 或既有 V8.1 正式生涯";
+  if(v9&&data.seed_tier_map_version!=null&&!new Set([1,2]).has(number(data.seed_tier_map_version)))return "Seed 對應版本錯誤";
+  if(integrity.verdict!=="passed")return "生涯完整性封套錯誤";
   if(number(input.retired_age)>60||number(input.retired_age)<16||number(input.peak_overall)>99)return "生涯數值超出合理範圍";
   if(number(input.final_year)-number(input.retired_age)!==2010)return "年份與退休年齡不一致";
   const games=seasons.reduce((sum,s)=>sum+number(s?.games),0);
@@ -88,6 +91,30 @@ const orderColumn={
   hof:"json_array_length(hall_of_fame)",jersey:"json_array_length(jersey_retired)"
 };
 const summaryColumns="id,user_id,nickname,player_name,position,seed,seed_tier,retired_age,final_year,peak_overall,career_rating,career_games,career_salary,championships,national_caps,hall_of_fame,jersey_retired,awards,titles,ranking_era,publisher_version,upload_id,weekly_active,weekly_id,weekly_label,server_verified,created_at,updated_at,is_public";
+const qualifiedSummaryColumns=alias=>summaryColumns.split(",").map(column=>`${alias}.${column}`).join(",");
+
+function leaderboardScope(era,weeklyId){
+  const weeklyClause=weeklyId.startsWith("V9-")?"ranking_era='v9'":"ranking_era IN ('v8','v81')";
+  return era==="v7"?"ranking_era='v750' AND weekly_active=0":era==="v8"?"ranking_era='v8' AND weekly_active=0":era==="v81"?"ranking_era='v81' AND weekly_active=0":era==="weekly"?`${weeklyClause} AND weekly_active=1 AND weekly_id=?`:"ranking_era='v9' AND weekly_active=0";
+}
+
+function playerLeaderboardCtes(clause,metric){
+  const metricColumn=orderColumn[metric];
+  return `WITH player_careers AS (
+    SELECT ${summaryColumns},${metricColumn} AS metric_value,
+      ROW_NUMBER() OVER(PARTITION BY user_id ORDER BY ${metricColumn} DESC,career_rating DESC,updated_at DESC,id ASC) AS player_career_rank,
+      COUNT(*) OVER(PARTITION BY user_id) AS public_career_count
+    FROM career_records
+    WHERE is_public=1 AND ${clause}
+  ),player_leaders AS (
+    SELECT * FROM player_careers WHERE player_career_rank=1
+  ),ranked_players AS (
+    SELECT player_leaders.*,
+      ROW_NUMBER() OVER(ORDER BY metric_value DESC,career_rating DESC,updated_at DESC,id ASC) AS global_rank,
+      COUNT(*) OVER() AS ranking_total
+    FROM player_leaders
+  )`;
+}
 
 async function careers(request,env,path){
   if(request.method==="GET"&&path.length===2){
@@ -95,17 +122,24 @@ async function careers(request,env,path){
     return row?json(hydrate(row)):fail("找不到這筆公開生涯",404);
   }
   if(request.method==="GET"){
-    const url=new URL(request.url),era=["v81","v8","v7","weekly"].includes(url.searchParams.get("era"))?url.searchParams.get("era"):"v81";
+    const url=new URL(request.url),era=["v9","v81","v8","v7","weekly"].includes(url.searchParams.get("era"))?url.searchParams.get("era"):"v9";
     const metric=orderColumn[url.searchParams.get("metric")]?url.searchParams.get("metric"):"power",weeklyId=text(url.searchParams.get("weekly_id"),30);
     if(url.searchParams.get("mine")==="1"){
       const auth=await authenticate(request,env);if(auth.error)return auth.error;
-      const clause=era==="v7"?"ranking_era='v750' AND weekly_active=0":era==="v8"?"ranking_era='v8' AND weekly_active=0":era==="weekly"?"ranking_era IN ('v8','v81') AND weekly_active=1 AND weekly_id=?":"ranking_era='v81' AND weekly_active=0";
-      const sql=`SELECT * FROM (SELECT ${summaryColumns},ROW_NUMBER() OVER(ORDER BY ${orderColumn[metric]} DESC,career_rating DESC) AS global_rank,COUNT(*) OVER() AS ranking_total FROM career_records WHERE is_public=1 AND ${clause}) WHERE user_id=? ORDER BY updated_at DESC LIMIT 80`;
+      const clause=leaderboardScope(era,weeklyId);
+      const sql=`${playerLeaderboardCtes(clause,metric)}
+        SELECT ${qualifiedSummaryColumns("player_careers")},player_careers.player_career_rank,player_careers.public_career_count,
+          ranked_players.global_rank,(SELECT COUNT(*) FROM player_leaders) AS ranking_total
+        FROM player_careers
+        LEFT JOIN ranked_players ON ranked_players.id=player_careers.id
+        WHERE player_careers.user_id=?
+        ORDER BY player_careers.player_career_rank ASC,player_careers.updated_at DESC
+        LIMIT 80`;
       const rows=(await env.DB.prepare(sql).bind(...(era==="weekly"?[weeklyId,auth.profile.user_id]:[auth.profile.user_id])).all()).results.map(x=>hydrate(x,true));
       return json({rows});
     }
     if(url.searchParams.get("champions")==="1"){
-      const championEra=era==="v7"?"v750":era==="v8"?"v8":"";
+      const championEra=era==="v7"?"v750":era==="v8"?"v8":era==="v81"?"v81":"";
       if(!championEra)return json({champions:[]});
       const entries=Object.entries(orderColumn);
       const rows=await Promise.all(entries.map(async([metricKey,column])=>{
@@ -115,11 +149,31 @@ async function careers(request,env,path){
       return json({champions:rows.filter(Boolean)});
     }
     if(url.searchParams.get("archive")==="1"){
-      const rows=(await env.DB.prepare(`SELECT ${summaryColumns} FROM (SELECT ${summaryColumns},ROW_NUMBER() OVER(PARTITION BY weekly_id ORDER BY ${orderColumn[metric]} DESC,career_rating DESC) AS weekly_rank FROM career_records WHERE is_public=1 AND ranking_era IN ('v8','v81') AND weekly_active=1 AND weekly_id<>?) WHERE weekly_rank<=3 ORDER BY weekly_id DESC,weekly_rank ASC LIMIT 240`).bind(weeklyId).all()).results.map(x=>hydrate(x,true));
+      const metricColumn=orderColumn[metric];
+      const rows=(await env.DB.prepare(`WITH weekly_player_careers AS (
+        SELECT ${summaryColumns},${metricColumn} AS metric_value,
+          ROW_NUMBER() OVER(PARTITION BY weekly_id,user_id ORDER BY ${metricColumn} DESC,career_rating DESC,updated_at DESC,id ASC) AS player_week_rank
+        FROM career_records
+        WHERE is_public=1 AND ranking_era IN ('v8','v81','v9') AND weekly_active=1 AND weekly_id<>?
+      ),weekly_ranked AS (
+        SELECT weekly_player_careers.*,
+          ROW_NUMBER() OVER(PARTITION BY weekly_id ORDER BY metric_value DESC,career_rating DESC,updated_at DESC,id ASC) AS weekly_rank
+        FROM weekly_player_careers
+        WHERE player_week_rank=1
+      )
+      SELECT ${qualifiedSummaryColumns("weekly_ranked")},weekly_rank
+      FROM weekly_ranked
+      WHERE weekly_rank<=3
+      ORDER BY weekly_id DESC,weekly_rank ASC
+      LIMIT 240`).bind(weeklyId).all()).results.map(x=>hydrate(x,true));
       return json({rows});
     }
-    const clause=era==="v7"?"ranking_era='v750' AND weekly_active=0":era==="v8"?"ranking_era='v8' AND weekly_active=0":era==="weekly"?"ranking_era IN ('v8','v81') AND weekly_active=1 AND weekly_id=?":"ranking_era='v81' AND weekly_active=0";
-    const statement=env.DB.prepare(`SELECT ${summaryColumns} FROM career_records WHERE is_public=1 AND ${clause} ORDER BY ${orderColumn[metric]} DESC,career_rating DESC LIMIT 50`);
+    const clause=leaderboardScope(era,weeklyId);
+    const statement=env.DB.prepare(`${playerLeaderboardCtes(clause,metric)}
+      SELECT ${qualifiedSummaryColumns("ranked_players")},public_career_count,player_career_rank,global_rank,ranking_total
+      FROM ranked_players
+      ORDER BY global_rank ASC
+      LIMIT 50`);
     const totalsStatement=env.DB.prepare(`SELECT COUNT(DISTINCT user_id) AS players,COUNT(*) AS careers,COALESCE(MAX(career_rating),0) AS top_power,COALESCE(MAX(peak_overall),0) AS top_peak FROM career_records WHERE is_public=1 AND ${clause}`);
     const [rowsResult,totals]=era==="weekly"
       ? await Promise.all([statement.bind(weeklyId).all(),totalsStatement.bind(weeklyId).first()])
