@@ -18,3 +18,16 @@ test("weekly leaderboard keeps the release-week V8.1 board active until V9 start
   assert.equal(firstV9Week.id,"V9-2026W36");
   assert.equal(firstV9Week.legacy,false);
 });
+
+test("release-week Seed remains playable through the matching V8.1 model",async()=>{
+  const [home,career]=await Promise.all([
+    readFile(new URL("../js/ui/home-view.js",import.meta.url),"utf8"),
+    readFile(new URL("../js/ui/career-view.js",import.meta.url),"utf8")
+  ]);
+
+  assert.doesNotMatch(home,/button\.disabled=leaderboard\.legacy/);
+  assert.doesNotMatch(home,/if\(weeklyLeaderboardProfile\(\)\.legacy\)return/);
+  assert.match(career,/function legacyWeeklyTalent\(/);
+  assert.match(career,/legacyWeeklyChallenge\?"8\.1\.1":"9\.0\.0"/);
+  assert.match(career,/id:weeklyBoard\.id/);
+});

@@ -1,3 +1,20 @@
+function legacyWeeklyTalent(r,tier,pos,bodyMods={}){
+ const boost=()=>ri(r,tier.start[0],tier.start[1]);
+ const stats={
+   shoot:ri(r,31,45)+boost(),finish:ri(r,31,45)+boost(),handle:ri(r,29,45)+boost(),pass:ri(r,29,45)+boost(),
+   defense:ri(r,29,45)+boost(),rebound:ri(r,27,43)+boost(),ath:ri(r,33,48)+boost(),iq:ri(r,30,45)+boost()
+ };
+ if(pos==="PG"){stats.handle+=7;stats.pass+=7}
+ if(pos==="SG"){stats.shoot+=7;stats.finish+=4}
+ if(pos==="SF"){stats.finish+=5;stats.defense+=4}
+ if(pos==="PF"){stats.rebound+=7;stats.defense+=4}
+ if(pos==="C"){stats.rebound+=10;stats.defense+=7}
+ Object.entries(bodyMods).forEach(([key,value])=>{stats[key]+=value});
+ Object.keys(stats).forEach(key=>{stats[key]=Math.max(22,Math.min(58,stats[key]))});
+ const caps={};Object.keys(stats).forEach(key=>{caps[key]=Math.min(99,stats[key]+ri(r,tier.cap[0],tier.cap[1]))});
+ return {stats,caps,growth:ri(r,tier.growth[0],tier.growth[1])};
+}
+
 function startCareer(){
  // A career is always playable offline. Online nickname and authentication are
  // requested only when publishing a retired career or opening community data.
@@ -11,16 +28,19 @@ function startCareer(){
  if(previousSave&&!window.confirm("開始新人生會覆蓋目前的本機生涯存檔，確定要繼續嗎？"))return;
  if(previousSave)clearCareerSave(false);
  const n=document.getElementById("playerNameInput").value.trim()||"籃球癡漢",r=RNG(seed+chosenPos);
- const seedTierMapVersion=weeklySetupActive?V90_LEGACY_SEED_TIER_MAP_VERSION:V90_SEED_TIER_MAP_VERSION,tier=seedTierProfile(seed,seedTierMapVersion);
+ const weekly=weeklyChallengeProfile(),weeklyBoard=weeklyLeaderboardProfile();
+ const weeklySetupMatches=weeklySetupActive&&seed===weekly.seed&&chosenPos===weekly.pos&&chosenHeight===weekly.height&&chosenWingspan===weekly.wingspan;
+ const legacyWeeklyChallenge=weeklySetupMatches&&weeklyBoard.legacy;
+ const seedTierMapVersion=legacyWeeklyChallenge?V90_LEGACY_SEED_TIER_MAP_VERSION:V90_SEED_TIER_MAP_VERSION,tier=seedTierProfile(seed,seedTierMapVersion);
  const bodyMods=bodyAttributeModifiers(chosenPos,chosenHeight,chosenWingspan);
- const talent=v90GenerateTalent(seed,chosenPos,tier,bodyMods),s=talent.stats,caps=talent.caps;
+ const talent=legacyWeeklyChallenge?legacyWeeklyTalent(r,tier,chosenPos,bodyMods):v90GenerateTalent(seed,chosenPos,tier,bodyMods),s=talent.stats,caps=talent.caps;
 
  const birthplaceChoice=chosenBirthplace;
  const birthplace=birthplaceChoice==="RANDOM"?TAIWAN_BIRTHPLACES[ri(RNG(`${seed}-birthplace`),0,TAIWAN_BIRTHPLACES.length-1)]:birthplaceChoice;
  const jerseyNumber=Math.max(0,Math.min(99,Math.round(Number(document.getElementById("jerseyNumberInput")?.value)||7)));
  const handedness=document.getElementById("handednessInput")?.value||"右手";
- const weekly=weeklyChallengeProfile(),weeklyChallenge=weeklySetupActive&&seed===weekly.seed&&chosenPos===weekly.pos&&chosenHeight===weekly.height&&chosenWingspan===weekly.wingspan?{active:true,id:weekly.id,label:weekly.label,seed:weekly.seed,pos:weekly.pos,height:weekly.height,wingspan:weekly.wingspan}:{active:false};
- p={name:n,pos:chosenPos,seed,avatarSeed:selectedAvatarSeed(),heightCm:chosenHeight,wingspanCm:chosenWingspan,birthplace,jerseyNumber,handedness,readingMode:"standard",weeklyChallenge,careerVersion:"9.0.0",talentVersion:1,talentProfile:talent.profile,seedTierMapVersion:seedTierMapVersion,seedTier:tier.key,seedTierLabel:tier.label,seedTierDesc:tier.desc,
+ const weeklyChallenge=weeklySetupMatches?{active:true,id:weeklyBoard.id,label:weekly.label,seed:weekly.seed,pos:weekly.pos,height:weekly.height,wingspan:weekly.wingspan}:{active:false};
+ p={name:n,pos:chosenPos,seed,avatarSeed:selectedAvatarSeed(),heightCm:chosenHeight,wingspanCm:chosenWingspan,birthplace,jerseyNumber,handedness,readingMode:"standard",weeklyChallenge,careerVersion:legacyWeeklyChallenge?"8.1.1":"9.0.0",...(legacyWeeklyChallenge?{}:{talentVersion:1,talentProfile:talent.profile,seedTierMapVersion}),seedTier:tier.key,seedTierLabel:tier.label,seedTierDesc:tier.desc,
  age:16,year:2026,path:"HBL",grade:1,stage:"training",stats:s,caps,growth:talent.growth,
  durability:ri(r,38,94),clutch:ri(r,35,96),discipline:ri(r,38,94),confidence:50,health:100,fatigue:0,six:0,genius:false,geniusType:"",round:0,eventIndex:0,
  seasonEventCount:ri(r,2,4),dice:[],used:[],trainingUndo:[],trainingProgress:{shoot:0,finish:0,handle:0,pass:0,defense:0,rebound:0,ath:0,iq:0},pointUndo:[],seasonPoints:0,bonusPoints:0,rep:0,injury:null,injuryHistory:[],log:[],seasonStats:null,team:"",geniusResolved:false,geniusFailed:false,transition:null,geniusCostDiscount:0,titles:[],titleHistory:[],seasonPointFocus:[],clutchWins:0,eventSuccesses:0,healthySeasons:0,championships:0,severeInjuryRecovered:false,offers:[],strategyStats:{risk:{pick:0,success:0,streak:0,best:0},balance:{pick:0,success:0,streak:0,best:0},safe:{pick:0,success:0,streak:0,best:0}},seasonEventSuccess:0,geniusFailureShown:false,careerSeason:0,contract:null,seasonPlan:null,planRiskMod:0,planGrowthMod:0,planStatMod:0,nationalCaps:0,relationship:"單身",lifeEventCount:0,news:[],seasonHistory:[],careerAwards:[],careerSalary:0,careerGames:0,careerPtsTotal:0,careerRebTotal:0,careerAstTotal:0,chainTitles:[],retired:false,retirementReason:"",peakOverall:0,ageDeclineStage:0,careerMVP:0,careerFirstTeam:0,careerSecondTeam:0,careerDPOY:0,careerScoringTitles:0,careerAssistTitles:0,
@@ -40,7 +60,7 @@ function startCareer(){
     developmentSeasons:0,developmentLastChanceUsed:false,firstFullProAge:null,pendingSeasonAdvance:false,freshmanDraftAttempted:false,collegeDraftHistory:[],draftEntrySelections:[],proEntrySource:"",proEntryYear:0,franchiseTeam:""};
 
  p.team=HBL_TEAMS[ri(RNG(p.seed+"hbl-team"),0,HBL_TEAMS.length-1)];
- ensureV8CareerState(p);ensureV90MidcareerState(p);refreshV8Role(p,"生涯起點");
+ ensureV8CareerState(p);if(!legacyWeeklyChallenge)ensureV90MidcareerState(p);refreshV8Role(p,"生涯起點");
  document.getElementById("setup").classList.add("hidden");document.getElementById("game").classList.remove("hidden");
  logIt(`16歲，加入 ${p.team} 籃球隊。`);ensureTeamHistory();pushNews(`🆕 ${p.name} 加入 ${p.team}，籃球人生正式開始`);showCareerChapter("highschoolStart");saveCareerNow();
 }

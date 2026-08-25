@@ -113,7 +113,7 @@ test("V9.0 keeps V8.1 publisher compatibility while exposing the new talent laye
   assert.match(board,/GAME_VERSION="9\.0\.0"/);
   assert.match(board,/CAREER_PUBLISHER_VERSION="9\.0\.0"/);
   assert.match(storage,/gameVersion:"9\.0\.0"/);
-  assert.match(career,/careerVersion:"9\.0\.0"/);
+  assert.match(career,/careerVersion:legacyWeeklyChallenge\?"8\.1\.1":"9\.0\.0"/);
   assert.match(career,/v90GenerateTalent/);
   assert.match(career,/v90TalentPanelHTML/);
   assert.match(career,/v811AbilityPanelHTML/);

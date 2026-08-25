@@ -332,11 +332,10 @@ function weeklyLeaderboardProfile(date=new Date()){
 function renderWeeklyChallenge(){
  const row=weeklyChallengeProfile(),leaderboard=weeklyLeaderboardProfile(),button=document.getElementById("weeklyChallenge"),titleEl=document.getElementById("weeklyChallengeTitle"),meta=document.getElementById("weeklyChallengeMeta");
  if(titleEl)titleEl.textContent=`第 ${row.week} 週`;
- if(button)button.disabled=leaderboard.legacy;
- if(meta)meta.textContent=leaderboard.legacy?"本週結算中・V9 下週開始":`${row.pos}・${row.height}cm｜點擊套用`;
+ if(button)button.disabled=false;
+ if(meta)meta.textContent=leaderboard.legacy?"本週沿用 V8.1 規則・點擊參加":`${row.pos}・${row.height}cm｜點擊套用`;
 }
 function applyWeeklyChallenge(){
- if(weeklyLeaderboardProfile().legacy)return;
  if(weeklySetupActive){exitWeeklyChallenge(true);return}
  const row=weeklyChallengeProfile();weeklySetupApplying=true;setSetupSeedValue(row.seed);chosenPos=row.pos;chosenHeight=row.height;chosenWingspan=row.wingspan;weeklySetupActive=true;weeklySetupApplying=false;
  setWeeklySetupLocked(true);renderPos();refreshSetupBody(false);
