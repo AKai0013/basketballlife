@@ -180,11 +180,12 @@ body.blHomeMode .weeklyChallengeTiming{font-size:9px!important}
 body.blHomeMode .weeklyChallenge:disabled{cursor:not-allowed;opacity:.72}
 @media(min-width:820px){
   body.blHomeMode .weeklyChallenge{
-    top:370px!important;
+    top:374px!important;
     right:auto!important;
     left:calc(max(0px,(100% - 1280px)/2) + clamp(24px,6vw,82px))!important;
     width:min(330px,calc(100% - 88px))!important;
     min-width:0!important;
+    padding:10px 17px!important;
   }
 }
 body.blHomeMode .v9PlayerEntry,
