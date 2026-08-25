@@ -68,7 +68,6 @@ body.blHomeMode .topRankBtn{
   backdrop-filter:blur(14px);
 }
 body.blHomeMode .topRankBtn:before{content:"🏆";color:var(--v9-ink);font-size:17px}
-body.blHomeMode .liveTicker{display:none!important}
 body.blHomeMode .setup.card.v9HomeStage{
   position:relative!important;
   display:block!important;

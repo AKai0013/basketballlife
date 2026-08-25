@@ -314,6 +314,7 @@ test("BL LIVE restores only three headline items and styles legacy milestones",(
   context.window.BasketballLifeTicker.setGlobalNews([]);
   assert.equal(wrap.hidden,false);
   assert.equal(track.childNodes.length,0);
+  assert.doesNotMatch(read("css/v9-ui.css"),/body\.blHomeMode \.liveTicker\{display:none!important\}/);
 });
 
 test("V9 formal retirement page adds factual sections without replacing the two original image actions",()=>{
