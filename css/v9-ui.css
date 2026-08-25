@@ -1058,3 +1058,183 @@ body.blCommunityMode .v9HallWeeklyArchive,body.blCommunityMode .v9HallRecordVaul
   body.blCommunityMode .v9HallRowPortrait{width:38px;height:38px}
   body.blCommunityMode .v9HallRankMetric small{font-size:8px}
 }
+
+/* BL LIVE: one short bar, placed per screen instead of overlaying V9 chrome. */
+.liveTickerSlot{display:none!important}
+body.blHomeMode #liveTickerTopSlot,
+body.blCommunityMode #liveTickerTopSlot,
+body.blGameMode #liveTickerGameSlot{display:block!important}
+body.blHomeMode #liveTickerTopSlot:empty,
+body.blCommunityMode #liveTickerTopSlot:empty,
+body.blGameMode #liveTickerGameSlot:empty{display:none!important}
+body.blHomeMode .brandRow{
+  position:relative!important;top:auto!important;left:auto!important;transform:none!important;
+  width:min(1280px,calc(100% - 40px))!important;min-height:58px!important;margin:0 auto!important;
+  padding:0!important;
+}
+body.blHomeMode .brandLogo{display:block!important;width:34px!important;height:34px!important;object-fit:contain}
+body.blHomeMode .brand{font-size:21px!important}
+body.blHomeMode .brandActions>.playerNicknameBtn,
+body.blHomeMode .brandActions>.versionLink,
+body.blHomeMode .brandActions>.onlineStatus{display:inline-flex!important}
+body.blHomeMode .topRankBtn{
+  width:auto!important;min-width:0!important;height:34px!important;min-height:34px!important;
+  padding:7px 12px!important;color:#aebdca!important;font-size:11px!important;
+}
+body.blHomeMode .topRankBtn:before{display:none!important}
+body.blHomeMode #liveTickerTopSlot .liveTicker,
+body.blCommunityMode #liveTickerTopSlot .liveTicker{
+  position:relative!important;inset:auto!important;display:flex!important;
+  width:min(860px,calc(100% - 24px))!important;height:34px!important;margin:0 auto 10px!important;
+}
+body.blGameMode #liveTickerGameSlot .liveTicker{
+  position:relative!important;inset:auto!important;display:flex!important;
+  width:100%!important;height:34px!important;margin:0 0 10px!important;
+}
+body.blCommunityMode #liveTickerTopSlot{padding-top:2px!important}
+@media(max-width:819px){
+  body.blHomeMode .brandRow{width:calc(100% - 24px)!important;min-height:58px!important}
+  body.blHomeMode .brand{font-size:18px!important}
+  body.blHomeMode .brandLogo{width:30px!important;height:30px!important}
+  body.blHomeMode .brandActions{gap:4px!important}
+  body.blHomeMode .brandActions>.playerNicknameBtn,
+  body.blHomeMode .brandActions>.versionLink{display:none!important}
+  body.blHomeMode #liveTickerTopSlot .liveTicker,
+  body.blCommunityMode #liveTickerTopSlot .liveTicker{width:calc(100% - 12px)!important;margin-bottom:8px!important}
+  body.blGameMode #liveTickerGameSlot .liveTicker{margin-bottom:8px!important}
+}
+
+/* Shared top bar: every screen keeps the home composition and the game strip follows it. */
+body.blHomeMode .brandRow,
+body.blGameMode .brandRow,
+body.blCommunityMode .brandRow{
+  position:relative!important;
+  z-index:90!important;
+  top:auto!important;
+  left:auto!important;
+  transform:none!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+  width:min(1280px,calc(100% - 40px))!important;
+  min-height:58px!important;
+  margin:0 auto!important;
+  padding:0!important;
+}
+body.blHomeMode .brand,
+body.blGameMode .brand,
+body.blCommunityMode .brand{
+  display:flex!important;
+  flex:0 0 auto!important;
+  align-items:center!important;
+  width:auto!important;
+  min-width:0!important;
+  font-size:21px!important;
+}
+body.blHomeMode .brandLogo,
+body.blGameMode .brandLogo,
+body.blCommunityMode .brandLogo{
+  display:block!important;
+  width:34px!important;
+  height:34px!important;
+  object-fit:contain;
+}
+body.blHomeMode .brandText,
+body.blGameMode .brandText,
+body.blCommunityMode .brandText{display:block!important;color:#f5f2ec!important}
+body.blHomeMode .brandText b,
+body.blGameMode .brandText b,
+body.blCommunityMode .brandText b{color:var(--v9-orange)!important}
+body.blHomeMode #liveTickerTopSlot,
+body.blGameMode #liveTickerTopSlot,
+body.blCommunityMode #liveTickerTopSlot{
+  display:flex!important;
+  flex:1 1 520px!important;
+  align-items:center!important;
+  min-width:0!important;
+  max-width:680px!important;
+  padding:0!important;
+}
+body.blHomeMode #liveTickerTopSlot .liveTicker,
+body.blGameMode #liveTickerTopSlot .liveTicker,
+body.blCommunityMode #liveTickerTopSlot .liveTicker{
+  position:relative!important;
+  inset:auto!important;
+  display:flex!important;
+  flex:1 1 auto!important;
+  width:100%!important;
+  max-width:none!important;
+  height:34px!important;
+  margin:0!important;
+}
+body.blHomeMode .brandActions,
+body.blGameMode .brandActions,
+body.blCommunityMode .brandActions{
+  display:flex!important;
+  flex:0 0 auto!important;
+  align-items:center!important;
+  gap:7px!important;
+  width:auto!important;
+  margin-left:0!important;
+}
+body.blHomeMode .brandActions>.playerNicknameBtn,
+body.blGameMode .brandActions>.playerNicknameBtn,
+body.blCommunityMode .brandActions>.playerNicknameBtn,
+body.blHomeMode .brandActions>.versionLink,
+body.blGameMode .brandActions>.versionLink,
+body.blCommunityMode .brandActions>.versionLink,
+body.blHomeMode .brandActions>.onlineStatus,
+body.blGameMode .brandActions>.onlineStatus,
+body.blCommunityMode .brandActions>.onlineStatus{
+  display:inline-flex!important;
+}
+body.blHomeMode .brandActions>.careerSaveStatus,
+body.blGameMode .brandActions>.careerSaveStatus,
+body.blCommunityMode .brandActions>.careerSaveStatus,
+body.blHomeMode .brandActions>.quickRestartBtn,
+body.blGameMode .brandActions>.quickRestartBtn,
+body.blCommunityMode .brandActions>.quickRestartBtn,
+body.blHomeMode .brandActions>.quickRestartMenu,
+body.blGameMode .brandActions>.quickRestartMenu,
+body.blCommunityMode .brandActions>.quickRestartMenu{display:none!important}
+body.blHomeMode .topRankBtn,
+body.blGameMode .topRankBtn,
+body.blCommunityMode .topRankBtn{
+  width:auto!important;
+  min-width:0!important;
+  height:34px!important;
+  min-height:34px!important;
+  padding:7px 12px!important;
+  color:#aebdca!important;
+  font-size:11px!important;
+}
+body.blHomeMode .topRankBtn:before{display:none!important}
+body.blGameMode #game>.header{position:relative!important;top:auto!important;margin-top:0!important}
+body.blGameMode #liveTickerTopSlot{order:0!important}
+@media(max-width:819px){
+  body.blHomeMode .brandRow,
+  body.blGameMode .brandRow,
+  body.blCommunityMode .brandRow{width:calc(100% - 24px)!important;gap:6px!important}
+  body.blHomeMode .brand,
+  body.blGameMode .brand,
+  body.blCommunityMode .brand{font-size:18px!important}
+  body.blHomeMode .brandLogo,
+  body.blGameMode .brandLogo,
+  body.blCommunityMode .brandLogo{width:30px!important;height:30px!important}
+  body.blHomeMode .brandActions,
+  body.blGameMode .brandActions,
+  body.blCommunityMode .brandActions{gap:4px!important}
+  body.blHomeMode .brandActions>.playerNicknameBtn,
+  body.blGameMode .brandActions>.playerNicknameBtn,
+  body.blCommunityMode .brandActions>.playerNicknameBtn,
+  body.blHomeMode .brandActions>.versionLink,
+  body.blGameMode .brandActions>.versionLink,
+  body.blCommunityMode .brandActions>.versionLink{display:none!important}
+  body.blHomeMode #liveTickerTopSlot,
+  body.blGameMode #liveTickerTopSlot,
+  body.blCommunityMode #liveTickerTopSlot{flex-basis:120px!important}
+  body.blHomeMode .topRankBtn,
+  body.blGameMode .topRankBtn,
+  body.blCommunityMode .topRankBtn{padding-inline:8px!important}
+}

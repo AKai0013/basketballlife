@@ -295,8 +295,12 @@ test("V9 retirement role timeline and role storage stay compatible with old save
 test("BL LIVE restores only three headline items and styles legacy milestones",()=>{
   const track={childNodes:[],style:{setProperty(name,value){this[name]=value}},replaceChildren(...nodes){this.childNodes=nodes},appendChild(node){this.childNodes.push(node)}};
   const wrap={hidden:true};
-  const context={p:null,window:{},document:{
-    getElementById(id){return id==="liveTrack"?track:id==="liveTicker"?wrap:null},
+  const topSlot={appendChild(node){node.parentElement=this}};
+  let gameVisible=false;
+  const game={classList:{contains(name){return name==="hidden"&&!gameVisible}}};
+  const setup={classList:{contains(){return false}}};
+  const context={p:null,window:{},document:{body:{classList:{contains(){return false}}},
+    getElementById(id){return id==="liveTrack"?track:id==="liveTicker"?wrap:id==="liveTickerTopSlot"?topSlot:id==="game"?game:id==="setup"?setup:null},
     createElement(){return {className:"",textContent:""}}
   }};
   vm.runInNewContext(read("js/events/event-memory.js"),context);
@@ -314,7 +318,14 @@ test("BL LIVE restores only three headline items and styles legacy milestones",(
   context.window.BasketballLifeTicker.setGlobalNews([]);
   assert.equal(wrap.hidden,false);
   assert.equal(track.childNodes.length,0);
+  gameVisible=true;
+  vm.runInContext("syncLiveTickerPlacement()",context);
+  assert.equal(wrap.parentElement,topSlot);
   assert.match(read("css/v9-ui.css"),/body\.blHomeMode \.liveTicker\{display:flex!important\}/);
+  assert.match(read("index.html"),/id="liveTickerTopSlot"/);
+  assert.doesNotMatch(read("index.html"),/id="liveTickerGameSlot"/);
+  assert.match(read("index.html"),/class="brand"[\s\S]*id="liveTickerTopSlot"[\s\S]*class="brandActions"/);
+  assert.match(read("css/v9-ui.css"),/body\.blHomeMode \.brandRow\{[\s\S]*?transform:none!important/);
 });
 
 test("V9 formal retirement page adds factual sections without replacing the two original image actions",()=>{
