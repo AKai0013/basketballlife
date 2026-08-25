@@ -292,6 +292,27 @@ test("V9 retirement role timeline and role storage stay compatible with old save
   assert.match(read("js/career/season-engine.js"),/roleLabel:isProPath\(\)\?p\.roleState\.currentLabel/);
 });
 
+test("BL LIVE restores only three headline items and styles legacy milestones",()=>{
+  const track={childNodes:[],style:{setProperty(name,value){this[name]=value}},replaceChildren(...nodes){this.childNodes=nodes},appendChild(node){this.childNodes.push(node)}};
+  const wrap={hidden:true};
+  const context={p:null,window:{},document:{
+    getElementById(id){return id==="liveTrack"?track:id==="liveTicker"?wrap:null},
+    createElement(){return {className:"",textContent:""}}
+  }};
+  vm.runInNewContext(read("js/events/event-memory.js"),context);
+  context.window.BasketballLifeTicker.setGlobalNews([
+    {id:"hof",importance:5,type:"legacy",message:"球員入選名人堂",created_at:"2026-01-03T00:00:00Z"},
+    {id:"jersey",importance:5,type:"legacy",message:"球衣退休",created_at:"2026-01-02T00:00:00Z"},
+    {id:"award",importance:5,type:"award",message:"年度MVP",created_at:"2026-01-01T00:00:00Z"},
+    {id:"noise",importance:5,type:"history",message:"一般生涯消息",created_at:"2025-12-31T00:00:00Z"}
+  ]);
+  assert.equal(wrap.hidden,false);
+  assert.equal(track.childNodes.length,5);
+  assert.ok(track.childNodes.some(node=>node.className.includes("tickerHof")));
+  assert.ok(track.childNodes.some(node=>node.className.includes("tickerJersey")));
+  assert.equal(track.style.animationDuration,"55s");
+});
+
 test("V9 formal retirement page adds factual sections without replacing the two original image actions",()=>{
   const retirement=read("js/ui/retirement-view.js");
   const career=read("js/ui/career-view.js"),styles=read("css/home.css");

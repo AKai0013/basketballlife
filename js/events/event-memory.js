@@ -164,6 +164,7 @@ function evaluateV8CoachFuture(results=[]){
 
 const GLOBAL_TICKER_MIN_IMPORTANCE=5;
 let liveSessionNews=[];
+let globalTickerNews=[];
 
 function isHeadlineTickerItem(item){
  const text=String(item?.message||""),type=String(item?.type||item?.event_type||"").toLowerCase();
@@ -225,32 +226,34 @@ function tickerKind(item){
  return "tickerMajor";
 }
 function tickerKey(item){
+ if(item?.id)return String(item.id);
  const owner=`${item?.nickname||""}|${item?.player||item?.player_name||""}`;
- return owner!=="|"?owner:String(item?.message||"");
+ return `${owner}|${String(item?.message||"")}`;
 }
 function resetLiveTicker(){
  liveSessionNews=[];
- const el=document.getElementById("liveTrack"),wrap=document.getElementById("liveTicker");
- if(el)el.replaceChildren();
- if(wrap)wrap.hidden=true;
+ refreshTicker();
 }
-function setGlobalTickerNews(){
- // Keep historical/global news in D1, but do not replay it into every player's HUD.
+function setGlobalTickerNews(items=[]){
+ globalTickerNews=Array.isArray(items)?items.map(normalizeTickerItem):[];
  refreshTicker();
 }
 window.BasketballLifeTicker={
  setGlobalNews:setGlobalTickerNews,
- addGlobalNews(){ refreshTicker(); }
+ addGlobalNews(item){
+  if(item)globalTickerNews.unshift(normalizeTickerItem(item));
+  refreshTicker();
+ }
 };
 
 function refreshTicker(){
  const el=document.getElementById("liveTrack"),wrap=document.getElementById("liveTicker");if(!el)return;
- const merged=[...liveSessionNews]
+ const merged=[...liveSessionNews,...globalTickerNews]
    .map(normalizeTickerItem)
    .filter(x=>(x.importance||0)>=GLOBAL_TICKER_MIN_IMPORTANCE&&isHeadlineTickerItem(x))
    .filter((x,i,a)=>x.message&&a.findIndex(y=>tickerKey(y)===tickerKey(x))===i)
    .sort((a,b)=>(b.created_at?Date.parse(b.created_at):b.createdAt||0)-(a.created_at?Date.parse(a.created_at):a.createdAt||0))
-   .slice(0,4);
+   .slice(0,3);
  el.replaceChildren();
  if(!merged.length){
    if(wrap)wrap.hidden=true;
