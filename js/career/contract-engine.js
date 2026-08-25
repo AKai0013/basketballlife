@@ -700,6 +700,7 @@ function veteranContinuationProfile(league=p.path,incumbent=false){
  const games=Number(ss.games)||0,mins=Number(ss.mins)||0,availability=Math.min(1,games/schedule);
  const impact=(Number(ss.pts)||0)+(Number(ss.ast)||0)*.75+(Number(ss.reb)||0)*.38+(Number(ss.stl)||0)*1.6+(Number(ss.blk)||0)*1.3;
  const ath=Number(stats.ath??50),health=Number(p.health??100),durability=Number(p.durability??70),bodyLoad=Number(p.bodyLoad??0);
+ const peakOvr=Math.max(ov,Number(p.peakOverall)||0);
  const rank=typeof leagueMarketRank==="function"?leagueMarketRank(league):({"SBL／半職業":1,"台灣職業":2,"韓國職業":3,"日本職業":4,CBA:4,"NBA G League":5,"歐洲聯賽":6,NBA:7}[league]||3);
  const baseFloor=leagueRosterOverallFloor(league)-(incumbent?2:0),margin=ov-baseFloor;
  const impactTarget=rank>=7?15:rank>=5?12:rank>=2?9:7;
@@ -716,21 +717,24 @@ function veteranContinuationProfile(league=p.path,incumbent=false){
  const recentMajor=(p.injuryHistory||[]).filter(item=>p.year-(Number(item.year)||0)<=2&&["大傷","重傷"].includes(item.level)).length;
  score-=Math.min(2,recentMajor);
  const threshold=rank>=7?5:rank>=6?4:rank>=4?3:rank>=2?2:1;
- return {eligible:score>=threshold,score,threshold,ov,baseFloor,ath,health,durability,bodyLoad,availability,impact};
+ const lateCareerReady=peakOvr>=baseFloor+8&&impact>=impactTarget+1&&availability>=.75&&health>=85&&durability>=78&&bodyLoad<=55&&!p.injury;
+ const eligible=score>=threshold&&(p.age<50||lateCareerReady);
+ return {eligible,score,threshold,ov,peakOvr,baseFloor,ath,health,durability,bodyLoad,availability,impact,lateCareerReady};
 }
 function veteranContractRiskProfile(league=p.path,incumbent=false){
  if(p.age<35)return null;
  const readiness=veteranContinuationProfile(league,incumbent),yearsOld=Math.max(0,p.age-34);
- const salaryRisk=Math.min(.25,yearsOld*.012),readinessRelief=Math.min(.14,Math.max(0,readiness.score-2)*.018);
+ const lateAgeYears=Math.max(0,p.age-49);
+ const salaryRisk=Math.min(.36,yearsOld*.012+lateAgeYears*.018),readinessRelief=Math.min(.14,Math.max(0,readiness.score-2)*.018);
  const salaryFactor=Math.max(.75,Math.min(1,1-salaryRisk+readinessRelief));
  let guaranteeRate=p.age>=50?Math.max(.37,.52-Math.min(.15,(p.age-50)*.03)):p.age>=45?.68:p.age>=41?.82:p.age>=38?.92:1;
  guaranteeRate+=readiness.score>=8?.18:readiness.score>=5?.10:readiness.score<=1?-.10:0;
  if(incumbent)guaranteeRate+=.06;
  guaranteeRate=Math.max(.35,Math.min(1,Math.round(guaranteeRate*100)/100));
  const guaranteeLabel=guaranteeRate>=.995?"全額保障":`${Math.round(guaranteeRate*100)}%保障`;
- const teamPatience=Math.max(10,Math.min(95,Math.round(84-yearsOld*3.3+readiness.score*3+(incumbent?6:0))));
+ const teamPatience=Math.max(10,Math.min(95,Math.round(84-yearsOld*3.3-lateAgeYears*4+readiness.score*3+(incumbent?6:0))));
  const teamPatienceLabel=teamPatience>=75?"球隊願意穩定投入":teamPatience>=50?"逐季觀察":teamPatience>=30?"短期證明":"名單邊緣";
- return {readiness,salaryFactor,guaranteeRate,guaranteeLabel,teamPatience,teamPatienceLabel};
+ return {readiness,salaryFactor,guaranteeRate,guaranteeLabel,teamPatience,teamPatienceLabel,lateAgeYears};
 }
 function canReceiveStandardContract(league,score=scoutingScore(),incumbent=false){
  const cfg=LEAGUE_CFG[league];if(!cfg)return false;
