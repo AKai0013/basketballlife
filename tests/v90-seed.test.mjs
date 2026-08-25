@@ -311,6 +311,9 @@ test("BL LIVE restores only three headline items and styles legacy milestones",(
   assert.ok(track.childNodes.some(node=>node.className.includes("tickerHof")));
   assert.ok(track.childNodes.some(node=>node.className.includes("tickerJersey")));
   assert.equal(track.style.animationDuration,"55s");
+  context.window.BasketballLifeTicker.setGlobalNews([]);
+  assert.equal(wrap.hidden,false);
+  assert.equal(track.childNodes.length,0);
 });
 
 test("V9 formal retirement page adds factual sections without replacing the two original image actions",()=>{

@@ -256,7 +256,7 @@ function refreshTicker(){
    .slice(0,3);
  el.replaceChildren();
  if(!merged.length){
-   if(wrap)wrap.hidden=true;
+   if(wrap)wrap.hidden=false;
    return;
  }
  if(wrap)wrap.hidden=false;
