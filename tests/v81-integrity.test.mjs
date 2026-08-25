@@ -29,10 +29,10 @@ test("V9.0 release wires the approved responsive UI without changing platform se
   assert.match(read("css/home.css"),/data-stage="points".*pointrow/s);
 });
 
-test("README describes the current V8.1 game instead of retired leaderboard eras",()=>{
+test("README describes the current V9.0 game instead of retired leaderboard eras",()=>{
   const readme=read("README.md");
-  assert.match(readme,/目前正式版：V8\.1/);
-  for(const feature of ["SSS+ 神話","NBA 選秀","西班牙 Liga ACB","版本冠軍榜","portrait-primary","50 歲"])assert.match(readme,new RegExp(feature.replace("+","\\+")));
+  assert.match(readme,/目前正式版：V9\.0/);
+  for(const feature of ["七級 Seed","SSS+ 神話","NBA 選秀","西班牙 Liga ACB","版本冠軍榜","portrait-primary","50 歲"])assert.match(readme,new RegExp(feature.replace("+","\\+")));
   assert.ok(readme.indexOf("## 📚 重要版本")<readme.indexOf("## 🎮 一季怎麼進行？"));
   assert.doesNotMatch(readme,/目前正式版：V8\.0/);
   assert.doesNotMatch(readme,/\*\*V7 傳奇榜\*\*/);
