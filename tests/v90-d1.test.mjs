@@ -47,6 +47,15 @@ const insertCareer=(database,{id,userId,nickname="QA",rating=0,era="v9",weekly=0
   ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,1)
 `).run(id,userId,nickname,`球員${id.slice(0,4)}`,"PG","V9D1TEST","A",25,2035,peak,rating,10,0,era,publisher,weekly,weeklyId);
 
+test("Pages keeps Preview and production D1 bindings isolated",()=>{
+  const config=fs.readFileSync(path.join(root,"wrangler.toml"),"utf8");
+  const section=name=>config.match(new RegExp(`\\[\\[env\\.${name}\\.d1_databases\\]\\]([\\s\\S]*?)(?=\\n\\[\\[|$)`))?.[1]||"";
+  const preview=section("preview"),production=section("production");
+  assert.match(preview,/binding = "DB"/);assert.match(production,/binding = "DB"/);
+  assert.match(preview,/database_name = "basketballlife-preview"/);
+  assert.notEqual(preview.match(/database_id = "([^"]+)"/)?.[1],production.match(/database_id = "([^"]+)"/)?.[1]);
+});
+
 test("V9 D1 migration is additive and preserves the existing leaderboard eras",()=>{
   const database=openDatabase();
   database.exec(migration(migrations[0]));

@@ -1620,7 +1620,7 @@ function resolveEvent(type,label){
  let specialExtra=applySpecialEffect(etype,tier);
  special.innerHTML=`<div class="outcome ${cls}">
    <div class="outcomeHead"><b>事件結果｜${resultLabel(tier)}</b><span class="outcomeRate">${strategyName(st)}</span></div>
-   <div class="fateRoll" aria-label="臨場表現 ${roll}，目標 ${chance}"><small>臨場表現</small><b>${roll}</b><span>目標 ${chance}</span></div>
+   <div class="fateRoll" aria-label="本次骰值 ${roll}，成功範圍 1 到 ${chance}"><small>本次骰值</small><b>${roll}</b><span>成功範圍 1–${chance}</span></div>
    <div class="eventMain">${msg}</div>
    <div class="changes">${deltaHTML}</div>
  </div>${specialExtra}${titleHTML}`;

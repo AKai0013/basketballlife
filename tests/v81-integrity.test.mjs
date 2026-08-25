@@ -259,6 +259,7 @@ test("coaches and teammates use names that match the active league region",()=>{
 test("player-facing copy contains outcomes instead of developer notes",()=>{
   const copy=["index.html","js/career/season-engine.js","js/career/contract-engine.js","js/events/event-engine.js","js/ui/growth-preview.js","js/leaderboard/leaderboard-api.js","js/ui/retirement-view.js"].map(read).join("\n");
   assert.doesNotMatch(copy,/判定未通過|命運判定|不使用一般事件成功率|一般事件不會逐次抽傷病|不重複抽新傷|不會直接生成職業合約|本輪市場不會無限產生新合約|不再壓在全球榜單/);
+  assert.match(read("js/events/event-engine.js"),/本次骰值.*成功範圍 1–/);
   assert.match(read("js/ui/retirement-view.js"),/def\.effect\|\|t\.effect/);
   assert.match(read("js/leaderboard/leaderboard-api.js"),/排行榜服務目前沒有回應/);
 });
