@@ -255,7 +255,22 @@ body.read-compact .feedHistory{display:none}body.read-compact .text{font-size:12
 .legacySeed b{color:#f0bd4b}
 @media(max-width:760px){.legacyStoryGrid{grid-template-columns:1fr}.legacyAchievements{columns:1}.legacyPage{padding:16px}.legacyName{font-size:30px}}
 
+.liveTrack .tickerItem{display:inline-block;font-weight:850;letter-spacing:.02em;color:#cbd6e5}
 .liveTrack .tickerMajor{color:#f0aa5c}
+.liveTrack .tickerChampionship{color:#f4c96d}
+.liveTrack .tickerNational{color:#79d6d1}
+.liveTrack .tickerNba{color:#9dbaff}
+.liveTrack .tickerAward{color:#8edbb0}
+.liveTrack .tickerHof,.liveTrack .tickerJersey{
+  background:linear-gradient(105deg,#f4c96d 0%,#80d8d0 27%,#a99aff 52%,#f4c96d 78%,#80d8d0 100%);
+  background-size:260% 100%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:tickerColorFlow 6s ease-in-out infinite;
+}
+.liveTrack .tickerJersey{animation-delay:-2.5s}
+@keyframes tickerColorFlow{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.liveTrack .tickerSep{display:inline-block;margin:0 12px;color:#71869f;font-size:9px}
+@media(prefers-reduced-motion:reduce){.liveTrack{animation:none}.liveTrack .tickerHof,.liveTrack .tickerJersey{animation:none;background-position:50% 50%}}
 
 /* ===== Consolidated source block 2 ===== */
 /* =========================================================
