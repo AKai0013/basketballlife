@@ -91,11 +91,19 @@ test("V9 draft UI exposes scouting, projection, need, fit and contract guarantee
   const source=read("js/career/contract-engine.js"),storage=read("js/storage.js"),css=read("css/v9-ui.css");
   assert.match(source,/選秀前球探報告/);
   assert.match(source,/v9DraftRouteReport/);
-  assert.match(source,/正式選秀結果/);
+  assert.match(source,/選秀／新人結果/);
+  assert.match(source,/draftContractResultLabel/);
   assert.match(source,/保障金額/);
   assert.match(storage,/rebuildV9CollegeDraftResultFromSave\(save\.screen\)/);
   assert.match(css,/\.v9DraftOutcomeGrid/);
   assert.match(css,/\.v9DraftContractFacts/);
+});
+
+test("draft contract cards distinguish selected picks from non-draft invitations",()=>{
+  const context=draftContext();
+  assert.equal(context.draftContractResultLabel({draftRound:"首輪",draftPick:5,draftEntryType:"首輪新秀合約"}),"首輪｜第 5 順位");
+  assert.equal(context.draftContractResultLabel({draftEntryType:"落選後訓練營"}),"非選秀入口｜落選後訓練營");
+  assert.equal(context.draftContractResultLabel({draftRouteId:"nba"}),"新人市場合約｜未記錄順位");
 });
 
 test("resuming an existing V9 draft result enriches presentation without rerolling its outcome",()=>{

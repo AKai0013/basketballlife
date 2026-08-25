@@ -233,6 +233,13 @@ function retirementContext(player){
   return context;
 }
 
+test("retired legacy saves use the new retirement presentation without changing their version",()=>{
+  const legacy={careerVersion:"8.1.1",stage:"retired",retired:true};
+  const context=retirementContext(legacy);
+  assert.equal(context.isV9RetirementExperience(),true);
+  assert.equal(legacy.careerVersion,"8.1.1");
+});
+
 test("V9 retirement history position is factual for dynasty and ordinary careers",()=>{
   const dynastySeasons=Array.from({length:14},(_,index)=>({
     year:2040+index,age:22+index,team:"洛杉磯星辰",path:"NBA",games:76,mins:index<9?34:17,
@@ -299,7 +306,9 @@ test("V9 formal retirement page adds factual sections without replacing the two 
   assert.match(retirement,/onclick="generateRetirementPageImage\(\)"/);
   assert.match(retirement,/onclick="generateCareerImage\(\)"/);
   assert.match(retirement,/txt\("BL POWER"/);
-  assert.match(career,/classList\.toggle\("v9RetirementMode",v9RetiredStage\)/);
+  assert.match(career,/const v9RetiredStage=retiredStage/);
+  assert.match(retirement,/function isV9RetirementExperience\(\)\{return !!\(p\?\.retired\|\|p\?\.stage==="retired"\)\}/);
   assert.match(styles,/body\.v9RetirementMode \.retireHero/);
+  assert.match(styles,/body\.v9RetirementMode \.brandRow,body\.v9RetirementMode \.liveTicker/);
   assert.match(styles,/body\.v9RetirementMode \.v9GameNav\{display:none!important\}/);
 });
