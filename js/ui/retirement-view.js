@@ -537,6 +537,7 @@ function restartCareer(mode){
  document.getElementById("game").classList.add("hidden");
  document.getElementById("setup").classList.remove("hidden");
 
+ resetLiveTicker();
  p=null;selectedDie=null;clearCareerSave(false);
  chosenAvatarIndex=Math.floor(Math.random()*V8_CHARACTER_COUNT);
  chosenPos=oldPos;
@@ -556,7 +557,11 @@ function restartCareer(mode){
  }
 
  const lt=document.getElementById("liveTrack");
- if(lt)lt.textContent=mode==="same"?"同一世界種子已準備完成。":"新的世界種子已抽取。";
+ if(lt){
+  lt.replaceChildren();
+  const ticker=document.getElementById("liveTicker");
+  if(ticker)ticker.hidden=true;
+ }
  window.scrollTo({top:0,behavior:"smooth"});
 }
 

@@ -163,7 +163,7 @@ function evaluateV8CoachFuture(results=[]){
 }
 
 const GLOBAL_TICKER_MIN_IMPORTANCE=5;
-let externalGlobalNews=[];
+let liveSessionNews=[];
 
 function isHeadlineTickerItem(item){
  const text=String(item?.message||""),type=String(item?.type||item?.event_type||"").toLowerCase();
@@ -214,33 +214,62 @@ function normalizeTickerItem(x){
  if(typeof x==="string")return tickerNewsInfo(x);
  return x||{};
 }
-function setGlobalTickerNews(items){
- externalGlobalNews=(items||[]).map(normalizeTickerItem).filter(x=>(x.importance||0)>=GLOBAL_TICKER_MIN_IMPORTANCE&&isHeadlineTickerItem(x)).slice(0,12);
+function tickerKind(item){
+ const text=String(item?.message||""),type=String(item?.type||item?.event_type||"").toLowerCase();
+ if(type==="hof"||/名人堂/.test(text))return "tickerHof";
+ if(type==="jersey"||/球衣退休|退休.*球衣/.test(text))return "tickerJersey";
+ if(type==="championship")return "tickerChampionship";
+ if(type==="national")return "tickerNational";
+ if(type==="nba")return "tickerNba";
+ if(type==="award")return "tickerAward";
+ return "tickerMajor";
+}
+function tickerKey(item){
+ const owner=`${item?.nickname||""}|${item?.player||item?.player_name||""}`;
+ return owner!=="|"?owner:String(item?.message||"");
+}
+function resetLiveTicker(){
+ liveSessionNews=[];
+ const el=document.getElementById("liveTrack"),wrap=document.getElementById("liveTicker");
+ if(el)el.replaceChildren();
+ if(wrap)wrap.hidden=true;
+}
+function setGlobalTickerNews(){
+ // Keep historical/global news in D1, but do not replay it into every player's HUD.
  refreshTicker();
 }
 window.BasketballLifeTicker={
  setGlobalNews:setGlobalTickerNews,
- addGlobalNews(item){
-   const x=normalizeTickerItem(item);
-   if((x.importance||0)>=GLOBAL_TICKER_MIN_IMPORTANCE&&isHeadlineTickerItem(x)){
-     externalGlobalNews.unshift(x);
-     externalGlobalNews=externalGlobalNews.slice(0,12);
-     refreshTicker();
-   }
- }
+ addGlobalNews(){ refreshTicker(); }
 };
 
 function refreshTicker(){
- const el=document.getElementById("liveTrack");if(!el)return;
- const local=(p?.news||[]).map(normalizeTickerItem).filter(x=>(x.importance||0)>=GLOBAL_TICKER_MIN_IMPORTANCE&&isHeadlineTickerItem(x));
- const merged=[...externalGlobalNews,...local]
-   .filter((x,i,a)=>x.message&&a.findIndex(y=>y.message===x.message)===i)
+ const el=document.getElementById("liveTrack"),wrap=document.getElementById("liveTicker");if(!el)return;
+ const merged=[...liveSessionNews]
+   .map(normalizeTickerItem)
+   .filter(x=>(x.importance||0)>=GLOBAL_TICKER_MIN_IMPORTANCE&&isHeadlineTickerItem(x))
+   .filter((x,i,a)=>x.message&&a.findIndex(y=>tickerKey(y)===tickerKey(x))===i)
    .sort((a,b)=>(b.created_at?Date.parse(b.created_at):b.createdAt||0)-(a.created_at?Date.parse(a.created_at):a.createdAt||0))
-   .slice(0,8);
- const txt=merged.length
-   ? merged.map(x=>x.message).join("　◆　")
-   : "BL LIVE｜記錄生涯重大時刻。";
- el.textContent=txt;
+   .slice(0,4);
+ el.replaceChildren();
+ if(!merged.length){
+   if(wrap)wrap.hidden=true;
+   return;
+ }
+ if(wrap)wrap.hidden=false;
+ merged.forEach((item,index)=>{
+   if(index){
+     const sep=document.createElement("span");
+     sep.className="tickerSep";
+     sep.textContent="◆";
+     el.appendChild(sep);
+   }
+   const message=document.createElement("span");
+   message.className=`tickerItem ${tickerKind(item)}`;
+   message.textContent=item.message;
+   el.appendChild(message);
+ });
+ const txt=merged.map(x=>x.message).join("◆");
  const seconds=Math.max(55,Math.min(145,Math.round(txt.length*.30)));
  el.style.animationDuration=seconds+"s";
 }
@@ -258,6 +287,7 @@ function pushNews(msg,meta={}){
      }
    }catch(_){}
    p.news.unshift(localItem);p.news=p.news.slice(0,12);
+   liveSessionNews.unshift(localItem);liveSessionNews=liveSessionNews.slice(0,8);
 
    try{
      if(window.BasketballLifeOnline?.publishNews){
