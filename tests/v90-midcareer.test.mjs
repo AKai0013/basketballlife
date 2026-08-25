@@ -89,6 +89,7 @@ test("a late physical freak is not pushed into the closing chapter by age alone"
  const box=context(),freak=stagedCareer(box,4,{careerSeason:24,year:2064,age:50,peakOverall:98,stats:Object.fromEntries(["shoot","finish","handle","pass","defense","rebound","ath","iq"].map(key=>[key,96])),roleState:{current:"core",currentLabel:"先發核心"},contract:{remaining:3,rolePromise:"先發核心"},health:96,bodyLoad:18});
  const profile=box.v90MidcareerLegacyProfile(freak,freak.midcareerArc);
  assert.equal(profile.eligible,false);
+ assert.equal(box.v90MidcareerTransitionProfile(freak,freak.midcareerArc).eligible,false);
  assert.equal(box.v90MidcareerDefinition(freak),null);
  const veteran=stagedCareer(box,4,{careerSeason:24,year:2064,age:43,peakOverall:92,stats:Object.fromEntries(["shoot","finish","handle","pass","defense","rebound","ath","iq"].map(key=>[key,82])),roleState:{current:"worker",currentLabel:"主要輪替／防守工兵"},contract:{remaining:1,rolePromise:"主要輪替"},health:72,bodyLoad:70});
  assert.equal(box.v90MidcareerLegacyProfile(veteran,veteran.midcareerArc).eligible,true);

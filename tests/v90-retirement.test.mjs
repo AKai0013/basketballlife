@@ -57,7 +57,7 @@ test("age 50 is not a standard-contract or NBA-performance cutoff",()=>{
 test("age changes veteran contract risk, not the player's continuation score",()=>{
   const stats={shoot:88,finish:86,handle:84,pass:88,defense:87,rebound:82,ath:86,iq:91};
   const context=careerContext({
-    path:"NBA",age:35,year:2050,seed:"VETERAN2",stats,caps:{...stats},health:96,durability:91,bodyLoad:22,
+    path:"NBA",age:35,year:2050,seed:"VETERAN2",peakOverall:96,stats,caps:{...stats},health:96,durability:91,bodyLoad:22,
     injury:null,injuryHistory:[],seasonStats:{games:68,scheduledGames:82,mins:27,pts:19,ast:6,reb:6,stl:1.2,blk:.6},
     lastSeasonAwards:[],careerMVP:0,careerFirstTeam:0,careerAllStar:0,roleState:{current:"starter"},rep:12
   });
@@ -106,6 +106,35 @@ test("ordinary and physical-outlier veterans receive different 49-to-55 markets"
   assert.ok(freakRows.at(-1).ovr>ordinaryRows.at(-1).ovr);
   assert.ok(freakRows.at(-1).market.includes("台灣職業"));
   assert.ok(freakRows.at(-1).market.length>0);
+});
+
+test("late-career aging accelerates after 45 while 50-plus continuation stays conditional",()=>{
+ const stats={shoot:90,finish:90,handle:90,pass:90,defense:90,rebound:90,ath:90,iq:90};
+ const context=careerContext({path:"NBA",age:44,year:2064,seed:"VETERAN5",peakOverall:98,stats:{...stats},caps:{...stats},health:96,durability:96,bodyLoad:20,injury:null,injuryHistory:[],seasonPlan:"balance",seasonStats:{games:76,scheduledGames:82,mins:31,pts:24,ast:7,reb:8,stl:1.5,blk:1}});
+ context.applyAging();
+ const age44Loss=90-context.p.stats.ath,age44HealthLoss=96-context.p.health;
+ context.p.age=45;context.p.stats={...stats};context.p.health=96;context.applyAging();
+ const age45Loss=90-context.p.stats.ath,age45HealthLoss=96-context.p.health;
+ assert.ok(age45Loss>age44Loss);
+ assert.ok(age45HealthLoss>age44HealthLoss);
+ context.p.age=50;context.p.stats={...stats};context.p.health=96;context.applyAging();
+ assert.equal(context.canReceiveStandardContract("NBA",96,true),true);
+});
+
+test("50-plus contract risk tightens while continuation uses peak, form, availability and health",()=>{
+ const context=careerContext({path:"NBA",age:50,year:2064,seed:"VETERAN6",peakOverall:98,stats:{shoot:96,finish:96,handle:96,pass:96,defense:96,rebound:96,ath:96,iq:96},caps:{shoot:96,finish:96,handle:96,pass:96,defense:96,rebound:96,ath:96,iq:96},health:96,durability:96,bodyLoad:20,injury:null,injuryHistory:[],seasonStats:{games:76,scheduledGames:82,mins:31,pts:24,ast:7,reb:8,stl:1.5,blk:1}});
+ const late=context.veteranContinuationProfile("NBA",true);
+ assert.equal(late.lateCareerReady,true);
+ assert.equal(late.eligible,true);
+ const risk50=context.veteranContractRiskProfile("NBA",true);
+ context.p.age=44;
+ const risk44=context.veteranContractRiskProfile("NBA",true);
+ assert.ok(risk50.salaryFactor<risk44.salaryFactor);
+ assert.ok(risk50.teamPatience<risk44.teamPatience);
+ context.p.age=50;
+ context.p.seasonStats.games=20;
+ assert.equal(context.veteranContinuationProfile("NBA",true).lateCareerReady,false);
+ assert.equal(context.canReceiveStandardContract("NBA",96,true),false);
 });
 
 test("last dance is available only as a post-market career choice without an upper age cap",()=>{

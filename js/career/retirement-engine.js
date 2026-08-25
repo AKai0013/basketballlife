@@ -77,15 +77,22 @@ function applyAging(){
  else if(p.age<=36){stage=4;name="老將調整";losses={ath:2,finish:2,defense:1,handle:1,rebound:1,shoot:1};}
  else if(p.age<=38){stage=5;name="老將模式";losses={ath:3,finish:2,defense:2,handle:1,rebound:2,shoot:1,pass:1};}
  else if(p.age<=40){stage=6;name="暮年輪替";losses={ath:3,finish:3,defense:2,handle:2,rebound:2,shoot:1,pass:1};}
- else if(p.age<=43){stage=7;name="延長生涯";losses={ath:4,finish:3,defense:3,handle:2,rebound:2,shoot:2,pass:1,iq:1};}
- else if(p.age<=46){stage=8;name="生涯極限";losses={ath:5,finish:4,defense:3,handle:3,rebound:3,shoot:2,pass:2,iq:1};}
- else{stage=9;name="身體警鐘";losses={ath:6,finish:5,defense:4,handle:3,rebound:4,shoot:3,pass:2,iq:1};}
+ else if(p.age<=44){stage=7;name="延長生涯";losses={ath:4,finish:3,defense:3,handle:2,rebound:2,shoot:2,pass:1,iq:1};}
+ else if(p.age<=49){stage=8;name="生涯極限";losses={ath:5,finish:4,defense:3,handle:3,rebound:3,shoot:2,pass:2,iq:1};}
+ else{stage=9;name="晚年急速收束";losses={ath:7,finish:6,defense:5,handle:4,rebound:5,shoot:3,pass:2,iq:2};}
  let changes=[];
  for(const [k,n] of Object.entries(losses)){
    let mod=n;if(hasTitle("ironman")&&k==="ath")mod=Math.max(0,mod-1);if(p.seasonPlan==="care"&&["ath","finish"].includes(k))mod=Math.max(0,mod-1);
    if(p.injuryHistory.length>=4&&["ath","finish","defense"].includes(k))mod+=1;
    if((p.bodyLoad||0)>=75&&["ath","finish","defense","rebound"].includes(k))mod+=1;
    if(mod){p.stats[k]=Math.max(20,p.stats[k]-mod);changes.push(`${L[k]} -${mod}`);}
+ }
+ const healthBase=p.age>=50?2:p.age>=45?1:0;
+ const healthLoss=p.seasonPlan==="care"?Math.max(0,healthBase-1):healthBase;
+ if(healthLoss){
+   const oldHealth=Number.isFinite(Number(p.health))?Number(p.health):100;
+   p.health=Math.max(30,oldHealth-healthLoss);
+   changes.push(`健康 -${healthLoss}`);
  }
  p.ageDeclineStage=Math.max(p.ageDeclineStage||0,stage);
  if(changes.length){logIt(`⏳ ${name}：${changes.join("、")}`);return `<div class="notice fail"><b>⏳ ${name}</b><br>${changes.join("｜")}<br><span class="mut">年齡、舊傷與本季身體負荷共同造成。</span></div>`}
