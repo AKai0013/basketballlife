@@ -98,9 +98,8 @@ test("V9 growth discounts only core and support abilities while legacy careers k
 
 test("V9 wiring preserves legacy save fields and separates the new leaderboard era",()=>{
   const career=read("js/ui/career-view.js"),state=read("js/state.js"),retirement=read("js/ui/retirement-view.js"),board=read("js/leaderboard/leaderboard-api.js"),api=read("functions/api/[[path]].js");
-  assert.match(career,/talentProfile:talent\.profile/);
-  assert.match(career,/weeklySetupActive\?V90_LEGACY_SEED_TIER_MAP_VERSION:V90_SEED_TIER_MAP_VERSION/);
-  assert.match(career,/seedTierMapVersion:seedTierMapVersion/);
+  assert.match(career,/legacyWeeklyChallenge\?V90_LEGACY_SEED_TIER_MAP_VERSION:V90_SEED_TIER_MAP_VERSION/);
+  assert.match(career,/legacyWeeklyChallenge\?\{\}:\{talentVersion:1,talentProfile:talent\.profile,seedTierMapVersion\}/);
   assert.match(state,/player\.seedTierMapVersion=Number\(player\.seedTierMapVersion\)===V90_SEED_TIER_MAP_VERSION/);
   assert.doesNotMatch(state,/player\.stats\s*=\s*v90GenerateTalent/);
   assert.doesNotMatch(state,/player\.caps\s*=\s*v90GenerateTalent/);
