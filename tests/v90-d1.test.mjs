@@ -6,6 +6,7 @@ import test from "node:test";
 import {DatabaseSync} from "node:sqlite";
 import {fileURLToPath} from "node:url";
 import {onRequest} from "../functions/api/[[path]].js";
+import {optimizedLeaderboard} from "../functions/api/_middleware.js";
 
 if(!globalThis.crypto)globalThis.crypto=webcrypto;
 
@@ -54,6 +55,21 @@ test("Pages keeps Preview and production D1 bindings isolated",()=>{
   assert.match(preview,/binding = "DB"/);assert.match(production,/binding = "DB"/);
   assert.match(preview,/database_name = "basketballlife-preview"/);
   assert.notEqual(preview.match(/database_id = "([^"]+)"/)?.[1],production.match(/database_id = "([^"]+)"/)?.[1]);
+});
+
+test("optimized leaderboard gives each player one ranked seat and keeps complete rank metadata",async()=>{
+  const database=openDatabase();applyMigrations(database);
+  const first=uuid(7000),second=uuid(7001);
+  insertProfile(database,{id:first,nickname:"重複生涯玩家"});insertProfile(database,{id:second,nickname:"單一生涯玩家"});
+  insertCareer(database,{id:uuid(7100),userId:first,nickname:"重複生涯玩家",rating:20000,peak:91});
+  insertCareer(database,{id:uuid(7101),userId:first,nickname:"重複生涯玩家",rating:15000,peak:85});
+  insertCareer(database,{id:uuid(7102),userId:second,nickname:"單一生涯玩家",rating:18000,peak:89});
+  database.prepare("UPDATE leaderboard_stats SET players=2,careers=3,top_power=20000,top_peak=91 WHERE board_key='v9'").run();
+  const board=await optimizedLeaderboard(new Request("https://preview.test/api/careers?era=v9&metric=power"),{DB:new LocalD1(database)});
+  assert.equal(board.rows.length,2);assert.deepEqual(board.rows.map(row=>row.user_id),[first,second]);
+  assert.deepEqual(board.rows.map(row=>row.global_rank),[1,2]);assert.ok(board.rows.every(row=>row.ranking_total===2&&row.player_career_rank===1));
+  assert.equal(board.rows[0].public_career_count,2);
+  database.close();
 });
 
 test("V9 D1 migration is additive and preserves the existing leaderboard eras",()=>{
