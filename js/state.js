@@ -110,7 +110,8 @@ function normalizeCareerPlayer(player){
    "injuryHistory","log","dice","used","trainingUndo","pointUndo","titles","titleHistory",
    "seasonPointFocus","offers","news","seasonHistory","careerAwards","chainTitles","teamsPlayed",
    "hallOfFame","jerseyRetired","specialQueue","internationalHistory","offCourtHistory","offCourtEventKinds","championshipHistory","lastSeasonAwards","hallVotes","formerPartners",
-   "medicalHistory","medicalPressureHistory","recentEvents","feedHistory","relationshipHistory","chainQueue","storyBeats","seasonStoryCandidates","roleHistory","teamWorldHistory","collegeDraftHistory","draftEntrySelections"
+   "medicalHistory","medicalPressureHistory","recentEvents","feedHistory","relationshipHistory","chainQueue","storyBeats","seasonStoryCandidates","roleHistory","teamWorldHistory","collegeDraftHistory","draftEntrySelections",
+   "careerStoryHistory","careerStoryPending","careerStorySeen"
  ];
  arrayFields.forEach(k=>{if(!Array.isArray(player[k]))player[k]=[]});
  // V7.50 corrects the US college system: both routes are four-year NCAA divisions.
@@ -153,10 +154,11 @@ function normalizeCareerPlayer(player){
   if(typeof player.proEntrySource!=="string")player.proEntrySource="";
  const objectDefaults={
     oldInjuries:{},oldInjuryFloors:{},oldInjuryLastYear:{},leagueHistory:{},awardHistoryByLeague:{},partnerProfile:{},romanceCandidate:{},trainingProgress:{shoot:0,finish:0,handle:0,pass:0,defense:0,rebound:0,ath:0,iq:0},
-   strategyStats:{risk:{pick:0,success:0,streak:0,best:0},balance:{pick:0,success:0,streak:0,best:0},safe:{pick:0,success:0,streak:0,best:0}},careerCast:{},teamWorld:{},roleState:{},eventMemory:{},specialEventMemory:{},pendingTryoutOffer:{}
+   strategyStats:{risk:{pick:0,success:0,streak:0,best:0},balance:{pick:0,success:0,streak:0,best:0},safe:{pick:0,success:0,streak:0,best:0}},careerCast:{},teamWorld:{},roleState:{},eventMemory:{},specialEventMemory:{},pendingTryoutOffer:{},careerStoryThemeYears:{},careerIntroductions:{},seasonPermanentGrowth:{},injuryRecoveryCredits:{}
  };
  Object.entries(objectDefaults).forEach(([k,v])=>{if(!player[k]||typeof player[k]!=="object"||Array.isArray(player[k]))player[k]=JSON.parse(JSON.stringify(v))});
  ensureV8CareerState(player);
+ if(typeof ensureCareerStoryState==="function")ensureCareerStoryState(player);
  if(isV9Career&&typeof ensureV90MidcareerState==="function")ensureV90MidcareerState(player);
  if(player.partnerName&&!player.partnerProfile.name)player.partnerProfile={id:"legacy",name:player.partnerName,role:"多年伴侶",trait:"相互扶持",bonus:"穩定陪伴讓家庭關係更容易修復",type:"stability"};
  ["risk","balance","safe"].forEach(k=>{

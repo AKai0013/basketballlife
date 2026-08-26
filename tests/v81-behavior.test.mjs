@@ -252,7 +252,9 @@ test("team-first strategy can win even when personal performance is below the co
   assert.equal(context.p.seasonKeyBattleResult.teamWon,true);
   assert.equal(context.p.seasonKeyBattleResult.objective,"守住關鍵戰");
   assert.equal(context.p.seasonKeyBattleResult.objectiveSuccess,true);
-  assert.match(resultHTML,/球隊守住關鍵戰/);
+  assert.match(resultHTML,/守住關鍵戰/);
+  assert.match(resultHTML,/球隊仍贏下關鍵戰，但你的場上表現是/);
+  assert.doesNotMatch(resultHTML,/場上表現為.*球隊守住關鍵戰/);
 });
 
 test("event choices keep the same player-facing order for the same save state",()=>{

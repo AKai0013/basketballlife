@@ -75,13 +75,15 @@ function ensureState(player){
  player.midcareerArc=state;state.version=2;
  state.startCareerSeason=Math.max(0,Math.round(Number(state.startCareerSeason)||0));state.startYear=Math.max(0,Math.round(Number(state.startYear)||0));
  state.startOverall=clamp(state.startOverall,0,99);state.triggerReason=String(state.triggerReason||"");
+ state.startOffset=Math.max(0,Math.min(SEASONS.length-1,Math.round(Number(state.startOffset)||0)));
  state.startRole=String(state.startRole||"");state.startRoleLevel=clamp(state.startRoleLevel,0,5);
  if(!state.chapterObjectives||typeof state.chapterObjectives!=="object"||Array.isArray(state.chapterObjectives))state.chapterObjectives={};
  if(!state.chapterStarts||typeof state.chapterStarts!=="object"||Array.isArray(state.chapterStarts))state.chapterStarts={};
  if(!state.chapterReasons||typeof state.chapterReasons!=="object"||Array.isArray(state.chapterReasons))state.chapterReasons={};
  state.results=Array.isArray(state.results)?state.results.filter(row=>row&&Number.isFinite(Number(row.offset))).slice(-7):[];
- if(state.startCareerSeason&&!state.chapterStarts.peak)state.chapterStarts.peak=state.startCareerSeason;
- if(state.triggerReason&&!state.chapterReasons.peak)state.chapterReasons.peak=state.triggerReason;
+ const openingChapter=SEASONS[state.startOffset]?.chapter||"peak";
+ if(state.startCareerSeason&&!state.chapterStarts[openingChapter])state.chapterStarts[openingChapter]=state.startCareerSeason;
+ if(state.triggerReason&&!state.chapterReasons[openingChapter])state.chapterReasons[openingChapter]=state.triggerReason;
  for(const chapter of CHAPTER_ORDER){
   const rows=state.results.filter(row=>row.chapter===chapter);
   if(rows.length&&!state.chapterStarts[chapter])state.chapterStarts[chapter]=Math.min(...rows.map(row=>Number(row.careerSeason)||0).filter(Boolean));
@@ -125,7 +127,7 @@ function careerPeak(player,state){
 }
 function nextOffset(state){
  const completed=new Set(state.results.map(row=>Number(row.offset)));
- for(let offset=0;offset<SEASONS.length;offset++)if(!completed.has(offset))return offset;
+ for(let offset=Math.max(0,Number(state.startOffset)||0);offset<SEASONS.length;offset++)if(!completed.has(offset))return offset;
  return SEASONS.length;
 }
 function previousResult(state,offset){return state.results.find(row=>Number(row.offset)===offset-1)||null}
@@ -152,6 +154,11 @@ function legacyProfile(player,state){
  else if(benchRole)reason="實際角色已退到板凳末端，下一段市場需要重新選擇";
  return {eligible,current,peak,drop,currentRole,strongestRole,roleDrop,shortContract,limitedPromise,strained,marketPressure,reason};
 }
+function openingOffset(player,state){
+ const legacy=legacyProfile(player,state);if(legacy.eligible)return {offset:4,chapter:"legacy",reason:legacy.reason};
+ const turn=transitionProfile(player,state);if(turn.eligible)return {offset:2,chapter:"turn",reason:turn.reason};
+ return {offset:0,chapter:"peak",reason:triggerProfile(player).reason};
+}
 function pacingProfile(player){
  const state=ensureState(player),season=Math.max(0,Math.round(Number(player?.careerSeason)||0));
  if(!state)return {eligible:false,offset:-1,chapter:"",reason:"不適用此生涯版本"};
@@ -162,7 +169,8 @@ function pacingProfile(player){
  if(offset>=SEASONS.length)return {eligible:false,offset:-1,chapter:"",reason:"生涯篇章已完成"};
  if(!state.startCareerSeason){
   const trigger=triggerProfile(player);
-  return {...trigger,eligible:trigger.eligible,offset:trigger.eligible?0:-1,chapter:"peak"};
+  const opening=openingOffset(player,state);
+  return {...trigger,eligible:trigger.eligible,offset:trigger.eligible?opening.offset:-1,chapter:opening.chapter,reason:opening.reason};
  }
  const previous=previousResult(state,offset);
  if(previous&&season<=Number(previous.careerSeason||0))return {eligible:false,offset:-1,chapter:SEASONS[offset].chapter,reason:"本季篇章選擇已完成"};
@@ -294,8 +302,9 @@ function maybeStart(){
  const player=p,state=ensureState(player);if(!state||state.completed)return false;
  if(!state.startCareerSeason){
   const trigger=triggerProfile(player);if(!trigger.eligible)return false;
-  state.startCareerSeason=trigger.season;state.startYear=Number(player.year)||0;state.startOverall=trigger.current;state.triggerReason=trigger.reason;
-  state.startRole=String(player.roleState?.current||"");state.startRoleLevel=Math.max(0,roleLevel(player));state.chapterStarts.peak=trigger.season;state.chapterReasons.peak=trigger.reason;
+  const opening=openingOffset(player,state);
+  state.startCareerSeason=trigger.season;state.startYear=Number(player.year)||0;state.startOverall=trigger.current;state.triggerReason=opening.reason;state.startOffset=opening.offset;
+  state.startRole=String(player.roleState?.current||"");state.startRoleLevel=Math.max(0,roleLevel(player));state.chapterStarts[opening.chapter]=trigger.season;state.chapterReasons[opening.chapter]=opening.reason;
  }
  const pacing=pacingProfile(player),offset=pacing.offset;if(!pacing.eligible||offset<0||offset>=SEASONS.length)return false;
  const chapter=SEASONS[offset].chapter;

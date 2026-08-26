@@ -24,6 +24,7 @@ function careerContext(player,{ironman=false}={}){
     scheduledGamesForSeason:league=>({"SBL／半職業":30,"台灣職業":36,"韓國職業":54,"日本職業":60,CBA:46,"NBA G League":50,"歐洲聯賽":44,NBA:82}[league]||36),
     leagueMarketRank:leagueRank,
     hasTitle:title=>ironman&&title==="ironman",
+    confidencePerformanceMod:()=>0,
     logIt:()=>{}
   };
   vm.runInNewContext(read("js/career/ability-profile.js"),context);
@@ -159,6 +160,16 @@ test("a veteran's first season after a major league drop only reopens the adjace
  assert.equal(context.marketOfferAllowedByTrajectory("CBA"),true);
 });
 
+test("low-impact late veterans cannot receive star or core contract labels",()=>{
+ const stats={shoot:68,finish:64,handle:64,pass:66,defense:65,rebound:62,ath:55,iq:70};
+ const context=careerContext({
+  path:"韓國職業",age:41,year:2051,seed:"VETERAN9",peakOverall:82,stats,caps:{...stats},health:74,durability:70,bodyLoad:58,
+  injury:null,injuryHistory:[],seasonStats:{games:24,scheduledGames:54,mins:9,pts:5,ast:2,reb:2,stl:.4,blk:.2},
+  lastSeasonAwards:[],careerMVP:0,careerFirstTeam:0,careerAllStar:0,roleState:{current:"garbage"},rep:4
+ });
+ assert.equal(context.chooseContractType("韓國職業",65,()=>.5,false),"測試／證明短約");
+});
+
 test("last dance is available only as a post-market career choice without an upper age cap",()=>{
   const context={p:{
     path:"NBA",age:55,year:2070,lastDanceUsed:false,lastDanceActive:false,careerGames:600,
@@ -167,6 +178,11 @@ test("last dance is available only as a post-market career choice without an upp
   vm.runInNewContext(read("js/career/retirement-engine.js"),context);
   context.isProfessionalPathValue=path=>["SBL／半職業","台灣職業","NBA"].includes(path);
   assert.equal(context.canOfferHomecomingLastDance(),true);
+  context.p.age=31;
+  assert.equal(context.canOfferHomecomingLastDance(),true);
+  context.p.age=30;
+  assert.equal(context.canOfferHomecomingLastDance(),false);
+  context.p.age=55;
   context.p.lastDanceActive=true;context.isProPath=()=>true;
   let reason="";context.retireCareer=value=>{reason=value};
   assert.equal(context.maybeForceRetire(),true);

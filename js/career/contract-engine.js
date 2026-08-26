@@ -263,6 +263,12 @@ function chooseContractType(league,scout,r,renewal=false){
  // A real NBA two-way deal is created only after the player clears the
  // G League call-up résumé. G League offers no longer borrow the NBA label.
  let type=cs<1?"測試／證明短約":cs<5?"短約":cs<10?"標準合約":cs<16?"先發合約":cs<23?"明星合約":"核心長約";
+ if(Number(p.age||0)>=38){
+  const margin=overall()-leagueRosterOverallFloor(league),season=p.seasonStats||{},mins=Number(season.mins||0),legacy=typeof careerLifecycleProfile==="function"&&careerLifecycleProfile(p).chapter==="legacy";
+  if(margin<4||mins>0&&mins<10)type="測試／證明短約";
+  else if(margin<9||legacy)type=margin>=8&&mins>=18?"標準合約":"短約";
+  else if(type==="核心長約")type="明星合約";
+ }
  return type;
 }
 function finalizeContract(c){
@@ -516,12 +522,29 @@ function continueEuropeanContractAfterNBAInterest(){
  render();showCareerChapter("newSchoolYear");
 }
 function voluntaryRetirementCardHTML(){
- return `<div class="offerCard retirementOffer"><b>自己決定終點</b><div class="mut">合約已經結束，你可以不再等待市場決定去留，直接以目前履歷正式退休。</div><button class="btn" style="margin-top:10px" onclick="chooseVoluntaryRetirement()">宣布退休</button></div>`;
+ return `<div class="offerCard retirementOffer"><b>自己決定終點</b><div class="mut">合約已經結束，你可以退出市場；符合告別資格時，宣布前還能選擇打一季最後一舞。</div><button class="btn" style="margin-top:10px" onclick="chooseVoluntaryRetirement()">考慮退休方式</button></div>`;
 }
 function chooseVoluntaryRetirement(){
  if(!isProPath()||p.retired)return;
- if(!window.confirm("確定要結束這段球員生涯嗎？退休後會直接進入生涯總結。"))return;
+ if(typeof canOfferHomecomingLastDance==="function"&&canOfferHomecomingLastDance()){
+  p.stage="decision";resetMain();render();flow.innerHTML="";
+  const home=retirementHomecomingPreview();
+  chapter.textContent=`${p.year} · ${p.age}歲 · 主動規劃告別`;
+  title.textContent="直接退休，還是再打一季？";
+  text.textContent="你不是被市場淘汰，而是主動決定何時離開。最後一舞會再打一個完整球季；直接退休則以目前履歷結算。";
+  special.innerHTML=`<div class="retirementChoiceGrid"><button class="choice" onclick="confirmVoluntaryRetirement()"><b>現在正式引退</b><small>不再接受報價，直接進入生涯總結。</small></button><button class="choice" onclick="startVoluntaryLastDance()"><b>再打一季最後一舞</b><small>${home.team} 提供一季告別合約；完成球季後正式退休。</small></button></div>`;
+  choices.innerHTML="";return;
+ }
+ confirmVoluntaryRetirement();
+}
+function confirmVoluntaryRetirement(){
+ if(!window.confirm("確定現在結束球員生涯嗎？退休後會直接進入生涯總結。"))return;
  retireCareer(`合約到期後，你選擇不再進入自由市場，主動結束球員生涯`);
+}
+function startVoluntaryLastDance(){
+ if(!(typeof canOfferHomecomingLastDance==="function"&&canOfferHomecomingLastDance()))return;
+ p.retirementCrisisReason="你主動決定用一季告別球季結束生涯";
+ resolveRetirementCrisis("lastDance");
 }
 function marketReturnTerms(base,offers,originLeague){
  if(!base)return {offer:null,mode:"none"};
@@ -617,6 +640,7 @@ function acceptContract(c){
  p.pendingRenewalOffer=null;p.pendingNBAOffer=null;p.pendingTryoutOffer={};p.marketReturnOffer=null;p.marketReturnMode="";p.marketOriginTeam="";p.marketOriginLeague="";
  const usedAgentPriority=p.pendingAgentPriority||"";p.pendingAgentPriority="";
  p.contract=c;p.path=c.league;p.team=c.team;p.careerSeason=wasPro?Math.max(1,p.careerSeason):1;p.grade=1;ensureTeamHistory();
+ if(wasPro&&typeof recordCareerRelocation==="function")recordCareerRelocation(p,previousLeague,previousTeam,c.league,c.team);
  if(!wasPro&&["UBA","UBA 強權","NCAA D2","日本大學","NCAA D1"].includes(previousLeague)){
    p.proEntrySource=previousLeague;p.proEntryYear=p.year;p.proEntryCollegeRole=entryResume?.level||"bench";p.proEntryCollegeMins=entryResume?.mins||0;
  }
@@ -753,8 +777,12 @@ function veteranContinuationProfile(league=p.path,incumbent=false){
  if(recentElite.eligible)score+=2;
  const threshold=rank>=7?5:rank>=6?4:rank>=4?3:rank>=2?2:1;
  const lateCareerReady=peakOvr>=baseFloor+8&&impact>=impactTarget+1&&availability>=.75&&health>=85&&durability>=78&&bodyLoad<=55&&!p.injury;
- const eligible=score>=threshold&&(p.age<50||lateCareerReady);
- return {eligible,score,threshold,ov,peakOvr,baseFloor,ath,health,durability,bodyLoad,availability,impact,lateCareerReady,recentElite};
+ const currentRoleReady=games<=0&&mins<=0?false:availability>=.5&&mins>=10&&impact>=impactTarget*.65;
+ const veteranFloor=baseFloor;
+ const eliteContinuation=recentElite.eligible&&p.age<50&&ov>=baseFloor-4&&availability>=.65&&impact>=impactTarget;
+ const currentAbilityReady=ov>=veteranFloor||eliteContinuation;
+ const eligible=(score>=threshold||eliteContinuation)&&currentAbilityReady&&(p.age<40||currentRoleReady)&&(p.age<50||lateCareerReady);
+ return {eligible,score,threshold,ov,peakOvr,baseFloor,veteranFloor,ath,health,durability,bodyLoad,availability,impact,currentRoleReady,currentAbilityReady,eliteContinuation,lateCareerReady,recentElite};
 }
 function veteranContractRiskProfile(league=p.path,incumbent=false){
  if(p.age<35)return null;

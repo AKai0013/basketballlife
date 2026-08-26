@@ -260,7 +260,13 @@ function showResults(){
  if(isProPath()&&growthBase>0&&(p.planGrowthMod||0)>0&&planGrowthPoints===0)planGrowthPoints=1;
  if(isProPath()&&growthBase>1&&(p.planGrowthMod||0)<0&&planGrowthPoints===0)planGrowthPoints=-1;
  const healthyAttackBonus=isProPath()&&p.seasonPlan==="attack"&&!p.injury?1:0;
- let total=Math.max(1,growthBase+planGrowthPoints+healthyAttackBonus);
+ const rawGrowthTotal=growthBase+planGrowthPoints+healthyAttackBonus;
+ const veteranGrowthMultiplier=isProPath()&&typeof progressionSeasonGrowthMultiplier==="function"?progressionSeasonGrowthMultiplier(p):1;
+ // V9 veterans still earn a season result, but permanent development slows with the same
+ // age rule used by points and event rewards. V8.1 keeps its existing minimum point flow.
+ let total=isProPath()&&typeof isV9Progression==="function"&&isV9Progression(p)
+   ?Math.max(0,Math.round(rawGrowthTotal*veteranGrowthMultiplier))
+   :Math.max(1,rawGrowthTotal);
  let chainHTML=checkChainTitles(p.seasonStats);
  const representative=resultRows.slice().sort((a,b)=>(b.reward||0)-(a.reward||0))[0];
  if(representative)recordV8Story("game",`${representative.name}取得${representative.finish}；你繳出 ${pts}分、${reb}籃板、${ast}助攻`,representative.finish==="冠軍"?5:3);
@@ -336,6 +342,7 @@ const missReasonParts=[];
     ${p.path!=="HBL"&&eliteDevelopmentPoints?`${v9Talent?"核心潛力兌現":"菁英潛力兌現"}：<b class="gold">${eliteDevelopmentPoints} 點</b><br>`:""}
     ${planGrowthPoints?`賽季策略影響：<b class="${planGrowthPoints>0?"gold":"bad"}">${planGrowthPoints>0?"+":""}${planGrowthPoints} 點</b><br>`:""}
     ${healthyAttackBonus?`健康完成高強度球季：<b class="gold">+1 點</b><br>`:""}
+    ${isProPath()&&veteranGrowthMultiplier<1?`生涯階段調整：<b class="mut">本季永久成長 ×${Math.round(veteranGrowthMultiplier*100)}%</b><br>`:""}
    </div></details>
  </footer></section>`;
 
@@ -352,8 +359,19 @@ function showPointDistribution(){
  p.stage="points";resetMain();render();
  chapter.textContent=`${p.year} · 賽季成長`;
  title.textContent="分配能力點";
- text.textContent="使用本季獲得的能力點。超過一般培養範圍後，每次提升會需要更多點數。";
+ text.textContent=typeof isV9Progression==="function"&&isV9Progression(p)
+   ?"Seed 數值是自然成長基準，不是按到就永久鎖死；成長期可用較高成本完成有限突破，生涯後段則改為維持狀態。"
+   :"使用本季獲得的能力點。超過一般培養範圍後，每次提升會需要更多點數。";
  if(p.bankedPoints>0){p.bonusPoints+=p.bankedPoints;p.bankedPoints=0;}
+ if(typeof isV9Progression==="function"&&isV9Progression(p)&&typeof progressionAgeBand==="function"&&progressionAgeBand(p)==="maintenance"){
+   const maintained=convertV9MaintenancePoints();
+   p.currentSeasonSpend={};p.pointUndo=[];
+   title.textContent="老將狀態維持";
+   text.textContent="這個生涯階段不再累積永久能力；本季養成點已自動用於恢復與負荷管理。";
+   special.innerHTML=`<div class="pointbox"><div class="pointHead"><div class="pointBalance"><span>本季投入</span><span class="points">${maintained?.spent||0}</span></div></div><div class="rolloverNote">疲勞 -${maintained?.fatigue||0}｜身體負荷 -${maintained?.bodyLoad||0}${maintained?.health?`｜健康 +${maintained.health}`:""}。沒有能力點被丟在帳上，也不會顯示整排無法點擊的能力。</div><button class="pointFinish" onclick="finishSeason()">完成狀態維持・結束本季 →</button></div>`;
+   next.classList.add("hidden");
+   return;
+ }
  p.currentSeasonSpend={};
  p.pointUndo=[];
  special.innerHTML=`<div class="pointbox">
@@ -380,12 +398,21 @@ function basePointCost(v){
  return 28;
 }
 function breakthroughSurcharge(k){
+ if(typeof isV9Progression==="function"&&isV9Progression(p)){
+   const cap=typeof careerStatCap==="function"?careerStatCap(p,k):p.caps[k],over=Math.max(0,p.stats[k]-cap);
+   return p.stats[k]>=cap?2+over*2:0;
+ }
  let v=p.stats[k],talent=p.caps[k];
  if(v<talent)return 0;
  let over=v-talent;
  return 2+Math.floor(over/3)*2;
 }
 function pointCost(k){
+ if(typeof isV9Progression==="function"&&isV9Progression(p)){
+   const band=typeof progressionAgeBand==="function"?progressionAgeBand(p):"prime";
+   const ageCost={prime:0,transition:1,technical:2,veteran:3,maintenance:4}[band]||0;
+   return Math.max(1,basePointCost(p.stats[k])+ageCost+skillCostModifier(k)+chainSkillDiscount(k));
+ }
  let seedDiscount=0;
  if(p.talentProfile?.model==="v9-specialist-1"){
    const affinity=typeof v90TalentAffinity==="function"?v90TalentAffinity(p,k):"foundation";
@@ -413,23 +440,29 @@ function renderPoints(){
  const undoBtn=document.getElementById("undoSeasonPoint");
  if(undoBtn)undoBtn.disabled=!(p.pointUndo&&p.pointUndo.length);
  pointRows.innerHTML=Object.keys(p.stats).map(k=>{
-   let v=p.stats[k],talent=p.caps[k],cost=pointCost(k),over=v>=talent,nextV=v+1;
+   let v=p.stats[k],talent=typeof careerStatCap==="function"?careerStatCap(p,k):p.caps[k],limit=typeof careerStatLimit==="function"?careerStatLimit(p,k):talent,cost=pointCost(k),over=v>=talent,nextV=v+1;
+   const v9=typeof isV9Progression==="function"&&isV9Progression(p);
+   const growthRoom=!v9||((typeof availablePermanentGrowth==="function"?availablePermanentGrowth(p,k):1)>0&&v<limit);
    const progress=Math.max(0,Math.min(100,Math.round(v)));
    const capProgress=Math.max(0,Math.min(100,Math.round(talent||99)));
-   let note=over
-     ? `<span class="gold">突破培養</span>`
-     : `一般培養至 ${talent}`;
+   let note=v9
+     ? (v>=limit?`已達本能力可培養上限 ${limit}`:v>=talent?`Seed 基準 ${talent}・突破培養至 ${limit}`:growthRoom?`Seed 基準 ${talent}・可培養至 ${limit}`:`本季永久成長額度已用完`)
+     : (over?`<span class="gold">突破培養</span>`:`一般培養至 ${talent}`);
    return `<div class="pointrow">
      <div>
-       <div class="pointName"><b>${L[k]}</b><span class="pointValue">${v} / ${talent}</span>${v>talent?`<span class="gold" style="font-size:9px">+${v-talent}</span>`:""}</div>
-       <span class="pointTrack" style="--value:${progress}%;--cap:${capProgress}%" role="progressbar" aria-label="${L[k]}目前 ${v}，培養上限 ${talent}" aria-valuemin="0" aria-valuemax="99" aria-valuenow="${v}"><i></i></span>
-       <small>${note}｜${v<99?`${v}→${nextV} 需要 ${cost} 點`:"已達 99"}</small>
+       <div class="pointName"><b>${L[k]}</b><span class="pointValue">${v} / ${v9?limit:talent}</span>${v9&&v>=talent&&limit>talent?`<span class="gold" style="font-size:9px">Seed ${talent}</span>`:!v9&&v>talent?`<span class="gold" style="font-size:9px">+${v-talent}</span>`:""}</div>
+       <span class="pointTrack" style="--value:${progress}%;--cap:${capProgress}%" role="progressbar" aria-label="${L[k]}目前 ${v}，Seed 基準 ${talent}，可培養至 ${v9?limit:talent}" aria-valuemin="0" aria-valuemax="99" aria-valuenow="${v}"><i></i></span>
+       <small>${note}｜${growthRoom&&v<99?`${v}→${nextV} 需要 ${cost} 點`:"本季不再增加永久能力"}</small>
      </div>
-     <button aria-label="提升${L[k]}" ${v>=99||p.bonusPoints<cost?"disabled style='opacity:.28'":""} onclick="buyPoint('${k}')">＋</button>
+     <button aria-label="提升${L[k]}" ${v>=99||!growthRoom||p.bonusPoints<cost?"disabled style='opacity:.28'":""} onclick="buyPoint('${k}')">＋</button>
    </div>`;
  }).join("");
 
- const costs=Object.keys(p.stats).filter(k=>p.stats[k]<99).map(k=>pointCost(k));
+ const costs=Object.keys(p.stats).filter(k=>{
+   if(p.stats[k]>=99)return false;
+   if(typeof isV9Progression==="function"&&isV9Progression(p))return p.stats[k]<(typeof careerStatLimit==="function"?careerStatLimit(p,k):p.caps[k])&&(typeof availablePermanentGrowth!=="function"||availablePermanentGrowth(p,k)>0);
+   return true;
+ }).map(k=>pointCost(k));
  const minCost=costs.length?Math.min(...costs):Infinity;
  const affordable=costs.some(c=>c<=p.bonusPoints);
 
@@ -460,18 +493,34 @@ function renderPoints(){
 function buyPoint(k){
  let c=pointCost(k);
  if(p.bonusPoints<c||p.stats[k]>=99)return;
- p.pointUndo=p.pointUndo||[];
- p.pointUndo.push({k,c,before:p.stats[k]});
+ if(typeof isV9Progression==="function"&&isV9Progression(p)){
+   const result=typeof applyCareerStatChange==="function"?applyCareerStatChange(p,k,1,{source:"point"}):null;
+   if(!result?.applied)return;
+   p.pointUndo=p.pointUndo||[];
+   p.pointUndo.push({k,c,before:p.stats[k]-result.applied,permanentGain:result.applied});
+ }else{
+   p.pointUndo=p.pointUndo||[];
+   p.pointUndo.push({k,c,before:p.stats[k]});
+   p.stats[k]++;
+ }
  p.bonusPoints-=c;
  p.currentSeasonSpend[k]=(p.currentSeasonSpend[k]||0)+c;
- p.stats[k]++;
  render();
  renderPoints();
+}
+function convertV9MaintenancePoints(){
+ if(!(typeof isV9Progression==="function"&&isV9Progression(p))||p.bonusPoints<=0)return null;
+ const spent=Math.max(0,Math.floor(p.bonusPoints)),recovery=Math.max(1,Math.floor(spent/2)),healthGain=Math.max(0,Math.floor(spent/4));
+ const fatigueBefore=Number(p.fatigue||0),loadBefore=Number(p.bodyLoad||0),healthBefore=Number(p.health||100);
+ p.fatigue=Math.max(0,fatigueBefore-recovery);p.bodyLoad=Math.max(0,loadBefore-recovery);p.health=Math.min(100,healthBefore+healthGain);
+ p.bonusPoints=0;p.bankedPoints=0;
+ return {spent,fatigue:fatigueBefore-p.fatigue,bodyLoad:loadBefore-p.bodyLoad,health:p.health-healthBefore};
 }
 function undoSeasonPoint(){
  const last=p.pointUndo?.pop();
  if(!last)return;
  p.stats[last.k]=last.before;
+ if(last.permanentGain&&p.seasonPermanentGrowth){p.seasonPermanentGrowth[last.k]=Math.max(0,(p.seasonPermanentGrowth[last.k]||0)-last.permanentGain);if(!p.seasonPermanentGrowth[last.k])delete p.seasonPermanentGrowth[last.k];}
  p.bonusPoints+=last.c;
  p.currentSeasonSpend[last.k]=Math.max(0,(p.currentSeasonSpend[last.k]||0)-last.c);
  if(p.currentSeasonSpend[last.k]===0)delete p.currentSeasonSpend[last.k];
@@ -484,7 +533,10 @@ function finishSeason(){
    // 告別球季完成後直接結束生涯；能力點不再要求分配，也不結轉到不存在的下一季。
    p.bonusPoints=0;p.bankedPoints=0;p.currentSeasonSpend={};p.pointUndo=[];
  }else if(p.bonusPoints>0){
-   const affordable=Object.keys(p.stats).some(k=>p.stats[k]<99 && pointCost(k)<=p.bonusPoints);
+   const affordable=Object.keys(p.stats).some(k=>{
+     if(p.stats[k]>=99||pointCost(k)>p.bonusPoints)return false;
+     return !(typeof isV9Progression==="function"&&isV9Progression(p))||(p.stats[k]<(typeof careerStatLimit==="function"?careerStatLimit(p,k):p.caps[k])&&(typeof availablePermanentGrowth!=="function"||availablePermanentGrowth(p,k)>0));
+   });
    if(affordable && !confirm(`還有 ${p.bonusPoints} 點可以使用，確定要保留到下一季嗎？`))return;
    p.bankedPoints+=p.bonusPoints;p.bonusPoints=0;
  }
