@@ -39,6 +39,8 @@ function startCareer(){
  const birthplace=birthplaceChoice==="RANDOM"?TAIWAN_BIRTHPLACES[ri(RNG(`${seed}-birthplace`),0,TAIWAN_BIRTHPLACES.length-1)]:birthplaceChoice;
  const jerseyNumber=Math.max(0,Math.min(99,Math.round(Number(document.getElementById("jerseyNumberInput")?.value)||7)));
  const handedness=document.getElementById("handednessInput")?.value||"右手";
+ const friendName=document.getElementById("careerFriendNameInput")?.value.trim()||v8Pick(V8_TEAMMATES,`${seed}-friend`);
+ const rivalName=document.getElementById("careerRivalNameInput")?.value.trim()||v8Pick(V8_RIVALS,`${seed}-rival`);
  const weeklyChallenge=weeklySetupMatches?{active:true,id:weeklyBoard.id,label:weekly.label,seed:weekly.seed,pos:weekly.pos,height:weekly.height,wingspan:weekly.wingspan}:{active:false};
  resetLiveTicker();
  p={name:n,pos:chosenPos,seed,avatarSeed:selectedAvatarSeed(),heightCm:chosenHeight,wingspanCm:chosenWingspan,birthplace,jerseyNumber,handedness,readingMode:"standard",weeklyChallenge,careerVersion:legacyWeeklyChallenge?"8.1.1":"9.0.0",...(legacyWeeklyChallenge?{}:{talentVersion:1,talentProfile:talent.profile,seedTierMapVersion}),seedTier:tier.key,seedTierLabel:tier.label,seedTierDesc:tier.desc,
@@ -54,7 +56,7 @@ function startCareer(){
  conductMarketPenalty:0,conductSuspensionGames:0,nationalTeamBanUntil:0,conductPenaltySetYear:0,offCourtHistory:[],offCourtEventKinds:[],lastOffCourtEventYear:0,financialLosses:0,
  specialBonusPoints:0,internationalHistory:[],championshipHistory:[],awardHistoryByLeague:{},lastSeasonAwards:[],hallVotes:[],
     bodyLoad:0,oldInjuries:{},oldInjuryFloors:{},oldInjuryLastYear:{},rehabBoost:0,medicalHistory:[],medicalPressureHistory:[],lastMedicalPressureYear:0,majorInjuryCount:0,careerThreatInjuries:0,recoverySeasons:0,seasonInjuryRiskTarget:0,seasonInjurySurvival:1,seasonInjuryChecksDone:0,seasonInjuryExtra:0,seasonMedicalEventShown:false,seasonNaturalInjuryChecked:false,
-    recentEvents:[],eventMemory:{},specialEventMemory:{},feedHistory:[],relationshipHistory:[],chainQueue:[],storyBeats:[],seasonStoryCandidates:[],roleHistory:[],careerCast:{},teamWorld:{},roleState:{},expandedFeedYear:null,showOlderFeedYears:false,pendingRenewalOffer:null,pendingNBAOffer:null,pendingTryoutOffer:{},declinedTryoutCount:0,marketOriginTeam:"",marketOriginLeague:"",marketReturnOffer:null,marketReturnMode:"",
+    recentEvents:[],eventMemory:{},specialEventMemory:{},feedHistory:[],relationshipHistory:[],chainQueue:[],storyBeats:[],seasonStoryCandidates:[],roleHistory:[],careerStoryHistory:[],careerStoryPending:[],careerStorySeen:[],careerStoryThemeYears:{},careerIntroductions:{},careerCast:{friend:{name:friendName,trait:"從學生時期就陪你練球",trust:58,metYear:2026},rival:{name:rivalName,trait:"從學生時期一路被拿來比較",respect:42,metYear:2026}},teamWorld:{},roleState:{},expandedFeedYear:null,showOlderFeedYears:false,pendingRenewalOffer:null,pendingNBAOffer:null,pendingTryoutOffer:{},declinedTryoutCount:0,marketOriginTeam:"",marketOriginLeague:"",marketReturnOffer:null,marketReturnMode:"",
     medicalProtectionUntilYear:0,medicalProtectionReason:"",medicalProtectedArea:"",postOpCareChosen:false,lastMajorInjuryYear:0,
     lastDanceActive:false,lastDanceUsed:false,retirementDefianceUsed:false,retirementDefianceSucceeded:false,retirementPressureUsed:false,retirementCrisisCount:0,retirementCrisisReason:"",homecomingTeam:"",homecomingRegion:"",
     publicCareerId:"",publicCareerUploadId:"",leaderboardChoice:null,retirementRankSummary:null,careerUploadError:null,diceRevealCount:0,diceRolling:false,

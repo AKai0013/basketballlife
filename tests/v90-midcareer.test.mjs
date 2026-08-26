@@ -67,6 +67,11 @@ test("mature elite players and declining players enter the chapter from their ac
  const declining=player({careerSeason:11,seasonHistory:history([87,88,86])});
  Object.keys(declining.stats).forEach(key=>declining.stats[key]=85);
  assert.equal(box.v90MidcareerTriggerProfile(declining).eligible,true);
+ const late=player({careerSeason:24,year:2056,age:46,peakOverall:69,seasonHistory:history([64,62,60]),roleState:{current:"benchLeader",currentLabel:"板凳領袖",promised:"starter"},contract:{remaining:1,rolePromise:"板凳輪替"},health:72,bodyLoad:70});
+ Object.keys(late.stats).forEach(key=>late.stats[key]=59);
+ const opening=box.v90MidcareerPacingProfile(late);
+ assert.equal(opening.offset,4);
+ assert.equal(opening.chapter,"legacy");
 });
 
 test("the three chapters wait for real career changes instead of playing for seven straight seasons",()=>{

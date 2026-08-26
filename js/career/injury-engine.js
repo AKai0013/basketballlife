@@ -122,7 +122,20 @@ function updateBodyLoad(reason=0){
  p.rehabBoost=0;
 }
 function medicalRiskLabel(){let l=p.bodyLoad||0;return l<20?"低":l<40?"普通":l<60?"偏高":l<80?"高":"極高"}
-function permanentDamageFromInjury(x){let changes=[];for(const [k,n0] of Object.entries(x.perm||{})){let n=n0;if(hasTitle("ironman"))n=Math.max(0,n-1);if(p.age<25)n=Math.max(0,n-1);if(n>0){p.stats[k]=Math.max(20,p.stats[k]-n);changes.push(`${L[k]} -${n}`)}}return changes}
+function permanentDamageFromInjury(x){
+ let changes=[];
+ for(const [k,n0] of Object.entries(x.perm||{})){
+  let n=n0;if(hasTitle("ironman"))n=Math.max(0,n-1);if(p.age<25)n=Math.max(0,n-1);if(!n)continue;
+  const outcome=typeof applyCareerStatChange==="function"?applyCareerStatChange(p,k,-n,{source:"injury"}):null;
+  const loss=Math.abs(outcome?.applied??n);if(!loss)continue;
+  if(typeof isV9Progression==="function"&&isV9Progression(p)){
+   p.injuryRecoveryCredits=p.injuryRecoveryCredits&&typeof p.injuryRecoveryCredits==="object"?p.injuryRecoveryCredits:{};
+   p.injuryRecoveryCredits[k]=(Number(p.injuryRecoveryCredits[k])||0)+loss;
+  }
+  changes.push(`${L[k]} -${loss}`);
+ }
+ return changes;
+}
 function injuryDescription(x,missedGames,changes,recur){
  let extra=recur?`<br><span class="bad">這是 ${x.area} 的舊傷復發。</span>`:"";
  let dmg=changes.length?`<br>永久影響：${changes.join("｜")}`:"";
@@ -222,7 +235,23 @@ function createInjury(r,risk,areaHint=""){
  logIt(`🏥 ${x.name}（${tier}）｜預估缺席 ${missedGames} 場`);
  p.lastInjurySummary=injuryDescription(x,missedGames,changes,recur);
 }
-function rehabSeasonEffect(){if(!p.severeInjuryRecovered&&p.careerThreatInjuries<=0)return "";if(p.injury)return "";p.recoverySeasons++;let gain=0;if(p.recoverySeasons===1){gain=2;p.stats.ath=Math.min(99,p.stats.ath+gain);p.confidence=Math.min(100,p.confidence+5);p.rehabBoost=10}if(p.recoverySeasons>=1&&!hasTitle("comeback"))unlockTitle("comeback");return gain?`<div class="notice awake"><b>🔥 浴火重生</b><br>重傷後完成第一個健康賽季。體能 +${gain}｜信心 +5｜身體負荷下降。</div>`:""}
+function rehabSeasonEffect(){
+ if(!p.severeInjuryRecovered&&p.careerThreatInjuries<=0)return "";
+ if(p.injury)return "";
+ p.recoverySeasons++;
+ let gain=0;
+ if(p.recoverySeasons===1){
+  const v9=typeof isV9Progression==="function"&&isV9Progression(p);
+  const credit=v9?Math.max(0,Number(p.injuryRecoveryCredits?.ath)||0):2;
+  const requested=Math.min(2,credit);
+  const outcome=requested&&typeof applyCareerStatChange==="function"?applyCareerStatChange(p,"ath",requested,{source:"rehab"}):null;
+  gain=outcome?.applied??requested;
+  if(v9&&gain&&p.injuryRecoveryCredits){p.injuryRecoveryCredits.ath=Math.max(0,credit-gain);if(!p.injuryRecoveryCredits.ath)delete p.injuryRecoveryCredits.ath;}
+  p.confidence=Math.min(100,p.confidence+5);p.rehabBoost=10;
+ }
+ if(p.recoverySeasons>=1&&!hasTitle("comeback"))unlockTitle("comeback");
+ return `<div class="notice awake"><b>🔥 浴火重生</b><br>重傷後完成第一個健康賽季。${gain?`體能 +${gain}（僅回復這次傷病造成的損失）｜`:""}信心 +5｜身體負荷下降。</div>`;
+}
 
 function seasonBodyAssessment(){
  updateBodyLoad();let r=RNG(p.seed+"body-assess-"+p.year+"-"+p.team),note="身體狀況良好，沒有明顯警訊。",cls="good",v=Math.round((p.bodyLoad||0)*.22);

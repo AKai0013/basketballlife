@@ -54,6 +54,8 @@ function showCareerChapter(type){
 
 function showTraining(){
  if(p.eventIndex===0)p.seasonEventSuccess=0;
+ if(typeof resetPermanentGrowthSeason==="function")resetPermanentGrowthSeason(p);
+ p.preseasonRecoveryRisk=0;p.preseasonRecoveryYear=p.year;
  p.stage="training";resetMain();render();chapter.textContent=`${p.year} · ${p.age}歲 · ${p.path} · 新賽季`;
  title.textContent="季初特訓";
  text.textContent="把本季訓練點數投入最適合你的能力，未完成的進度會保留到下一次成長。";
@@ -90,6 +92,7 @@ function rebuildTrainingScreenFromSave(){
  // Saved training screens may contain HTML from an older version. Rebuild the
  // current view from the saved dice/progress without rerolling or changing stats.
  if(!Array.isArray(p.dice)||!p.dice.length){showTraining();return}
+ if(typeof resetPermanentGrowthSeason==="function")resetPermanentGrowthSeason(p);
  p.stage="training";resetMain();render();chapter.textContent=`${p.year} · ${p.age}歲 · ${p.path} · 新賽季`;
  title.textContent="季初特訓";
  text.textContent="把本季訓練點數投入最適合你的能力，未完成的進度會保留到下一次成長。";
@@ -139,6 +142,26 @@ function ensureTrainingProgress(){
    if(!Number.isFinite(p.trainingProgress[k]))p.trainingProgress[k]=0;
  });
 }
+function convertRemainingTrainingToRecovery(){
+ const remaining=(p.dice||[]).map((value,index)=>p.used?.[index]?0:trainingCreditFromDie(value));
+ const total=remaining.reduce((sum,value)=>sum+value,0);
+ if(!total)return;
+ const fatigue=Math.min(Number(p.fatigue||0),Math.max(1,Math.ceil(total/4)));
+ const bodyLoad=Math.min(Number(p.bodyLoad||0),Math.max(1,Math.ceil(total/3)));
+ const health=Math.min(Math.max(0,100-Number(p.health??100)),Math.max(1,Math.ceil(total/6)));
+ p.fatigue=Math.max(0,Number(p.fatigue||0)-fatigue);
+ p.bodyLoad=Math.max(0,Number(p.bodyLoad||0)-bodyLoad);
+ p.health=Math.min(100,Number(p.health??100)+health);
+ p.preseasonRecoveryRisk=Math.max(Number(p.preseasonRecoveryRisk||0),Math.min(.18,total*.008));
+ p.preseasonRecoveryYear=p.year;
+ p.used=p.used.map(()=>true);p.trainingUndo=[];
+ p.trainingRecoverySummary=`剩餘 ${total} 點課表已轉為恢復：疲勞 -${fatigue}、身體負荷 -${bodyLoad}${health?`、健康 +${health}`:""}，並降低本季傷病風險 ${Math.round(p.preseasonRecoveryRisk*100)}%。`;
+ render();renderDice();
+ if(assign)assign.innerHTML=`<div class="trainingMaxNotice">${p.trainingRecoverySummary}</div>`;
+ if(diceMsg)diceMsg.textContent="本季永久成長完成，剩餘訓練已用於身體維持。";
+ next.textContent="進入本季事件 →";next.classList.remove("hidden");
+ scheduleCareerAutosave();
+}
 let diceRevealTimer=0;
 function prefersReducedDiceMotion(){
  try{return !!window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches}catch(_){return false}
@@ -164,7 +187,9 @@ function startDiceReveal(){
 function renderDice(){
  ensureTrainingProgress();
  const current=p.used.findIndex(x=>!x);
- const allMax=Object.values(p.stats).every(v=>v>=99);
+ const v9Career=typeof isV9Progression==="function"&&isV9Progression(p);
+ const trainable=key=>!v9Career?p.stats[key]<99:p.stats[key]<(typeof careerStatLimit==="function"?careerStatLimit(p,key):careerStatCap(p,key))&&(typeof availablePermanentGrowth!=="function"||availablePermanentGrowth(p,key)>0);
+ const allMax=Object.keys(p.stats).every(key=>!trainable(key));
  const revealCount=Number.isFinite(p.diceRevealCount)?p.diceRevealCount:p.dice.length;
  const revealSummary=document.getElementById("diceRevealSummary");
  if(revealSummary)revealSummary.innerHTML=p.diceRolling?`正在揭曉 ${revealCount}/${p.dice.length}……`:(p.trainingRevealSummary||"點數已全部揭曉。");
@@ -185,28 +210,29 @@ function renderDice(){
  if(diceMsg&&p.used.every(used=>!used))diceMsg.textContent="骰子已全部揭曉，請選擇第一顆骰子要訓練的能力。";
 
  if(allMax && current>=0){
-   assign.innerHTML=`<div class="trainingMaxNotice">八項能力皆已達 <b>99</b>，剩餘骰子無法再提升能力。</div>`;
-   if(diceMsg)diceMsg.textContent="能力已全部滿值，本季剩餘訓練骰自動作廢。";
-   next.textContent="進入本季事件 →";
-   next.classList.remove("hidden");
+   const remaining=p.dice.reduce((sum,value,index)=>sum+(p.used[index]?0:trainingCreditFromDie(value)),0);
+   assign.innerHTML=`<div class="trainingMaxNotice">本季已沒有可增加的永久能力，剩餘 ${remaining} 點課表可改為恢復、負荷管理與傷病預防。</div><button class="choice" onclick="convertRemainingTrainingToRecovery()"><b>轉為身體維持</b><small>不浪費剩餘訓練，也不突破能力與年齡上限。</small></button>`;
+   if(diceMsg)diceMsg.textContent="永久成長空間用完後，剩餘訓練仍可投入身體維持。";
+   next.classList.add("hidden");
  }else{
    const dieVal=current>=0?p.dice[current]:0;
    const credit=current>=0?trainingCreditFromDie(dieVal):0;
    assign.innerHTML=Object.keys(p.stats).map(k=>{
-     const maxed=p.stats[k]>=99;
+     const v9=typeof isV9Progression==="function"&&isV9Progression(p),cap=typeof careerStatCap==="function"?careerStatCap(p,k):p.caps[k],limit=typeof careerStatLimit==="function"?careerStatLimit(p,k):cap;
+     const maxed=v9?p.stats[k]>=limit||(typeof availablePermanentGrowth==="function"&&availablePermanentGrowth(p,k)<=0):p.stats[k]>=99;
      const cost=maxed?0:pointCost(k);
      const prog=Math.floor(p.trainingProgress[k]||0);
      const need=Math.max(0,cost-prog);
-     const breaking=!maxed&&p.stats[k]>=p.caps[k];
+     const breaking=!v9&&!maxed&&p.stats[k]>=p.caps[k];
      const affinity=typeof v90TalentAffinity==="function"?v90TalentAffinity(p,k):"legacy";
      const affinityLabel=affinity==="core"?"核心適性":affinity==="support"?"延伸適性":"一般養成";
     const progress=maxed?100:Math.max(0,Math.min(100,Math.round(p.stats[k])));
     const capProgress=Math.max(0,Math.min(100,Math.round(p.caps[k]||99)));
     return `<button class="${maxed?"maxed":breaking?"breaking":""}" ${(current<0||maxed)?"disabled":""} onclick="assignTraining('${k}')">
        <span class="trainChoiceName"><b>${L[k]}</b><small>${affinityLabel}</small></span>
-        <span class="trainChoiceProgress" style="--value:${progress}%;--cap:${capProgress}%" role="progressbar" aria-label="${L[k]}目前 ${p.stats[k]}，培養上限 ${p.caps[k]}" aria-valuemin="0" aria-valuemax="99" aria-valuenow="${p.stats[k]}"><i></i></span>
+        <span class="trainChoiceProgress" style="--value:${progress}%;--cap:${capProgress}%" role="progressbar" aria-label="${L[k]}目前 ${p.stats[k]}，Seed 基準 ${cap}，可培養至 ${limit}" aria-valuemin="0" aria-valuemax="99" aria-valuenow="${p.stats[k]}"><i></i></span>
         ${maxed
-          ? `<span class="maxTag">已滿</span>`
+          ? `<span class="maxTag">本季完成</span>`
           : `<span class="trainCostTag"><b>${p.stats[k]}</b><em>→ ${p.stats[k]+1}</em></span><span class="trainNeedTag">還差 ${need} 點｜本次 +${credit}</span>`}
       </button>`;
    }).join("");
@@ -217,8 +243,9 @@ function assignTraining(k){
  const idx=p.used.findIndex(x=>!x); if(idx<0)return;
  ensureTrainingProgress();
 
- if((p.stats[k]||0)>=99){
-   if(diceMsg)diceMsg.textContent=`${L[k]} 已達 99 滿值，請選擇其他能力。`;
+ const v9=typeof isV9Progression==="function"&&isV9Progression(p),cap=typeof careerStatCap==="function"?careerStatCap(p,k):99,limit=typeof careerStatLimit==="function"?careerStatLimit(p,k):cap;
+ if((p.stats[k]||0)>=(v9?limit:99)||(v9&&typeof availablePermanentGrowth==="function"&&availablePermanentGrowth(p,k)<=0)){
+   if(diceMsg)diceMsg.textContent=v9?`${L[k]} 本季已無永久成長空間，請改選其他能力。`:`${L[k]} 已達 99 滿值，請選擇其他能力。`;
    renderDice();
    return;
  }
@@ -231,24 +258,25 @@ function assignTraining(k){
  p.trainingProgress[k]=beforeProgress+credit;
  let spent=0,gain=0;
 
- while(p.stats[k]<99){
+ while(p.stats[k]<(v9?limit:99)){
    const cost=pointCost(k);
    if(p.trainingProgress[k]<cost)break;
-   p.trainingProgress[k]-=cost;
-   spent+=cost;
-   p.stats[k]++;
-   gain++;
+   const outcome=v9&&typeof applyCareerStatChange==="function"?applyCareerStatChange(p,k,1,{source:"training"}):null;
+   if(v9&&!outcome?.applied)break;
+   if(!v9)p.stats[k]++;
+   p.trainingProgress[k]-=cost;spent+=cost;gain++;
  }
 
  p.trainingUndo.push({
    idx,k,
    beforeStat,
    beforeProgress,
-   credit
+   credit,
+   permanentGain:gain
  });
  p.used[idx]=true;
 
- const nextCost=p.stats[k]>=99?0:pointCost(k);
+ const nextCost=p.stats[k]>=(v9?limit:99)||v9&&typeof availablePermanentGrowth==="function"&&availablePermanentGrowth(p,k)<=0?0:pointCost(k);
  const progress=Math.floor(p.trainingProgress[k]||0);
  if(gain>0){
    diceMsg.textContent=`第 ${idx+1} 顆骰子（${val}點）→ ${L[k]}｜能力 ${beforeStat}→${p.stats[k]}${p.stats[k]>=99?"｜已滿":`｜剩餘進度 ${progress}/${nextCost}`}`;
@@ -264,6 +292,7 @@ function undoTrainingPoint(){
  const last=p.trainingUndo.pop();if(!last)return;
  ensureTrainingProgress();
  p.stats[last.k]=last.beforeStat;
+ if(last.permanentGain&&p.seasonPermanentGrowth){p.seasonPermanentGrowth[last.k]=Math.max(0,(p.seasonPermanentGrowth[last.k]||0)-last.permanentGain);if(!p.seasonPermanentGrowth[last.k])delete p.seasonPermanentGrowth[last.k];}
  p.trainingProgress[last.k]=last.beforeProgress;
  p.used[last.idx]=false;
  next.classList.add("hidden");

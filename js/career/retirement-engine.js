@@ -20,7 +20,7 @@ function applyPartnerProfileBonus(){
  else if(profile.type==="performance"){p.confidence=Math.min(100,p.confidence+2);p.rep+=1;text="信心 +2｜球隊評價 +1"}
  else if(profile.type==="global"){p.confidence=Math.min(100,p.confidence+3);p.rep+=1;text="旅外適應：信心 +3｜球隊評價 +1"}
  else if(profile.type==="wellness"){p.health=Math.min(100,p.health+4);p.durability=Math.min(99,p.durability+1);text="健康 +4｜耐久 +1"}
- else if(profile.type==="strategy"){p.stats.iq=Math.min(99,p.stats.iq+1);p.confidence=Math.min(100,p.confidence+2);text="球商 +1｜信心 +2"}
+ else if(profile.type==="strategy"){const outcome=typeof applyCareerStatChange==="function"?applyCareerStatChange(p,"iq",1,{source:"event",seasonalFallback:true}):null;p.confidence=Math.min(100,p.confidence+2);text=`${outcome?.applied?`球商 +${outcome.applied}`:outcome?.converted?`本季數據機會 +${outcome.converted}`:"能力維持"}｜信心 +2`}
  else if(profile.type==="business"){p.rep+=2;p.discipline=Math.min(100,p.discipline+1);text="球隊評價 +2｜紀律 +1"}
  else {p.familyHarmony=Math.min(100,p.familyHarmony+6);p.discipline=Math.min(100,p.discipline+1);text="家庭關係 +6｜紀律 +1"}
  return text;
@@ -68,7 +68,7 @@ function updateCareerTotals(stats){
    p.careerSalary+=(p.contract.salary||0);
  }
 }
-function applyAging(){
+function legacyApplyAging(){
  if(p.age<29)return "";
  let losses,stage,name;
  if(p.age<=30){stage=1;name="巔峰尾聲";losses={ath:1,finish:1};}
@@ -80,22 +80,64 @@ function applyAging(){
  else if(p.age<=44){stage=7;name="延長生涯";losses={ath:4,finish:3,defense:3,handle:2,rebound:2,shoot:2,pass:1,iq:1};}
  else if(p.age<=49){stage=8;name="生涯極限";losses={ath:5,finish:4,defense:3,handle:3,rebound:3,shoot:2,pass:2,iq:1};}
  else{stage=9;name="晚年急速收束";losses={ath:7,finish:6,defense:5,handle:4,rebound:5,shoot:3,pass:2,iq:2};}
- let changes=[];
- for(const [k,n] of Object.entries(losses)){
-   let mod=n;if(hasTitle("ironman")&&k==="ath")mod=Math.max(0,mod-1);if(p.seasonPlan==="care"&&["ath","finish"].includes(k))mod=Math.max(0,mod-1);
-   if(p.injuryHistory.length>=4&&["ath","finish","defense"].includes(k))mod+=1;
-   if((p.bodyLoad||0)>=75&&["ath","finish","defense","rebound"].includes(k))mod+=1;
-   if(mod){p.stats[k]=Math.max(20,p.stats[k]-mod);changes.push(`${L[k]} -${mod}`);}
+ const changes=[];
+ for(const [k,n] of Object.entries(losses)){let mod=n;if(hasTitle("ironman")&&k==="ath")mod=Math.max(0,mod-1);if(p.seasonPlan==="care"&&["ath","finish"].includes(k))mod=Math.max(0,mod-1);if(p.injuryHistory.length>=4&&["ath","finish","defense"].includes(k))mod+=1;if((p.bodyLoad||0)>=75&&["ath","finish","defense","rebound"].includes(k))mod+=1;if(mod){p.stats[k]=Math.max(20,p.stats[k]-mod);changes.push(`${L[k]} -${mod}`);}}
+ const healthBase=p.age>=50?2:p.age>=45?1:0,healthLoss=p.seasonPlan==="care"?Math.max(0,healthBase-1):healthBase;
+ if(healthLoss){p.health=Math.max(30,(Number(p.health)||100)-healthLoss);changes.push(`健康 -${healthLoss}`);}
+ p.ageDeclineStage=Math.max(p.ageDeclineStage||0,stage);
+ return changes.length?`<div class="notice fail"><b>⏳ ${name}</b><br>${changes.join("｜")}<br><span class="mut">年齡、舊傷與本季身體負荷共同造成。</span></div>`:"";
+}
+function v9AgingBase(){
+ if(p.age<=31)return {stage:1,name:"巔峰調整",losses:{ath:1}};
+ if(p.age<=34)return {stage:2,name:"技術維持期",losses:{ath:1,finish:1}};
+ if(p.age<=37)return {stage:3,name:"老將轉型期",losses:{ath:2,finish:1,defense:1,rebound:1}};
+ if(p.age<=40)return {stage:4,name:"老將負荷期",losses:{ath:3,finish:2,defense:1,handle:1,rebound:1}};
+ if(p.age<=44)return {stage:5,name:"延長生涯",losses:{ath:3,finish:2,defense:2,handle:1,rebound:2,shoot:1,pass:1}};
+ if(p.age<=49)return {stage:6,name:"生涯極限",losses:{ath:5,finish:3,defense:2,handle:2,rebound:3,shoot:1,pass:1}};
+ return {stage:7,name:"晚年急速收束",losses:{ath:7,finish:5,defense:4,handle:3,rebound:4,shoot:2,pass:2}};
+}
+function v9OldInjuryPenalty(key){
+ const lower=["膝蓋","腳踝","阿基里斯腱","腿後肌","股四頭","足部","腹股溝"],upper=["肩膀","手指"];
+ let burden=0;
+ Object.entries(p.oldInjuries||{}).forEach(([area,value])=>{
+  const level=Math.min(2,Number(value)||0);
+  if(lower.includes(area)&&["ath","finish","defense","rebound","handle"].includes(key))burden+=level*.18;
+  if(upper.includes(area)&&["shoot","pass","handle","finish"].includes(key))burden+=level*.14;
+  if(area==="下背"&&["ath","finish","defense","rebound"].includes(key))burden+=level*.16;
+ });
+ return burden;
+}
+function v9AgingLoss(key,base){
+ let multiplier=1;
+ const durability=Number(p.durability||70),health=Number(p.health||100),load=Number(p.bodyLoad||0);
+ if(durability>=86)multiplier-=.20;else if(durability<=58)multiplier+=.18;
+ if(health>=90)multiplier-=.10;else if(health<72)multiplier+=.18;
+ if(p.seasonPlan==="care")multiplier-=.16;
+ if(hasTitle("ironman")&&key==="ath")multiplier-=.14;
+ if(load>=75&&["ath","finish","defense","rebound"].includes(key))multiplier+=.24;
+ else if(load>=55&&["ath","finish","defense","rebound"].includes(key))multiplier+=.10;
+ multiplier+=v9OldInjuryPenalty(key);
+ multiplier=Math.max(.25,Math.min(1.85,multiplier));
+ const scaled=base*multiplier,whole=Math.floor(scaled),fraction=scaled-whole;
+ const roll=RNG(`${p.seed}-v9-aging-${p.year}-${p.age}-${key}`)();
+ return whole+(roll<fraction?1:0);
+}
+function applyAging(){
+ if(p.age<29)return "";
+ if(typeof isV9Progression!=="function"||!isV9Progression(p))return legacyApplyAging();
+ const profile=v9AgingBase(),changes=[];
+ for(const [key,base] of Object.entries(profile.losses)){
+  const loss=v9AgingLoss(key,base);
+  if(!loss)continue;
+  const outcome=typeof applyCareerStatChange==="function"?applyCareerStatChange(p,key,-loss,{source:"aging"}):null;
+  const applied=Math.abs(outcome?.applied??loss);
+  if(applied)changes.push(`${L[key]} -${applied}`);
  }
  const healthBase=p.age>=50?2:p.age>=45?1:0;
  const healthLoss=p.seasonPlan==="care"?Math.max(0,healthBase-1):healthBase;
- if(healthLoss){
-   const oldHealth=Number.isFinite(Number(p.health))?Number(p.health):100;
-   p.health=Math.max(30,oldHealth-healthLoss);
-   changes.push(`健康 -${healthLoss}`);
- }
- p.ageDeclineStage=Math.max(p.ageDeclineStage||0,stage);
- if(changes.length){logIt(`⏳ ${name}：${changes.join("、")}`);return `<div class="notice fail"><b>⏳ ${name}</b><br>${changes.join("｜")}<br><span class="mut">年齡、舊傷與本季身體負荷共同造成。</span></div>`}
+ if(healthLoss){p.health=Math.max(30,(Number(p.health)||100)-healthLoss);changes.push(`健康 -${healthLoss}`);}
+ p.ageDeclineStage=Math.max(p.ageDeclineStage||0,profile.stage);
+ if(changes.length){logIt(`⏳ ${profile.name}：${changes.join("、")}`);return `<div class="notice fail"><b>⏳ ${profile.name}</b><br>${changes.join("｜")}<br><span class="mut">體能、健康、身體負荷與實際舊傷共同決定今年的變化；球商不會因年齡自動下降。</span></div>`;}
  return "";
 }
 function veteranMinutesProfile(ov=overall()){
@@ -129,6 +171,25 @@ function veteranMinutesProfile(ov=overall()){
 }
 function retirementPressure(){
  if(p.age<34)return 0;
+ if(typeof isV9Progression==="function"&&isV9Progression(p)){
+   const profile=typeof careerLifecycleProfile==="function"?careerLifecycleProfile(p):null;
+   const leagueFloor=leagueTarget(),current=overall(),peak=Math.max(current,Number(p.peakOverall||current));
+   const season=p.seasonStats||{},scheduled=Math.max(1,Number(season.scheduledGames)||36),availability=Math.min(1,Number(season.games||0)/scheduled);
+   let pressure=0;
+   pressure+=Math.max(0,leagueFloor-current)*2.1;
+   pressure+=Math.max(0,peak-current-3)*2.2;
+   pressure+=Math.max(0,(p.bodyLoad||0)-55)*.34;
+   if((p.health||100)<75)pressure+=(75-(p.health||100))*.55;
+   if(Number(season.games||0)>0&&availability<.50)pressure+=(.50-availability)*20;
+   if((p.majorInjuryCount||0)>=2)pressure+=6;
+   if(profile?.chapter==="legacy")pressure+=5;
+   if(p.age>=37)pressure+=4;if(p.age>=45)pressure+=7;if(p.age>=50)pressure+=10;
+   if((p.contract?.remaining||0)>1)pressure-=16;
+   if(profile?.chapter==="peak"&&current>=leagueFloor+5&&(p.health||100)>=84&&(p.bodyLoad||0)<=55)pressure-=12;
+   if((p.careerMVP||0)+(p.careerFirstTeam||0)>=3)pressure-=4;
+   if(hasTitle("ironman"))pressure-=6;
+   return Math.max(0,Math.min(95,Math.round(pressure)));
+ }
  let pressure=28;
  pressure+=Math.max(0,leagueTarget()-overall())*2.2;
  pressure+=Math.max(0,(p.bodyLoad||0)-35)*.28;
@@ -186,12 +247,13 @@ function hasFarewellResume(){
  return honors>=3||proSeasons>=8||(p.careerGames||0)>=300;
 }
 function canOfferHomecomingLastDance(){
- return !p.lastDanceUsed&&p.age>=36&&hasFarewellResume();
+ return !p.lastDanceUsed&&p.age>=31&&hasFarewellResume();
 }
 function startVeteranExtension(contract,kind,resultHTML=""){
- const oldTeam=p.team,agingHTML=p.pendingAgingHTML||"";
+ const oldTeam=p.team,oldLeague=p.path,agingHTML=p.pendingAgingHTML||"";
  p.pendingAgingHTML="";p.retirementCrisisReason="";
  p.contract=contract;p.path=contract.league;p.team=contract.team;ensureTeamHistory();
+ if(typeof recordCareerRelocation==="function")recordCareerRelocation(p,oldLeague,oldTeam,contract.league,contract.team);
  p.lastDanceActive=kind==="lastDance";
  // 正式職業合約到期時，finishSeason 已經把日曆推進到下一季；
  // 年輕 SBL 發展市場則以 pendingSeasonAdvance 延後推進。兩條路都只

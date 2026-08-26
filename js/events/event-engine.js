@@ -1,6 +1,15 @@
 function normalEventPool(){
- if(isProPath())return PRO_GENERAL_EVENTS;
- return events;
+ const source=isProPath()?PRO_GENERAL_EVENTS:events;
+ const eligible=source.filter(normalEventEligible);
+ return eligible.length?eligible:source;
+}
+function normalEventEligible(event){
+ const name=String(event?.t||"");
+ if(name==="經紀人要求刷數據"&&(!p.contract||Number(p.contract.remaining||0)>1))return false;
+ if(name==="客場連戰疲勞"&&Number(p.fatigue||0)<35&&Number(p.bodyLoad||0)<40)return false;
+ if(name==="主場噓聲"&&Number(p.confidence??50)>48&&Number(p.rep||0)>=0)return false;
+ if(name==="球探觀察"&&overall()<48&&Number(p.grade||0)<2&&Number(p.rep||0)<3)return false;
+ return true;
 }
 function eventOptionRiskScore(option,index=0){
  const raw=effectType(String(option?.[2]||"normal"));
@@ -145,13 +154,22 @@ function passesNationalSelection(level,profile){
  return {ok:r()<chance,score,chance,threshold:profile.threshold};
 }
 function nationalTeamOpportunity(){
+ if(p.nationalObservationCandidate&&Number(p.nationalObservationCandidate.year)!==Number(p.year))p.nationalObservationCandidate=null;
+ p.nationalObservationCandidate=null;
  if(p.year<(p.nationalTeamBanUntil||0)||(p.health||100)<58||(p.fatigue||0)>88)return null;
  if(p.age>=19&&p.age<=37&&(isProPath()||isCollegePath())){
    const official=officialSeniorCompetition(),officialResult=passesNationalSelection("SENIOR",official);
-   if(officialResult.ok)return {level:"SENIOR",competition:official,selection:officialResult,title:"成人代表隊正式徵召",desc:`你進入 ${official.event} 集訓名單。${official.selectionNote}。`};
+   if(officialResult.ok){p.nationalObservationCandidate=null;return {level:"SENIOR",competition:official,selection:officialResult,title:"成人代表隊正式徵召",desc:`你進入 ${official.event} 集訓名單。${official.selectionNote}。`}}
+   const season=p.seasonStats||{},scheduled=Math.max(1,Number(season.scheduledGames)||36),games=Number(season.games||0),availability=games/scheduled;
+   const crediblePath=isCollegePath()||["台灣職業","日本職業","韓國職業","CBA","NBA G League","歐洲聯賽","NBA"].includes(String(p.path||""));
+   const roleReady=games<=0||(availability>=.5&&Number(season.mins||0)>=14);
+   const observationReady=p.age<=34&&overall()>=72&&crediblePath&&roleReady&&officialResult.score>=officialResult.threshold-5;
+   if(observationReady){
+     p.nationalObservationCandidate={year:p.year,competitionId:official.id,score:officialResult.score,threshold:officialResult.threshold,overall:overall(),path:p.path};
+   }
    if(isProPath()){
      const jones=jonesCupCompetition(),jonesResult=passesNationalSelection("SENIOR",jones);
-     if(jonesResult.ok)return {level:"SENIOR",competition:jones,selection:jonesResult,title:"成人代表隊邀請名單",desc:`你獲選參加 ${jones.event}。這是國際邀請賽與陣容測試，不等同正式 FIBA 大賽席次。`};
+     if(jonesResult.ok){p.nationalObservationCandidate=null;return {level:"SENIOR",competition:jones,selection:jonesResult,title:"成人代表隊邀請名單",desc:`你獲選參加 ${jones.event}。這是國際邀請賽與陣容測試，不等同正式 FIBA 大賽席次。`}}
    }
  }
  let level=null;
@@ -159,7 +177,7 @@ function nationalTeamOpportunity(){
  else if(p.age>=19&&p.age<=22&&(isCollegePath()||isProPath()))level="U20";
  if(level){
    const competition=youthCompetitionProfile(level),selection=passesNationalSelection(level,competition);
-   if(selection.ok)return {level,competition,selection,title:`${nationalLevelLabel(level)}徵召`,desc:`你進入 ${competition.event} 名單。${competition.selectionNote}。`};
+   if(selection.ok){p.nationalObservationCandidate=null;return {level,competition,selection,title:`${nationalLevelLabel(level)}徵召`,desc:`你進入 ${competition.event} 名單。${competition.selectionNote}。`}}
  }
  return null;
 }
@@ -287,6 +305,14 @@ function offCourtEventEligible(kind){
  const rule=rules[kind]||{};
  if(rule.proOnly&&!isProPath())return false;
  if(p.age<(rule.minAge||20))return false;
+ if(kind==="importWalkout"&&!["台灣職業","日本職業","韓國職業","CBA","SBL／半職業"].includes(String(p.path||"")))return false;
+ if(kind==="agentFinance"&&Number(p.careerSalary||0)<300&&Number(p.rep||0)<8)return false;
+ if(kind==="friendLoan"&&Number(p.careerSalary||0)<500&&Number(p.rep||0)<12)return false;
+ if(kind==="charityCommitment"&&Number(p.rep||0)<5)return false;
+ if(kind==="rumorPhoto"&&Number(p.rep||0)<15)return false;
+ if(kind==="podcastSlip"&&Number(p.rep||0)<10)return false;
+ if(kind==="partyLeak"&&Number(p.rep||0)<8)return false;
+ if(kind==="fanPhoneConflict"&&Number(p.rep||0)<5)return false;
  return true;
 }
 function buildOffCourtSpecial(){
@@ -322,12 +348,18 @@ function buildRomanceSpecial(){
 
  // 婚後人生保留家庭、關係危機與修復分支；低家庭關係會優先觸發磨合。
  if(p.married){
-   if(r()>.48)return null;
+   const last=Number(p.lastFamilySpecialYear||0),gap=last?Number(p.year)-last:99;
+   if(gap<2)return null;
+   if(r()>.24)return null;
    let x=r();
    if((p.familyHarmony||0)<28)return {kind:"marriageStrain",title:"關係來到十字路口",desc:`長期缺席家庭生活後，${p.partnerName} 要求你正面談清楚這段婚姻還要怎麼走下去。`};
-   if(!p.familyPlanningClosed&&p.children<3 && x<.26)return {kind:"childPlan",title:"家庭新成員",desc:`你和 ${p.partnerName} 開始討論彼此是否都準備好迎接新的家庭成員。`};
-   if(x<.57)return {kind:"familySupport",title:"家庭與球季",desc:`長時間客場讓你很少陪伴家人。${p.partnerName} 希望你在休賽季留一些時間給家庭。`};
-   if(x<.82)return {kind:"marriageStrain",title:"婚姻磨合",desc:"連續客場與訓練讓家中的氣氛有些緊繃，你需要決定怎麼處理。"};
+   if(!p.familyPlanningClosed&&p.children<3 && x<.20)return {kind:"childPlan",title:"家庭新成員",desc:`你和 ${p.partnerName} 開始討論彼此是否都準備好迎接新的家庭成員。`};
+   if((p.familyHarmony||0)<48&&x<.58)return {kind:"marriageStrain",title:"球季壓力已經帶回家",desc:`最近的客場、復健或合約不確定性讓你們反覆取消原本安排。${p.partnerName} 要談的不是一句「多溝通」，而是下一個月哪些時間必須真的留下來。`};
+   if(x<.88){
+    const context=(p.children||0)>0?"children":p.injury||Number(p.bodyLoad||0)>=60?"rehab":"partnerCareer";
+    const copy=context==="children"?{title:"孩子的重要日子撞上客場",desc:`學校活動和客場行程排在同一天。${p.partnerName} 不要求你放棄球季，但要你提出一個家人真的能依靠的安排。`}:context==="rehab"?{title:"復健把全家的時間表打亂",desc:`你的治療、訓練與客場來回更動，已經讓家中原本分工失效。${p.partnerName} 希望一起重排，而不是每次臨時補洞。`}:{title:"伴侶的工作機會撞上你的球季",desc:`${p.partnerName} 收到一個需要調整工作地點與時間的機會。這次不只是誰陪誰，而是兩份生涯要怎麼一起往前。`};
+    return {kind:"familySupport",familyContext:context,...copy};
+   }
    return {kind:"affairTemptation",title:"越界的私下聯絡",desc:"一名與你合作多次的對象私下頻繁傳訊息。這不只是媒體風險，也會真實改變你的婚姻與家庭紀錄。"};
  }
 
@@ -335,7 +367,7 @@ function buildRomanceSpecial(){
    if(p.year<(p.romanceNextYear||0))return null;
    if(r()<.31){
      const candidate=ensureRomanceCandidate();
-     return {kind:"romanceFirst",title:`場外相遇｜${candidate.role}`,desc:`一場賽事活動結束後，你和 ${candidate.name} 再次聊了起來。她是${candidate.role}，${candidate.trait}。這段互動是否繼續，由你決定。`};
+     return {kind:"romanceFirst",title:`場外相遇｜${candidate.role}`,desc:`一場賽事活動結束後，你和 ${candidate.name} 聊了起來。她是${candidate.role}，${candidate.trait}。這是她第一次正式進入你的生涯；這段互動是否繼續，由你決定。`};
    }
    return null;
  }
@@ -362,7 +394,7 @@ function buildCareerExtraSpecial(){
  if(r()<tradeRate){
    return {kind:"tradeChoice",title:"交易傳聞",desc:`媒體報導 ${p.team} 正在聆聽其他球隊對你的交易報價。`};
  }
- if(r()<.38){
+ if((p.rep||0)>=8&&r()<.38){
    return {kind:"endorsementChoice",title:"商業邀約",desc:"運動品牌向你的經紀團隊提出年度合作，希望你在休賽季參與拍攝與活動。"};
  }
  return null;
@@ -373,9 +405,9 @@ function buildV8RelationshipSpecial(){
  const rate=isProPath()?.43:.27;if(r()>=rate)return null;
  const cast=p.careerCast,options=isProPath()?["agentCrossroads","teammateRole","rivalSpotlight"]:["teammateRole","rivalSpotlight"];
  const kind=options[ri(r,0,options.length-1)];p.lastRelationshipEventYear=p.year;
- if(kind==="agentCrossroads")return {kind,title:"經紀人的路線提案",desc:"經紀人提醒你：最高薪、穩定角色與海外曝光通常無法同時取得，必須先確定優先順序。",relationshipEvent:true};
- if(kind==="teammateRole")return {kind,title:"同位置球員的輪替競爭",desc:"隊內另一名同位置球員最近表現上升，教練打算讓你們競爭主要輪替。你的處理方式會影響上場順位與更衣室。",relationshipEvent:true};
- return {kind,title:"宿敵再次擋在面前",desc:"媒體把你和長期競爭對手的本季表現放在一起比較。這場直接對決會改變外界長期記住你們的方式。",relationshipEvent:true};
+ if(kind==="agentCrossroads")return {kind,title:`${cast.agent?.name||"經紀人"} 的路線提案`,desc:`${cast.agent?.name||"經紀人"} 提醒你：最高薪、穩定角色與海外曝光通常無法同時取得，必須先確定優先順序。`,relationshipEvent:true};
+ if(kind==="teammateRole")return {kind,title:`與 ${cast.teammate?.name||"同位置隊友"} 的輪替競爭`,desc:`${cast.teammate?.name||"隊內另一名同位置球員"} 最近表現上升，${cast.coach?.name||"教練"} 打算讓你們競爭主要輪替。你的處理方式會影響上場順位與更衣室。`,relationshipEvent:true};
+ return {kind,title:`${cast.rival?.name||"宿敵"} 再次擋在面前`,desc:`媒體把你和 ${cast.rival?.name||"長期競爭對手"} 的本季表現放在一起比較。這場直接對決會改變外界長期記住你們的方式。`,relationshipEvent:true};
 }
 function keepRecurringSpecial(event){
  if(!event)return false;
@@ -393,22 +425,23 @@ function keepRecurringSpecial(event){
 }
 function buildSeasonSpecialQueue(){
  let q=[];
+ const nt=nationalTeamOpportunity();
+ const careerStory=typeof buildCareerStorySpecial==="function"?buildCareerStorySpecial(p,{blockedThemes:nt?["national"]:[]}):null;
+ if(careerStory)q.push(careerStory);
  if(p.lastDanceActive){
    q.push({kind:"lastDance",title:"最後一舞，怎麼打？",desc:"這是你正式退休前的最後一季。你要留下代表作、帶著隊友走完，還是把身體完整交還給未來的生活？"});
-   const nt=nationalTeamOpportunity();
    if(nt)q.push({kind:"national",nationalLevel:nt.level,nationalCompetition:nt.competition,nationalSelection:nt.selection,title:nt.title,desc:nt.desc});
    return q;
  }
  dueV8Chains().forEach(chain=>{const copy=v8ChainCopy(chain);q.push({kind:"v8Chain",chainId:chain.id,title:copy.title,desc:copy.desc})});
- const nt=nationalTeamOpportunity();
  q.push(nt
    ? {kind:"national",nationalLevel:nt.level,nationalCompetition:nt.competition,nationalSelection:nt.selection,title:nt.title,desc:nt.desc}
    : buildSeasonKeyBattle());
- let romance=buildRomanceSpecial();if(romance)q.push(romance);
+ let romance=careerStory?.careerStoryTheme==="family"?null:buildRomanceSpecial();if(romance)q.push(romance);
  let offCourt=buildOffCourtSpecial();if(offCourt)q.push(offCourt);
  let relationship=buildV8RelationshipSpecial();if(relationship)q.push(relationship);
  let career=buildCareerExtraSpecial();if(career)q.push(career);
- const priority={national:1,seasonKeyBattle:1,v8Chain:2,career:3,relationship:4,romanceFirst:5,romanceFollow:5,proposal:5,childPlan:5,familySupport:5,marriageStrain:5,affairTemptation:5,offCourt:6,tradeChoice:6};
+ const priority={national:1,seasonKeyBattle:1,v8Chain:2,careerStory:2,careerStoryClosure:2,career:3,relationship:4,romanceFirst:5,romanceFollow:5,proposal:5,childPlan:5,familySupport:5,marriageStrain:5,affairTemptation:5,offCourt:6,tradeChoice:6};
  return q.sort((a,b)=>(priority[a.kind]||9)-(priority[b.kind]||9)).slice(0,3).filter(keepRecurringSpecial);
 }
 function startSpecialPhase(){
@@ -422,6 +455,23 @@ function showSpecialEvent(){
  const e=p.specialQueue[p.specialIndex];
  chapter.textContent=`${p.year} · ${p.age}歲 · ${p.path} · 特殊事件 ${p.specialIndex+1}/${p.specialQueue.length}`;
  title.textContent=e.title;text.textContent=e.desc;
+
+ if(e.kind==="careerStoryClosure"){
+   const pending=(p.careerStoryPending||[]).find(item=>item.id===e.storyPendingId);
+   if(!pending){p.specialIndex++;showSpecialEvent();return}
+   resolveCareerStoryClosure(pending.id);return;
+ }
+
+ if(e.kind==="careerStory"){
+   const event=careerStoryEventById(e.storyEventId);
+   if(!event){p.specialIndex++;showSpecialEvent();return}
+   const pending=(p.careerStoryPending||[]).find(item=>item.id===e.storyPendingId),actor=careerStoryActorPresentation(event,p,pending);
+   const callbackLabel=({school_rivalry:"宿敵再會",friendship:"舊友再聯絡",coach_role:"角色承諾驗證",playoff_injury:"舊傷追蹤",teammate_scandal:"隊內關係後續",family_city:"搬遷後續",market_choice:"市場窗口",media_identity:"外界標籤回看",veteran_mentor:"更衣室傳承",national_miss:"代表隊評估後續",rebuild_core:"重建承諾驗證",final_chapter:"生涯後段評估"})[event.line]||"生涯後續";
+   document.getElementById("currentPanel")?.classList.add("eventRare","eventCareerStory");
+   special.innerHTML=`<div class="specialStage career careerStoryStage"><div class="specialKicker">${event.node>1?callbackLabel:"生涯事件"}</div>${actor?.name?`<small>${careerStoryEscape(actor.category||"事件關係")}</small><b>${careerStoryEscape(actor.name)}</b><span>${careerStoryEscape(actor.role||actor.note||"這次事件的相關人物")}</span>${actor.relationLabel?`<em>${careerStoryEscape(actor.relationLabel)}${actor.metYear?`・${actor.metYear} 年進入生涯`:""}</em>`:actor.note&&actor.note!==actor.role?`<em>${careerStoryEscape(actor.note)}</em>`:""}`:""}${pending?.sourceTitle?`<div class="careerStoryContext"><small>前情｜${careerStoryEscape(pending.sourceTitle)}</small><b>你當時選擇｜${careerStoryEscape(pending.sourceChoice||"未記錄")}</b>${pending.sourceTeam?`<span>當時球隊｜${careerStoryEscape(pending.sourceTeam)}</span>`:""}</div>`:""}</div>`;
+   choices.innerHTML=`<div class="twoChoices">${event.choices.map(choice=>`<button class="choice" onclick="resolveCareerStoryEvent('${event.id}','${choice.id}')"><b>${choice.label}</b><small>${choice.detail}</small></button>`).join("")}</div>`;
+   return;
+ }
 
  if(e.kind==="lastDance"){
    document.getElementById("currentPanel")?.classList.add("eventRare");
@@ -512,12 +562,10 @@ function showSpecialEvent(){
    </div>`;return;
  }
  if(e.kind==="familySupport"){
-   special.innerHTML=`<div class="specialStage romance"><div class="specialKicker">🏠 FAMILY</div>職業生涯和家庭時間需要取捨。</div>`;
-   choices.innerHTML=`<div class="twoChoices">
-    <button class="choice" onclick="resolveFamilySpecial('familyRest')"><b>陪家人休息</b><small>恢復身心，也讓家庭更穩定。</small></button>
-    <button class="choice" onclick="resolveFamilySpecial('shareSchedule')"><b>重新安排訓練與家庭日</b><small>兩邊各保留一部分，恢復較少但球隊與家庭都能接受。</small></button>
-    <button class="choice" onclick="resolveFamilySpecial('workFirst')"><b>照常加練</b><small>維持球場投入，但家庭壓力增加。</small></button>
-   </div>`;return;
+   const context=e.familyContext||"schedule";
+   special.innerHTML=`<div class="specialStage romance"><div class="specialKicker">🏠 FAMILY</div>${context==="children"?"客場與孩子的重要日子正面衝突。":context==="rehab"?"復健安排已經影響整個家庭。":"兩份工作都遇到不能隨便放棄的窗口。"}</div>`;
+   choices.innerHTML=context==="children"?`<div class="twoChoices"><button class="choice" onclick="resolveFamilySpecial('familyRest')"><b>向球隊請一天家庭假</b><small>少一次完整訓練，親自出席孩子的重要日子。</small></button><button class="choice" onclick="resolveFamilySpecial('shareSchedule')"><b>遠端參與，回家補上一整天</b><small>不離隊，但把補償安排寫進確定行程。</small></button><button class="choice" onclick="resolveFamilySpecial('workFirst')"><b>照原賽程出賽</b><small>保留競技準備，家庭會記住這次缺席。</small></button></div>`:context==="rehab"?`<div class="twoChoices"><button class="choice" onclick="resolveFamilySpecial('familyRest')"><b>保留固定的無籃球日</b><small>減少額外訓練，讓家庭重新有可預期時間。</small></button><button class="choice" onclick="resolveFamilySpecial('shareSchedule')"><b>讓家人一起進入復健規劃</b><small>公開療程與客場表，重新分配接送與家務。</small></button><button class="choice" onclick="resolveFamilySpecial('workFirst')"><b>繼續自己扛下全部療程</b><small>不改訓練，但臨時變動仍由家人承受。</small></button></div>`:`<div class="twoChoices"><button class="choice" onclick="resolveFamilySpecial('familyRest')"><b>這次優先支持伴侶的機會</b><small>調整自己的休賽季安排，讓對方不必先放棄。</small></button><button class="choice" onclick="resolveFamilySpecial('shareSchedule')"><b>把兩份工作排成共同方案</b><small>一起確認城市、交通與不可退讓的日期。</small></button><button class="choice" onclick="resolveFamilySpecial('workFirst')"><b>要求伴侶配合球季</b><small>維持自己的節奏，但關係承受單方面讓步。</small></button></div>`;
+   return;
  }
  if(e.kind==="marriageStrain"){
    special.innerHTML=`<div class="specialStage romance"><div class="specialKicker">💬 MARRIAGE</div>婚姻狀態會留下長期影響。</div>`;
@@ -608,7 +656,7 @@ function resolveV8LongChain(chainId,action){
  if(chain.kind==="majorComeback"){
    if(action==="loadManage"){p.planRiskMod=(p.planRiskMod||0)-12;p.planStatMod=(p.planStatMod||0)-2;p.bodyLoad=Math.max(0,(p.bodyLoad||0)-14);p.medicalProtectionUntilYear=Math.max(p.medicalProtectionUntilYear||0,p.year+1);story=`大傷復出後接受負荷管理，以數據機會換取長期健康`;html=`<div class="specialStage career"><b>🛡️ 接受負荷管理</b><br>傷病風險 -12%｜數據機會 -2｜身體負荷 -14。</div>`;}
    else if(action==="allOutReturn"){p.planRiskMod=(p.planRiskMod||0)+20;p.planStatMod=(p.planStatMod||0)+3;p.confidence=Math.min(100,p.confidence+5);p.medicalProtectionUntilYear=p.year-1;story=`大傷復出後拒絕限制，賭上身體搶回原有角色`;html=`<div class="specialStage career"><b>🔥 全力證明</b><br>數據機會 +3｜信心 +5｜傷病風險 +20%，醫療保護取消。</div>`;}
-   else{p.stats.iq=Math.min(99,p.stats.iq+2);p.stats.pass=Math.min(99,p.stats.pass+1);p.planStatMod=(p.planStatMod||0)-1;p.roleState.current="benchLeader";p.roleState.currentLabel="板凳領袖";story=`大傷後改變打法，以組織與經驗延長生涯`;html=`<div class="specialStage career"><b>🧠 重新定位</b><br>球商 +2｜傳球 +1｜得分機會略降，角色轉為板凳領袖。</div>`;}
+   else{const iq=applyEventSkillChange("iq",2,"rehab"),pass=applyEventSkillChange("pass",1,"rehab");p.planStatMod=(p.planStatMod||0)-1;p.roleState.current="benchLeader";p.roleState.currentLabel="板凳領袖";story=`大傷後改變打法，以組織與經驗延長生涯`;html=`<div class="specialStage career"><b>🧠 重新定位</b><br>${eventSkillChangeText("iq",iq)}｜${eventSkillChangeText("pass",pass)}｜得分機會略降，角色轉為板凳領袖。</div>`;}
   }else if(chain.kind==="affairFallout"){
    if(action==="confess"){p.rep-=4;p.confidence=Math.max(0,p.confidence-4);const divorce=r()<.42||p.familyHarmony<20;if(divorce&&p.partnerName){const former=p.partnerName;archiveCurrentPartner("坦白婚外聯絡後離婚");story=`你坦白婚外聯絡，${former} 最終選擇結束婚姻`;html=`<div class="familyOutcome"><b>💔 坦白後離婚</b><br>謊言停止，但婚姻也走到終點。球隊評價 -4｜信心 -4。</div>`;}else{p.familyHarmony=Math.min(100,p.familyHarmony+4);story=`你坦白婚外聯絡，婚姻進入漫長修復`;html=`<div class="familyOutcome"><b>坦白並承擔</b><br>家庭沒有立即破裂，但信任需要多年重建。</div>`;}}
    else if(action==="denyEvidence"){const exposed=r()<.76;if(exposed){p.rep-=12;p.confidence=Math.max(0,p.confidence-7);p.conductSuspensionGames=Math.max(p.conductSuspensionGames||0,5);p.conductMarketPenalty=Math.max(p.conductMarketPenalty||0,9);const former=p.partnerName;if(former)archiveCurrentPartner("追加證據曝光後離婚");story=`追加證據揭穿否認，婚姻與球隊形象同時崩解`;html=`<div class="familyOutcome"><b>📰 證據完整曝光</b><br>球隊停賽5場｜球隊評價 -12｜信心 -7${former?`｜${former} 結束婚姻`:""}。</div>`;}else{p.familyHarmony=Math.max(0,p.familyHarmony-12);story=`你繼續否認並暫時過關，但家庭信任再次下降`;html=`<div class="familyOutcome"><b>暫時沒有決定性證據</b><br>危機沒有結束，家庭關係 -12。</div>`;}}
@@ -672,12 +720,12 @@ function resolveV8Relationship(action){
  }else if(action.includes("Teammate")){
    const t=cast.teammate;person=t.name;
    if(action==="beatTeammate"){const win=r()<Math.min(.76,.38+overall()/210);t.trust=Math.max(0,t.trust-12);if(win){p.rep+=4;p.planStatMod=(p.planStatMod||0)+2;story=`你在輪替競爭中壓過 ${t.name}，搶回主要位置`;html=`<div class="specialStage career"><b>🔥 正面搶回位置</b><br>球隊評價 +4｜數據機會 +2｜隊友信任 -12。</div>`;}else{p.confidence=Math.max(0,p.confidence-4);p.planStatMod=(p.planStatMod||0)-2;story=`你挑戰 ${t.name} 的輪替位置失敗，兩人關係也轉冷`;html=`<div class="specialStage career"><b>🧊 競爭失利</b><br>信心 -4｜數據機會 -2｜隊友信任 -12。</div>`;}}
-   else if(action==="pairTeammate"){t.trust=Math.min(100,t.trust+13);p.stats.pass=Math.min(99,p.stats.pass+1);p.planStatMod=(p.planStatMod||0)-1;p.rep+=2;story=`你與 ${t.name} 組成新的輪替搭檔`;html=`<div class="specialStage career"><b>🤝 競爭變成搭檔</b><br>傳球 +1｜球隊評價 +2｜個人數據機會 -1｜隊友信任 +13。</div>`;}
-   else{const student=isCollegePath();t.trust=Math.min(100,t.trust+18);p.stats.iq=Math.min(99,p.stats.iq+1);p.planStatMod=(p.planStatMod||0)-(student?1:2);p.roleState.current=student?"worker":"benchLeader";p.roleState.currentLabel=student?"主要輪替／隊內領袖":"板凳領袖";story=student?`你與 ${t.name} 共享訓練方法，將輪替競爭變成共同成長`:`你扶持 ${t.name} 成長，逐漸成為休息室領袖`;html=student?`<div class="specialStage career"><b>🧠 競爭中共同進步</b><br>球商 +1｜數據機會 -1｜隊友信任 +18；隊內領導評價提高。</div>`:`<div class="specialStage career"><b>🧠 把經驗留下</b><br>球商 +1｜數據機會 -2｜隊友信任 +18；角色傾向板凳領袖。</div>`;}
+   else if(action==="pairTeammate"){const pass=applyEventSkillChange("pass",1);t.trust=Math.min(100,t.trust+13);p.planStatMod=(p.planStatMod||0)-1;p.rep+=2;story=`你與 ${t.name} 組成新的輪替搭檔`;html=`<div class="specialStage career"><b>🤝 競爭變成搭檔</b><br>${eventSkillChangeText("pass",pass)}｜球隊評價 +2｜個人數據機會 -1｜隊友信任 +13。</div>`;}
+   else{const student=isCollegePath(),iq=applyEventSkillChange("iq",1);t.trust=Math.min(100,t.trust+18);p.planStatMod=(p.planStatMod||0)-(student?1:2);p.roleState.current=student?"worker":"benchLeader";p.roleState.currentLabel=student?"主要輪替／隊內領袖":"板凳領袖";story=student?`你與 ${t.name} 共享訓練方法，將輪替競爭變成共同成長`:`你扶持 ${t.name} 成長，逐漸成為休息室領袖`;html=student?`<div class="specialStage career"><b>🧠 競爭中共同進步</b><br>${eventSkillChangeText("iq",iq)}｜數據機會 -1｜隊友信任 +18；隊內領導評價提高。</div>`:`<div class="specialStage career"><b>🧠 把經驗留下</b><br>${eventSkillChangeText("iq",iq)}｜數據機會 -2｜隊友信任 +18；角色傾向板凳領袖。</div>`;}
  }else{
    const rival=cast.rival;person=rival.name;
    if(action==="duelRival"){const win=r()<Math.min(.78,.34+overall()/190+p.clutch/400);if(win){rival.respect=Math.min(100,rival.respect+14);p.rep+=5;p.confidence=Math.min(100,p.confidence+5);p.clutchWins++;story=`你在焦點對決壓過長期宿敵，留下生涯代表戰`;html=`<div class="specialStage career"><b>⚔️ 贏下宿敵對決</b><br>球隊評價 +5｜信心 +5｜宿敵尊重 +14。</div>`;recordV8Story("game",story,5,{person:rival.name});}else{rival.respect=Math.max(0,rival.respect-3);p.confidence=Math.max(0,p.confidence-5);p.rep-=2;story=`你執著與長期宿敵單挑卻遭壓制`;html=`<div class="specialStage career"><b>對決遭到壓制</b><br>信心 -5｜球隊評價 -2｜宿敵尊重 -3。</div>`;}}
-   else if(action==="teamOverRival"){rival.respect=Math.min(100,rival.respect+5);p.rep+=3;p.stats.iq=Math.min(99,p.stats.iq+1);p.planStatMod=(p.planStatMod||0)-1;story=`面對長期宿敵時，你放下個人比較並以球隊勝負優先`;html=`<div class="specialStage career"><b>🏀 球隊勝負優先</b><br>球商 +1｜球隊評價 +3｜個人數據機會 -1。</div>`;}
+   else if(action==="teamOverRival"){const iq=applyEventSkillChange("iq",1);rival.respect=Math.min(100,rival.respect+5);p.rep+=3;p.planStatMod=(p.planStatMod||0)-1;story=`面對長期宿敵時，你放下個人比較並以球隊勝負優先`;html=`<div class="specialStage career"><b>🏀 球隊勝負優先</b><br>${eventSkillChangeText("iq",iq)}｜球隊評價 +3｜個人數據機會 -1。</div>`;}
    else{rival.respect=Math.min(100,rival.respect+10);p.rep-=1;p.discipline=Math.min(100,p.discipline+2);story=`你公開肯定長期宿敵，兩人的競爭轉為相互尊重`;html=`<div class="specialStage career"><b>🤜🤛 尊重真正的對手</b><br>紀律 +2｜球隊評價 -1｜宿敵尊重 +10。</div>`;}
  }
  p.relationshipHistory.push({year:p.year,person,type:action.startsWith("agent")?"agent":action.includes("Teammate")?"teammate":"rival",action,story});
@@ -707,9 +755,9 @@ function resolveLastDanceChoice(action){
    story="最後一舞選擇把每個回合都當成代表作，留下更高的數據與球隊評價，也把身體推到最後一段高峰";
    html=`<div class="specialStage farewell"><b>🔥 打成代表作</b><br>本季數據機會 +2｜球隊評價 +4｜傷病風險 +10。<br><span class="mut">你知道身體已經不會再多給一年，但仍選擇把最後一季打得更用力。</span></div>`;
  }else if(action==="mentor"){
-   p.stats.iq=Math.min(99,(p.stats.iq||0)+1);p.rep=(p.rep||0)+5;p.planStatMod=(p.planStatMod||0)-1;
+   const iq=applyEventSkillChange("iq",1);p.rep=(p.rep||0)+5;p.planStatMod=(p.planStatMod||0)-1;
    story="最後一舞沒有只追逐自己的數字，而是把經驗交給下一代，讓隊友記住你如何帶他們走完球季";
-   html=`<div class="specialStage farewell"><b>🤝 帶著下一代走完</b><br>球商 +1｜球隊評價 +5｜數據機會 -1。<br><span class="mut">最後留下的不是單場最高分，而是隊友在你身邊學會了什麼。</span></div>`;
+   html=`<div class="specialStage farewell"><b>🤝 帶著下一代走完</b><br>${eventSkillChangeText("iq",iq)}｜球隊評價 +5｜數據機會 -1。<br><span class="mut">最後留下的不是單場最高分，而是隊友在你身邊學會了什麼。</span></div>`;
  }else{
    p.planRiskMod=(p.planRiskMod||0)-12;p.fatigue=Math.max(0,(p.fatigue||0)-5);p.rep=(p.rep||0)+2;
    story="最後一舞選擇把身體放在第一位，沒有追逐最華麗的數字，但完整走完了告別球季";
@@ -757,7 +805,8 @@ function showSeasonKeyBattle(event={}){
  text.textContent=`${key.title}即將開始。這一戰會留下本季最重要的球場訊號，也可能改變隊友、宿敵與下一份合約怎麼看你。`;
  document.getElementById("currentPanel")?.classList.add("eventRare");
  const safeTitle=escapeFeedText(key.title||"本季關鍵戰"),safeOpponent=escapeFeedText(key.opponent||"本季最難纏的對手"),safeDirection=escapeFeedText(key.lastTeamDirection||"球隊本季方向尚未明確");
- special.innerHTML=`<div class="specialStage keyBattle"><div class="specialKicker">🏀 SEASON KEY BATTLE</div><b>${safeTitle}</b><br><span class="mut">對手焦點：${safeOpponent}｜球隊方向：${safeDirection}</span>${key.contractYear?`<br><span class="gold">合約年｜本戰表現會進入球探與市場評估</span>`:""}${key.injury?`<br><span class="bad">傷病背景｜${escapeFeedText(key.injury)}</span>`:""}</div>`;
+ const opponentRole=p.careerCast?.rival?.name===key.opponent?`同階段宿敵・${safeOpponent}`:safeOpponent;
+ special.innerHTML=`<div class="specialStage keyBattle"><div class="specialKicker">🏀 SEASON KEY BATTLE</div><b>${safeTitle}</b><br><span class="mut">對手焦點：${opponentRole}｜球隊方向：${safeDirection}</span>${key.contractYear?`<br><span class="gold">合約年｜本戰表現會進入球探與市場評估</span>`:""}${key.injury?`<br><span class="bad">傷病背景｜${escapeFeedText(key.injury)}</span>`:""}</div>`;
  const attackPreview=seasonKeyBattlePreview("attack"),teamPreview=seasonKeyBattlePreview("team"),managePreview=seasonKeyBattlePreview("manage");
  choices.innerHTML=`<div class="twoChoices v9KeyBattleChoices"><button class="choice eventChoice" data-v9-approach="attack" onclick="resolveSeasonKeyBattle('attack')"><b>全力搶代表作</b><small>拉高使用率與個人上限，也承擔最大的波動。</small>${seasonKeyBattlePreviewHTML(attackPreview)}</button><button class="choice eventChoice" data-v9-approach="team" onclick="resolveSeasonKeyBattle('team')"><b>以球隊勝負為優先</b><small>閱讀防守、提早出球，讓全隊維持最穩定的進攻。</small>${seasonKeyBattlePreviewHTML(teamPreview)}</button><button class="choice eventChoice" data-v9-approach="manage" onclick="resolveSeasonKeyBattle('manage')"><b>控制負荷、保留健康</b><small>減少高風險對抗，換取更完整的健康與後續賽程。</small>${seasonKeyBattlePreviewHTML(managePreview)}</button></div>`;
  next.classList.add("hidden");
@@ -787,9 +836,13 @@ function resolveSeasonKeyBattle(approach="team"){
  p.seasonKeyBattleResult=result;
  const marketText=marketDelta>0?`球探評價 +${marketDelta}`:marketDelta<0?`球探評價 ${marketDelta}`:"球探評價維持";
  const rivalText=rival?.name?`｜${rival.name} 尊重 ${rivalRespectDelta>=0?"上升":"下降"} ${Math.abs(rivalRespectDelta)}`:"";
- const story=`本季關鍵戰對上${key.opponent}，你選擇${label}，${objective.label}；場上表現為「${outcome.label}」，${result.teamResult}${rivalText}`;
+ const positivePerformance=["great","success"].includes(outcome.tone);
+ const resultSentence=teamWon
+   ?positivePerformance?`你以「${outcome.label}」幫助球隊贏下關鍵戰`:`球隊仍贏下關鍵戰，但你的場上表現是「${outcome.label}」`
+   :positivePerformance?`你打出「${outcome.label}」，但球隊未能贏下關鍵戰`:`你的場上表現是「${outcome.label}」，球隊也未能贏下關鍵戰`;
+ const story=`本季關鍵戰對上${key.opponent}，你選擇${label}；${resultSentence}${rivalText}`;
  recordV8Story("game",story, outcome.tone==="great"?5:3,{keyBattle:true,opponent:key.opponent,approach});
- finishSpecialEvent(`<div class="specialStage keyBattle ${outcome.tone}"><div class="specialKicker">🏀 本季關鍵戰結果</div><b>${escapeFeedText(objective.label)}｜${escapeFeedText(key.opponent||"關鍵對手")}</b><br><span class="mut">場上表現：${escapeFeedText(outcome.label)}</span><br>${escapeFeedText(story)}<br><span class="mut">${escapeFeedText(label)}｜${result.teamResult}｜疲勞 ${fatigueDelta>=0?"+":""}${fatigueDelta}｜身體負荷 ${loadDelta>=0?"+":""}${loadDelta}｜${marketText}${rivalText}</span></div>`,story);
+ finishSpecialEvent(`<div class="specialStage keyBattle ${outcome.tone}"><div class="specialKicker">🏀 本季關鍵戰結果</div><b>${escapeFeedText(objective.label)}｜${escapeFeedText(key.opponent||"關鍵對手")}</b><br>${escapeFeedText(story)}<br><span class="mut">${escapeFeedText(label)}｜疲勞 ${fatigueDelta>=0?"+":""}${fatigueDelta}｜身體負荷 ${loadDelta>=0?"+":""}${loadDelta}｜${marketText}</span></div>`,story);
 }
 function showNationalKeyBattle(event={}){
  const pending=p.pendingNationalCallup||{},level=pending.level||event.nationalLevel||"SENIOR",profile=nationalCompetitionById(level,pending.competitionId||event.nationalCompetition?.id),label=nationalLevelLabel(level),managed=pending.mode==="managed";
@@ -954,10 +1007,10 @@ function resolveProposal(mode="propose"){
 }
 function resolveFamilySpecial(action){
  let r=RNG(p.seed+"family-special-"+p.year+"-"+action),html="";
+ p.lastFamilySpecialYear=p.year;
  if(action==="childYes"){
-   p.children++;p.familyHarmony=Math.min(100,p.familyHarmony+8);p.confidence=Math.min(100,p.confidence+4);
-   p.stats.iq=Math.min(99,p.stats.iq+1);p.fatigue=Math.min(100,p.fatigue+4);
-   html=`<div class="familyOutcome"><b>👶 家庭新成員</b><br>子女 +1｜球商 +1｜信心 +4｜疲勞 +4。成為父親讓你看事情的方式更加成熟。</div>`;
+   p.children++;p.familyHarmony=Math.min(100,p.familyHarmony+8);p.confidence=Math.min(100,p.confidence+4);p.fatigue=Math.min(100,p.fatigue+4);
+   html=`<div class="familyOutcome"><b>👶 家庭新成員</b><br>子女 +1｜信心 +4｜疲勞 +4。家庭改變的是生活與優先順序，不會直接提高場上能力。</div>`;
    pushNews(`👶 ${p.name} 家中迎來第 ${p.children} 個孩子`);
  }else if(action==="childLater"){
    p.familyHarmony=Math.min(100,p.familyHarmony+2);
@@ -967,8 +1020,7 @@ function resolveFamilySpecial(action){
    html=`<div class="familyOutcome"><b>確認目前的家庭已經完整</b><br>你們共同做出長期決定。家庭關係 +4｜紀律 +1；往後不再重複出現生育規劃事件。</div>`;
  }else if(action==="familyRest"){
    p.familyHarmony=Math.min(100,p.familyHarmony+8);p.confidence=Math.min(100,p.confidence+3);p.fatigue=Math.max(0,p.fatigue-8);
-   if(r()<.45)p.stats.iq=Math.min(99,p.stats.iq+1);
-   html=`<div class="familyOutcome"><b>🏠 家庭時間</b><br>信心 +3｜疲勞 -8${p.stats.iq<99?"｜有機會獲得成熟度成長":""}。</div>`;
+   html=`<div class="familyOutcome"><b>🏠 家庭時間</b><br>信心 +3｜疲勞 -8。這段休息會影響生活狀態，不會直接改寫場上能力。</div>`;
  }else if(action==="shareSchedule"){
    p.familyHarmony=Math.min(100,p.familyHarmony+5);p.fatigue=Math.max(0,p.fatigue-3);p.rep+=1;
    html=`<div class="familyOutcome"><b>⚖️ 重排休賽季行程</b><br>家庭關係 +5｜疲勞 -3｜球隊評價 +1；訓練與家庭都保留固定時段。</div>`;
@@ -1039,20 +1091,20 @@ function resolveOffCourtSpecial(action){
    if(hit){p.rep+=5;p.confidence=Math.min(100,p.confidence+5);html=`<div class="specialStage career"><b>🔥 空缺變成你的舞台</b><br>你接手大量球權並打出代表作。球隊評價 +5｜信心 +5｜本季數據機會上升｜疲勞 +12。</div>`;}
    else{p.rep-=3;p.confidence=Math.max(0,p.confidence-4);html=`<div class="specialStage career"><b class="bad">球權增加，效率卻撐不住</b><br>你仍得到更多數據機會，但失誤與輸球責任同步增加。球隊評價 -3｜信心 -4｜疲勞 +12。</div>`;}
  }else if(action==="shareVacantUsage"){
-   p.rep+=2;p.stats.pass=Math.min(99,p.stats.pass+1);p.planStatMod=(p.planStatMod||0)-1;html=`<div class="specialStage career"><b>🤲 全隊一起填補空缺</b><br>球隊沒有把壓力壓在一人身上。傳球 +1｜球隊評價 +2；你的個人數據機會略降。</div>`;
+   const pass=applyEventSkillChange("pass",1);p.rep+=2;p.planStatMod=(p.planStatMod||0)-1;html=`<div class="specialStage career"><b>🤲 全隊一起填補空缺</b><br>球隊沒有把壓力壓在一人身上。${eventSkillChangeText("pass",pass)}｜球隊評價 +2；你的個人數據機會略降。</div>`;
  }else if(action==="pressureFrontOffice"){
    const r=RNG(`${p.seed}-pressure-front-office-${p.year}`),works=r()<.38;
    if(works){p.rep+=3;p.confidence=Math.min(100,p.confidence+2);html=`<div class="specialStage career"><b>📋 管理層承諾補強</b><br>你的公開壓力奏效，也讓球迷把你當成球隊門面。球隊評價 +3｜信心 +2。</div>`;}
    else{p.rep-=5;marketPenalty(3);html=`<div class="specialStage career"><b class="bad">管理層認定你公開越權</b><br>補強沒有立刻發生，球團關係先惡化。球隊評價 -5｜市場評價下降。</div>`;}
  }else if(action==="sideVeterans"){
-   p.rep+=2;p.stats.iq=Math.min(99,p.stats.iq+1);p.confidence=Math.max(0,p.confidence-2);html=`<div class="specialStage career"><b>站到老將陣營</b><br>你得到老將在場上的照顧與經驗。球商 +1｜球隊評價 +2；年輕隊友開始與你保持距離。</div>`;
+   const iq=applyEventSkillChange("iq",1);p.rep+=2;p.confidence=Math.max(0,p.confidence-2);html=`<div class="specialStage career"><b>站到老將陣營</b><br>你得到老將在場上的照顧與經驗。${eventSkillChangeText("iq",iq)}｜球隊評價 +2；年輕隊友開始與你保持距離。</div>`;
  }else if(action==="sideYouth"){
    const r=RNG(`${p.seed}-side-youth-${p.year}`),shift=r()<.5;
    if(shift){p.rep+=4;p.confidence=Math.min(100,p.confidence+3);html=`<div class="specialStage career"><b>⚡ 新勢力取得話語權</b><br>教練採納更快的打法，你成為改革核心。球隊評價 +4｜信心 +3。</div>`;}
    else{p.rep-=4;p.confidence=Math.max(0,p.confidence-2);html=`<div class="specialStage career"><b class="bad">老將守住了更衣室</b><br>改革沒有成功，你的輪替也受到既有領袖影響。球隊評價 -4｜信心 -2。</div>`;}
  }else if(action==="mediateLockerRoom"){
    const r=RNG(`${p.seed}-mediate-locker-${p.year}`),works=r()<.58;
-   if(works){p.rep+=5;p.stats.iq=Math.min(99,p.stats.iq+1);html=`<div class="specialStage career"><b>🗣️ 兩派接受共同方案</b><br>你第一次真正被視為球隊領袖。球隊評價 +5｜球商 +1。</div>`;}
+   if(works){const iq=applyEventSkillChange("iq",1);p.rep+=5;html=`<div class="specialStage career"><b>🗣️ 兩派接受共同方案</b><br>你第一次真正被視為球隊領袖。球隊評價 +5｜${eventSkillChangeText("iq",iq)}。</div>`;}
    else{p.rep-=2;p.confidence=Math.max(0,p.confidence-3);html=`<div class="specialStage career"><b class="bad">兩邊都認為你沒有表態</b><br>談判失敗，你暫時失去兩派信任。球隊評價 -2｜信心 -3。</div>`;}
  }else if(action==="acceptDuiResponsibility"){
    p.scandalCount++;p.rep=Math.max(-40,p.rep-14);p.confidence=Math.max(0,p.confidence-7);p.discipline=Math.max(0,p.discipline-10);marketPenalty(13,12);p.nationalTeamBanUntil=Math.max(p.nationalTeamBanUntil||0,p.year+2);
@@ -1457,7 +1509,15 @@ function optionRisk(type){
 function applyDelta(changes,key,delta,label){
  if(!delta)return;
  if(key in p.stats){
-   let before=p.stats[key],after=Math.max(20,Math.min(99,before+delta));p.stats[key]=after;delta=after-before;
+   const outcome=typeof applyCareerStatChange==="function"
+     ?applyCareerStatChange(p,key,delta,{source:"event",seasonalFallback:delta>0})
+     :null;
+   if(outcome){
+    delta=outcome.applied;
+    if(outcome.converted)changes.push({label:"本季數據機會",delta:outcome.converted});
+   }else{
+    let before=p.stats[key],after=Math.max(20,Math.min(99,before+delta));p.stats[key]=after;delta=after-before;
+   }
  }else{
    let before=p[key]??0;
    if(key==="confidence")p[key]=Math.max(0,Math.min(100,before+delta));
@@ -1467,6 +1527,17 @@ function applyDelta(changes,key,delta,label){
    delta=p[key]-before;
  }
  if(delta)changes.push({label:label||L[key]||key,delta});
+}
+function applyEventSkillChange(key,delta,source="event"){
+ const before=Number(p.stats?.[key]||0);
+ if(typeof applyCareerStatChange==="function")return applyCareerStatChange(p,key,delta,{source,seasonalFallback:delta>0});
+ const next=Math.max(20,Math.min(99,before+delta));p.stats[key]=next;
+ return {applied:next-before,converted:0,reason:"legacy"};
+}
+function eventSkillChangeText(key,outcome){
+ if(outcome?.applied)return `${L[key]} ${outcome.applied>0?"+":""}${outcome.applied}`;
+ if(outcome?.converted)return `本季數據機會 +${outcome.converted}`;
+ return "能力維持，改以角色與狀態呈現";
 }
 function resultLabel(tier){
  return {great:"大成功",success:"成功",fail:"失敗",disaster:"大失敗"}[tier];

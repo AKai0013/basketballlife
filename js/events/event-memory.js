@@ -24,6 +24,7 @@ function ensureV8CareerState(player=p){
  player.storyBeats=Array.isArray(player.storyBeats)?player.storyBeats:[];
  player.seasonStoryCandidates=Array.isArray(player.seasonStoryCandidates)?player.seasonStoryCandidates:[];
  player.roleHistory=Array.isArray(player.roleHistory)?player.roleHistory:[];
+ if(typeof ensureCareerStoryState==="function")ensureCareerStoryState(player);
  player.careerCast=player.careerCast&&typeof player.careerCast==="object"&&!Array.isArray(player.careerCast)?player.careerCast:{};
  player.teamWorld=player.teamWorld&&typeof player.teamWorld==="object"&&!Array.isArray(player.teamWorld)?player.teamWorld:{};
  player.roleState=player.roleState&&typeof player.roleState==="object"&&!Array.isArray(player.roleState)?player.roleState:{};
@@ -33,6 +34,7 @@ function ensureV8CareerState(player=p){
  // 高中與大學階段沒有職業經紀人；正式踏入職業市場後才建立並長期保留。
  if(v8CareerIsProfessional(player))ensureV8Agent(player);
  else if(cast.agent)delete cast.agent;
+ if(!cast.friend)cast.friend={name:v8Pick(V8_TEAMMATES,`${seed}-friend`),trait:"從學生時期就陪你練球",trust:58,metYear:player.year||2026};
  if(!cast.rival)cast.rival={name:v8Pick(V8_RIVALS,`${seed}-rival`),trait:"從學生時期一路被拿來比較",respect:42,metYear:player.year||2026};
  if(!cast.teammate)cast.teammate={name:v8Pick(v8TeammatePool(player),`${seed}-${player.team||"first"}-mate`),trait:"主要輪替競爭者",trust:52,team:player.team||"",metYear:player.year||2026};
  ensureV8TeamWorld(player,true);
@@ -319,13 +321,20 @@ function unlockChain(id){
  if(chainHas(id)||!CHAIN_TITLES[id])return "";
  const d=CHAIN_TITLES[id],obj={id,name:d.name,effect:d.effect,rarity:d.rarity||"common",negative:!!d.negative};
  p.chainTitles.push(obj);logIt(`🔗 連鎖稱號：${d.name}`);pushNews(`🎉 ${p.name} 解鎖連鎖稱號【${d.name}】`);
- // Immediate permanent effects
- if(id==="scorer3"){p.caps.shoot=Math.min(99,p.caps.shoot+3);p.caps.finish=Math.min(99,p.caps.finish+3);}
- if(id==="assist1"){p.caps.pass=Math.min(99,p.caps.pass+2);p.caps.iq=Math.min(99,p.caps.iq+2);}
- if(id==="lock"){p.caps.defense=Math.min(99,p.caps.defense+3);}
- if(id==="triple"){Object.keys(p.caps).forEach(k=>p.caps[k]=Math.min(99,p.caps[k]+1));}
- if(id==="glasscannon"){p.caps.shoot=Math.min(99,p.caps.shoot+2);p.caps.finish=Math.min(99,p.caps.finish+2);}
- return `<div class="titleUnlock"><b>🔗 連鎖稱號解鎖｜${d.name}</b><br><span class="mut">${d.effect}</span></div>`;
+ const raised=[];
+ const raise=(key,amount)=>{
+  const outcome=typeof raiseCareerStatCap==="function"?raiseCareerStatCap(p,key,amount,{source:"chain"}):null;
+  if(outcome?.applied)raised.push(`${L[key]} 上限 +${outcome.applied}`);
+ };
+ // V9 cap breakthroughs are youth/technical developments only; veterans keep the title
+ // but receive role and season-form value instead of a fictional permanent leap.
+ if(id==="scorer3"){raise("shoot",3);raise("finish",3);}
+ if(id==="assist1"){raise("pass",2);raise("iq",2);}
+ if(id==="lock"){raise("defense",3);}
+ if(id==="triple"){Object.keys(p.caps).forEach(k=>raise(k,1));}
+ if(id==="glasscannon"){raise("shoot",2);raise("finish",2);}
+ const effect=raised.length?raised.join("｜"):(typeof isV9Progression==="function"&&isV9Progression(p)?"生涯階段不再提高永久上限；稱號既有的角色與賽季效果仍保留":d.effect);
+ return `<div class="titleUnlock"><b>🔗 連鎖稱號解鎖｜${d.name}</b><br><span class="mut">${effect}</span></div>`;
 }
 function checkChainTitles(stats){
  let html="";
@@ -370,6 +379,7 @@ function injuryRiskFactor(scope="season"){
  if(chainHas("lock"))factor*=.98;
  if(chainHas("glasscannon"))factor*=1.05;
  if(scope==="event"&&hasTitle("steady"))factor*=.95;
+ if(Number(p.preseasonRecoveryYear)===Number(p.year)&&Number(p.preseasonRecoveryRisk)>0)factor*=1-Math.min(.18,Math.max(0,Number(p.preseasonRecoveryRisk)));
  return factor;
 }
 

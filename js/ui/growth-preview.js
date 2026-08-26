@@ -195,6 +195,10 @@
     if (positionLabel) positionLabel.remove();
     quickPanel.appendChild(positionHead);
     if (positionGrid) quickPanel.appendChild(positionGrid);
+    const origins = document.createElement("details");
+    origins.className = "blCareerOrigins";
+    origins.innerHTML = `<summary><span><b>生涯人物起點</b><small>替最早的朋友與競爭者取名；留白會由 Seed 產生</small></span><em>選填</em></summary><div class="blCareerOriginsBody"><label><span>最早陪你練球的人</span><input id="careerFriendNameInput" maxlength="12" autocomplete="off" placeholder="例如：陳冠宇"></label><label><span>第一次被拿來比較的對手</span><input id="careerRivalNameInput" maxlength="12" autocomplete="off" placeholder="例如：江承峰"></label><p>他們會在生涯事件中正式登場；教練與經紀人則會在加入球隊、踏入職業後出現。</p></div>`;
+    quickPanel.appendChild(origins);
     quickPanel.appendChild(quick);
 
     const syncPositionName = () => {
@@ -269,16 +273,23 @@
     const talent = typeof v90TalentPanelHTML === "function" ? v90TalentPanelHTML(player) : "";
     const stats = Object.entries(player.stats || {}).map(([key, value]) => {
       const cap = Number(player.caps?.[key] || 99);
+      const limit = typeof careerStatLimit === "function" ? careerStatLimit(player, key) : cap;
       const label = typeof L !== "undefined" ? (L[key] || key) : key;
-      return `<div class="v9ProfileStat"><span><b>${safeText(label)}</b><small>上限 ${cap}</small></span><i><em style="--value:${Math.min(99, Number(value) || 0)}%"></em></i><strong>${Number(value) || 0}</strong></div>`;
+      return `<div class="v9ProfileStat"><span><b>${safeText(label)}</b><small>Seed 基準 ${cap}${limit>cap?`・可培養 ${limit}`:""}</small></span><i><em style="--value:${Math.min(99, Number(value) || 0)}%"></em></i><strong>${Number(value) || 0}</strong></div>`;
     }).join("");
     return `${talent}<div class="v9ProfileStats">${stats}</div>`;
   }
 
   function v9CareerRecordMarkup(player) {
     const rows = (Array.isArray(player?.log) ? player.log : []).slice(0, 16);
-    if (!rows.length) return `<div class="v9DrawerEmpty">第一段生涯紀錄即將寫下。</div>`;
-    return `<div class="v9RecordList">${rows.map((row) => `<div>${safeText(row)}</div>`).join("")}</div>`;
+    const people = typeof careerStoryPeople === "function" ? careerStoryPeople(player) : [];
+    const peopleHTML = people.length ? `<section class="v9StorySection"><div class="v9StorySectionHead"><small>CAREER CAST</small><b>這段生涯裡的人</b></div><div class="v9CareerPeople">${people.map((person) => `<article><span>${safeText(person.label)}</span><b>${safeText(person.name)}</b><small>${safeText(person.note)}</small></article>`).join("")}</div></section>` : "";
+    const pending = (Array.isArray(player?.careerStoryPending) ? player.careerStoryPending : []).filter((item) => item?.status === "pending");
+    const pendingHTML = pending.length ? `<section class="v9StorySection"><div class="v9StorySectionHead"><small>REMEMBERED</small><b>之後仍可能產生後果的選擇</b></div><div class="v9PendingStories">${pending.slice(0, 6).map((item) => { const event = typeof careerStoryEventById === "function" ? careerStoryEventById(item.eventId) : null; return `<article><small>等待真實條件成立，不預告固定年份</small><b>${safeText(item.sourceTitle || event?.title || "未完成的生涯事件")}</b><span>你當時選擇｜${safeText(item.sourceChoice || "已留下決定")}</span>${item.sourceTeam ? `<span>當時球隊｜${safeText(item.sourceTeam)}</span>` : ""}</article>`; }).join("")}</div></section>` : "";
+    const storyRows = (Array.isArray(player?.careerStoryHistory) ? player.careerStoryHistory : []).filter((item) => Number(item?.node) !== 0 && !String(item?.eventId || "").endsWith(":closed")).slice(-12).reverse();
+    const storyHTML = storyRows.length ? `<section class="v9StorySection"><div class="v9StorySectionHead"><small>CHOICES & CONSEQUENCES</small><b>選擇留下的後果</b></div><div class="v9StoryRecords">${storyRows.map((item) => `<article><small>${Number(item.year) || "—"}・${safeText(item.actorLabel || item.person || "生涯事件")}${item.actorRole ? `｜${safeText(item.actorRole)}` : ""}</small><b>${safeText(item.title)}</b>${item.sourceTitle ? `<span>承接｜${safeText(item.sourceTitle)}・${safeText(item.sourceChoice || "先前選擇")}</span>` : ""}<p>${safeText(item.choice)} → ${safeText(item.result)}</p><span>${safeText(item.memory)}</span></article>`).join("")}</div></section>` : "";
+    const logHTML = rows.length ? `<section class="v9StorySection"><div class="v9StorySectionHead"><small>CAREER LOG</small><b>逐段生涯紀錄</b></div><div class="v9RecordList">${rows.map((row) => `<div>${safeText(row)}</div>`).join("")}</div></section>` : `<div class="v9DrawerEmpty">第一段生涯紀錄即將寫下。</div>`;
+    return `${peopleHTML}${pendingHTML}${storyHTML}${logHTML}`;
   }
 
   function installV9GameNavigation() {
@@ -372,6 +383,7 @@
       if (!key) return;
       const value = Math.max(0, Math.min(100, Math.round(Number(player.stats[key]) || 0)));
       const cap = Math.max(0, Math.min(100, Math.round(Number(player.caps?.[key]) || 99)));
+      const limit = typeof careerStatLimit === "function" ? careerStatLimit(player, key) : cap;
       let track = row.querySelector(".pointTrack");
       if (!track) {
         track = document.createElement("span");
@@ -383,7 +395,7 @@
       track.style.setProperty("--cap", `${cap}%`);
       track.setAttribute("role", "progressbar");
       const label = row.querySelector(".pointName b")?.textContent?.trim() || key;
-      track.setAttribute("aria-label", `${label}目前 ${value}，培養上限 ${cap}`);
+      track.setAttribute("aria-label", `${label}目前 ${value}，Seed 基準 ${cap}，可培養至 ${limit}`);
       track.setAttribute("aria-valuemin", "0");
       track.setAttribute("aria-valuemax", "99");
       track.setAttribute("aria-valuenow", String(value));
@@ -392,7 +404,9 @@
 
   function trainingScore(player, key, credit, priority, priorPicks = 0) {
     const stat = Number(player.stats?.[key] || 0);
-    if (stat >= 99) return -Infinity;
+    const limit = typeof careerStatLimit === "function" ? careerStatLimit(player, key) : 99;
+    const growthRoom = typeof availablePermanentGrowth === "function" ? availablePermanentGrowth(player, key) : Infinity;
+    if (stat >= limit || growthRoom <= 0) return -Infinity;
     const cap = Number(player.caps?.[key] || 99);
     const progress = Math.max(0, Number(player.trainingProgress?.[key] || 0));
     let cost = 8;
@@ -401,8 +415,9 @@
     const priorityIndex = priority.indexOf(key);
     const roleFit = (priority.length - (priorityIndex < 0 ? priority.length : priorityIndex)) * 14;
     const nextStep = ((progress + credit) % cost) / cost;
-    const capFit = stat < cap ? 28 : -24;
-    return immediateGain * 220 + roleFit + nextStep * 30 + capFit + (99 - stat) * 0.08 - priorPicks * 44;
+    const remaining = Math.max(0, limit - stat);
+    const capFit = stat < cap ? 28 : 8;
+    return immediateGain * 220 + roleFit + nextStep * 30 + capFit + remaining * 4 - priorPicks * 82;
   }
 
   function quickAllocateTraining() {
@@ -420,15 +435,27 @@
       guard += 1;
       const index = player.used.findIndex((used) => !used);
       const credit = Math.max(0, Number(player.dice?.[index] || 0));
-      const available = Object.keys(player.stats || {}).filter((key) => Number(player.stats[key]) < 99);
-      if (!available.length) break;
+      const totalDice = Array.isArray(player.dice) ? player.dice.length : 3;
+      const maxSameSkill = Math.max(1, Math.ceil(totalDice / 2));
+      const available = Object.keys(player.stats || {}).filter((key) => {
+        const stat = Number(player.stats[key]);
+        const limit = typeof careerStatLimit === "function" ? careerStatLimit(player, key) : 99;
+        const room = typeof availablePermanentGrowth === "function" ? availablePermanentGrowth(player, key) : Infinity;
+        return stat < limit && room > 0;
+      });
+      if (!available.length) {
+        if (typeof window.convertRemainingTrainingToRecovery === "function") window.convertRemainingTrainingToRecovery();
+        break;
+      }
       const picks = (player.trainingUndo || []).reduce((counts, item) => {
         if (item?.k) counts[item.k] = (counts[item.k] || 0) + 1;
         return counts;
       }, {});
-      available.sort((a, b) => trainingScore(player, b, credit, priority, picks[b] || 0) - trainingScore(player, a, credit, priority, picks[a] || 0));
+      const diversified = available.filter((key) => (picks[key] || 0) < maxSameSkill);
+      const candidates = diversified.length ? diversified : available;
+      candidates.sort((a, b) => trainingScore(player, b, credit, priority, picks[b] || 0) - trainingScore(player, a, credit, priority, picks[a] || 0));
       const before = player.used.filter(Boolean).length;
-      assign(available[0]);
+      assign(candidates[0]);
       if (player.used.filter(Boolean).length <= before) break;
     }
     const message = document.getElementById("diceMsg");
