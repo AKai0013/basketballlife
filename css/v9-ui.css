@@ -725,7 +725,7 @@ body.blCommunityMode .communityLoading,body.blCommunityMode .communityError,body
   body.blGameMode #flow span{min-width:max-content;font-size:9px!important}
   body.blGameMode #flow span:not(:last-child):after{width:24px;flex:0 0 24px;margin:0 8px}
   body.blGameMode #titleShelf{margin-bottom:9px!important}
-  body.blGameMode #currentPanel{min-height:0!important;padding:20px 17px 18px!important;border-radius:21px!important;scroll-margin-top:calc(76px + env(safe-area-inset-top))}
+  body.blGameMode #currentPanel{min-height:0!important;padding:20px 17px 18px!important;overscroll-behavior-y:auto!important;touch-action:pan-y!important;border-radius:21px!important;scroll-margin-top:calc(76px + env(safe-area-inset-top))}
   body.blGameMode #currentPanel:before{top:13px!important;left:17px!important;font-size:8px!important}
   body.blGameMode #currentPanel .chapter{margin-top:17px!important;font-size:9px!important}
   body.blGameMode #currentPanel>h2{font-size:34px!important}
