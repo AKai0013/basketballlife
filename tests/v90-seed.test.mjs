@@ -167,6 +167,7 @@ test("V9 approved UI uses the production game nodes and keeps the original save 
   assert.match(v9css,/choice\.v9EventChoice>\.v9EventChance/);
   assert.match(events,/eventChancePreview v9EventChance/);
   assert.match(v9css,/data-v9-view="transition".*#currentPanel:after\{[^}]*inset:0;/s);
+  assert.match(v9css,/body\.blGameMode #currentPanel\{[^}]*min-height:0!important;[^}]*overscroll-behavior-y:auto!important;[^}]*touch-action:pan-y!important/);
   assert.match(read("js/career/injury-engine.js"),/choice seasonPlanChoice risk/);
   assert.match(read("js/career/injury-engine.js"),/class="seasonPlanRisk"/);
   assert.match(v9css,/data-stage="plan".*choice\.seasonPlanChoice/s);
