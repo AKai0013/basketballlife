@@ -1,3 +1,5 @@
+import {handleOnlineKeyBattle} from "./key-battle.js";
+
 const json=(data,status=200,headers={})=>new Response(JSON.stringify(data),{status,headers:{"content-type":"application/json; charset=utf-8","cache-control":"no-store",...headers}});
 const fail=(message,status=400)=>json({error:message},status);
 const text=(v,max=200)=>String(v??"").trim().slice(0,max);
@@ -259,6 +261,10 @@ export async function onRequest({request,env,params}){
     if(path[0]==="session")return session(request,env);
     if(path[0]==="careers")return careers(request,env,path);
     if(path[0]==="news")return news(request,env);
+    if(path[0]==="online"&&path[1]==="key-battle"){
+      const auth=await authenticate(request,env);if(auth.error)return auth.error;
+      return handleOnlineKeyBattle({request,env,path:path.slice(2),profile:auth.profile});
+    }
     if(path[0]==="admin"&&path[1]==="import")return adminImport(request,env);
     return fail("API route not found",404);
   }catch(e){console.error(e);return fail("伺服器暫時無法處理請求",500)}

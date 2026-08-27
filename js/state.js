@@ -49,7 +49,7 @@ function proceduralSeed(){
  else for(let i=0;i<bytes.length;i++)bytes[i]=Math.floor(Math.random()*256);
  return [...bytes].map(v=>SEED_ALPHABET[v%SEED_ALPHABET.length]).join("");
 }
-let chosenPos="PG",chosenHeight=188,chosenWingspan=198,chosenBirthplace="RANDOM",chosenAvatarIndex=Math.floor(Math.random()*64),p=null,selectedDie=null,weeklySetupActive=false,weeklySetupApplying=false;
+let chosenPos="PG",chosenHeight=188,chosenWingspan=198,chosenBirthplace="RANDOM",chosenAvatarIndex=Math.floor(Math.random()*64),chosenCareerMode="complete",p=null,selectedDie=null,weeklySetupActive=false,weeklySetupApplying=false;
 
 function bodyRangeFor(pos=chosenPos){return POSITION_BODY_RANGES[pos]||POSITION_BODY_RANGES.PG}
 function clampNumber(value,min,max){return Math.max(min,Math.min(max,Number(value)||min))}
@@ -95,6 +95,7 @@ function normalizeCareerPlayer(player){
  if(typeof player.avatarSeed!=="string"||!player.avatarSeed)player.avatarSeed=newAvatarSeed();
  if(typeof player.publicCareerId!=="string")player.publicCareerId="";
  if(typeof player.publicCareerUploadId!=="string"||!player.publicCareerUploadId)player.publicCareerUploadId=player.publicCareerId||"";
+  if(!["complete","highlight"].includes(player.careerMode))player.careerMode="complete";
  if(typeof player.homecomingTeam!=="string")player.homecomingTeam="";
  if(typeof player.homecomingRegion!=="string")player.homecomingRegion="";
  const bodyCfg=bodyRangeFor(player.pos);
@@ -111,9 +112,10 @@ function normalizeCareerPlayer(player){
    "seasonPointFocus","offers","news","seasonHistory","careerAwards","chainTitles","teamsPlayed",
    "hallOfFame","jerseyRetired","specialQueue","internationalHistory","offCourtHistory","offCourtEventKinds","championshipHistory","lastSeasonAwards","hallVotes","formerPartners",
    "medicalHistory","medicalPressureHistory","recentEvents","feedHistory","relationshipHistory","chainQueue","storyBeats","seasonStoryCandidates","roleHistory","teamWorldHistory","collegeDraftHistory","draftEntrySelections",
-   "careerStoryHistory","careerStoryPending","careerStorySeen"
+   "careerStoryHistory","careerStoryPending","careerStorySeen","highlightHistory","highlightChapterHistory"
  ];
  arrayFields.forEach(k=>{if(!Array.isArray(player[k]))player[k]=[]});
+ if(!player.careerStoryLineSelection||typeof player.careerStoryLineSelection!=="object"||Array.isArray(player.careerStoryLineSelection))player.careerStoryLineSelection={};
  // V7.50 corrects the US college system: both routes are four-year NCAA divisions.
  // Keep old careers playable while removing the obsolete NJCAA/NCAA route labels.
  const oldUSCollegePath=player.path==="NJCAA"||player.path==="NCAA";

@@ -34,13 +34,137 @@ test("ordinary and professional events keep three choices", () => {
   }
 });
 
-test("expanded ordinary pools contain 60 distinct authored events",()=>{
+test("expanded ordinary pools contain 82 distinct authored events",()=>{
   const ordinary=Array.from(context.__BL_TEST_DATA.events);
   const professional=Array.from(context.__BL_TEST_DATA.PRO_GENERAL_EVENTS);
-  assert.equal(ordinary.length,32);
-  assert.equal(professional.length,28);
+  assert.equal(ordinary.length,38);
+  assert.equal(professional.length,44);
   const titles=[...ordinary,...professional].map(event=>event.t);
-  assert.equal(new Set(titles).size,60);
+  assert.equal(new Set(titles).size,82);
+});
+
+test("new scene events provide a specific result for every choice and outcome tier",()=>{
+  const titles=new Set([
+    "暫停只剩最後一次","隊長要求交換防守任務","邊線球只剩零點八秒","隊友把你的加練影片傳進群組",
+    "導師把缺席單送到球館","期中考週撞上跨校客場",
+    "菜鳥記錯最後一波戰術","客場球迷把飯店房號貼上網","記錄台多算了你一次犯規","對手公開說出你的第一選擇",
+    "白天排班臨時延長","主場臨時換到陌生場館","翻譯漏掉最後一句防守口令","跨省客場的裝備箱沒有抵達",
+    "NBA 母隊臨時要看一場試用","國內聯賽與跨國賽只隔兩天","全國轉播把開賽時間提前",
+    "戰術角色調整","投籃低潮","影片會議","關鍵第四節","主場噓聲","隊友進入合約年",
+    "對手開始放空你的外線","換防後對手連續點名你","賽前發言輪到你","年輕隊友帶著影片來敲門","最後一個輪替名額"
+  ]);
+  const rows=[...context.__BL_TEST_DATA.events,...context.__BL_TEST_DATA.PRO_GENERAL_EVENTS].filter(event=>titles.has(event.t));
+  assert.equal(rows.length,titles.size);
+  for(const event of rows){
+    for(const option of event.opts){
+      assert.deepEqual(Object.keys(option[3]||{}).sort(),["disaster","fail","great","success"],`${event.t}: ${option[0]}`);
+      for(const result of Object.values(option[3]))assert.ok(result.length>=24,`${event.t}: ${option[0]}`);
+    }
+  }
+});
+
+test("third-batch professional rewrites contain a concrete setup and meaningful choices",()=>{
+  const titles=new Set(["戰術角色調整","投籃低潮","影片會議","關鍵第四節","主場噓聲","隊友進入合約年"]);
+  const rows=Array.from(context.__BL_TEST_DATA.PRO_GENERAL_EVENTS).filter(event=>titles.has(event.t));
+  assert.equal(rows.length,titles.size);
+  for(const event of rows){
+    assert.ok(event.d.length>=55,event.t);
+    for(const option of event.opts)assert.ok(option[1].length>=24,`${event.t}: ${option[0]}`);
+  }
+});
+
+test("rewritten legacy drills describe a real decision instead of stat labels",()=>{
+  const titles=new Set(["控球加練","防守腳步課","籃板卡位","中距離武器","罰球線壓力","擋拆傳球窗口","左手終結","弱側協防","單打腳步調整","防守任務升級","籃板責任增加","持球壓力"]);
+  const rows=[...context.__BL_TEST_DATA.events,...context.__BL_TEST_DATA.PRO_GENERAL_EVENTS].filter(event=>titles.has(event.t));
+  assert.equal(rows.length,titles.size);
+  for(const event of rows){
+    assert.ok(event.d.length>=45,event.t);
+    for(const option of event.opts)assert.ok(option[1].length>=20,`${event.t}: ${option[0]}`);
+  }
+});
+
+test("ordinary event resolver prefers authored result text and keeps legacy fallback",()=>{
+  assert.match(eventEngineSource,/const authoredOutcome=ordinaryEventOutcome\(activeOrdinaryEvent,label,tier\)/);
+  const logic=eventLogic({year:2032,path:"HBL",stats:{shoot:60,finish:60,handle:60,pass:60,defense:60,rebound:60,ath:60,iq:60}});
+  const result=vm.runInContext(`ordinaryEventOutcome(events.find(event=>event.t==="邊線球只剩零點八秒"),"改成外彈接球直接出手","great")`,logic);
+  assert.match(result,/紅燈剛亮/);
+  assert.equal(vm.runInContext(`ordinaryEventOutcome(events[0],events[0].opts[0][0],"great")`,logic),"");
+});
+
+test("context-gated events stay out of illogical leagues and career states",()=>{
+  const player={path:"台灣職業",rep:2,stats:{shoot:72,finish:72,handle:72,pass:72,defense:72,rebound:72,ath:72,iq:72}};
+  const logic=eventLogic(player);
+  assert.equal(vm.runInContext(`normalEventPool().some(event=>event.t==="記錄台多算了你一次犯規")`,logic),true);
+  assert.equal(vm.runInContext(`normalEventPool().some(event=>event.t==="客場球迷把飯店房號貼上網")`,logic),false);
+  assert.equal(vm.runInContext(`normalEventPool().some(event=>event.t==="對手公開說出你的第一選擇")`,logic),false);
+  player.path="日本職業";
+  assert.equal(vm.runInContext(`normalEventPool().some(event=>event.t==="客場球迷把飯店房號貼上網")`,logic),true);
+  player.rep=8;
+  assert.equal(vm.runInContext(`normalEventPool().some(event=>event.t==="對手公開說出你的第一選擇")`,logic),true);
+  for(const path of ["CBA","NBA G League","NBA"]){
+    player.path=path;
+    assert.equal(vm.runInContext(`normalEventPool().some(event=>event.t==="記錄台多算了你一次犯規")`,logic),false,path);
+  }
+});
+
+test("new professional scenes require the weakness or career context named in their setup",()=>{
+  const player={path:"台灣職業",age:23,careerSeason:3,rep:2,seasonHistory:[],stats:{shoot:74,finish:72,handle:72,pass:72,defense:74,rebound:72,ath:72,iq:72}};
+  const logic=eventLogic(player);
+  const has=title=>vm.runInContext(`normalEventPool().some(event=>event.t===${JSON.stringify(title)})`,logic);
+  assert.equal(has("對手開始放空你的外線"),false);
+  assert.equal(has("換防後對手連續點名你"),false);
+  assert.equal(has("賽前發言輪到你"),false);
+  assert.equal(has("年輕隊友帶著影片來敲門"),false);
+  assert.equal(has("最後一個輪替名額"),false);
+  delete player.stats.shoot;
+  assert.equal(has("對手開始放空你的外線"),false);
+  player.stats.shoot=64;player.stats.defense=66;
+  assert.equal(has("對手開始放空你的外線"),true);
+  assert.equal(has("換防後對手連續點名你"),true);
+  player.age=29;player.careerSeason=9;player.rep=12;
+  assert.equal(has("賽前發言輪到你"),true);
+  assert.equal(has("年輕隊友帶著影片來敲門"),true);
+  player.seasonHistory=[{path:"UBA",mins:12}];
+  assert.equal(has("最後一個輪替名額"),false);
+  player.seasonHistory=[{path:"台灣職業"}];
+  assert.equal(has("最後一個輪替名額"),false);
+  player.seasonHistory=[{path:"台灣職業",mins:17.5}];
+  assert.equal(has("最後一個輪替名額"),true);
+  player.seasonHistory=[{path:"台灣職業",mins:18.5}];
+  assert.equal(has("最後一個輪替名額"),false);
+});
+
+test("stage-specific additions only enter their intended career paths",()=>{
+  const rows=[...context.__BL_TEST_DATA.events,...context.__BL_TEST_DATA.PRO_GENERAL_EVENTS];
+  const expected={
+    "導師把缺席單送到球館":["HBL"],
+    "期中考週撞上跨校客場":["UBA","UBA 強權","NCAA D1","NCAA D2","日本大學"],
+    "白天排班臨時延長":["SBL／半職業"],
+    "主場臨時換到陌生場館":["台灣職業"],
+    "翻譯漏掉最後一句防守口令":["日本職業","韓國職業"],
+    "跨省客場的裝備箱沒有抵達":["CBA"],
+    "NBA 母隊臨時要看一場試用":["NBA G League"],
+    "國內聯賽與跨國賽只隔兩天":["歐洲聯賽"],
+    "全國轉播把開賽時間提前":["NBA"]
+  };
+  for(const [title,paths] of Object.entries(expected)){
+    const event=rows.find(row=>row.t===title);
+    assert.deepEqual(Array.from(event.paths),paths,title);
+  }
+});
+
+test("travel and postseason copy does not appear without its real context",()=>{
+  const domestic={path:"台灣職業",rep:10,fatigue:60,bodyLoad:60,stats:{shoot:70,finish:70,handle:70,pass:70,defense:70,rebound:70,ath:70,iq:70}};
+  const logic=eventLogic(domestic);
+  const domesticTitles=vm.runInContext("normalEventPool().map(event=>event.t)",logic);
+  assert.equal(domesticTitles.includes("客場交通延誤"),false);
+  assert.equal(domesticTitles.includes("客場連戰疲勞"),false);
+  assert.equal(domesticTitles.includes("季後賽第一戰"),false);
+  assert.equal(domesticTitles.includes("焦點戰開局尺度更重"),true);
+  domestic.path="NBA";
+  const nbaTitles=vm.runInContext("normalEventPool().map(event=>event.t)",logic);
+  assert.equal(nbaTitles.includes("客場交通延誤"),true);
+  assert.equal(nbaTitles.includes("客場連戰疲勞"),true);
 });
 
 test("all ordinary choices use supported outcomes and contain no unresolved placeholders",()=>{
@@ -75,7 +199,7 @@ test("ordinary events do not invent a contract year, exhaustion or scouting atte
   assert.equal(names.includes("經紀人要求刷數據"),false);
   assert.equal(names.includes("客場連戰疲勞"),false);
   assert.equal(names.includes("主場噓聲"),false);
-  base.contract.remaining=1;base.fatigue=52;
+  base.contract.remaining=1;base.fatigue=52;base.path="NBA";
   const relevant=vm.runInContext("normalEventPool().map(event=>event.t)",logic);
   assert.equal(relevant.includes("經紀人要求刷數據"),true);
   assert.equal(relevant.includes("客場連戰疲勞"),true);

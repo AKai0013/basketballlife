@@ -331,7 +331,10 @@ function nextStep(){
  if(p.stage==="transition"){
    if(p.transition==="toTraining"){
      p.transition=null;
+     if(typeof runHighlightSeasonPrelude==="function"&&runHighlightSeasonPrelude())return;
      if(isProPath())showProSeasonPlan();else showTraining();
+   }else if(p.transition==="toSpecial"){
+     p.transition=null;startSpecialPhase();
    }
    return
  }
@@ -343,7 +346,7 @@ function nextStep(){
  }
  if(p.stage==="midcareer"){startSpecialPhase();return}
  if(p.stage==="events"){if(p.eventIndex<p.seasonEventCount)showEvent();else startSpecialPhase();return}
- if(p.stage==="special"){if(p.specialIndex<p.specialQueue.length)showSpecialEvent();else if(p.specialReturnStage==="events"){p.specialReturnStage="";p.stage="events";showEvent()}else showHealth();return}
+ if(p.stage==="special"){if(p.specialIndex<p.specialQueue.length){if(typeof highlightAutoResolveRoutineSpecials==="function"&&highlightAutoResolveRoutineSpecials())return;showSpecialEvent()}else if(p.specialReturnStage==="events"){p.specialReturnStage="";p.stage="events";showEvent()}else showHealth();return}
  if(p.stage==="health"){showResults();return}
  if(p.stage==="results"){if(p.lastDanceActive){finishSeason();return}showPointDistribution();return}
  if(p.stage==="points"){finishSeason();return}

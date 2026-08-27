@@ -685,6 +685,7 @@
      birthplace:p.birthplace||"未設定",
      jersey_number:p.jerseyNumber??null,
      handedness:p.handedness||"右手",
+     career_mode:["complete","highlight"].includes(p.careerMode)?p.careerMode:"complete",
      talent_model:p.talentProfile?.model||"legacy",
      talent_archetype:p.talentProfile?.archetype||"",
      talent_core:Array.isArray(p.talentProfile?.core)?p.talentProfile.core:[],
@@ -1767,6 +1768,7 @@
  function userId(){return state.user?.id||""}
 
  window.BasketballLifeOnline={
+   request:apiRequest,
    state,
    init,
    saveNickname,

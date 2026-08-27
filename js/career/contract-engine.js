@@ -18,11 +18,15 @@ function showDevelopmentMarketReview(){
  p.pendingSeasonAdvance=true;
  p.stage="decision";resetMain();render();flow.innerHTML="";
  const sc=scoutingScore(),cur=p.path,curLevel=developmentLevel(cur),devSeasons=developmentSeasonCount();
- let all=proOffersForScore(sc,"dev-market-"+p.year);
- // Only show a genuine step up; otherwise the player is just being recycled through the same level.
- let upgrades=all.filter(c=>developmentLevel(c.league)>curLevel);
- const bridge=developmentPromotionOffer(sc);
- if(bridge&&!upgrades.some(c=>c.league===bridge.league))upgrades.unshift(bridge);
+  let all=proOffersForScore(sc,"dev-market-"+p.year);
+  // Only show a genuine step up; otherwise the player is just being recycled through the same level.
+  let upgrades=all.filter(c=>developmentLevel(c.league)>curLevel);
+  const bridge=developmentPromotionOffer(sc);
+  if(bridge&&!upgrades.some(c=>c.league===bridge.league))upgrades.unshift(bridge);
+  if(typeof isHighlightCareer==="function"&&isHighlightCareer(p)&&!upgrades.length&&devSeasons<3&&p.age<=24){
+    if(typeof highlightPushHistory==="function")highlightPushHistory({year:p.year,path:p.path,team:p.team,kind:"autoDevelopmentAdvance",season:devSeasons});
+    continueDevelopment();return;
+  }
 
  chapter.textContent=`${p.year} · ${p.age}歲 · ${cur} · 市場評估`;
  title.textContent="SBL｜年度市場評估";
@@ -1176,6 +1180,10 @@ function transferNCAAEarly(){transferFromNCAAD2()}
 
 function showCollegeDecision(){
  p.pendingSeasonAdvance=true;
+ if(typeof highlightCollegeDecisionGate==="function"&&isHighlightCareer(p)&&p.grade<collegeMaxYears()&&!highlightCollegeDecisionGate(p)){
+   if(typeof highlightPushHistory==="function")highlightPushHistory({year:p.year,path:p.path,team:p.team,kind:"autoCollegeAdvance",grade:p.grade});
+   stayCollege();return;
+ }
  p.stage="decision";resetMain();render();flow.innerHTML="";
  let sc=scoutingScore(),max=collegeMaxYears(),collegeComplete=p.grade>=max,profile=collegeResumeProfile(p.path);
  chapter.textContent=`${p.year} · ${p.age}歲 · ${p.path} · 季末抉擇`;
