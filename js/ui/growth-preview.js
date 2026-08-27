@@ -365,6 +365,11 @@
 
   function syncV9GameShell() {
     const game = document.getElementById("game");
+    if (game?.dataset.stage === "online") {
+      game.dataset.v9View = "online";
+      document.getElementById("ovr")?.closest(".box")?.classList.add("v9OvrBox");
+      return;
+    }
     const player = currentPlayer();
     if (!game || !player) return;
     installV9GameNavigation();
