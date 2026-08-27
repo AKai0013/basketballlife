@@ -404,8 +404,8 @@
 
   function trainingScore(player, key, credit, priority, priorPicks = 0) {
     const stat = Number(player.stats?.[key] || 0);
-    const limit = typeof careerStatLimit === "function" ? careerStatLimit(player, key) : 99;
-    const growthRoom = typeof availablePermanentGrowth === "function" ? availablePermanentGrowth(player, key) : Infinity;
+    const limit = 99;
+    const growthRoom = typeof availableTrainingGrowth === "function" ? availableTrainingGrowth(player, key) : Infinity;
     if (stat >= limit || growthRoom <= 0) return -Infinity;
     const cap = Number(player.caps?.[key] || 99);
     const progress = Math.max(0, Number(player.trainingProgress?.[key] || 0));
@@ -439,9 +439,9 @@
       const maxSameSkill = Math.max(1, Math.ceil(totalDice / 2));
       const available = Object.keys(player.stats || {}).filter((key) => {
         const stat = Number(player.stats[key]);
-        const limit = typeof careerStatLimit === "function" ? careerStatLimit(player, key) : 99;
-        const room = typeof availablePermanentGrowth === "function" ? availablePermanentGrowth(player, key) : Infinity;
-        return stat < limit && room > 0;
+        const room = typeof availableTrainingGrowth === "function" ? availableTrainingGrowth(player, key) : Infinity;
+        const ageAllowed = typeof canUseManualGrowth !== "function" || canUseManualGrowth(player, key);
+        return stat < 99 && room > 0 && ageAllowed;
       });
       if (!available.length) {
         if (typeof window.convertRemainingTrainingToRecovery === "function") window.convertRemainingTrainingToRecovery();

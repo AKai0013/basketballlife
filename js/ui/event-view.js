@@ -80,7 +80,9 @@ function showTraining(){
    resolution=`<div class="notice fail"><b>潛能覺醒失敗</b><br>22歲前未能累積 5 次最高點數「6」。這條隱藏成長路線已關閉。</div>`;
    p.geniusFailureShown=true;
  }
- special.innerHTML=`${planNotice}<div class="v9TrainingShell">${abilityPanel()}<div class="dicewrap"><div class="trainingTitle"><small>SEASON TRAINING</small>選擇養成方向</div><div class="trainingSummary">本季有 <b class="gold">${count}</b> 次訓練機會。<span id="diceRevealSummary">訓練點數揭曉中……</span></div><div id="dicepool" class="dicepool"></div><div id="assign" class="assign"></div><button id="undoTraining" class="undo" onclick="undoTrainingPoint()" disabled>↶ 返回上一步</button><div id="diceMsg" class="mut">選擇這次要加強的能力。</div></div></div>${resolution?`<div id="trainingRevealResolution" class="hidden">${resolution}</div>`:""}`;
+ const seasonContext=typeof trainingSeasonContextHTML==="function"?trainingSeasonContextHTML():"";
+ special.innerHTML=`${planNotice}<div class="v9TrainingShell">${abilityPanel()}<div class="dicewrap"><div class="trainingTitle"><small>SEASON TRAINING</small>選擇養成方向</div><div class="trainingSummary">本季有 <b class="gold">${count}</b> 次訓練機會。<span id="diceRevealSummary">訓練點數揭曉中……</span></div><div id="dicepool" class="dicepool"></div><div id="assign" class="assign"></div><button id="undoTraining" class="undo" onclick="undoTrainingPoint()" disabled>↶ 返回上一步</button><div id="diceMsg" class="mut">選擇這次要加強的能力。</div></div>${seasonContext}</div>${resolution?`<div id="trainingRevealResolution" class="hidden">${resolution}</div>`:""}`;
+ if(typeof hydrateTrainingPlayerCard==="function")hydrateTrainingPlayerCard();
  startDiceReveal();
  if(Object.values(p.stats).every(v=>v>=99)){
    p.used=p.used.map(()=>true);p.diceRolling=false;
@@ -115,7 +117,9 @@ function rebuildTrainingScreenFromSave(){
    p.geniusFailureShown=true;
  }
  const count=p.dice.length;
- special.innerHTML=`${planNotice}<div class="v9TrainingShell">${abilityPanel()}<div class="dicewrap"><div class="trainingTitle"><small>SEASON TRAINING</small>選擇養成方向</div><div class="trainingSummary">本季有 <b class="gold">${count}</b> 次訓練機會。<span id="diceRevealSummary">${p.diceRolling?"訓練點數揭曉中……":p.trainingRevealSummary}</span></div><div id="dicepool" class="dicepool"></div><div id="assign" class="assign"></div><button id="undoTraining" class="undo" onclick="undoTrainingPoint()" disabled>↶ 返回上一步</button><div id="diceMsg" class="mut">選擇這次要加強的能力。</div></div></div>${resolution?`<div id="trainingRevealResolution" class="hidden">${resolution}</div>`:""}`;
+ const seasonContext=typeof trainingSeasonContextHTML==="function"?trainingSeasonContextHTML():"";
+ special.innerHTML=`${planNotice}<div class="v9TrainingShell">${abilityPanel()}<div class="dicewrap"><div class="trainingTitle"><small>SEASON TRAINING</small>選擇養成方向</div><div class="trainingSummary">本季有 <b class="gold">${count}</b> 次訓練機會。<span id="diceRevealSummary">${p.diceRolling?"訓練點數揭曉中……":p.trainingRevealSummary}</span></div><div id="dicepool" class="dicepool"></div><div id="assign" class="assign"></div><button id="undoTraining" class="undo" onclick="undoTrainingPoint()" disabled>↶ 返回上一步</button><div id="diceMsg" class="mut">選擇這次要加強的能力。</div></div>${seasonContext}</div>${resolution?`<div id="trainingRevealResolution" class="hidden">${resolution}</div>`:""}`;
+ if(typeof hydrateTrainingPlayerCard==="function")hydrateTrainingPlayerCard();
  if(Object.values(p.stats).every(v=>v>=99)){
    p.used=p.used.map(()=>true);p.diceRolling=false;
    renderDice();
@@ -188,7 +192,7 @@ function renderDice(){
  ensureTrainingProgress();
  const current=p.used.findIndex(x=>!x);
  const v9Career=typeof isV9Progression==="function"&&isV9Progression(p);
- const trainable=key=>!v9Career?p.stats[key]<99:p.stats[key]<(typeof careerStatLimit==="function"?careerStatLimit(p,key):careerStatCap(p,key))&&(typeof availablePermanentGrowth!=="function"||availablePermanentGrowth(p,key)>0);
+ const trainable=key=>!v9Career?p.stats[key]<99:p.stats[key]<99&&(typeof canUseManualGrowth!=="function"||canUseManualGrowth(p,key))&&(typeof availableTrainingGrowth!=="function"||availableTrainingGrowth(p,key)>0);
  const allMax=Object.keys(p.stats).every(key=>!trainable(key));
  const revealCount=Number.isFinite(p.diceRevealCount)?p.diceRevealCount:p.dice.length;
  const revealSummary=document.getElementById("diceRevealSummary");
@@ -211,19 +215,19 @@ function renderDice(){
 
  if(allMax && current>=0){
    const remaining=p.dice.reduce((sum,value,index)=>sum+(p.used[index]?0:trainingCreditFromDie(value)),0);
-   assign.innerHTML=`<div class="trainingMaxNotice">本季已沒有可增加的永久能力，剩餘 ${remaining} 點課表可改為恢復、負荷管理與傷病預防。</div><button class="choice" onclick="convertRemainingTrainingToRecovery()"><b>轉為身體維持</b><small>不浪費剩餘訓練，也不突破能力與年齡上限。</small></button>`;
-   if(diceMsg)diceMsg.textContent="永久成長空間用完後，剩餘訓練仍可投入身體維持。";
+   assign.innerHTML=`<div class="trainingMaxNotice">本季主動特訓已沒有可增加的永久能力，剩餘 ${remaining} 點課表可改為恢復、負荷管理與傷病預防。</div><button class="choice" onclick="convertRemainingTrainingToRecovery()"><b>轉為身體維持</b><small>不浪費剩餘訓練，也不突破年齡限制。</small></button>`;
+   if(diceMsg)diceMsg.textContent="主動特訓額度用完後，剩餘課表仍可投入身體維持。";
    next.classList.add("hidden");
  }else{
    const dieVal=current>=0?p.dice[current]:0;
    const credit=current>=0?trainingCreditFromDie(dieVal):0;
    assign.innerHTML=Object.keys(p.stats).map(k=>{
      const v9=typeof isV9Progression==="function"&&isV9Progression(p),cap=typeof careerStatCap==="function"?careerStatCap(p,k):p.caps[k],limit=typeof careerStatLimit==="function"?careerStatLimit(p,k):cap;
-     const maxed=v9?p.stats[k]>=limit||(typeof availablePermanentGrowth==="function"&&availablePermanentGrowth(p,k)<=0):p.stats[k]>=99;
+     const maxed=v9?p.stats[k]>=99||(typeof canUseManualGrowth==="function"&&!canUseManualGrowth(p,k))||(typeof availableTrainingGrowth==="function"&&availableTrainingGrowth(p,k)<=0):p.stats[k]>=99;
      const cost=maxed?0:pointCost(k);
      const prog=Math.floor(p.trainingProgress[k]||0);
      const need=Math.max(0,cost-prog);
-     const breaking=!v9&&!maxed&&p.stats[k]>=p.caps[k];
+     const breaking=!maxed&&p.stats[k]>=(v9?limit:p.caps[k]);
      const affinity=typeof v90TalentAffinity==="function"?v90TalentAffinity(p,k):"legacy";
      const affinityLabel=affinity==="core"?"核心適性":affinity==="support"?"延伸適性":"一般養成";
     const progress=maxed?100:Math.max(0,Math.min(100,Math.round(p.stats[k])));
@@ -232,7 +236,7 @@ function renderDice(){
        <span class="trainChoiceName"><b>${L[k]}</b><small>${affinityLabel}</small></span>
         <span class="trainChoiceProgress" style="--value:${progress}%;--cap:${capProgress}%" role="progressbar" aria-label="${L[k]}目前 ${p.stats[k]}，Seed 基準 ${cap}，可培養至 ${limit}" aria-valuemin="0" aria-valuemax="99" aria-valuenow="${p.stats[k]}"><i></i></span>
         ${maxed
-          ? `<span class="maxTag">本季完成</span>`
+          ? `<span class="maxTag">本季特訓完成</span>`
           : `<span class="trainCostTag"><b>${p.stats[k]}</b><em>→ ${p.stats[k]+1}</em></span><span class="trainNeedTag">還差 ${need} 點｜本次 +${credit}</span>`}
       </button>`;
    }).join("");
@@ -244,7 +248,7 @@ function assignTraining(k){
  ensureTrainingProgress();
 
  const v9=typeof isV9Progression==="function"&&isV9Progression(p),cap=typeof careerStatCap==="function"?careerStatCap(p,k):99,limit=typeof careerStatLimit==="function"?careerStatLimit(p,k):cap;
- if((p.stats[k]||0)>=(v9?limit:99)||(v9&&typeof availablePermanentGrowth==="function"&&availablePermanentGrowth(p,k)<=0)){
+ if((p.stats[k]||0)>=99||(v9&&typeof canUseManualGrowth==="function"&&!canUseManualGrowth(p,k))||(v9&&typeof availableTrainingGrowth==="function"&&availableTrainingGrowth(p,k)<=0)){
    if(diceMsg)diceMsg.textContent=v9?`${L[k]} 本季已無永久成長空間，請改選其他能力。`:`${L[k]} 已達 99 滿值，請選擇其他能力。`;
    renderDice();
    return;
@@ -258,7 +262,7 @@ function assignTraining(k){
  p.trainingProgress[k]=beforeProgress+credit;
  let spent=0,gain=0;
 
- while(p.stats[k]<(v9?limit:99)){
+ while(p.stats[k]<99){
    const cost=pointCost(k);
    if(p.trainingProgress[k]<cost)break;
    const outcome=v9&&typeof applyCareerStatChange==="function"?applyCareerStatChange(p,k,1,{source:"training"}):null;
@@ -276,7 +280,7 @@ function assignTraining(k){
  });
  p.used[idx]=true;
 
- const nextCost=p.stats[k]>=(v9?limit:99)||v9&&typeof availablePermanentGrowth==="function"&&availablePermanentGrowth(p,k)<=0?0:pointCost(k);
+ const nextCost=p.stats[k]>=99||v9&&typeof canUseManualGrowth==="function"&&!canUseManualGrowth(p,k)||v9&&typeof availableTrainingGrowth==="function"&&availableTrainingGrowth(p,k)<=0?0:pointCost(k);
  const progress=Math.floor(p.trainingProgress[k]||0);
  if(gain>0){
    diceMsg.textContent=`第 ${idx+1} 顆骰子（${val}點）→ ${L[k]}｜能力 ${beforeStat}→${p.stats[k]}${p.stats[k]>=99?"｜已滿":`｜剩餘進度 ${progress}/${nextCost}`}`;
@@ -285,20 +289,22 @@ function assignTraining(k){
  }
 
  render();renderDice();
- const panel=special.querySelector(".trainingPanel");if(panel)panel.outerHTML=abilityPanel();
+ if(typeof refreshTrainingOverview==="function")refreshTrainingOverview();
+ else{const panel=special.querySelector(".trainingPanel");if(panel)panel.outerHTML=abilityPanel()}
  if(p.used.every(Boolean)){assign.innerHTML="";next.textContent="進入本季事件 →";next.classList.remove("hidden")}
 }
 function undoTrainingPoint(){
  const last=p.trainingUndo.pop();if(!last)return;
  ensureTrainingProgress();
  p.stats[last.k]=last.beforeStat;
- if(last.permanentGain&&p.seasonPermanentGrowth){p.seasonPermanentGrowth[last.k]=Math.max(0,(p.seasonPermanentGrowth[last.k]||0)-last.permanentGain);if(!p.seasonPermanentGrowth[last.k])delete p.seasonPermanentGrowth[last.k];}
+ if(last.permanentGain&&p.seasonTrainingGrowth){p.seasonTrainingGrowth[last.k]=Math.max(0,(p.seasonTrainingGrowth[last.k]||0)-last.permanentGain);if(!p.seasonTrainingGrowth[last.k])delete p.seasonTrainingGrowth[last.k];}
  p.trainingProgress[last.k]=last.beforeProgress;
  p.used[last.idx]=false;
  next.classList.add("hidden");
  diceMsg.textContent=`已返回：第 ${last.idx+1} 顆骰子的分配已取消。`;
  render();renderDice();
- const panel=special.querySelector(".trainingPanel");if(panel)panel.outerHTML=abilityPanel();
+ if(typeof refreshTrainingOverview==="function")refreshTrainingOverview();
+ else{const panel=special.querySelector(".trainingPanel");if(panel)panel.outerHTML=abilityPanel()}
 }
 
 function awaken(){

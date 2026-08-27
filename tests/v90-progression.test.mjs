@@ -35,7 +35,51 @@ test("bounded breakthroughs still stop at the Seed and affinity-derived training
  const box=context(),career=player({seedTier:"B",stats:{shoot:76,finish:70,handle:70,pass:70,defense:70,rebound:70,ath:70,iq:70}});
  assert.equal(box.careerStatCap(career,"shoot"),74);
  assert.equal(box.careerStatLimit(career,"shoot"),76);
- assert.equal(box.applyCareerStatChange(career,"shoot",1,{source:"point"}).applied,0);
+ assert.equal(box.applyCareerStatChange(career,"shoot",1,{source:"event"}).applied,0);
+});
+
+test("earned ability points can hard-break the natural training limit without raising that limit",()=>{
+ const box=context(),career=player({seedTier:"B",stats:{shoot:76,finish:70,handle:70,pass:70,defense:70,rebound:70,ath:70,iq:70},permanentGrowthSeasonKey:"2040:12",seasonPermanentGrowth:{shoot:4}});
+ const naturalLimit=box.careerStatLimit(career,"shoot");
+ const result=box.applyCareerStatChange(career,"shoot",1,{source:"point"});
+ assert.equal(naturalLimit,76);
+ assert.equal(result.applied,1);assert.equal(result.reason,"manual-breakthrough");
+ assert.equal(career.stats.shoot,77);assert.equal(box.careerStatLimit(career,"shoot"),naturalLimit);
+ assert.equal(career.seasonPermanentGrowth.shoot,4);
+ assert.equal(career.seasonManualGrowth.shoot,1);
+});
+
+test("preseason dice can hard-break the natural limit without consuming end-season point room",()=>{
+ const box=context(),career=player({seedTier:"B",stats:{shoot:76,finish:70,handle:70,pass:70,defense:70,rebound:52,ath:70,iq:70},caps:{shoot:74,finish:74,handle:74,pass:74,defense:74,rebound:50,ath:74,iq:74},permanentGrowthSeasonKey:"2040:12",seasonPermanentGrowth:{rebound:4}});
+ assert.equal(box.careerStatLimit(career,"rebound"),52);
+ const manualRoomBefore=box.availableManualGrowth(career,"rebound");
+ const training=box.applyCareerStatChange(career,"rebound",1,{source:"training"});
+ assert.equal(training.applied,1);assert.equal(training.reason,"manual-breakthrough");
+ assert.equal(career.stats.rebound,53);assert.equal(career.seasonTrainingGrowth.rebound,1);
+ assert.equal(box.availableManualGrowth(career,"rebound"),manualRoomBefore);
+ const point=box.applyCareerStatChange(career,"rebound",1,{source:"point"});
+ assert.equal(point.applied,1);assert.equal(career.stats.rebound,54);
+ assert.equal(career.seasonManualGrowth.rebound,1);
+});
+
+test("manual hard points keep age and skill-group restrictions",()=>{
+ const box=context(),veteran=player({age:35});
+ assert.equal(box.canUseManualGrowth(veteran,"shoot"),true);
+ assert.equal(box.canUseManualGrowth(veteran,"ath"),false);
+ assert.equal(box.applyCareerStatChange(veteran,"shoot",1,{source:"point"}).applied,1);
+ assert.equal(box.applyCareerStatChange(veteran,"ath",1,{source:"point"}).applied,0);
+ const maintenance=player({age:38});
+ assert.equal(box.canUseManualGrowth(maintenance,"pass"),false);
+ assert.equal(box.applyCareerStatChange(maintenance,"pass",1,{source:"point"}).applied,0);
+});
+
+test("manual breakthroughs charge the escalating Seed-over-cap surcharge",()=>{
+ const box=context();
+ box.p=player({age:28,seedTier:"B",stats:{shoot:70,finish:70,handle:70,pass:70,defense:70,rebound:52,ath:70,iq:70},caps:{shoot:74,finish:74,handle:74,pass:74,defense:74,rebound:50,ath:74,iq:74}});
+ box.skillCostModifier=()=>0;box.chainSkillDiscount=()=>0;
+ vm.runInContext(read("js/career/season-engine.js"),box);
+ assert.equal(box.careerStatLimit(box.p,"rebound"),52);
+ assert.equal(box.pointCost("rebound"),8);
 });
 
 test("30s development becomes technical and 38+ cannot add permanent ability",()=>{

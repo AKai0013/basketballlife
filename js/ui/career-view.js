@@ -145,6 +145,66 @@ function toggleAbilityHelp(el){
 }
 document.addEventListener("pointerdown",event=>{if(!event.target.closest?.(".abilityHelpCard")&&!event.target.closest?.("#abilityHelpPopover"))closeAbilityHelp()});
 window.addEventListener("resize",()=>closeAbilityHelp());window.addEventListener("scroll",()=>closeAbilityHelp(),true);
+function trainingCardStage(){
+ const ov=overall(),majorAwards=(p.careerMVP||0)+(p.careerFinalsMVP||0)+(p.careerFirstTeam||0)+(p.careerDPOY||0);
+ if(p.path==="HBL"||isCollegePath())return {id:"campus",label:"校園篇章",eyebrow:"CAMPUS"};
+ if(p.age>=34||(p.ageDeclineStage||0)>0)return {id:"veteran",label:"老將篇章",eyebrow:"VETERAN"};
+ if(majorAwards>0&&Math.max(ov,p.peakOverall||0)>=86)return {id:"icon",label:"傳奇競逐",eyebrow:"ICON"};
+ if(p.age>=25&&ov>=76)return {id:"prime",label:"巔峰篇章",eyebrow:"PRIME"};
+ return {id:"pro",label:"職業篇章",eyebrow:"PRO"};
+}
+function trainingRadarMetrics(){
+ const s=p.stats||{};
+ return ["shoot","finish","handle","pass","defense","rebound","ath","iq"]
+  .map((key,index)=>({key,index,label:L[key]||key,value:Math.max(0,Math.min(99,Math.round(Number(s[key])||0)))}))
+  .sort((a,b)=>b.value-a.value||a.index-b.index);
+}
+function trainingRadarHTML(){
+ const ranked=trainingRadarMetrics(),metrics=ranked.slice(0,5),secondary=ranked.slice(5),centerX=70,centerY=66,point=(radius,index)=>{const angle=-Math.PI/2+index*Math.PI*2/metrics.length;return `${(centerX+Math.cos(angle)*radius).toFixed(1)},${(centerY+Math.sin(angle)*radius).toFixed(1)}`};
+ const rings=[14,28,42].map(radius=>`<polygon points="${metrics.map((_,index)=>point(radius,index)).join(" ")}"/>`).join("");
+ const axes=metrics.map((_,index)=>`<line x1="${centerX}" y1="${centerY}" x2="${point(42,index).replace("," , '" y2="')}"/>`).join("");
+ const values=metrics.map((metric,index)=>point(42*Math.max(0,Math.min(100,metric.value))/100,index)).join(" ");
+ const labels=metrics.map((metric,index)=>{const [x,y]=point(59,index).split(",");return `<text x="${x}" y="${y}" text-anchor="middle"><tspan x="${x}">${metric.label}</tspan><tspan x="${x}" dy="11">${metric.value}</tspan></text>`}).join("");
+ return `<div class="careerCardRadar"><svg viewBox="0 0 140 132" role="img" aria-label="球員最高五項能力：${metrics.map(metric=>`${metric.label} ${metric.value}`).join("、")}；其餘能力：${secondary.map(metric=>`${metric.label} ${metric.value}`).join("、")}"><g class="careerCardRadarGrid">${rings}${axes}</g><polygon class="careerCardRadarValue" points="${values}"/><circle cx="${centerX}" cy="${centerY}" r="2.5"/><g class="careerCardRadarLabels">${labels}</g></svg><div class="careerCardRadarRest">${secondary.map(metric=>`<span><em>${metric.label}</em><b>${metric.value}</b></span>`).join("")}</div></div>`;
+}
+function trainingPlayerCardHTML(derived){
+ const stage=trainingCardStage(),role=derived?.role?.label||p.talentProfile?.label||"攻守平衡",team=currentTeam()||leagueDisplay(p.path),league=leagueDisplay(p.path),ov=overall();
+ return `<article class="careerPlayerCard card-${stage.id}" data-card-tier="${stage.eyebrow}" aria-label="${escapeFeedText(p.name)} 的本季球員卡">
+  <header><span><i aria-hidden="true"></i>${stage.eyebrow} · ${stage.label}</span><b title="${escapeFeedText(team)}">${escapeFeedText(team)}</b></header>
+  <div class="careerPlayerCardHero"><div class="careerCardPortrait"><div class="careerCardAvatar" data-training-avatar></div><span>#${p.jerseyNumber??7}</span></div><div class="careerCardOvr"><small>OVR</small><strong>${ov}</strong><span>${escapeFeedText(p.pos||"—")} · ${escapeFeedText(role)}</span><em>${escapeFeedText(league)}</em></div></div>
+  <div class="careerCardIdentity"><b>${escapeFeedText(p.name)}</b><small>${p.age||"—"} 歲 · ${p.heightCm||"—"} cm</small></div>
+  ${trainingRadarHTML()}
+ </article>`;
+}
+function trainingRelationshipRows(){
+ const cast=p.careerCast||{},rows=[];
+ if(cast.coach?.name)rows.push({type:"教練",name:cast.coach.name,note:`信任 ${Math.round(cast.coach.trust??50)} · ${cast.coach.trait||"負責本季輪替"}`});
+ if(cast.agent?.name)rows.push({type:"經紀人",name:cast.agent.name,note:`信任 ${Math.round(cast.agent.trust??50)} · ${cast.agent.trait||"處理合約與市場"}`});
+ if(cast.friend?.name)rows.push({type:"朋友",name:cast.friend.name,note:`${cast.friend.trait||"從學生時期認識"} · ${cast.friend.metYear||2026} 年相識`});
+ if(cast.rival?.name)rows.push({type:"宿敵",name:cast.rival.name,note:`${cast.rival.trait||"長期競爭對手"} · 尊重 ${Math.round(cast.rival.respect??42)}`});
+ return rows.slice(0,4);
+}
+function trainingSeasonContextHTML(){
+ const derived=typeof v811AbilityProfile==="function"?v811AbilityProfile(p):null,role=p.roleState?.currentLabel||derived?.role?.label||(isProPath()?"競爭輪替":"校隊球員");
+ const total=Array.isArray(p.dice)?p.dice.length:0,used=Array.isArray(p.used)?p.used.filter(Boolean).length:0,remaining=Math.max(0,total-used),health=Math.max(0,Math.min(100,Math.round(Number(p.health)||0))),load=Math.max(0,Math.min(100,Math.round(Number(p.bodyLoad)||0)));
+ const people=trainingRelationshipRows(),recent=String(p.log?.[0]||"新球季剛開始，尚無新的生涯紀錄。").replace(/^\d{4}｜/,"");
+ const open=typeof window!=="undefined"&&window.matchMedia?.("(min-width:820px)").matches?" open":"";
+ return `<details class="trainingContextPanel"${open}><summary><span><small>THIS SEASON</small><b>本季脈絡</b></span><em>${escapeFeedText(role)}</em></summary><div class="trainingContextBody">
+  <section class="trainingSituation"><small>目前情境</small><b>${escapeFeedText(currentTeam()||leagueDisplay(p.path))}</b><span>${escapeFeedText(leagueDisplay(p.path))} · ${p.year} 賽季</span><strong>${escapeFeedText(role)}</strong></section>
+  <section><small>本季目標</small><div class="trainingGoal"><span><b>建立 ${escapeFeedText(derived?.growthDirection?.label||"穩定角色")}</b><em>${remaining}/${total||0} 次訓練待分配</em></span><i style="--progress:${total?Math.round(used/total*100):0}%"></i></div><div class="trainingGoal"><span><b>維持可出賽狀態</b><em>健康 ${health} · 負荷 ${load}</em></span><i style="--progress:${health}%"></i></div></section>
+  <section><small>生涯人物</small><div class="trainingPeople">${people.length?people.map(person=>`<article><span>${escapeFeedText(person.type)}</span><b>${escapeFeedText(person.name)}</b><small>${escapeFeedText(person.note)}</small></article>`).join(""):`<p>這段生涯尚未建立固定人物關係。</p>`}</div></section>
+  <section class="trainingRecent"><small>最近紀錄</small><p>${escapeFeedText(recent)}</p></section>
+ </div></details>`;
+}
+function hydrateTrainingPlayerCard(){
+ const avatar=document.querySelector("[data-training-avatar]");
+ if(avatar&&typeof renderPlayerAvatar==="function")renderPlayerAvatar(avatar,p.avatarSeed,p.pos,p.age,`${p.name} 的球員頭像`);
+}
+function refreshTrainingOverview(){
+ const panel=special?.querySelector(".trainingPanel");if(panel)panel.outerHTML=abilityPanel();
+ const context=special?.querySelector(".trainingContextPanel");if(context)context.outerHTML=trainingSeasonContextHTML();
+ hydrateTrainingPlayerCard();
+}
 function abilityPanel(){
  const derived=typeof v811AbilityProfile==="function"?v811AbilityProfile(p):null;
  const talent=typeof v90TalentPanelHTML==="function"?v90TalentPanelHTML(p):"";
@@ -156,7 +216,7 @@ function abilityPanel(){
      : `<div class="trainingCostDetail"><b>${v}→${v+1} 需要 ${cost} 點</b>｜已存 ${progress}/${cost}｜還差 ${need} 點</div>`;
     return `<div class="stat abilityHelpCard" data-ability="${k}" tabindex="0" role="button" aria-expanded="false" aria-label="${L[k]}：${ABILITY_HELP[k]||"影響球場表現。"}" onclick="pinAbilityHelp(this)" onmouseenter="showAbilityHelp(this)" onmouseleave="leaveAbilityHelp(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleAbilityHelp(this)}"><div class="sl"><b>${L[k]} <span class="abilityHelpMark">?</span></b><span class="abilityValue"><span class="abilityScore">${v} / ${talent}</span>${over?` <span class="breakthroughTag">突破 +${v-talent}</span>`:""}</span></div><div class="track"><div class="fill" style="width:${Math.min(v,99)}%"></div></div>${detail}</div>`;
  }).join("")}</div></details>`;
- return `<div class="trainingPanel">${talent}${stats}${typeof v811AbilityPanelHTML==="function"?v811AbilityPanelHTML(derived):""}</div>`;
+ return `<aside class="trainingPanel">${trainingPlayerCardHTML(derived)}${talent?`<details class="trainingTalentDetails"><summary><span><b>天賦輪廓</b><small>查看核心與延伸適性</small></span><strong>${escapeFeedText(p.talentProfile?.label||derived?.role?.label||"球員特性")}</strong></summary>${talent}</details>`:""}${stats}${typeof v811AbilityPanelHTML==="function"?v811AbilityPanelHTML(derived):""}</aside>`;
 }
 
 

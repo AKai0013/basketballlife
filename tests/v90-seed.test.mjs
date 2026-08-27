@@ -125,6 +125,30 @@ test("V9 player-facing training UI keeps secondary numbers folded and removes au
   assert.doesNotMatch(growth,/原本逐顆玩法仍保留/);
 });
 
+test("V9 season training uses real career data for the player card and context",()=>{
+  const career=read("js/ui/career-view.js"),events=read("js/ui/event-view.js"),styles=read("css/v9-ui.css");
+  assert.match(career,/function trainingPlayerCardHTML\(/);
+  assert.match(career,/class="careerPlayerCard card-\$\{stage\.id\}"/);
+  assert.match(career,/data-training-avatar/);
+  assert.match(career,/function trainingRadarMetrics\(/);
+  assert.match(career,/球員最高五項能力/);
+  assert.match(career,/\["shoot","finish","handle","pass","defense","rebound","ath","iq"\]/);
+  assert.match(career,/ranked\.slice\(0,5\)/);
+  assert.match(career,/ranked\.slice\(5\)/);
+  const playerCard=career.slice(career.indexOf("function trainingPlayerCardHTML"),career.indexOf("function trainingRelationshipRows"));
+  assert.match(playerCard,/<small>OVR<\/small>/);
+  assert.doesNotMatch(playerCard,/careerCardTraits|careerCardArchetype|PLAYER IDENTITY|OTHER SKILLS|OVERALL|<footer>|巔峰 OVR/);
+  assert.match(career,/function trainingSeasonContextHTML\(/);
+  assert.match(career,/生涯人物/);
+  assert.match(events,/trainingSeasonContextHTML\(\)/);
+  assert.match(events,/refreshTrainingOverview\(\)/);
+  assert.match(styles,/\.careerPlayerCard\{/);
+  assert.match(styles,/\.careerCardRadarLabels\{/);
+  assert.match(styles,/\.careerCardRadarRest\{/);
+  assert.match(styles,/\.trainingContextPanel\{/);
+  assert.match(styles,/@media\(max-width:819px\)\{[\s\S]*?\.v9TrainingShell\{grid-template-columns:1fr!important/);
+});
+
 test("V9 approved UI uses the production game nodes and keeps the original save fields",()=>{
   const index=read("index.html"),career=read("js/ui/career-view.js"),events=read("js/events/event-engine.js"),season=read("js/career/season-engine.js"),storage=read("js/storage.js"),growth=read("js/ui/growth-preview.js"),board=read("js/leaderboard/leaderboard-api.js"),v9css=read("css/v9-ui.css");
   assert.match(index,/<section id="game" class="hidden">/);

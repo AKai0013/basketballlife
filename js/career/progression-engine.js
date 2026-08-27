@@ -60,10 +60,40 @@ function availablePermanentGrowth(player,key){
  const used=player?.permanentGrowthSeasonKey===currentSeasonKey(player)?usedPermanentGrowth(player,key):0;
  return Math.max(0,permanentGrowthAllowance(player,key)-used);
 }
+function usedManualGrowth(player,key){return Math.max(0,number(player?.seasonManualGrowth?.[key],0))}
+function availableManualGrowth(player,key){
+ if(!isV9Progression(player))return Infinity;
+ const used=player?.permanentGrowthSeasonKey===currentSeasonKey(player)?usedManualGrowth(player,key):0;
+ return Math.max(0,permanentGrowthAllowance(player,key)-used);
+}
+function usedTrainingGrowth(player,key){return Math.max(0,number(player?.seasonTrainingGrowth?.[key],0))}
+function availableTrainingGrowth(player,key){
+ if(!isV9Progression(player))return Infinity;
+ const used=player?.permanentGrowthSeasonKey===currentSeasonKey(player)?usedTrainingGrowth(player,key):0;
+ return Math.max(0,permanentGrowthAllowance(player,key)-used);
+}
+function canUseManualGrowth(player,key){
+ if(!isV9Progression(player))return true;
+ const band=progressionAgeBand(player),group=progressionSkillGroup(key);
+ if(band==="prime"||band==="transition")return true;
+ if(band==="technical")return group!=="physical";
+ if(band==="veteran")return group==="technical";
+ return false;
+}
 function ensurePermanentGrowthState(player){
  if(!player||typeof player!=="object")return {};
  if(!player.seasonPermanentGrowth||typeof player.seasonPermanentGrowth!=="object"||Array.isArray(player.seasonPermanentGrowth))player.seasonPermanentGrowth={};
  return player.seasonPermanentGrowth;
+}
+function ensureManualGrowthState(player){
+ if(!player||typeof player!=="object")return {};
+ if(!player.seasonManualGrowth||typeof player.seasonManualGrowth!=="object"||Array.isArray(player.seasonManualGrowth))player.seasonManualGrowth={};
+ return player.seasonManualGrowth;
+}
+function ensureTrainingGrowthState(player){
+ if(!player||typeof player!=="object")return {};
+ if(!player.seasonTrainingGrowth||typeof player.seasonTrainingGrowth!=="object"||Array.isArray(player.seasonTrainingGrowth))player.seasonTrainingGrowth={};
+ return player.seasonTrainingGrowth;
 }
 function currentSeasonKey(player){return `${number(player?.year,0)}:${number(player?.careerSeason,0)}`}
 function resetPermanentGrowthSeason(player){
@@ -72,6 +102,8 @@ function resetPermanentGrowthSeason(player){
  if(player.permanentGrowthSeasonKey===key)return;
  player.permanentGrowthSeasonKey=key;
  player.seasonPermanentGrowth={};
+ player.seasonManualGrowth={};
+ player.seasonTrainingGrowth={};
 }
 function applyCareerStatChange(player,key,delta,options={}){
  const requested=Math.trunc(number(delta,0));
@@ -88,15 +120,21 @@ function applyCareerStatChange(player,key,delta,options={}){
   return {requested,applied,converted:0,cap:99,reason:"legacy"};
  }
  const cap=careerStatCap(player,key),source=String(options.source||"event");
- const recovery=source==="rehab";
- const limit=recovery?cap:careerStatLimit(player,key);
+ const recovery=source==="rehab",manual=source==="point",training=source==="training",directed=manual||training;
+ const limit=recovery?cap:directed?99:careerStatLimit(player,key);
  resetPermanentGrowthSeason(player);
  const space=Math.max(0,limit-current);
- const allowance=recovery?requested:availablePermanentGrowth(player,key);
+ const allowance=recovery?requested:manual?(canUseManualGrowth(player,key)?availableManualGrowth(player,key):0):training?(canUseManualGrowth(player,key)?availableTrainingGrowth(player,key):0):availablePermanentGrowth(player,key);
  const applied=Math.max(0,Math.min(requested,space,allowance));
  if(applied){
   player.stats[key]=current+applied;
-  if(!recovery){
+  if(manual){
+   const spent=ensureManualGrowthState(player);
+   spent[key]=usedManualGrowth(player,key)+applied;
+  }else if(training){
+   const spent=ensureTrainingGrowthState(player);
+   spent[key]=usedTrainingGrowth(player,key)+applied;
+  }else if(!recovery){
    const spent=ensurePermanentGrowthState(player);
    spent[key]=usedPermanentGrowth(player,key)+applied;
   }
@@ -106,7 +144,8 @@ function applyCareerStatChange(player,key,delta,options={}){
   converted=Math.max(1,Math.min(2,Math.ceil((requested-applied)/2)));
   player.planStatMod=Math.max(-8,Math.min(8,number(player.planStatMod,0)+converted));
  }
- const reason=space<=0?"limit":allowance<=0?"age":applied<requested?"limited":current>=cap?"breakthrough":"applied";
+ const naturalLimit=careerStatLimit(player,key);
+ const reason=space<=0?"limit":allowance<=0?"age":applied<requested?"limited":directed&&current>=naturalLimit?"manual-breakthrough":current>=cap?"breakthrough":"applied";
  return {requested,applied,converted,cap,limit,reason};
 }
 function raiseCareerStatCap(player,key,amount,options={}){
@@ -143,5 +182,5 @@ function careerLifecycleProfile(player){
  return {chapter,current,peak,gap,health,bodyLoad,role,promised,contractYears,strained,reason};
 }
 
-Object.assign(global,{BL_PROGRESS_SKILLS:BL_SKILLS,isV9Progression,careerStatCap,careerStatBreakthroughRoom,careerStatLimit,progressionAgeBand,progressionSkillGroup,permanentGrowthAllowance,availablePermanentGrowth,resetPermanentGrowthSeason,applyCareerStatChange,raiseCareerStatCap,progressionSeasonGrowthMultiplier,careerLifecycleProfile});
+Object.assign(global,{BL_PROGRESS_SKILLS:BL_SKILLS,isV9Progression,careerStatCap,careerStatBreakthroughRoom,careerStatLimit,progressionAgeBand,progressionSkillGroup,permanentGrowthAllowance,availablePermanentGrowth,availableManualGrowth,availableTrainingGrowth,canUseManualGrowth,resetPermanentGrowthSeason,applyCareerStatChange,raiseCareerStatCap,progressionSeasonGrowthMultiplier,careerLifecycleProfile});
 })(globalThis);
