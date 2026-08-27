@@ -437,8 +437,9 @@
    return `${location.origin}${location.pathname}?career=${encodeURIComponent(id)}`;
  }
 
- const GAME_VERSION="9.0.0";
- const CAREER_PUBLISHER_VERSION="9.0.0";
+ const GAME_VERSION="9.1.0";
+ const CAREER_PUBLISHER_VERSION="9.1.0";
+ const V9_PUBLISHER_VERSIONS=new Set(["9.0.0","9.1.0"]);
  const CAREER_INTEGRITY_SCHEMA="v9-core-1";
  const INVALID_CAREER_IDS=new Set([
    "e9040a1c-5dc3-49f6-944c-8172cb8a518d"
@@ -640,7 +641,7 @@
    }
 
    const integrity=cd.integrity||{};
-   if(options.requireEnvelope||publisherVersion===CAREER_PUBLISHER_VERSION){
+   if(options.requireEnvelope||V9_PUBLISHER_VERSIONS.has(publisherVersion)){
      errors.push(...careerAwardIntegrityErrors(record));
      errors.push(...careerChampionshipIntegrityErrors(record));
      if(integrity.schema!==expectedIntegritySchema||integrity.verdict!=="passed")errors.push("缺少新版完整性封套");
@@ -1213,7 +1214,7 @@
  function isOfficialRankingRecord(record){
    if(INVALID_CAREER_IDS.has(String(record?.id||"")))return false;
    if(!["v750","v8","v81","v9"].includes(String(record?.career_data?.ranking_era||"")))return false;
-   const requireServer=String(record?.career_data?.publisher_version||"")===CAREER_PUBLISHER_VERSION;
+   const requireServer=V9_PUBLISHER_VERSIONS.has(String(record?.career_data?.publisher_version||""));
    if(record?._leaderboardSummary)return !requireServer||record?.career_data?.integrity?.server_verified==="passed";
    return careerRecordIntegrity(record,{requireEnvelope:requireServer,requireServer}).ok;
  }
@@ -1231,7 +1232,7 @@
  }
 
   const leaderboardEras={
-   v9:{label:"V9.0 玩家殿堂",note:"每個項目由每位玩家的最佳公開生涯代表上榜。"},
+   v9:{label:"V9.1 玩家殿堂",note:"相容收錄 V9.0／V9.1 正式生涯；每個項目由每位玩家的最佳公開生涯代表上榜。"},
    weekly:{label:"每週 Seed 挑戰榜",note:"相同 Seed、位置與身材競賽；每位玩家保留 BL POWER 最高的一支生涯。"},
    champions:{label:"版本冠軍榜",note:"保留 V8.1、V8.0 與 V7.50 各排行榜項目的最終第一名。"}
   };
@@ -1524,7 +1525,7 @@
      }
      const data=await apiRequest(`careers/${encodeURIComponent(id)}`,{timeout:12000});
      if(!data)throw new Error("找不到這筆公開生涯");
-     const requireEnvelope=String(data?.career_data?.publisher_version||"")===CAREER_PUBLISHER_VERSION;
+     const requireEnvelope=V9_PUBLISHER_VERSIONS.has(String(data?.career_data?.publisher_version||""));
      // Some careers were already public before the server-verdict field was
      // introduced.  Keep validating their signed client envelope, but do not
      // hide the whole archive merely because that later audit field is absent.

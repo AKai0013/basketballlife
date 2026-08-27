@@ -65,7 +65,7 @@ function saveCareerNow(){
  if(!p||careerSaveRestoring)return false;
  try{
    const save={
-      schema:CAREER_SAVE_SCHEMA,gameVersion:"9.0.0",savedAt:Date.now(),
+      schema:CAREER_SAVE_SCHEMA,gameVersion:"9.1.0",savedAt:Date.now(),
      player:p,chosenPos,selectedDie,screen:currentCareerScreen()
    };
    localStorage.setItem(CAREER_SAVE_KEY,JSON.stringify(save));

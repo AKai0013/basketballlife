@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="screen-orientation" content="portrait">
-<link rel="manifest" href="./manifest.webmanifest?v=9.0.0">
+<link rel="manifest" href="./manifest.webmanifest?v=9.1.0">
 <link rel="canonical" href="https://basketballlife.pages.dev/">
 <link rel="icon" type="image/svg+xml" href="./basketballlife-icon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
@@ -29,15 +29,15 @@
 <meta name="twitter:title" content="BasketballLife｜籃球人生模擬器">
 <meta name="twitter:description" content="從 HBL 出發，寫下屬於你的台灣籃球生涯。">
 <meta name="twitter:image" content="https://basketballlife.pages.dev/basketballlife-share.png">
-<link rel="stylesheet" href="./css/base.css?v=9.0.0">
-<link rel="stylesheet" href="./css/career.css?v=9.0.0">
-<link rel="stylesheet" href="./css/events.css?v=9.0.0">
-<link rel="stylesheet" href="./css/leaderboard.css?v=9.0.0">
-<link rel="stylesheet" href="./css/online-key-battle.css?v=9.0.0">
-<link rel="stylesheet" href="./css/home.css?v=9.0.0&careerMode=1">
-<link rel="stylesheet" href="./css/growth-preview.css?v=9.0.0">
-<link rel="stylesheet" href="./css/v9-ui.css?v=9.0.0">
-<script src="./js/boot.js?v=9.0.0"></script>
+<link rel="stylesheet" href="./css/base.css?v=9.1.0">
+<link rel="stylesheet" href="./css/career.css?v=9.1.0">
+<link rel="stylesheet" href="./css/events.css?v=9.1.0">
+<link rel="stylesheet" href="./css/leaderboard.css?v=9.1.0">
+<link rel="stylesheet" href="./css/online-key-battle.css?v=9.1.0">
+<link rel="stylesheet" href="./css/home.css?v=9.1.0&careerMode=1">
+<link rel="stylesheet" href="./css/growth-preview.css?v=9.1.0">
+<link rel="stylesheet" href="./css/v9-ui.css?v=9.1.0">
+<script src="./js/boot.js?v=9.1.0"></script>
 </head>
 <body><div class="wrap">
 <div class="brandRow">
@@ -52,7 +52,7 @@
     </div>
     <button id="leaderboardBtn" class="topRankBtn" type="button" onclick="BasketballLifeOnline.openLeaderboard()">🏆 排行榜</button>
     <button id="playerNicknameBtn" class="playerNicknameBtn" type="button" onclick="BasketballLifeOnline.showNicknameModal()" title="修改玩家暱稱">玩家暱稱</button>
-    <span class="versionLink" aria-label="目前版本 V9.0"><b>V9.0</b></span>
+    <span class="versionLink" aria-label="目前版本 V9.1"><b>V9.1</b></span>
     <div id="onlineStatus" class="onlineStatus offline"><span class="onlineDot"></span><span id="onlineStatusText">單機模式</span></div>
   </div>
 </div>
@@ -99,6 +99,7 @@
   <div class="careerModeGrid" role="group" aria-label="選擇生涯節奏">
     <button type="button" class="careerModeChoice on" data-career-mode="complete" aria-pressed="true" onclick="selectCareerMode('complete')"><b>完整生涯</b><small>逐季處理每個階段，適合研究能力、傷病與市場。</small></button>
     <button type="button" class="careerModeChoice" data-career-mode="highlight" aria-pressed="false" onclick="selectCareerMode('highlight')"><b>精華生涯｜約 20～30 分鐘</b><small>全程約 10～14 章；低影響球季自動整理，重大轉折仍停下來由你決定。</small></button>
+    <button class="onlineBattleInvite" type="button" onclick="BasketballLifeKeyBattle.open()"><span>ONLINE・2～3 人</span><b>SHARED WORLD</b><small>各自從 HBL 展開生涯，共享年份；升學與職業路線可以不同。</small><em>建立或加入世界 →</em></button>
   </div>
   <p id="careerModeHelp" class="careerModeHelp">逐季處理訓練、事件、健康、成績與能力點，完整走過每一個球季。</p>
 </section>
@@ -115,7 +116,6 @@
     <button class="btn deleteBtn" type="button" onclick="clearCareerSave(true)">刪除存檔</button>
   </div>
 </div>
-<button class="onlineBattleInvite" type="button" onclick="BasketballLifeKeyBattle.open()"><span>BASKETBALLLIFE ONLINE</span><b>SHARED WORLD・雙人／三人生涯</b><small>每人一名獨立球員，從不同 HBL 球隊出發；畢業後各走升學與職業路線，共享同一條世界時間線。</small><em>建立或加入世界 →</em></button>
 <a class="communityInviteCard" href="https://discord.gg/v6n7PH7DJ" target="_blank" rel="noopener noreferrer" aria-label="加入 BasketballLife Discord 玩家社群"><span>BASKETBALLLIFE COMMUNITY</span><b>加入玩家休息室</b><small>分享生涯、挑戰 Seed、交流攻略</small><em>加入 Discord →</em></a>
 <div class="creatorCredit homeCreatorCredit"><span>Produced by</span> <a href="https://www.threads.com/@basketballlife_k?xmt=AQG0tS6gtXrN8CWiBiJqphKuoz5VwtJFONP4svLNEbhjdt0" target="_blank" rel="noopener noreferrer">BasketballLife_K</a></div>
 </section>
@@ -179,38 +179,38 @@
 </section>
 </div>
 
-<script src="./data/seed-config.js?v=9.0.0"></script>
-<script src="./data/seed-talent-v9.js?v=9.0.0"></script>
-<script src="./js/career/ability-profile.js?v=9.0.0"></script>
-<script src="./data/players.js?v=9.0.0"></script>
-<script src="./data/teams.js?v=9.0.0"></script>
-<script src="./data/leagues.js?v=9.0.0"></script>
-<script src="./data/awards.js?v=9.0.0"></script>
-<script src="./data/injuries.js?v=9.0.0"></script>
-<script src="./data/events.js?v=9.0.0"></script>
-<script src="./data/career-story-events.js?v=9.0.0"></script>
-<script src="./js/api.js?v=9.0.0"></script>
-<script src="./js/leaderboard/leaderboard-api.js?v=9.0.0"></script>
-<script src="./js/online/key-battle.js?v=9.0.0"></script>
-<script src="./js/state.js?v=9.0.0"></script>
-<script src="./js/career/progression-engine.js?v=9.0.0"></script>
-<script src="./js/events/event-memory.js?v=9.0.0"></script>
-<script src="./js/events/career-story-engine.js?v=9.0.0"></script>
-<script src="./js/events/midcareer-rhythm.js?v=9.0.0&highlight=2"></script>
-<script src="./js/storage.js?v=9.0.0"></script>
-<script src="./js/ui/home-view.js?v=9.0.0"></script>
-<script src="./js/career/career-engine.js?v=9.0.0"></script>
-<script src="./js/ui/career-view.js?v=9.0.0"></script>
-<script src="./js/career/contract-engine.js?v=9.0.0"></script>
-<script src="./js/career/injury-engine.js?v=9.0.0"></script>
-<script src="./js/ui/retirement-view.js?v=9.0.0"></script>
-<script src="./js/career/retirement-engine.js?v=9.0.0"></script>
-<script src="./js/ui/event-view.js?v=9.0.0"></script>
-<script src="./js/events/event-engine.js?v=9.0.0&highlight=2"></script>
-<script src="./js/career/season-engine.js?v=9.0.0"></script>
-<script src="./js/career/highlight-engine.js?v=9.0.0&highlight=2"></script>
-<script src="./js/app.js?v=9.0.0"></script>
-<script src="./js/leaderboard/return-cache.js?v=9.0.0"></script>
-<script defer src="./js/ui/growth-preview.js?v=9.0.0&highlight=1"></script>
-<script defer src="./js/leaderboard/public-career.js?v=9.0.0"></script>
+<script src="./data/seed-config.js?v=9.1.0"></script>
+<script src="./data/seed-talent-v9.js?v=9.1.0"></script>
+<script src="./js/career/ability-profile.js?v=9.1.0"></script>
+<script src="./data/players.js?v=9.1.0"></script>
+<script src="./data/teams.js?v=9.1.0"></script>
+<script src="./data/leagues.js?v=9.1.0"></script>
+<script src="./data/awards.js?v=9.1.0"></script>
+<script src="./data/injuries.js?v=9.1.0"></script>
+<script src="./data/events.js?v=9.1.0"></script>
+<script src="./data/career-story-events.js?v=9.1.0"></script>
+<script src="./js/api.js?v=9.1.0"></script>
+<script src="./js/leaderboard/leaderboard-api.js?v=9.1.0"></script>
+<script src="./js/online/key-battle.js?v=9.1.0"></script>
+<script src="./js/state.js?v=9.1.0"></script>
+<script src="./js/career/progression-engine.js?v=9.1.0"></script>
+<script src="./js/events/event-memory.js?v=9.1.0"></script>
+<script src="./js/events/career-story-engine.js?v=9.1.0"></script>
+<script src="./js/events/midcareer-rhythm.js?v=9.1.0&highlight=2"></script>
+<script src="./js/storage.js?v=9.1.0"></script>
+<script src="./js/ui/home-view.js?v=9.1.0"></script>
+<script src="./js/career/career-engine.js?v=9.1.0"></script>
+<script src="./js/ui/career-view.js?v=9.1.0"></script>
+<script src="./js/career/contract-engine.js?v=9.1.0"></script>
+<script src="./js/career/injury-engine.js?v=9.1.0"></script>
+<script src="./js/ui/retirement-view.js?v=9.1.0"></script>
+<script src="./js/career/retirement-engine.js?v=9.1.0"></script>
+<script src="./js/ui/event-view.js?v=9.1.0"></script>
+<script src="./js/events/event-engine.js?v=9.1.0&highlight=2"></script>
+<script src="./js/career/season-engine.js?v=9.1.0"></script>
+<script src="./js/career/highlight-engine.js?v=9.1.0&highlight=2"></script>
+<script src="./js/app.js?v=9.1.0"></script>
+<script src="./js/leaderboard/return-cache.js?v=9.1.0"></script>
+<script defer src="./js/ui/growth-preview.js?v=9.1.0&highlight=1"></script>
+<script defer src="./js/leaderboard/public-career.js?v=9.1.0"></script>
 </body></html>
