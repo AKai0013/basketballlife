@@ -15,19 +15,20 @@ function legacyWeeklyTalent(r,tier,pos,bodyMods={}){
  return {stats,caps,growth:ri(r,tier.growth[0],tier.growth[1])};
 }
 
-function startCareer(){
+function startCareer(sharedContext=null){
  // A career is always playable offline. Online nickname and authentication are
  // requested only when publishing a retired career or opening community data.
- const seed=setupSeedValue();
+ const seed=sharedContext?.seed||setupSeedValue();
  if(!/^[A-Z0-9]{8}$/.test(seed)){
    normalizeSeedInput();
    const el=document.getElementById("seed"),err=document.getElementById("seedError");
    el?.classList.add("invalid");if(err)err.textContent="請輸入完整的 8 碼英文字母／數字 Seed。";el?.focus();return;
  }
- const previousSave=readCareerSave();
+ const previousSave=sharedContext?null:readCareerSave();
  if(previousSave&&!window.confirm("開始新人生會覆蓋目前的本機生涯存檔，確定要繼續嗎？"))return;
  if(previousSave)clearCareerSave(false);
- const n=document.getElementById("playerNameInput").value.trim()||"籃球癡漢",r=RNG(seed+chosenPos);
+ if(sharedContext){chosenPos=POSITIONS.includes(sharedContext.pos)?sharedContext.pos:"PG";chosenHeight=Number(sharedContext.height)||chosenHeight;chosenWingspan=Number(sharedContext.wingspan)||chosenWingspan;chosenBirthplace=sharedContext.birthplace||chosenBirthplace;chosenCareerMode=sharedContext.mode==="highlight"?"highlight":"complete"}
+ const n=sharedContext?.name||document.getElementById("playerNameInput").value.trim()||"籃球癡漢",r=RNG(seed+chosenPos);
  const weekly=weeklyChallengeProfile(),weeklyBoard=weeklyLeaderboardProfile();
  const weeklySetupMatches=weeklySetupActive&&seed===weekly.seed&&chosenPos===weekly.pos&&chosenHeight===weekly.height&&chosenWingspan===weekly.wingspan;
  const legacyWeeklyChallenge=weeklySetupMatches&&weeklyBoard.legacy;
@@ -37,8 +38,8 @@ function startCareer(){
 
  const birthplaceChoice=chosenBirthplace;
  const birthplace=birthplaceChoice==="RANDOM"?TAIWAN_BIRTHPLACES[ri(RNG(`${seed}-birthplace`),0,TAIWAN_BIRTHPLACES.length-1)]:birthplaceChoice;
- const jerseyNumber=Math.max(0,Math.min(99,Math.round(Number(document.getElementById("jerseyNumberInput")?.value)||7)));
- const handedness=document.getElementById("handednessInput")?.value||"右手";
+ const jerseyNumber=Math.max(0,Math.min(99,Math.round(Number(sharedContext?.jerseyNumber??document.getElementById("jerseyNumberInput")?.value)||7)));
+ const handedness=sharedContext?.handedness||document.getElementById("handednessInput")?.value||"右手";
  const friendName=document.getElementById("careerFriendNameInput")?.value.trim()||v8Pick(V8_TEAMMATES,`${seed}-friend`);
  const rivalName=document.getElementById("careerRivalNameInput")?.value.trim()||v8Pick(V8_RIVALS,`${seed}-rival`);
  const weeklyChallenge=weeklySetupMatches?{active:true,id:weeklyBoard.id,label:weekly.label,seed:weekly.seed,pos:weekly.pos,height:weekly.height,wingspan:weekly.wingspan}:{active:false};
@@ -62,6 +63,7 @@ function startCareer(){
     publicCareerId:"",publicCareerUploadId:"",leaderboardChoice:null,retirementRankSummary:null,careerUploadError:null,diceRevealCount:0,diceRolling:false,
     developmentSeasons:0,developmentLastChanceUsed:false,firstFullProAge:null,pendingSeasonAdvance:false,freshmanDraftAttempted:false,collegeDraftHistory:[],draftEntrySelections:[],proEntrySource:"",proEntryYear:0,franchiseTeam:""};
 
+ if(sharedContext)p.onlineSharedWorld={code:sharedContext.code,role:sharedContext.role,mode:chosenCareerMode,readyYear:null};
  p.team=HBL_TEAMS[ri(RNG(p.seed+"hbl-team"),0,HBL_TEAMS.length-1)];
  ensureV8CareerState(p);if(!legacyWeeklyChallenge)ensureV90MidcareerState(p);refreshV8Role(p,"生涯起點");
  document.getElementById("setup").classList.add("hidden");document.getElementById("game").classList.remove("hidden");

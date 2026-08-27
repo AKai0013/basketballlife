@@ -531,6 +531,10 @@ function undoSeasonPoint(){
  renderPoints();
 }
 function finishSeason(){
+ if(p?.onlineSharedWorld&&window.BasketballLifeKeyBattle?.finishSeason)return window.BasketballLifeKeyBattle.finishSeason(finishSeasonLocal);
+ return finishSeasonLocal();
+}
+function finishSeasonLocal(){
  const completingLastDance=!!p.lastDanceActive;
  if(completingLastDance){
    // 告別球季完成後直接結束生涯；能力點不再要求分配，也不結轉到不存在的下一季。
