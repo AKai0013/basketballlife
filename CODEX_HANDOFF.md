@@ -429,3 +429,21 @@
 - 自動驗證：ONLINE D1 E2E 7/7，涵蓋雙人最低開局、HBL 位置事件、獨立後果、大學分流、年份／年齡、交會不強制同隊、夏季聯賽、獨立合約、職業續季不返回學生流程與三人等待。完整回歸 197/197，相關 JavaScript `node --check` 與 `git diff --check` 通過。
 - UI：首頁與 ONLINE 頁使用 `SHARED WORLD`，同屏比較每名玩家的球隊、聯盟、OVR、健康、評價與選秀聲量；職業輪次使用職業專屬章名。390／430px 無水平溢出，主要按鈕至少 48px；390px 頁首不再把「人生涯」拆成孤字。本機預覽保留在 `http://localhost:8788/?preview=show`。
 - 範圍：未上傳、未合併、未部署，未修改正式版本號、README、正式 D1 或正式 `main`。正式跨裝置多人仍需取得上傳／Preview 授權後，在 Cloudflare Preview 驗證不同網路與重連。
+
+## 2026-08-27 發布紀錄
+
+- PR `#64` 已合併至 `main`，merge commit `0ac2768b5f6d5f13abe57a17da627d46641d4915`。
+- Cloudflare Pages 與 GitHub Pages build／deploy 均成功；正式首頁 `https://basketballlife.pages.dev/` 回應 200，已包含精華生涯、SHARED WORLD 與 `js/online/key-battle.js`。
+- 正式 D1 已以加法式 SQL 建立 `0005`、`0008` 的 8 張 ONLINE 表；唯讀 schema 查詢確認全部存在。沒有更新或刪除既有生涯、排行榜資料。
+- 正式 D1 的舊 `d1_migrations` metadata 仍為空；系統拒絕自動補寫歷史紀錄。未來不可直接執行全量 `wrangler d1 migrations apply`，應先人工核對並處理 `0001–0004` 的 migration 歷史。
+- 發布前完整回歸 197/197，正式 API 未授權 smoke test 回傳預期 401，未建立測試玩家或測試排行榜資料。
+
+## V9.1 正式版本與首頁入口修正
+
+- 版本：首頁、資產快取、新生涯 `careerVersion`、本機存檔版本、公開生涯 publisher 與排行榜標題同步為 V9.1／`9.1.0`。
+- 相容：V9 排名時代不拆榜；API 與前端完整性驗證同時接受 `9.0.0`、`9.1.0`，既有 V9.0 舊存檔與公開生涯仍可讀取、驗證與重新發布。V8.1 相容路徑維持不變。
+- 首頁：移除建立球員卡外的全寬 SHARED WORLD 橫幅，改放在「選擇生涯節奏」內，與完整生涯、精華生涯並列為第三張入口；手機改為單欄。
+- README：正式版改為 V9.1，新增精華生涯、長期故事與 SHARED WORLD 的實際玩法及限制，排行榜與 Online 說明同步更新。
+- 驗證：完整回歸 197/197、相關 JavaScript `node --check`、`git diff --check` 通過；實際本機頁面桌機三卡同列，390／430px 單欄且水平溢出為 0。
+- 範圍：未修改能力、合約、老化、事件機率、D1 schema 或正式資料；本節完成時尚未合併、部署。
+- 中文介面：正式發布前將首頁模式入口與多人頁面的 `SHARED WORLD` 統一改為「共享世界」，入口小標改為「線上・2～3 人」；README 同步使用中文名稱。

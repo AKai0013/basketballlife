@@ -50,9 +50,9 @@ function hydrate(row,summary=false){
 function validateCareer(input){
   const data=input?.career_data||{},integrity=data.integrity||{},seasons=Array.isArray(input?.season_history)?input.season_history:[];
   if(!/^[0-9a-f-]{36}$/i.test(text(input?.id,80)))return "公開生涯 ID 格式錯誤";
-  const v9=data.ranking_era==="v9"&&data.publisher_version==="9.0.0"&&integrity.schema==="v9-core-1";
+  const v9=data.ranking_era==="v9"&&["9.0.0","9.1.0"].includes(data.publisher_version)&&integrity.schema==="v9-core-1";
   const v81=data.ranking_era==="v81"&&new Set(["8.1.0","8.1.1"]).has(data.publisher_version)&&integrity.schema==="v8-core-1";
-  if(!v9&&!v81)return "目前排行榜只接受 BasketballLife V9.0 或既有 V8.1 正式生涯";
+  if(!v9&&!v81)return "目前排行榜只接受 BasketballLife V9.0／V9.1 或既有 V8.1 正式生涯";
   if(v9&&data.seed_tier_map_version!=null&&!new Set([1,2]).has(number(data.seed_tier_map_version)))return "Seed 對應版本錯誤";
   if(integrity.verdict!=="passed")return "生涯完整性封套錯誤";
   if(number(input.retired_age)>60||number(input.retired_age)<16||number(input.peak_overall)>99)return "生涯數值超出合理範圍";
