@@ -2,23 +2,25 @@ function validCareerScreen(screen){
  const fields=["chapter","title","text","special","choices","flow","nextHTML","nextClass"];
  return !!screen&&typeof screen==="object"&&fields.every(k=>typeof screen[k]==="string");
 }
-function readCareerSave(){
+function sharedCareerSaveKey(code){return `${CAREER_SAVE_KEY}.shared.${String(code||"").toUpperCase()}`}
+function activeCareerSaveKey(player=p){return player?.onlineSharedWorld?.code?sharedCareerSaveKey(player.onlineSharedWorld.code):CAREER_SAVE_KEY}
+function readCareerSave(saveKey=CAREER_SAVE_KEY){
  try{
-   const raw=localStorage.getItem(CAREER_SAVE_KEY);
+   const raw=localStorage.getItem(saveKey);
    if(!raw)return null;
    const save=JSON.parse(raw);
    if(save?.schema!==CAREER_SAVE_SCHEMA||!save.player||!validCareerScreen(save.screen)){
-     localStorage.removeItem(CAREER_SAVE_KEY);
+     localStorage.removeItem(saveKey);
      return null;
    }
    save.player=normalizeCareerPlayer(save.player);
    if(!validCareerPlayer(save.player)){
-     localStorage.removeItem(CAREER_SAVE_KEY);
+     localStorage.removeItem(saveKey);
      return null;
    }
    return save;
  }catch(_){
-   try{localStorage.removeItem(CAREER_SAVE_KEY)}catch(_e){}
+   try{localStorage.removeItem(saveKey)}catch(_e){}
    return null;
  }
 }
@@ -68,9 +70,10 @@ function saveCareerNow(){
       schema:CAREER_SAVE_SCHEMA,gameVersion:"9.1.0",savedAt:Date.now(),
      player:p,chosenPos,selectedDie,screen:currentCareerScreen()
    };
-   localStorage.setItem(CAREER_SAVE_KEY,JSON.stringify(save));
+   const saveKey=activeCareerSaveKey();
+   localStorage.setItem(saveKey,JSON.stringify(save));
    setCareerSaveStatus("進度已自動儲存");
-   updateContinueCareerPanel(save);
+   if(saveKey===CAREER_SAVE_KEY)updateContinueCareerPanel(save);
    return true;
  }catch(_){
    setCareerSaveStatus("自動存檔失敗",true);
@@ -102,9 +105,9 @@ function restoreCareerScreen(screen){
  if(story)story.scrollTop=window.matchMedia?.("(max-width:700px)").matches?0:Math.max(0,Number(screen.storyScroll)||0);
  setTimeout(focusCurrentScreen,0);
 }
-function continueCareer(){
- const save=readCareerSave();
- if(!save){updateContinueCareerPanel(null);return false}
+function continueCareer(saveKey=CAREER_SAVE_KEY){
+ const save=readCareerSave(saveKey);
+ if(!save){if(saveKey===CAREER_SAVE_KEY)updateContinueCareerPanel(null);return false}
  careerSaveRestoring=true;
  try{
    resetLiveTicker();
@@ -179,7 +182,7 @@ function initializeCareerSave(){
  document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")saveCareerNow()});
  window.addEventListener("pagehide",saveCareerNow);
 }
-window.BasketballLifeCareerSave={save:saveCareerNow,read:readCareerSave,clear:clearCareerSave,resume:continueCareer};
+window.BasketballLifeCareerSave={save:saveCareerNow,read:readCareerSave,readShared:code=>readCareerSave(sharedCareerSaveKey(code)),clear:clearCareerSave,resume:continueCareer,resumeShared:code=>continueCareer(sharedCareerSaveKey(code))};
 window.addEventListener("DOMContentLoaded",initializeCareerSave);
 
 /* =========================================================
