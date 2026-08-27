@@ -477,9 +477,9 @@ body.v9RetirementMode .restartBox{margin-top:10px}
 @media(max-width:680px){
  body.v9RetirementMode>.wrap{width:100%!important;padding:8px 8px 30px!important}
  body.v9RetirementMode .retirementOnly{padding-top:2px}
- body.v9RetirementMode .retireHero{min-height:590px;padding:20px;border-radius:20px}
- body.v9RetirementMode .retireBackdrop{background:linear-gradient(0deg,#070b0f 0 58%,#070b0f6b),url("../assets/images/v9-court-hero-v2.png") 60% top/auto 315px no-repeat}
- body.v9RetirementMode .retireIdentity{top:205px;right:20px;left:20px;max-width:none}
+ body.v9RetirementMode .retireHero{min-height:450px;padding:18px;border-radius:20px}
+ body.v9RetirementMode .retireBackdrop{background:linear-gradient(0deg,#070b0f 0 54%,#070b0f6b),url("../assets/images/v9-court-hero-v2.png") 60% top/auto 245px no-repeat}
+ body.v9RetirementMode .retireIdentity{top:138px;right:18px;left:18px;max-width:none}
  body.v9RetirementMode .v9RetirePortrait{flex-basis:68px;width:68px;height:68px}
  body.v9RetirementMode .legacySeal{top:14px;right:14px;width:132px;padding:10px}
  body.v9RetirementMode .legacySeal strong{font-size:18px}
@@ -492,8 +492,8 @@ body.v9RetirementMode .restartBox{margin-top:10px}
  body.v9RetirementMode .careerNumbers>article:nth-child(2n){border-right:0}
  body.v9RetirementMode .careerNumbers>article:last-child{grid-column:1/-1;border-bottom:0}
  body.v9RetirementMode .careerNumbers b{font-size:19px}
- body.v9RetirementMode .retireTabs{top:6px;margin:10px 0}
- body.v9RetirementMode .retireTab{flex:0 0 105px;min-height:46px}
+ body.v9RetirementMode .retireTabs{top:6px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:10px 0;overflow:visible}
+ body.v9RetirementMode .retireTab{min-width:0;min-height:44px;padding:7px 4px;font-size:10px;line-height:1.25}
  body.v9RetirementMode .signatureMoment{grid-template-columns:1fr;gap:13px;padding:18px}
  body.v9RetirementMode .momentYear{padding:0 0 13px;border-right:0;border-bottom:1px solid #4b3b2e}
  body.v9RetirementMode .momentYear b{font-size:30px}

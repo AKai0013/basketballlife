@@ -49,6 +49,12 @@ test("career-story catalog contains 96 unique events, 12 three-node lines and 28
  assert.deepEqual(JSON.parse(JSON.stringify(report)),{total:96,ids:96,lines:12,linked:36,standalone:60,choices:288,badChoices:[]});
 });
 
+test("career-story choice copy never leaks unresolved actor placeholders",()=>{
+ const context=storyContext(player());
+ const bad=vm.runInContext(`CAREER_STORY_EVENTS.flatMap(event=>event.choices.filter(choice=>/\{[^}]+\}/.test(choice.label+choice.detail+choice.result+choice.memory)).map(choice=>event.id+":"+choice.id))`,context);
+ assert.deepEqual(Array.from(bad),[]);
+});
+
 test("student pools exclude professional agent, marriage, free-market and retirement events",()=>{
  const context=storyContext(player());
  const report=vm.runInContext(`(()=>{
@@ -190,17 +196,27 @@ test("a choice schedules an actual next-season event and records visible consequ
  assert.equal(career.careerStoryHistory.length,1);
  assert.equal(career.careerStoryPending.length,1);
  assert.equal(career.careerStoryPending[0].eventId,"school_rival_2");
- assert.equal(career.careerStoryPending[0].sourceTitle,"第一次被放進同一張比較表");
+ assert.equal(career.careerStoryPending[0].sourceTitle,"第一球，他就點名要守你");
  assert.equal(career.careerStoryPending[0].sourceTeam,"測試高中");
  assert.equal(career.careerStoryPending[0].lineActors.rival.name,"宿敵甲");
  assert.match(career.finished.html,/留下的記憶/);
- assert.match(career.finished.html,/未來條件成立時，可能出現不同後果/);
- assert.doesNotMatch(career.finished.html,/2027 年會出現下一段發展/);
+ assert.match(career.finished.html,/最後一波，他站到了你面前/);
+ assert.match(career.finished.html,/2027 年起/);
+ assert.doesNotMatch(career.finished.html,/未來條件成立時/);
  career.year=2027;career.age=17;
  const follow=vm.runInContext("buildCareerStorySpecial(p)",context);
  assert.equal(follow.kind,"careerStory");
  assert.equal(follow.storyEventId,"school_rival_2");
- assert.match(follow.title,/比較沒有隨下一次碰面消失/);
+ assert.match(follow.title,/最後一波，他站到了你面前/);
+});
+
+test("story outcomes name the next chapter instead of showing a generic callback promise",()=>{
+ const career=player(),context=storyContext(career);
+ vm.runInContext(`resolveCareerStoryEvent("school_rival_1","team")`,context);
+ assert.match(career.finished.html,/最後一波，他站到了你面前/);
+ assert.match(career.finished.html,/2027 年起/);
+ assert.match(career.finished.html,/宿敵甲/);
+ assert.doesNotMatch(career.finished.html,/未來條件成立時/);
 });
 
 test("a callback keeps the original named person and shows the actual previous event and choice",()=>{
@@ -212,8 +228,8 @@ test("a callback keeps the original named person and shows the actual previous e
  const pending=career.careerStoryPending[0];
  const actor=vm.runInContext(`careerStoryActorPresentation(careerStoryEventById("friend_thread_2"),p,p.careerStoryPending[0])`,context);
  assert.equal(actor.name,"朋友甲");
- assert.equal(pending.sourceTitle,"看台上最早認識你的人");
- assert.equal(pending.sourceChoice,"留下來把約定練完");
+ assert.equal(pending.sourceTitle,"鐵門快關了，他還抱著那顆舊球");
+ assert.equal(pending.sourceChoice,"留下來投完五十顆");
  assert.match(vm.runInContext(`careerStoryText(careerStoryEventById("friend_thread_2").desc,p,p.careerStoryPending[0])`,context),/朋友甲/);
 });
 
@@ -228,13 +244,20 @@ test("team or staff changes silently close an old callback instead of showing a 
  assert.equal(career.careerStoryHistory.some(row=>Number(row.node)===0||String(row.eventId).endsWith(":closed")),false);
 });
 
+test("a callback without a recorded source choice closes silently instead of inventing a return",()=>{
+ const career=player({year:2028,age:18,careerStoryPending:[{id:"orphan",eventId:"school_rival_2",line:"school_rivalry",dueYear:2028,status:"pending",sourceEventId:"school_rival_1"}]});
+ const context=storyContext(career),special=vm.runInContext("buildCareerStorySpecial(p)",context);
+ assert.equal(career.careerStoryPending[0].status,"closed");
+ assert.notEqual(special?.storyEventId,"school_rival_2");
+});
+
 test("older pending records without actor snapshots use a neutral role instead of the current random name",()=>{
  const career=player({year:2034,age:24,path:"台灣職業",careerSeason:8,careerStoryPending:[{id:"legacy",eventId:"coach_role_2",line:"coach_role",dueYear:2034,status:"pending",sourceEventId:"coach_role_1",sourceChoice:"提出可驗證的升級條件"}]});
  const context=storyContext(career);
  const actor=vm.runInContext(`careerStoryActorPresentation(careerStoryEventById("coach_role_2"),p,p.careerStoryPending[0])`,context);
  assert.equal(actor.name,"當時與你談角色的教練");
  assert.equal(actor.isPerson,false);
- assert.equal(career.careerStoryPending[0].sourceTitle,"第一次真正談角色");
+ assert.equal(career.careerStoryPending[0].sourceTitle,"戰術板上，你的名字只剩半格");
  assert.doesNotMatch(vm.runInContext(`careerStoryText(careerStoryEventById("coach_role_2").desc,p,p.careerStoryPending[0])`,context),/教練甲/);
 });
 
@@ -374,6 +397,8 @@ test("callbacks do not trigger after retirement and old saves receive additive d
  assert.equal(vm.runInContext("buildCareerStorySpecial(p)",context),null);
  assert.equal(old.careerStoryPending[0].status,"pending");
  assert.doesNotMatch(read("js/ui/retirement-view.js"),/careerStoryPending|buildCareerStorySpecial|resolveCareerStoryEvent/);
+ assert.match(read("js/state.js"),/openingCareerStoryYear:0/);
+ assert.match(read("js/state.js"),/typeof player\.specialReturnStage!=="string"/);
 });
 
 test("home setup persists optional friend and rival names and the record drawer exposes people and consequences",()=>{
@@ -386,6 +411,32 @@ test("home setup persists optional friend and rival names and the record drawer 
  assert.match(home,/當時球隊/);
  assert.match(career,/careerCast:\{friend:\{name:friendName/);
  assert.match(career,/rival:\{name:rivalName/);
+ assert.match(home,/遇見以前不提前顯示姓名/);
+ assert.doesNotMatch(home,/製作故事卡/);
+});
+
+test("the opening story introduces a named long-term relationship before ordinary events",()=>{
+ const career=player(),context=storyContext(career);
+ const opening=vm.runInContext("buildCareerStorySpecial(p,{openingOnly:true})",context);
+ assert.ok(["school_rival_1","friend_thread_1"].includes(opening.storyEventId));
+ assert.ok(["friend","rival"].includes(vm.runInContext(`careerStoryEventById(${JSON.stringify(opening.storyEventId)}).actor`,context)));
+});
+
+test("unintroduced cast names stay hidden and a played story reveals only its actor",()=>{
+ const career=player(),context=storyContext(career);
+ assert.equal(vm.runInContext("careerStoryPeople(p).length",context),0);
+ vm.runInContext(`resolveCareerStoryEvent("friend_thread_1","makeTime")`,context);
+ const people=vm.runInContext("careerStoryPeople(p)",context);
+ assert.deepEqual(Array.from(people,item=>item.key),["friend"]);
+});
+
+test("early relationship callbacks finish within the first five seasons",()=>{
+ const career=player(),context=storyContext(career);
+ vm.runInContext(`resolveCareerStoryEvent("friend_thread_1","ignore")`,context);
+ assert.equal(career.careerStoryPending[0].dueYear,2027);
+ career.year=2027;career.age=17;career.careerSeason=1;
+ vm.runInContext(`resolveCareerStoryEvent("friend_thread_2","saveLater")`,context);
+ assert.equal(career.careerStoryPending.find(item=>item.eventId==="friend_thread_3").dueYear,2028);
 });
 
 test("three deterministic careers run from HBL through veteran seasons without duplicate story nodes",()=>{
@@ -452,4 +503,15 @@ test("twelve full careers receive meaningfully different story selections",()=>{
  }
  assert.ok(union.size>=50,`expected broad catalog use, received ${union.size} unique events`);
  assert.ok(new Set(signatures).size>=10,"different Seeds should not collapse into the same story order");
+});
+
+test("cross-season copy does not assume one earlier choice happened",()=>{
+ const source=read("data/career-story-events.js");
+ assert.doesNotMatch(source,/你手機裡仍留著當初那張戰術板照片/);
+ assert.doesNotMatch(source,/拿出上一季的腕帶/);
+ assert.doesNotMatch(source,/當年的紅色腕帶/);
+ assert.doesNotMatch(source,/收回借出的恢復頁/);
+ assert.doesNotMatch(source,/都回到同一座球場投完五十顆/);
+ assert.match(source,/無論家人已經搬來、仍在兩地往返，或暫時保留舊住處/);
+ assert.match(source,/無論你曾分享整本筆記、只給一頁，或要他自己記錄/);
 });

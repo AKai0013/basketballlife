@@ -426,7 +426,7 @@ function keepRecurringSpecial(event){
 function buildSeasonSpecialQueue(){
  let q=[];
  const nt=nationalTeamOpportunity();
- const careerStory=typeof buildCareerStorySpecial==="function"?buildCareerStorySpecial(p,{blockedThemes:nt?["national"]:[]}):null;
+ const careerStory=Number(p.openingCareerStoryYear)===Number(p.year)?null:typeof buildCareerStorySpecial==="function"?buildCareerStorySpecial(p,{blockedThemes:nt?["national"]:[]}):null;
  if(careerStory)q.push(careerStory);
  if(p.lastDanceActive){
    q.push({kind:"lastDance",title:"最後一舞，怎麼打？",desc:"這是你正式退休前的最後一季。你要留下代表作、帶著隊友走完，還是把身體完整交還給未來的生活？"});
@@ -444,14 +444,20 @@ function buildSeasonSpecialQueue(){
  const priority={national:1,seasonKeyBattle:1,v8Chain:2,careerStory:2,careerStoryClosure:2,career:3,relationship:4,romanceFirst:5,romanceFollow:5,proposal:5,childPlan:5,familySupport:5,marriageStrain:5,affairTemptation:5,offCourt:6,tradeChoice:6};
  return q.sort((a,b)=>(priority[a.kind]||9)-(priority[b.kind]||9)).slice(0,3).filter(keepRecurringSpecial);
 }
+function startOpeningCareerStory(){
+ if(Number(p.careerSeason||0)>0||Number(p.eventIndex||0)>0||Object.keys(p.careerIntroductions||{}).length||Number(p.openingCareerStoryYear)===Number(p.year))return false;
+ const story=typeof buildCareerStorySpecial==="function"?buildCareerStorySpecial(p,{openingOnly:true}):null;
+ if(!story?.storyEventId)return false;
+ p.stage="special";p.specialQueue=[{...story,openingStory:true}];p.specialIndex=0;p.specialReturnStage="events";p.openingCareerStoryYear=p.year;showSpecialEvent();return true;
+}
 function startSpecialPhase(){
- p.stage="special";p.seasonKeyBattleResult=null;p.specialQueue=buildSeasonSpecialQueue();p.specialIndex=0;
+ p.stage="special";p.specialReturnStage="";p.seasonKeyBattleResult=null;p.specialQueue=buildSeasonSpecialQueue();p.specialIndex=0;
  if(!p.specialQueue.length){showHealth();return}
  showSpecialEvent();
 }
 function showSpecialEvent(){
  p.stage="special";resetMain();render();
- if(p.specialIndex>=p.specialQueue.length){showHealth();return}
+ if(p.specialIndex>=p.specialQueue.length){if(p.specialReturnStage==="events"){p.specialReturnStage="";p.stage="events";showEvent();return}showHealth();return}
  const e=p.specialQueue[p.specialIndex];
  chapter.textContent=`${p.year} · ${p.age}歲 · ${p.path} · 特殊事件 ${p.specialIndex+1}/${p.specialQueue.length}`;
  title.textContent=e.title;text.textContent=e.desc;
@@ -513,6 +519,8 @@ function showSpecialEvent(){
  }
  if(e.relationshipEvent){
    const cast=p.careerCast;document.getElementById("currentPanel")?.classList.add("eventRare");
+   const relationKey=e.kind==="agentCrossroads"?"agent":e.kind==="teammateRole"?"teammate":"rival";
+   if(typeof careerStoryMarkPersonIntroduced==="function")careerStoryMarkPersonIntroduced(p,relationKey,cast[relationKey],CAREER_STORY_PERSON_LABELS?.[relationKey]);
    if(e.kind==="agentCrossroads"){
     special.innerHTML=`<div class="specialStage career"><div class="specialKicker">📑 生涯路線</div><b>經紀人提出三種方向</b><br><span class="mut">這次決定會改變下一份合約的薪資、角色保障或旅外機會。</span></div>`;
     choices.innerHTML=`<button class="choice" onclick="resolveV8Relationship('agentMoney')"><b>授權他全力追求最高報價</b><small>收入與市場聲量可能提高，但不保證角色及球隊適合。</small></button><button class="choice" onclick="resolveV8Relationship('agentRole')"><b>只談清楚上場承諾</b><small>可能放棄更高薪資，換取較明確的輪替與生涯穩定。</small></button><button class="choice" onclick="resolveV8Relationship('agentOverseas')"><b>要求尋找海外舞台</b><small>曝光和新聯盟機會增加，也可能失去母隊續約的優先順位。</small></button>`;
@@ -739,7 +747,7 @@ function finishSpecialEvent(html,logText){
  choices.innerHTML="";
  if(logText)logIt(logText);
  p.specialIndex++;
- next.textContent=p.specialIndex<p.specialQueue.length?"下一個特殊事件 →":"進入健康結算 →";
+ next.textContent=p.specialIndex<p.specialQueue.length?"下一個特殊事件 →":p.specialReturnStage==="events"?"進入一般事件 →":"進入健康結算 →";
  next.classList.remove("hidden");render();
  if(wasKeyBattle)requestAnimationFrame(()=>{
    document.getElementById("currentPanel")?.classList.add("v9BattleResolved");
