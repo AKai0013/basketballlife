@@ -291,7 +291,11 @@ function renderResult(player,season,result){
 function showScreen(){
  const player=p,state=ensureState(player),season=definition(player);if(!state||!season)return false;
  player.stage="midcareer";player.seasonEventCount=0;resetMain();render();
- chapter.textContent=`${player.year} · ${player.age}歲 · ${player.path} · 職業第 ${player.careerSeason} 季`;
+ const group=CHAPTERS[season.chapter],highlightRow=typeof highlightRegisterMidcareerChapter==="function"?highlightRegisterMidcareerChapter(player,{...season,label:group.label}):null;
+ const withinChapter=CHAPTER_OFFSETS[season.chapter].indexOf(season.offset)+1,chapterTotal=CHAPTER_OFFSETS[season.chapter].length;
+ chapter.textContent=highlightRow
+  ?`精華生涯 · 第 ${highlightRow.number} 章 · ${group.label} ${withinChapter}/${chapterTotal}`
+  :`${player.year} · ${player.age}歲 · ${player.path} · 職業第 ${player.careerSeason} 季`;
  const savedResult=state.results.find(item=>Number(item.year)===Number(player.year));
  if(savedResult)renderResult(player,season,savedResult);
  else if(!objective(player,season.chapter))renderObjectives(player,season);

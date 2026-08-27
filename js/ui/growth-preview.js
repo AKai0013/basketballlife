@@ -161,6 +161,7 @@
     const continuePanel = document.getElementById("continueCareerPanel");
     const communityInvite = setup.querySelector(":scope > .communityInviteCard");
     const creatorCredit = setup.querySelector(":scope > .creatorCredit");
+    const careerMode = setup.querySelector(":scope > .careerModeSection");
     const quickPanel = document.createElement("div");
     quickPanel.className = "blHomeQuickPanel v9PlayerEntry";
     setup.insertBefore(quickPanel, nameLabel || quick);
@@ -199,6 +200,7 @@
     origins.className = "blCareerOrigins";
     origins.innerHTML = `<summary><span><b>生涯人物起點</b><small>替最早的朋友與競爭者取名；留白會由 Seed 產生</small></span><em>選填</em></summary><div class="blCareerOriginsBody"><label><span>最早陪你練球的人</span><input id="careerFriendNameInput" maxlength="12" autocomplete="off" placeholder="例如：陳冠宇"></label><label><span>第一次被拿來比較的對手</span><input id="careerRivalNameInput" maxlength="12" autocomplete="off" placeholder="例如：江承峰"></label><p>他們會在生涯事件中正式登場；教練與經紀人則會在加入球隊、踏入職業後出現。</p></div>`;
     quickPanel.appendChild(origins);
+    if (careerMode) quickPanel.appendChild(careerMode);
     quickPanel.appendChild(quick);
 
     const syncPositionName = () => {

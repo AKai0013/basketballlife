@@ -16,7 +16,9 @@ const migrations=[
   "0001_basketballlife_d1.sql",
   "0002_leaderboard_read_optimization.sql",
   "0003_v81_leaderboard_era.sql",
-  "0004_v9_leaderboard_era.sql"
+  "0004_v9_leaderboard_era.sql",
+  "0005_online_key_battle.sql",
+  "0008_online_shared_world.sql"
 ];
 const digest=async value=>[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(value)))].map(x=>x.toString(16).padStart(2,"0")).join("");
 

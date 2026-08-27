@@ -15,6 +15,49 @@ function careerStoryStage(player=p){
  }
  return "other";
 }
+const CAREER_STORY_LINE_GROUPS={
+ character:["school_rivalry","friendship","teammate_scandal"],
+ team:["coach_role","market_choice","rebuild_core"],
+ life:["playoff_injury","family_city","media_identity","national_miss"],
+ late:["veteran_mentor","final_chapter"]
+};
+const CAREER_STORY_LINE_TARGETS={character:2,team:1,life:1,late:1};
+function careerStoryStartedLines(player=p){
+ const lines=new Set();
+ (player?.careerStoryHistory||[]).forEach(item=>{if(item?.line&&item.line!=="standalone")lines.add(item.line)});
+ (player?.careerStoryPending||[]).forEach(item=>{if(item?.line)lines.add(item.line)});
+ (player?.careerStorySeen||[]).forEach(id=>{const line=careerStoryEventById(id)?.line;if(line)lines.add(line)});
+ return lines;
+}
+function careerStoryActivateLineGroup(player=p,group){
+ const candidates=CAREER_STORY_LINE_GROUPS[group]||[],target=CAREER_STORY_LINE_TARGETS[group]||0;
+ if(!target)return [];
+ const selected=player.careerStoryLineSelection[group],started=careerStoryStartedLines(player);
+ candidates.forEach(line=>{if(started.has(line)&&!selected.includes(line))selected.push(line)});
+ const remaining=candidates.filter(line=>!selected.includes(line));
+ while(selected.length<target&&remaining.length){
+  const slot=selected.length,index=hash(`${player.seed}-career-story-lines-v1-${group}-${slot}-${player.path||""}`)%remaining.length;
+  selected.push(remaining.splice(index,1)[0]);
+ }
+ return selected;
+}
+function ensureCareerStoryLineSelection(player=p){
+ if(!player||typeof player!=="object")return [];
+ const existing=player.careerStoryLineSelection&&typeof player.careerStoryLineSelection==="object"&&!Array.isArray(player.careerStoryLineSelection)?player.careerStoryLineSelection:{};
+ player.careerStoryLineSelection={version:1};
+ Object.keys(CAREER_STORY_LINE_GROUPS).forEach(group=>{
+  const valid=Array.isArray(existing[group])?existing[group].filter(line=>CAREER_STORY_LINE_GROUPS[group].includes(line)):[];
+  player.careerStoryLineSelection[group]=[...new Set(valid)];
+ });
+ const stage=careerStoryStage(player),started=careerStoryStartedLines(player);
+ careerStoryActivateLineGroup(player,"character");
+ if((stage!=="hbl"&&stage!=="other")||[...started].some(line=>CAREER_STORY_LINE_GROUPS.team.includes(line)||CAREER_STORY_LINE_GROUPS.life.includes(line))){
+  careerStoryActivateLineGroup(player,"team");
+  careerStoryActivateLineGroup(player,"life");
+ }
+ if(stage==="veteran"||[...started].some(line=>CAREER_STORY_LINE_GROUPS.late.includes(line)))careerStoryActivateLineGroup(player,"late");
+ return Object.keys(CAREER_STORY_LINE_GROUPS).flatMap(group=>player.careerStoryLineSelection[group]);
+}
 function ensureCareerStoryState(player=p){
  if(!player||typeof player!=="object")return player;
  player.careerStoryHistory=Array.isArray(player.careerStoryHistory)?player.careerStoryHistory:[];
@@ -32,6 +75,7 @@ function ensureCareerStoryState(player=p){
   if(!Number.isFinite(Number(item.latestYear)))item.latestYear=Number(item.earliestYear)+2;
   if(!item.createdYear)item.createdYear=Math.min(Number(item.earliestYear)-1,Number(player.year)||2026);
  });
+ ensureCareerStoryLineSelection(player);
  return player;
 }
 function careerStoryEventById(id){return (CAREER_STORY_EVENTS||[]).find(event=>event.id===id)||null}
@@ -237,8 +281,8 @@ function careerStoryMarkPersonIntroduced(player=p,key,person,role=""){
 }
 function careerStoryUnusedPool(player=p){
  ensureCareerStoryState(player);
- const seen=new Set(player.careerStorySeen);
- return (CAREER_STORY_EVENTS||[]).filter(event=>event.node<=1&&(event.id==="family_city_1"&&player.careerRelocationPending?.meaningful||!seen.has(event.id))&&careerStoryEventEligible(event,player));
+ const seen=new Set(player.careerStorySeen),activeLines=new Set(ensureCareerStoryLineSelection(player));
+ return (CAREER_STORY_EVENTS||[]).filter(event=>event.node<=1&&(!event.line||activeLines.has(event.line))&&(event.id==="family_city_1"&&player.careerRelocationPending?.meaningful||!seen.has(event.id))&&careerStoryEventEligible(event,player));
 }
 function careerStoryPendingBreak(pending,player=p){
  if(!pending||pending.status!=="pending"||!CAREER_STORY_SAME_TEAM_LINES.has(pending.line))return null;
@@ -366,7 +410,7 @@ function applyCareerStoryEffects(effects={},player=p,pending=null,event=null){
  return changes;
 }
 function scheduleCareerStoryFollowUp(event,choice,player=p){
- if(!event?.line||Number(event.node)>=3)return null;
+ if(!event?.line)return null;
  const next=CAREER_STORY_EVENTS.find(candidate=>candidate.line===event.line&&Number(candidate.node)===Number(event.node)+1);
  if(!next)return null;
  const threeYearChoices=new Set(["wait","delay","careerFirst","saveLater"]),twoYearChoices=new Set(["distance","stayPlan","oneYear","review"]);
@@ -405,9 +449,7 @@ function resolveCareerStoryEvent(eventId,choiceId){
  const row={year:p.year,age:Number(p.age)||0,team:p.team||"",path:p.path||"",overall:typeof overall==="function"?Number(overall())||careerStoryOverall(p):careerStoryOverall(p),eventId:event.id,line:event.line||"standalone",node:event.node,title:careerStoryText(event.title,p,pending),choice:choice.label,result:choice.result,memory:choice.memory,theme:event.theme,person:presentation?.isPerson?presentation.name:"",actorLabel:presentation?.name||"",actorRole:presentation?.role||"",sourceTitle:pending?.sourceTitle||"",sourceChoice:pending?.sourceChoice||"",followUpEventId:followUp?.eventId||"",followUpDueYear:followUp?.dueYear||0};
  p.careerStoryHistory.push(row);p.careerStoryHistory=p.careerStoryHistory.slice(-160);
  const changeHTML=changes.length?changes.map(item=>`<span class="change ${careerStoryEffectTone(item.key,item.delta)}">${careerStoryEscape(item.label)} ${item.delta>0?"+":""}${item.delta}</span>`).join(""):`<span class="change info">沒有立即數值變化</span>`;
- const followEvent=followUp?careerStoryEventById(followUp.eventId):null;
- const followTitle=followEvent?careerStoryText(followEvent.title,p,followUp):"下一次相遇";
- const followHTML=followUp?`<div class="careerStoryFuture"><small>這段關係還沒結束</small><b>${careerStoryEscape(followTitle)}</b><span>${Number(followUp.dueYear)||Number(p.year)+1} 年起，${careerStoryEscape(row.actorLabel||"這個人")}會帶著你今天的選擇再次出現。</span></div>`:`<div class="careerStoryFuture resolved"><small>這段故事已完成</small><b>後果已寫入生涯紀錄</b></div>`;
+ const followHTML=followUp?`<div class="careerStoryFuture"><small>已寫入生涯</small><b>這次選擇與當下後果已保留</b><span>之後只在人物、球隊與生涯條件真正成立時，才會出現新的發展。</span></div>`:`<div class="careerStoryFuture resolved"><small>這段故事已完成</small><b>後果已寫入生涯紀錄</b></div>`;
  const introHTML=introduction?`<div class="careerStoryIntroduction">${careerStoryEscape(introduction)}</div>`:"";
  const html=`${introHTML}<div class="outcome success careerStoryOutcome"><div class="outcomeHead"><b>選擇後果｜${careerStoryEscape(choice.label)}</b><span class="outcomeRate">生涯事件</span></div><div class="eventMain">${careerStoryEscape(choice.result)}</div><div class="changes">${changeHTML}</div><div class="careerStoryMemory"><small>留下的記憶</small><b>${careerStoryEscape(choice.memory)}</b></div>${followHTML}</div>`;
  recordV8Story("life",`${row.title}｜${row.choice}：${row.result}`,5,{chain:followUp?event.line:"",person:row.person,careerStory:true});

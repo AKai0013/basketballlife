@@ -33,7 +33,8 @@
 <link rel="stylesheet" href="./css/career.css?v=9.0.0">
 <link rel="stylesheet" href="./css/events.css?v=9.0.0">
 <link rel="stylesheet" href="./css/leaderboard.css?v=9.0.0">
-<link rel="stylesheet" href="./css/home.css?v=9.0.0">
+<link rel="stylesheet" href="./css/online-key-battle.css?v=9.0.0">
+<link rel="stylesheet" href="./css/home.css?v=9.0.0&careerMode=1">
 <link rel="stylesheet" href="./css/growth-preview.css?v=9.0.0">
 <link rel="stylesheet" href="./css/v9-ui.css?v=9.0.0">
 <script src="./js/boot.js?v=9.0.0"></script>
@@ -93,6 +94,14 @@
     <div id="birthplaceInput" class="birthplaceGrid" role="group" aria-label="選擇出生地"></div>
   </div>
 </div>
+<section class="careerModeSection" aria-labelledby="careerModeTitle">
+  <div class="setupSectionHead"><div><b id="careerModeTitle">選擇生涯節奏</b><small>兩種模式共用同一套 Seed、能力、傷病、合約與退休規則。</small></div></div>
+  <div class="careerModeGrid" role="group" aria-label="選擇生涯節奏">
+    <button type="button" class="careerModeChoice on" data-career-mode="complete" aria-pressed="true" onclick="selectCareerMode('complete')"><b>完整生涯</b><small>逐季處理每個階段，適合研究能力、傷病與市場。</small></button>
+    <button type="button" class="careerModeChoice" data-career-mode="highlight" aria-pressed="false" onclick="selectCareerMode('highlight')"><b>精華生涯｜約 20～30 分鐘</b><small>全程約 10～14 章；低影響球季自動整理，重大轉折仍停下來由你決定。</small></button>
+  </div>
+  <p id="careerModeHelp" class="careerModeHelp">逐季處理訓練、事件、健康、成績與能力點，完整走過每一個球季。</p>
+</section>
 <label for="seed">世界 Seed（可輸入或隨機抽取）</label><div class="seed"><input id="seed" class="seedcode" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="seedHelp seedError" oninput="normalizeSeedInput()"><button id="seedRerollBtn" class="btn" type="button" onclick="newSeed()">重新抽取</button></div>
 <div id="seedError" class="seedError" aria-live="polite"></div>
 <p id="seedHelp" class="seedHelp">輸入或貼上 8 碼英文字母／數字。相同 Seed 與球員設定會展開相同的生涯起點；天賦等級將在退休時揭曉。</p>
@@ -106,6 +115,7 @@
     <button class="btn deleteBtn" type="button" onclick="clearCareerSave(true)">刪除存檔</button>
   </div>
 </div>
+<button class="onlineBattleInvite" type="button" onclick="BasketballLifeKeyBattle.open()"><span>BASKETBALLLIFE ONLINE</span><b>SHARED WORLD・雙人／三人生涯</b><small>每人一名獨立球員，從不同 HBL 球隊出發；畢業後各走升學與職業路線，共享同一條世界時間線。</small><em>建立或加入世界 →</em></button>
 <a class="communityInviteCard" href="https://discord.gg/v6n7PH7DJ" target="_blank" rel="noopener noreferrer" aria-label="加入 BasketballLife Discord 玩家社群"><span>BASKETBALLLIFE COMMUNITY</span><b>加入玩家休息室</b><small>分享生涯、挑戰 Seed、交流攻略</small><em>加入 Discord →</em></a>
 <div class="creatorCredit homeCreatorCredit"><span>Produced by</span> <a href="https://www.threads.com/@basketballlife_k?xmt=AQG0tS6gtXrN8CWiBiJqphKuoz5VwtJFONP4svLNEbhjdt0" target="_blank" rel="noopener noreferrer">BasketballLife_K</a></div>
 </section>
@@ -120,6 +130,14 @@
     </div>
   </div>
   <div id="communityContent" class="communityContent"><div class="communityLoading">讀取中…</div></div>
+</section>
+
+<section id="onlineBattlePage" class="onlineBattlePage hidden" aria-labelledby="onlineBattleTitle">
+  <div class="onlineBattleTop">
+    <button class="btn" type="button" onclick="BasketballLifeKeyBattle.close()">← 返回</button>
+    <div><div class="onlineBattleEyebrow">BASKETBALLLIFE ONLINE</div><h1 id="onlineBattleTitle">SHARED WORLD・2–3 人生涯</h1></div>
+  </div>
+  <div id="onlineBattleContent" class="onlineBattleContent"></div>
 </section>
 
 <div id="nicknameModal" class="onlineModal hidden" role="dialog" aria-modal="true" aria-labelledby="nicknameTitle">
@@ -173,11 +191,12 @@
 <script src="./data/career-story-events.js?v=9.0.0"></script>
 <script src="./js/api.js?v=9.0.0"></script>
 <script src="./js/leaderboard/leaderboard-api.js?v=9.0.0"></script>
+<script src="./js/online/key-battle.js?v=9.0.0"></script>
 <script src="./js/state.js?v=9.0.0"></script>
 <script src="./js/career/progression-engine.js?v=9.0.0"></script>
 <script src="./js/events/event-memory.js?v=9.0.0"></script>
 <script src="./js/events/career-story-engine.js?v=9.0.0"></script>
-<script src="./js/events/midcareer-rhythm.js?v=9.0.0"></script>
+<script src="./js/events/midcareer-rhythm.js?v=9.0.0&highlight=2"></script>
 <script src="./js/storage.js?v=9.0.0"></script>
 <script src="./js/ui/home-view.js?v=9.0.0"></script>
 <script src="./js/career/career-engine.js?v=9.0.0"></script>
@@ -187,10 +206,11 @@
 <script src="./js/ui/retirement-view.js?v=9.0.0"></script>
 <script src="./js/career/retirement-engine.js?v=9.0.0"></script>
 <script src="./js/ui/event-view.js?v=9.0.0"></script>
-<script src="./js/events/event-engine.js?v=9.0.0"></script>
+<script src="./js/events/event-engine.js?v=9.0.0&highlight=2"></script>
 <script src="./js/career/season-engine.js?v=9.0.0"></script>
+<script src="./js/career/highlight-engine.js?v=9.0.0&highlight=2"></script>
 <script src="./js/app.js?v=9.0.0"></script>
 <script src="./js/leaderboard/return-cache.js?v=9.0.0"></script>
-<script defer src="./js/ui/growth-preview.js?v=9.0.0"></script>
+<script defer src="./js/ui/growth-preview.js?v=9.0.0&highlight=1"></script>
 <script defer src="./js/leaderboard/public-career.js?v=9.0.0"></script>
 </body></html>

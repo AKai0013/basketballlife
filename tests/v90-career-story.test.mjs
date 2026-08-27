@@ -35,7 +35,7 @@ function player(overrides={}){
  };
 }
 
-test("career-story catalog contains 96 unique events, 12 three-node lines and 288 choices",()=>{
+test("career-story catalog contains 104 unique events, at least eight four-node lines and 312 choices",()=>{
  const context=storyContext(player());
  const report=vm.runInContext(`({
   total:CAREER_STORY_EVENTS.length,
@@ -44,9 +44,69 @@ test("career-story catalog contains 96 unique events, 12 three-node lines and 28
   linked:CAREER_STORY_LINES.length,
   standalone:CAREER_STORY_STANDALONES.length,
   choices:CAREER_STORY_EVENTS.reduce((sum,event)=>sum+event.choices.length,0),
+  fourNodeLines:new Set(CAREER_STORY_LINES.filter(event=>event.node===4).map(event=>event.line)).size,
   badChoices:CAREER_STORY_EVENTS.filter(event=>event.choices.length!==3).map(event=>event.id)
  })`,context);
- assert.deepEqual(JSON.parse(JSON.stringify(report)),{total:96,ids:96,lines:12,linked:36,standalone:60,choices:288,badChoices:[]});
+ assert.deepEqual(JSON.parse(JSON.stringify(report)),{total:104,ids:104,lines:12,linked:44,standalone:60,choices:312,fourNodeLines:8,badChoices:[]});
+});
+
+test("each new career deterministically unlocks two character lines plus one team, life and late line",()=>{
+ const career=player(),context=storyContext(career);
+ vm.runInContext("ensureCareerStoryState(p)",context);
+ assert.equal(career.careerStoryLineSelection.character.length,2);
+ assert.equal(career.careerStoryLineSelection.team.length,0);
+ assert.equal(career.careerStoryLineSelection.life.length,0);
+ assert.equal(career.careerStoryLineSelection.late.length,0);
+ career.path="NCAA D1";career.age=19;career.careerSeason=3;
+ vm.runInContext("ensureCareerStoryState(p)",context);
+ assert.equal(career.careerStoryLineSelection.team.length,1);
+ assert.equal(career.careerStoryLineSelection.life.length,1);
+ career.path="台灣職業";career.age=36;career.careerSeason=15;career.firstFullProAge=20;career.peakOverall=85;
+ career.health=74;career.bodyLoad=68;career.contract={remaining:1};career.roleState={current:"benchLeader",promised:"starter"};
+ career.stats=Object.fromEntries(Object.keys(career.stats).map(key=>[key,64]));
+ vm.runInContext("ensureCareerStoryState(p)",context);
+ const active=Object.values(career.careerStoryLineSelection).filter(Array.isArray).flat();
+ assert.equal(career.careerStoryLineSelection.late.length,1);
+ assert.equal(active.length,5);
+});
+
+test("same Seed and route keep the same line set while different Seeds and routes vary the set",()=>{
+ const selected=(seed,path)=>{
+  const career=player({seed}),context=storyContext(career);
+  vm.runInContext("ensureCareerStoryState(p)",context);
+  career.path=path;career.age=20;career.careerSeason=4;
+  vm.runInContext("ensureCareerStoryState(p)",context);
+  return JSON.stringify(career.careerStoryLineSelection);
+ };
+ assert.equal(selected("LOCK001","NCAA D1"),selected("LOCK001","NCAA D1"));
+ const seeds=Array.from({length:12},(_,index)=>selected(`LOCK${String(index+1).padStart(3,"0")}`,"NCAA D1"));
+ assert.ok(new Set(seeds).size>=5,"different Seeds should unlock several mainline combinations");
+ const routePairs=Array.from({length:12},(_,index)=>{
+  const seed=`ROUTE${String(index+1).padStart(3,"0")}`;
+  return [selected(seed,"NCAA D1"),selected(seed,"UBA 強權")];
+ });
+ assert.ok(routePairs.some(([left,right])=>left!==right),"college route should influence the later line draw");
+});
+
+test("the seasonal pool keeps standalone events but excludes locked long lines",()=>{
+ const career=player({year:2033,age:23,path:"台灣職業",careerSeason:7,contract:{remaining:1},seasonStats:{games:32,scheduledGames:40,mins:28,pts:18},rep:12,teamWorld:{direction:"rebuild"},roleState:{current:"starter"}});
+ const context=storyContext(career),report=vm.runInContext(`(()=>{
+  const pool=careerStoryUnusedPool(p),active=new Set(ensureCareerStoryLineSelection(p));
+  return {hasStandalone:pool.some(event=>!event.line),locked:pool.filter(event=>event.line&&!active.has(event.line)).map(event=>event.id)};
+ })()`,context);
+ assert.equal(report.hasStandalone,true);
+ assert.deepEqual(Array.from(report.locked),[]);
+});
+
+test("old saves keep every long line that already started before the lock was introduced",()=>{
+ const career=player({careerStoryHistory:[
+  {eventId:"school_rival_1",line:"school_rivalry",node:1},
+  {eventId:"friend_thread_1",line:"friendship",node:1},
+  {eventId:"teammate_scandal_1",line:"teammate_scandal",node:1}
+ ]});
+ const context=storyContext(career);
+ vm.runInContext("ensureCareerStoryState(p)",context);
+ assert.deepEqual(new Set(career.careerStoryLineSelection.character),new Set(["school_rivalry","friendship","teammate_scandal"]));
 });
 
 test("career-story choice copy never leaks unresolved actor placeholders",()=>{
@@ -71,7 +131,7 @@ test("student pools exclude professional agent, marriage, free-market and retire
  assert.deepEqual(Array.from(report.collegeForbidden),[]);
 });
 
-test("all 96 events expose a clear actor role and institutional events never borrow unrelated people",()=>{
+test("all 104 events expose a clear actor role and institutional events never borrow unrelated people",()=>{
  const context=storyContext(player({year:2036,age:26,path:"台灣職業",careerSeason:10}));
  const report=vm.runInContext(`(()=>{
   const missing=CAREER_STORY_EVENTS.filter(event=>!careerStoryActorPresentation(event,p)?.name).map(event=>event.id);
@@ -189,7 +249,7 @@ test("the same Seed and stage pick the same event while three career stages rece
  }
 });
 
-test("a choice schedules an actual next-season event and records visible consequences",()=>{
+test("a choice schedules an actual next-season event and records consequences without promising its title or year",()=>{
  const career=player();
  const context=storyContext(career);
  vm.runInContext(`resolveCareerStoryEvent("school_rival_1","challenge")`,context);
@@ -200,9 +260,8 @@ test("a choice schedules an actual next-season event and records visible consequ
  assert.equal(career.careerStoryPending[0].sourceTeam,"測試高中");
  assert.equal(career.careerStoryPending[0].lineActors.rival.name,"宿敵甲");
  assert.match(career.finished.html,/留下的記憶/);
- assert.match(career.finished.html,/最後一波，他站到了你面前/);
- assert.match(career.finished.html,/2027 年起/);
- assert.doesNotMatch(career.finished.html,/未來條件成立時/);
+ assert.match(career.finished.html,/這次選擇與當下後果已保留/);
+ assert.doesNotMatch(career.finished.html,/最後一波，他站到了你面前|2027 年起/);
  career.year=2027;career.age=17;
  const follow=vm.runInContext("buildCareerStorySpecial(p)",context);
  assert.equal(follow.kind,"careerStory");
@@ -210,13 +269,22 @@ test("a choice schedules an actual next-season event and records visible consequ
  assert.match(follow.title,/最後一波，他站到了你面前/);
 });
 
-test("story outcomes name the next chapter instead of showing a generic callback promise",()=>{
+test("story outcomes never reveal an unguaranteed next chapter",()=>{
  const career=player(),context=storyContext(career);
  vm.runInContext(`resolveCareerStoryEvent("school_rival_1","team")`,context);
- assert.match(career.finished.html,/最後一波，他站到了你面前/);
- assert.match(career.finished.html,/2027 年起/);
- assert.match(career.finished.html,/宿敵甲/);
- assert.doesNotMatch(career.finished.html,/未來條件成立時/);
+ assert.match(career.finished.html,/已寫入生涯/);
+ assert.doesNotMatch(career.finished.html,/最後一波，他站到了你面前|2027 年起|預定年份/);
+});
+
+test("a completed third node schedules its authored fourth node and the fourth node closes the line",()=>{
+ const career=player({year:2035,age:27,path:"台灣職業",careerSeason:9,contract:{remaining:1}});
+ const context=storyContext(career);
+ vm.runInContext(`resolveCareerStoryEvent("market_choice_3","correct")`,context);
+ assert.equal(career.careerStoryPending.at(-1).eventId,"market_choice_4");
+ career.year=career.careerStoryPending.at(-1).dueYear;
+ vm.runInContext(`resolveCareerStoryEvent("market_choice_4","jointReview")`,context);
+ assert.equal(career.careerStoryHistory.at(-1).eventId,"market_choice_4");
+ assert.equal(career.careerStoryPending.filter(item=>item.status==="pending"&&item.line==="market_choice").length,0);
 });
 
 test("a callback keeps the original named person and shows the actual previous event and choice",()=>{
@@ -337,14 +405,14 @@ test("a young short-career decline does not unlock veteran farewell stories",()=
 });
 
 test("the first real closing chapter is not delayed behind random veteran filler",()=>{
- const career=player({year:2042,age:36,path:"台灣職業",careerSeason:14,peakOverall:88,stats:{shoot:78,finish:78,handle:78,pass:78,defense:78,rebound:78,ath:78,iq:78},health:76,bodyLoad:66,contract:{remaining:1},roleState:{current:"benchLeader",promised:"starter"}});
+ const career=player({year:2042,age:36,path:"台灣職業",careerSeason:14,peakOverall:88,stats:{shoot:78,finish:78,handle:78,pass:78,defense:78,rebound:78,ath:78,iq:78},health:76,bodyLoad:66,contract:{remaining:1},roleState:{current:"benchLeader",promised:"starter"},careerStoryLineSelection:{version:1,character:["school_rivalry","friendship"],team:["coach_role"],life:["playoff_injury"],late:["final_chapter"]}});
  const context=storyContext(career),special=vm.runInContext("buildCareerStorySpecial(p)",context);
  assert.equal(vm.runInContext("careerStoryStage(p)",context),"veteran");
  assert.equal(special.storyEventId,"final_chapter_1");
 });
 
 test("family relocation story requires an actual meaningful move and is prioritized",()=>{
- const career=player({year:2033,age:27,path:"台灣職業",team:"桃園職籃",careerSeason:8,married:true,partnerName:"伴侶"});
+ const career=player({year:2033,age:27,path:"台灣職業",team:"桃園職籃",careerSeason:8,married:true,partnerName:"伴侶",careerStoryLineSelection:{version:1,character:["school_rivalry","friendship"],team:["coach_role"],life:["family_city"],late:[]}});
  const context=storyContext(career);
  assert.equal(vm.runInContext(`careerStoryEventEligible(careerStoryEventById("family_city_1"),p)`,context),false);
  vm.runInContext(`recordCareerRelocation(p,"台灣職業","桃園職籃","韓國職業","首爾籃球隊")`,context);

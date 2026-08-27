@@ -1,3 +1,8 @@
+let activeOrdinaryEvent=null;
+function ordinaryEventOutcome(event,label,tier){
+ const option=event?.opts?.find(item=>item?.[0]===label),outcomes=option?.[3];
+ return typeof outcomes?.[tier]==="string"?outcomes[tier]:"";
+}
 function normalEventPool(){
  const source=isProPath()?PRO_GENERAL_EVENTS:events;
  const eligible=source.filter(normalEventEligible);
@@ -5,6 +10,16 @@ function normalEventPool(){
 }
 function normalEventEligible(event){
  const name=String(event?.t||"");
+ if(Array.isArray(event?.paths)&&!event.paths.includes(p.path))return false;
+ if(Number.isFinite(Number(event?.minRep))&&Number(p.rep||0)<Number(event.minRep))return false;
+ if(Number.isFinite(Number(event?.minAge))&&Number(p.age||0)<Number(event.minAge))return false;
+ if(Number.isFinite(Number(event?.minCareerSeason))&&Number(p.careerSeason||0)<Number(event.minCareerSeason))return false;
+ if(event?.maxStat){const key=String(event.maxStat.key||""),limit=Number(event.maxStat.value),value=Number(p.stats?.[key]);if(!key||!Number.isFinite(limit)||!Number.isFinite(value)||value>limit)return false}
+ if(Number.isFinite(Number(event?.maxPreviousSeasonMinutes))){
+  const history=p.seasonHistory||[],previous=history[history.length-1],proPaths=["SBL／半職業","台灣職業","日本職業","韓國職業","CBA","NBA G League","歐洲聯賽","NBA"];
+  const minutes=Number(previous?.mins);
+  if(!previous||!proPaths.includes(previous.path)||!Number.isFinite(minutes)||minutes>Number(event.maxPreviousSeasonMinutes))return false;
+ }
  if(name==="經紀人要求刷數據"&&(!p.contract||Number(p.contract.remaining||0)>1))return false;
  if(name==="客場連戰疲勞"&&Number(p.fatigue||0)<35&&Number(p.bodyLoad||0)<40)return false;
  if(name==="主場噓聲"&&Number(p.confidence??50)>48&&Number(p.rep||0)>=0)return false;
@@ -81,6 +96,7 @@ function showEvent(){
    p.medicalPressureHistory.push({year:p.year,title:e.t});
    p.medicalPressureHistory=p.medicalPressureHistory.slice(-8);
  }
+ activeOrdinaryEvent=e;
  const panel=document.getElementById("currentPanel"),medical=INJURY_PRESSURE_EVENTS.includes(e)||/傷|止痛|膝蓋|腳踝/.test(e.t);
  panel?.classList.add(medical?"eventMedical":"eventOrdinary");
  rememberEvent(p.eventMemory,e.t);
@@ -94,7 +110,7 @@ function showEvent(){
  mapped.push(...mapped.splice(0,rot));
  choices.innerHTML=mapped.map(o=>{
    const chance=previewChance(o[2]);
-   return `<button class="choice eventChoice v9EventChoice" onclick="resolveEvent('${o[2]}','${o[0]}')"><b>${o[0]}</b><small>${o[1]}</small><span class="eventChancePreview v9EventChance" style="--chance:${chance}%" aria-label="預估成功率 ${chance}%"><small>成功機會</small><b>${chance}%</b><i aria-hidden="true"></i></span></button>`;
+   return `<button class="choice eventChoice v9EventChoice" data-highlight-effect="${o[3]}" data-highlight-strategy="${String(o[2]).split("|")[0]}" data-highlight-chance="${chance}" onclick="resolveEvent('${o[2]}','${o[0]}')"><b>${o[0]}</b><small>${o[1]}</small><span class="eventChancePreview v9EventChance" style="--chance:${chance}%" aria-label="預估成功率 ${chance}%"><small>成功機會</small><b>${chance}%</b><i aria-hidden="true"></i></span></button>`;
  }).join("");
 }
 
@@ -451,15 +467,16 @@ function startOpeningCareerStory(){
  p.stage="special";p.specialQueue=[{...story,openingStory:true}];p.specialIndex=0;p.specialReturnStage="events";p.openingCareerStoryYear=p.year;showSpecialEvent();return true;
 }
 function startSpecialPhase(){
- p.stage="special";p.specialReturnStage="";p.seasonKeyBattleResult=null;p.specialQueue=buildSeasonSpecialQueue();p.specialIndex=0;
- if(!p.specialQueue.length){showHealth();return}
+ p.stage="special";p.specialReturnStage="";p.seasonKeyBattleResult=null;p.specialQueue=typeof highlightPrepareSpecialQueue==="function"?highlightPrepareSpecialQueue(buildSeasonSpecialQueue()):buildSeasonSpecialQueue();p.specialIndex=0;
+ if(!p.specialQueue.length){if(typeof highlightAutoFinishSeason==="function"&&highlightAutoFinishSeason())return;showHealth();return}
+ if(typeof highlightAutoResolveRoutineSpecials==="function"&&highlightAutoResolveRoutineSpecials())return;
  showSpecialEvent();
 }
 function showSpecialEvent(){
  p.stage="special";resetMain();render();
- if(p.specialIndex>=p.specialQueue.length){if(p.specialReturnStage==="events"){p.specialReturnStage="";p.stage="events";showEvent();return}showHealth();return}
+ if(p.specialIndex>=p.specialQueue.length){if(p.specialReturnStage==="events"){p.specialReturnStage="";p.stage="events";showEvent();return}if(typeof highlightAutoFinishSeason==="function"&&highlightAutoFinishSeason())return;showHealth();return}
  const e=p.specialQueue[p.specialIndex];
- chapter.textContent=`${p.year} · ${p.age}歲 · ${p.path} · 特殊事件 ${p.specialIndex+1}/${p.specialQueue.length}`;
+ chapter.textContent=e.highlightChapter?`精華生涯 · 第 ${e.highlightChapterNumber} 章 · ${p.year} · ${p.path}`:`${p.year} · ${p.age}歲 · ${p.path} · 特殊事件 ${p.specialIndex+1}/${p.specialQueue.length}`;
  title.textContent=e.title;text.textContent=e.desc;
 
  if(e.kind==="careerStoryClosure"){
@@ -1671,6 +1688,9 @@ function resolveEvent(type,label){
    else if(tier==="fail"){neg("confidence",2,"信心");neg("rep",1,"球隊評價");msg="你的選擇沒有帶來預期效果，還讓信心與球隊評價受到影響。"}
    else{neg("confidence",4,"信心");neg("rep",3,"球隊評價");pos("fatigue",6,"疲勞");msg="事情朝最差方向發展，你必須承擔後果。"}
  }
+
+ const authoredOutcome=ordinaryEventOutcome(activeOrdinaryEvent,label,tier);
+ if(authoredOutcome)msg=authoredOutcome;
 
  if(tier==="great"&&chainHas("scorer2")&&["shoot","three","finish","clutch","handle","compete","show"].includes(etype)){
    const bonusKey=["shoot","three"].includes(etype)?"shoot":["handle"].includes(etype)?"handle":"finish";

@@ -308,6 +308,21 @@ function renderBirthplaceChoices(){
  const rows=["RANDOM",...TAIWAN_BIRTHPLACES];
  birthplace.innerHTML=rows.map(x=>`<button type="button" class="birthplaceChip ${chosenBirthplace===x?"on":""}" aria-pressed="${chosenBirthplace===x}" onclick="selectBirthplace('${x}')">${x==="RANDOM"?"隨機":x}</button>`).join("");
 }
+function renderCareerMode(){
+ const mode=chosenCareerMode==="highlight"?"highlight":"complete";
+ document.querySelectorAll("[data-career-mode]").forEach(button=>{
+  const active=button.dataset.careerMode===mode;
+  button.classList.toggle("on",active);button.setAttribute("aria-pressed",String(active));button.disabled=weeklySetupActive;
+ });
+ const help=document.getElementById("careerModeHelp");
+ if(help)help.textContent=mode==="highlight"?"約 20～30 分鐘、全程約 10～14 章；低影響球季會自動整理，重大轉折仍由你決定。":"逐季處理訓練、事件、健康、成績與能力點，完整走過每一個球季。";
+ const start=document.getElementById("startCareerBtn");
+ if(start)start.textContent=mode==="highlight"?"精華生涯｜從 HBL 開始":"踏上球場｜高一・HBL";
+}
+function selectCareerMode(mode){
+ if(weeklySetupActive||!["complete","highlight"].includes(mode))return;
+ chosenCareerMode=mode;renderCareerMode();
+}
 function renderPos(){
  const names={PG:"控球後衛",SG:"得分後衛",SF:"小前鋒",PF:"大前鋒",C:"中鋒"};
  document.getElementById("posgrid").innerHTML=POSITIONS.map(x=>`<button type="button" class="pos ${x===chosenPos?"on":""}" aria-pressed="${x===chosenPos}" ${weeklySetupActive?"disabled":""} onclick="selectSetupPosition('${x}')"><b>${x}</b><small>${names[x]}</small></button>`).join("");
@@ -343,11 +358,12 @@ function applyWeeklyChallenge(){
  const meta=document.getElementById("weeklyChallengeMeta");if(meta)meta.textContent=`✓ ${row.pos}｜已鎖定・再按退出`;
 }
 function setWeeklySetupLocked(locked){
- document.getElementById("setup")?.classList.toggle("weeklyLocked",locked);document.getElementById("weeklyChallenge")?.classList.toggle("applied",locked);
- document.getElementById("seed")&&(document.getElementById("seed").readOnly=locked);document.getElementById("seedRerollBtn")&&(document.getElementById("seedRerollBtn").disabled=locked);document.getElementById("heightInput")&&(document.getElementById("heightInput").disabled=locked);document.getElementById("wingspanInput")&&(document.getElementById("wingspanInput").disabled=locked);
+  document.getElementById("setup")?.classList.toggle("weeklyLocked",locked);document.getElementById("weeklyChallenge")?.classList.toggle("applied",locked);
+  document.getElementById("seed")&&(document.getElementById("seed").readOnly=locked);document.getElementById("seedRerollBtn")&&(document.getElementById("seedRerollBtn").disabled=locked);document.getElementById("heightInput")&&(document.getElementById("heightInput").disabled=locked);document.getElementById("wingspanInput")&&(document.getElementById("wingspanInput").disabled=locked);
+  if(locked)chosenCareerMode="complete";renderCareerMode();
 }
 function exitWeeklyChallenge(showNotice=true){
  weeklySetupActive=false;weeklySetupApplying=false;setWeeklySetupLocked(false);renderPos();refreshSetupBody(false);renderWeeklyChallenge();
  const help=document.getElementById("seedHelp");if(help&&showNotice)help.textContent="已退出本週挑戰。現在可以重新選擇 Seed、位置與身材。";
 }
-renderPos();newSeed();initializeCharacterBuilder();renderWeeklyChallenge();
+renderPos();renderCareerMode();newSeed();initializeCharacterBuilder();renderWeeklyChallenge();
