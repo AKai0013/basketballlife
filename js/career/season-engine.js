@@ -411,7 +411,7 @@ function pointCost(k){
  if(typeof isV9Progression==="function"&&isV9Progression(p)){
    const band=typeof progressionAgeBand==="function"?progressionAgeBand(p):"prime";
    const ageCost={prime:0,transition:1,technical:2,veteran:3,maintenance:4}[band]||0;
-   return Math.max(1,basePointCost(p.stats[k])+ageCost+skillCostModifier(k)+chainSkillDiscount(k));
+   return Math.max(1,basePointCost(p.stats[k])+breakthroughSurcharge(k)+ageCost+skillCostModifier(k)+chainSkillDiscount(k));
  }
  let seedDiscount=0;
  if(p.talentProfile?.model==="v9-specialist-1"){
@@ -442,11 +442,14 @@ function renderPoints(){
  pointRows.innerHTML=Object.keys(p.stats).map(k=>{
    let v=p.stats[k],talent=typeof careerStatCap==="function"?careerStatCap(p,k):p.caps[k],limit=typeof careerStatLimit==="function"?careerStatLimit(p,k):talent,cost=pointCost(k),over=v>=talent,nextV=v+1;
    const v9=typeof isV9Progression==="function"&&isV9Progression(p);
-   const growthRoom=!v9||((typeof availablePermanentGrowth==="function"?availablePermanentGrowth(p,k):1)>0&&v<limit);
+   const ageAllowsManual=!v9||(typeof canUseManualGrowth!=="function"||canUseManualGrowth(p,k));
+   const manualRoom=!v9||(typeof availableManualGrowth!=="function"||availableManualGrowth(p,k)>0);
+   const manualAllowed=ageAllowsManual&&manualRoom;
+   const growthRoom=!v9||(manualAllowed&&v<99);
    const progress=Math.max(0,Math.min(100,Math.round(v)));
    const capProgress=Math.max(0,Math.min(100,Math.round(talent||99)));
    let note=v9
-     ? (v>=limit?`已達本能力可培養上限 ${limit}`:v>=talent?`Seed 基準 ${talent}・突破培養至 ${limit}`:growthRoom?`Seed 基準 ${talent}・可培養至 ${limit}`:`本季永久成長額度已用完`)
+     ? (v>=99?"已達 99 滿值":!ageAllowsManual?"目前生涯階段不再增加這項永久能力":!manualRoom?"本季手動成長額度已用完":v>=limit?`自然成長已達 ${limit}・可用能力點硬突破`:v>=talent?`Seed 基準 ${talent}・自然突破至 ${limit}`:`Seed 基準 ${talent}・自然可培養至 ${limit}`)
      : (over?`<span class="gold">突破培養</span>`:`一般培養至 ${talent}`);
    return `<div class="pointrow">
      <div>
@@ -460,7 +463,7 @@ function renderPoints(){
 
  const costs=Object.keys(p.stats).filter(k=>{
    if(p.stats[k]>=99)return false;
-   if(typeof isV9Progression==="function"&&isV9Progression(p))return p.stats[k]<(typeof careerStatLimit==="function"?careerStatLimit(p,k):p.caps[k])&&(typeof availablePermanentGrowth!=="function"||availablePermanentGrowth(p,k)>0);
+   if(typeof isV9Progression==="function"&&isV9Progression(p))return (typeof canUseManualGrowth!=="function"||canUseManualGrowth(p,k))&&(typeof availableManualGrowth!=="function"||availableManualGrowth(p,k)>0);
    return true;
  }).map(k=>pointCost(k));
  const minCost=costs.length?Math.min(...costs):Infinity;
@@ -497,7 +500,7 @@ function buyPoint(k){
    const result=typeof applyCareerStatChange==="function"?applyCareerStatChange(p,k,1,{source:"point"}):null;
    if(!result?.applied)return;
    p.pointUndo=p.pointUndo||[];
-   p.pointUndo.push({k,c,before:p.stats[k]-result.applied,permanentGain:result.applied});
+   p.pointUndo.push({k,c,before:p.stats[k]-result.applied,manualGain:result.applied});
  }else{
    p.pointUndo=p.pointUndo||[];
    p.pointUndo.push({k,c,before:p.stats[k]});
@@ -520,7 +523,7 @@ function undoSeasonPoint(){
  const last=p.pointUndo?.pop();
  if(!last)return;
  p.stats[last.k]=last.before;
- if(last.permanentGain&&p.seasonPermanentGrowth){p.seasonPermanentGrowth[last.k]=Math.max(0,(p.seasonPermanentGrowth[last.k]||0)-last.permanentGain);if(!p.seasonPermanentGrowth[last.k])delete p.seasonPermanentGrowth[last.k];}
+ if(last.manualGain&&p.seasonManualGrowth){p.seasonManualGrowth[last.k]=Math.max(0,(p.seasonManualGrowth[last.k]||0)-last.manualGain);if(!p.seasonManualGrowth[last.k])delete p.seasonManualGrowth[last.k];}
  p.bonusPoints+=last.c;
  p.currentSeasonSpend[last.k]=Math.max(0,(p.currentSeasonSpend[last.k]||0)-last.c);
  if(p.currentSeasonSpend[last.k]===0)delete p.currentSeasonSpend[last.k];
@@ -535,7 +538,7 @@ function finishSeason(){
  }else if(p.bonusPoints>0){
    const affordable=Object.keys(p.stats).some(k=>{
      if(p.stats[k]>=99||pointCost(k)>p.bonusPoints)return false;
-     return !(typeof isV9Progression==="function"&&isV9Progression(p))||(p.stats[k]<(typeof careerStatLimit==="function"?careerStatLimit(p,k):p.caps[k])&&(typeof availablePermanentGrowth!=="function"||availablePermanentGrowth(p,k)>0));
+     return !(typeof isV9Progression==="function"&&isV9Progression(p))||((typeof canUseManualGrowth!=="function"||canUseManualGrowth(p,k))&&(typeof availableManualGrowth!=="function"||availableManualGrowth(p,k)>0));
    });
    if(affordable && !confirm(`還有 ${p.bonusPoints} 點可以使用，確定要保留到下一季嗎？`))return;
    p.bankedPoints+=p.bonusPoints;p.bonusPoints=0;

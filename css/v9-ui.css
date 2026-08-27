@@ -1273,3 +1273,124 @@ body.blGameMode #liveTickerTopSlot{order:0!important}
   body.blHomeMode .v9PlayerEntry>.posgrid .pos{width:auto!important;min-width:0!important;overflow:hidden!important}
   body.blHomeMode .v9PlayerEntry>.posgrid .pos b{font-size:12px!important}
 }
+
+/* Season training cockpit: current player card, training decisions, season context. */
+body.blGameMode .v9TrainingShell{
+  grid-template-columns:minmax(286px,.82fr) minmax(400px,1.35fr) minmax(230px,.68fr);
+  gap:14px;
+}
+body.blGameMode .trainingPanel{display:grid!important;gap:9px!important;min-width:0}
+body.blGameMode .careerPlayerCard{
+  --card-accent:#e88b47;
+  --card-shine:#ffd4ad;
+  --card-shadow:#7c3516;
+  position:relative;
+  isolation:isolate;
+  min-width:0;
+  overflow:hidden;
+  border:2px solid color-mix(in srgb,var(--card-accent) 88%,#e7edf0)!important;
+  border-radius:4px;
+  background:
+    linear-gradient(118deg,transparent 0 53%,color-mix(in srgb,var(--card-shine) 12%,transparent) 53.5% 54%,transparent 54.5% 100%),
+    radial-gradient(circle at 75% 20%,color-mix(in srgb,var(--card-accent) 40%,transparent),transparent 33%),
+    radial-gradient(circle at 10% 68%,color-mix(in srgb,var(--card-accent) 22%,transparent),transparent 34%),
+    linear-gradient(145deg,color-mix(in srgb,var(--card-accent) 24%,#101820),#070c12 45%,#030609 100%),
+    repeating-linear-gradient(125deg,#ffffff06 0 1px,transparent 1px 14px),
+    linear-gradient(160deg,#101b24,#05080d 72%);
+  box-shadow:inset 0 0 0 1px #ffffff20,inset 0 0 34px color-mix(in srgb,var(--card-accent) 16%,transparent),inset 0 -70px 100px #0007,0 0 18px color-mix(in srgb,var(--card-accent) 28%,transparent),0 24px 48px #0009;
+}
+body.blGameMode .careerPlayerCard:before{content:"";position:absolute;z-index:0;inset:5px;border:1px solid color-mix(in srgb,var(--card-shine) 58%,transparent);clip-path:polygon(0 14px,14px 0,calc(100% - 14px) 0,100% 14px,100% calc(100% - 14px),calc(100% - 14px) 100%,14px 100%,0 calc(100% - 14px));box-shadow:inset 0 0 20px color-mix(in srgb,var(--card-accent) 18%,transparent);pointer-events:none}
+body.blGameMode .careerPlayerCard:after{content:attr(data-card-tier);position:absolute;z-index:0;right:6px;bottom:-13px;color:color-mix(in srgb,var(--card-accent) 8%,transparent);font-size:70px;font-weight:1000;line-height:1;letter-spacing:-.08em;pointer-events:none}
+body.blGameMode .careerPlayerCard>*{position:relative;z-index:1}
+body.blGameMode .careerPlayerCard.card-campus{--card-accent:#ff8b3d;--card-shine:#ffe0bd;--card-shadow:#7a2e0e}
+body.blGameMode .careerPlayerCard.card-pro{--card-accent:#27d3dc;--card-shine:#d5fdff;--card-shadow:#07545d}
+body.blGameMode .careerPlayerCard.card-prime{--card-accent:#a97aff;--card-shine:#f0e4ff;--card-shadow:#442080}
+body.blGameMode .careerPlayerCard.card-icon{--card-accent:#ffc94c;--card-shine:#fff6c7;--card-shadow:#77500a}
+body.blGameMode .careerPlayerCard.card-veteran{--card-accent:#88b9e4;--card-shine:#eaf6ff;--card-shadow:#2e526f}
+body.blGameMode .careerPlayerCard>header{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:42px;padding:8px 13px;border-bottom:1px solid color-mix(in srgb,var(--card-shine) 56%,#1f2c35);background:linear-gradient(100deg,color-mix(in srgb,var(--card-accent) 31%,#05090d),#05090df2 72%);box-shadow:0 6px 22px color-mix(in srgb,var(--card-shadow) 48%,transparent);clip-path:polygon(0 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%)}
+body.blGameMode .careerPlayerCard>header span{display:flex;align-items:center;gap:6px;color:var(--card-shine);font-size:9px;font-weight:1000;letter-spacing:.13em;text-shadow:0 0 12px var(--card-accent)}
+body.blGameMode .careerPlayerCard>header span i{display:block;width:8px;height:8px;border:1px solid var(--card-shine);background:color-mix(in srgb,var(--card-accent) 45%,transparent);transform:rotate(45deg);box-shadow:0 0 14px var(--card-accent)}
+body.blGameMode .careerPlayerCard>header b{display:-webkit-box;max-width:58%;overflow:hidden;color:#c5d0d5;font-size:10px;line-height:1.3;text-align:right;overflow-wrap:anywhere;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+body.blGameMode .careerPlayerCardHero{position:relative;display:block;height:168px;padding:0;background:radial-gradient(circle at 28% 54%,color-mix(in srgb,var(--card-accent) 28%,transparent),transparent 38%)}
+body.blGameMode .careerPlayerCardHero:after{content:"";position:absolute;z-index:0;inset:0;background:linear-gradient(112deg,transparent 0 56%,color-mix(in srgb,var(--card-shine) 17%,transparent) 56.5% 57.3%,transparent 58%);pointer-events:none}
+body.blGameMode .careerCardPortrait{position:absolute;z-index:1;left:15px;bottom:13px;width:104px;height:138px;padding:4px;background:linear-gradient(145deg,var(--card-shine),var(--card-accent) 25%,#182630 52%,var(--card-accent));clip-path:polygon(0 13px,13px 0,100% 0,100% calc(100% - 13px),calc(100% - 13px) 100%,0 100%);filter:drop-shadow(0 0 10px color-mix(in srgb,var(--card-accent) 38%,transparent))}
+body.blGameMode .careerCardAvatar{width:96px;height:130px;overflow:hidden;background:#0d171f;clip-path:polygon(0 10px,10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%);box-shadow:0 12px 28px #000a}
+body.blGameMode .careerCardAvatar svg{display:block;width:100%;height:100%;object-fit:cover}
+body.blGameMode .careerCardPortrait>span{position:absolute;right:2px;bottom:7px;display:grid;place-items:center;min-width:32px;height:26px;padding:0 7px;border:1px solid color-mix(in srgb,var(--card-accent) 80%,#253541);border-radius:7px;background:#080e13eb;color:var(--card-accent);font-size:11px;font-weight:1000;box-shadow:0 7px 18px #0009}
+body.blGameMode .careerCardOvr{position:absolute!important;z-index:2;top:25px;right:16px;display:grid;min-width:0;max-width:52%;align-content:start;justify-items:end;text-align:right}
+body.blGameMode .careerCardOvr small{color:var(--card-shine);font-size:9px;font-weight:950;letter-spacing:.18em;text-shadow:0 0 10px var(--card-accent)}
+body.blGameMode .careerCardOvr strong{color:var(--card-accent);font-size:88px;line-height:.82;letter-spacing:-.1em;background:linear-gradient(180deg,#fff 0,var(--card-shine) 24%,var(--card-accent) 64%,color-mix(in srgb,var(--card-accent) 62%,#301207) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 12px color-mix(in srgb,var(--card-accent) 44%,transparent));text-shadow:none}
+body.blGameMode .careerCardOvr span{margin-top:10px;color:#f7f4ef;font-size:11px;font-weight:1000;line-height:1.3;overflow-wrap:anywhere;text-shadow:0 2px 7px #000}
+body.blGameMode .careerCardOvr em{margin-top:3px;color:#7f909a;font-size:9px;font-style:normal;font-weight:800;letter-spacing:.08em;overflow-wrap:anywhere}
+body.blGameMode .careerCardIdentity{display:flex;align-items:end;justify-content:space-between;gap:10px;margin:0 16px;padding:13px 0 11px;border-top:1px solid color-mix(in srgb,var(--card-shine) 50%,#293640);border-bottom:1px solid #293640}
+body.blGameMode .careerCardIdentity small{flex:0 0 auto;color:#8595a0;font-size:9px;font-weight:850;letter-spacing:.04em;text-align:right}
+body.blGameMode .careerCardIdentity b{min-width:0;color:#f4f2eb;font-size:21px;line-height:1.08;overflow-wrap:anywhere;text-shadow:0 3px 14px #000}
+body.blGameMode .careerCardRadar{display:grid;grid-template-columns:152px minmax(78px,1fr);gap:8px;align-items:center;margin:8px 16px 13px;padding-top:7px;border-top:1px solid #293640}
+body.blGameMode .careerCardRadar svg{display:block;width:152px;height:143px;overflow:visible;filter:drop-shadow(0 8px 16px #0009)}
+body.blGameMode .careerCardRadarGrid{fill:color-mix(in srgb,var(--card-accent) 2%,transparent);stroke:#465761;stroke-width:.75}
+body.blGameMode .careerCardRadarValue{fill:color-mix(in srgb,var(--card-accent) 28%,transparent);stroke:var(--card-accent);stroke-width:2.1}
+body.blGameMode .careerCardRadar circle{fill:var(--card-accent)}
+body.blGameMode .careerCardRadarLabels{fill:#d8dfe1;font-size:9.5px;font-weight:900;paint-order:stroke;stroke:#071016;stroke-width:2.5px;stroke-linejoin:round}
+body.blGameMode .careerCardRadarLabels text tspan:last-child{fill:var(--card-shine);font-size:11px;font-weight:1000;stroke:#071016;stroke-width:2.5px}
+body.blGameMode .careerCardRadarRest{display:grid;align-content:center;gap:0;padding:3px 8px;border:1px solid color-mix(in srgb,var(--card-accent) 28%,#283741);border-radius:8px;background:#081017d9}
+body.blGameMode .careerCardRadarRest>span{display:flex;min-width:0;align-items:baseline;justify-content:space-between;gap:4px;min-height:27px;padding:5px 0;border-bottom:1px solid #26343c}
+body.blGameMode .careerCardRadarRest>span:last-child{border-bottom:0}
+body.blGameMode .careerCardRadarRest em{color:#b2bec3;font-size:10px;font-style:normal;font-weight:850}
+body.blGameMode .careerCardRadarRest b{color:var(--card-shine);font-size:13px;text-shadow:0 0 9px color-mix(in srgb,var(--card-accent) 42%,transparent)}
+
+body.blGameMode .trainingTalentDetails,body.blGameMode .trainingContextPanel{min-width:0;overflow:hidden;border:1px solid #2b3944;border-radius:14px;background:#0b1218}
+body.blGameMode .trainingTalentDetails>summary,body.blGameMode .trainingContextPanel>summary{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;min-height:52px;padding:10px 13px;cursor:pointer;list-style:none}
+body.blGameMode .trainingTalentDetails>summary::-webkit-details-marker,body.blGameMode .trainingContextPanel>summary::-webkit-details-marker{display:none}
+body.blGameMode .trainingTalentDetails>summary span,body.blGameMode .trainingContextPanel>summary span{display:grid;gap:2px}
+body.blGameMode .trainingTalentDetails>summary b,body.blGameMode .trainingContextPanel>summary b{color:#e5ebee;font-size:13px}
+body.blGameMode .trainingTalentDetails>summary small,body.blGameMode .trainingContextPanel>summary small{color:#dc8849;font-size:8px;font-weight:950;letter-spacing:.12em}
+body.blGameMode .trainingTalentDetails>summary strong,body.blGameMode .trainingContextPanel>summary em{color:#8fa0aa;font-size:9px;font-style:normal;white-space:nowrap}
+body.blGameMode .trainingTalentDetails>summary:after,body.blGameMode .trainingContextPanel>summary:after{content:"＋";grid-column:2;color:#78909f;font-size:15px;font-weight:950}
+body.blGameMode .trainingTalentDetails>summary strong,body.blGameMode .trainingContextPanel>summary em{display:none}
+body.blGameMode .trainingTalentDetails[open]>summary:after,body.blGameMode .trainingContextPanel[open]>summary:after{content:"−"}
+body.blGameMode .trainingTalentDetails .v90TalentPanel{min-height:0!important;padding:15px!important;border:0!important;border-top:1px solid #293640!important;border-radius:0!important;background:#0a1117!important;box-shadow:none!important}
+body.blGameMode .trainingTalentDetails .v90TalentWatermark{display:none}
+body.blGameMode .trainingTalentDetails .v90TalentHeading>b{font-size:22px!important}
+body.blGameMode .trainingTalentDetails .v90TalentHeading>p{font-size:11px!important}
+body.blGameMode .trainingTalentDetails .v90TalentBadges{margin-top:12px}
+
+body.blGameMode .trainingContextPanel{align-self:start}
+body.blGameMode .trainingContextBody{display:grid;gap:9px;padding:0 11px 11px}
+body.blGameMode .trainingContextBody>section{display:grid;gap:7px;padding:11px;border:1px solid #293741;border-radius:11px;background:#0a1218}
+body.blGameMode .trainingContextBody>section>small{color:#dc8849;font-size:8px;font-weight:950;letter-spacing:.12em}
+body.blGameMode .trainingSituation>b{color:#edf0ee;font-size:17px;overflow-wrap:anywhere}
+body.blGameMode .trainingSituation>span{color:#81919b;font-size:9px}
+body.blGameMode .trainingSituation>strong{margin-top:2px;padding:8px 9px;border-left:3px solid #de8242;border-radius:7px;background:#24160d;color:#f0a15e;font-size:10px}
+body.blGameMode .trainingGoal{display:grid;gap:6px;padding:8px 0}
+body.blGameMode .trainingGoal+.trainingGoal{border-top:1px solid #26333c}
+body.blGameMode .trainingGoal>span{display:grid;gap:2px}
+body.blGameMode .trainingGoal b{color:#dfe5e7;font-size:10px;line-height:1.4}
+body.blGameMode .trainingGoal em{color:#788995;font-size:8px;font-style:normal}
+body.blGameMode .trainingGoal i{height:5px;overflow:hidden;border-radius:99px;background:#1d2932}
+body.blGameMode .trainingGoal i:before{content:"";display:block;width:var(--progress);height:100%;border-radius:inherit;background:linear-gradient(90deg,#d77739,#efac5f)}
+body.blGameMode .trainingPeople{display:grid;gap:6px}
+body.blGameMode .trainingPeople article{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 7px;padding:7px 8px;border:1px solid #273640;border-radius:8px;background:#0d171e}
+body.blGameMode .trainingPeople article>span{grid-row:1/3;align-self:center;padding:4px 5px;border-radius:5px;background:#18242c;color:#8bbec4;font-size:7px;font-weight:900}
+body.blGameMode .trainingPeople article>b{min-width:0;color:#dce4e7;font-size:10px;overflow-wrap:anywhere}
+body.blGameMode .trainingPeople article>small{min-width:0;color:#74858f;font-size:8px;line-height:1.35;overflow-wrap:anywhere}
+body.blGameMode .trainingPeople>p,body.blGameMode .trainingRecent>p{margin:0;color:#8b9aa4;font-size:9px;line-height:1.55}
+
+@media(max-width:1120px) and (min-width:820px){
+  body.blGameMode .v9TrainingShell{grid-template-columns:minmax(230px,.72fr) minmax(390px,1.28fr)}
+  body.blGameMode .trainingContextPanel{grid-column:1/-1}
+  body.blGameMode .trainingContextBody{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:819px){
+  body.blGameMode .v9TrainingShell{grid-template-columns:1fr!important;gap:9px!important}
+  body.blGameMode .trainingTalentDetails,body.blGameMode .trainingAbilityDetails,body.blGameMode .derivedAbilityPanel{display:none!important}
+  body.blGameMode .careerPlayerCardHero{height:178px}
+  body.blGameMode .careerCardPortrait{left:15px;bottom:13px;width:116px;height:148px}
+  body.blGameMode .careerCardAvatar{width:108px;height:140px}
+  body.blGameMode .careerCardOvr{right:17px;top:28px}
+  body.blGameMode .careerCardOvr strong{font-size:96px}
+  body.blGameMode .careerCardIdentity{margin-inline:15px}
+  body.blGameMode .careerCardRadar{grid-template-columns:156px minmax(82px,1fr);gap:8px;margin-inline:15px}
+  body.blGameMode .careerCardRadar svg{width:156px;height:147px}
+  body.blGameMode .trainingContextPanel>summary{min-height:54px}
+  body.blGameMode .trainingContextBody{grid-template-columns:1fr}
+}
