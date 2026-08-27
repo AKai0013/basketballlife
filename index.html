@@ -102,6 +102,7 @@
     <button class="onlineBattleInvite" type="button" onclick="BasketballLifeKeyBattle.open()"><span>線上・2～3 人</span><b>共享世界</b><small>各自從 HBL 展開生涯，共享年份；升學與職業路線可以不同。</small><em>建立或加入世界 →</em></button>
   </div>
   <p id="careerModeHelp" class="careerModeHelp">逐季處理訓練、事件、健康、成績與能力點，完整走過每一個球季。</p>
+  <div id="sharedWorldSetup" class="setupSection hidden" aria-live="polite"></div>
 </section>
 <label for="seed">世界 Seed（可輸入或隨機抽取）</label><div class="seed"><input id="seed" class="seedcode" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="seedHelp seedError" oninput="normalizeSeedInput()"><button id="seedRerollBtn" class="btn" type="button" onclick="newSeed()">重新抽取</button></div>
 <div id="seedError" class="seedError" aria-live="polite"></div>
@@ -191,7 +192,7 @@
 <script src="./data/career-story-events.js?v=9.1.0"></script>
 <script src="./js/api.js?v=9.1.0"></script>
 <script src="./js/leaderboard/leaderboard-api.js?v=9.1.0"></script>
-<script src="./js/online/key-battle.js?v=9.1.0&careerFlow=5"></script>
+<script src="./js/online/key-battle.js?v=9.1.0&careerFlow=6"></script>
 <script src="./js/state.js?v=9.1.0"></script>
 <script src="./js/career/progression-engine.js?v=9.1.0"></script>
 <script src="./js/events/event-memory.js?v=9.1.0"></script>
