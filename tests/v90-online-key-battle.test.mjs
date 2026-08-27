@@ -9,6 +9,7 @@ import {onRequest} from "../functions/api/[[path]].js";
 
 if(!globalThis.crypto)globalThis.crypto=webcrypto;
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"..");
+const frontend=fs.readFileSync(path.join(root,"js","online","key-battle.js"),"utf8");
 class Statement{constructor(database,sql){this.database=database;this.sql=sql;this.args=[]}bind(...args){this.args=args;return this}async first(){return this.database.prepare(this.sql).get(...this.args)||null}async all(){return {results:this.database.prepare(this.sql).all(...this.args)}}async run(){const result=this.database.prepare(this.sql).run(...this.args);return {success:true,meta:{changes:Number(result.changes||0)}}}}
 class D1{constructor(database){this.database=database}prepare(sql){return new Statement(this.database,sql)}async batch(rows){return Promise.all(rows.map(row=>row.run()))}}
 const digest=async value=>[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(value)))].map(byte=>byte.toString(16).padStart(2,"0")).join("");
@@ -18,6 +19,8 @@ async function setup(){const database=new DatabaseSync(":memory:");database.exec
 async function createWorld(DB,three=false){const created=await call(DB,users[0],"rooms","POST",{role:"guard"}),code=created.body.room.code;await call(DB,users[1],`rooms/${code}/join`,"POST",{role:"wing"});if(three)await call(DB,users[2],`rooms/${code}/join`,"POST",{role:"big"});const started=await call(DB,users[0],`rooms/${code}/start`,"POST",{});return {code,started}}
 async function advanceCheckpoint(DB,code,count=2,picks=[]){let state;for(let index=0;index<count;index++){const current=await call(DB,users[index],`rooms/${code}`),options=current.body.event.options,choice=picks[index]||options[Math.min(index,options.length-1)].id;state=await call(DB,users[index],`rooms/${code}/choices`,"POST",{choice});assert.equal(state.status,200)}return state}
 async function advanceSeason(DB,code,count=2){let state;for(let chapter=0;chapter<6;chapter++)state=await advanceCheckpoint(DB,code,count);return state}
+
+test("shared world renders inside the approved single-player career page",()=>{assert.match(frontend,/\$\("game"\)\?\.classList\.remove\("hidden"\)/);assert.match(frontend,/\$\("flow"\)\.innerHTML/);assert.match(frontend,/\$\("choices"\)\.innerHTML/);assert.doesNotMatch(frontend,/\$\("onlineBattlePage"\)\?\.classList\.remove\("hidden"\)/)});
 
 test("two players can start independent HBL careers in one world while one player cannot",async()=>{const {database,DB}=await setup(),created=await call(DB,users[0],"rooms","POST",{role:"guard"}),code=created.body.room.code;let state=await call(DB,users[0],`rooms/${code}/start`,"POST",{});assert.equal(state.status,409);await call(DB,users[1],`rooms/${code}/join`,"POST",{role:"wing"});state=await call(DB,users[0],`rooms/${code}/start`,"POST",{});assert.equal(state.status,200);assert.equal(state.body.world.chapter,1);assert.equal(state.body.careers.length,2);assert.ok(state.body.careers.every(row=>row.origin_route==="hbl"&&row.league==="HBL"));assert.notEqual(state.body.careers[0].team_name,state.body.careers[1].team_name);database.close()});
 
