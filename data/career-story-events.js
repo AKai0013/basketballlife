@@ -3,196 +3,196 @@ const careerStoryChoice=(id,label,detail,result,memory,effects={})=>({id,label,d
 const careerStoryNode=(id,line,node,theme,stages,title,desc,actor,choices,requirements={})=>({id,line,node,theme,stages,title,desc,actor,choices,requirements,once:true});
 
 const CAREER_STORY_LINES=[
- careerStoryNode("school_rival_1","school_rivalry",1,"rivalry",["hbl"],"第一次被放進同一張比較表",`校際盃開打前，球探把你和 {rival} 列成同位置最值得觀察的兩人。你們甚至還沒真正交談，網路上已經有人替這段競爭決定輸贏。`,"rival",[
-  careerStoryChoice("challenge","主動約一場單挑","把比較拉回球場，也接受輸贏會被所有隊友記住。","你在訓練館正面迎戰，兩人的競爭從傳聞變成真正的對決。","你選擇用比賽認識宿敵，而不是躲開比較。",{confidence:3,rivalRespect:5,fatigue:4}),
-  careerStoryChoice("team","只談球隊目標","不否認競爭，但拒絕讓個人話題蓋過正式比賽。","你把焦點留在校隊，教練認為你沒有被話題帶走。","第一次被拿來比較時，你先守住了球隊。",{discipline:3,rep:2,rivalRespect:1}),
-  careerStoryChoice("dismiss","公開說他不值得比較","搶回聲量，卻可能讓一句話跟著你很多年。","你的話迅速傳到對方球隊，下一次碰面不再只是普通比賽。","你用挑釁替這段宿敵關係點了火。",{rep:2,confidence:2,rivalRespect:-8})
+ careerStoryNode("school_rival_1","school_rivalry",1,"rivalry",["hbl"],"第一球，他就點名要守你",`校際交流賽前，兩隊混在一起打半場三對三。{rival} 主動換防到你面前，拍了拍地板：「大家都說我們是這屆最像的兩個人，我想先知道是不是真的。」場邊的學長立刻停下來看。`,"rival",[
+  careerStoryChoice("challenge","要球，正面打他這一球","第一次碰面就接受挑戰；成功與否，全場都會記住。","你沒有叫掩護，直接把球留在手上。哨聲響起以前，兩邊球員已經開始替下一次交手起鬨。","你和宿敵的第一段共同記憶，是一個誰也沒有退開的回合。",{confidence:3,rivalRespect:5,fatigue:4}),
+  careerStoryChoice("team","借他的壓迫完成一次助攻","不跟著單挑節奏走，用讀秒與隊友證明你看見的是整個球場。","他封住你的第一步，你卻把球送到空切隊友手上。下一個回合，他不再只防你的得分。","第一次交手，你讓宿敵記住的不只是單打。",{discipline:3,rep:2,rivalRespect:1}),
+  careerStoryChoice("dismiss","把球交出去，說正式比賽再見","不在交流賽回應挑戰，把所有答案留到真正計分的那天。","你沒有接下場邊的起鬨。離場前，他只留下一句：「那正式比賽別躲。」","你把第一次對決延後，也讓下一次碰面多了一筆未完成的帳。",{rep:2,confidence:2,rivalRespect:-8})
  ]),
- careerStoryNode("school_rival_2","school_rivalry",2,"rivalry",["hbl","college"],"比較沒有隨下一次碰面消失",`再次同場前，{rival} 在訪問裡提到你當年的選擇。如今兩人站在不同隊伍與不同角色，外界又把那次故事拿來解釋這場比賽。`,"rival",[
-  careerStoryChoice("answer","承認這場對決對你很重要","正面承擔壓力，勝敗也會更直接寫進評價。","你沒有閃避過去，並把壓力轉成比賽準備。","你承認宿敵是推著自己前進的人。",{confidence:3,clutch:2,rivalRespect:4}),
-  careerStoryChoice("private","賽後私下和他談","外界看不到答案，但兩人可以決定競爭要走向敵意或尊重。","你們第一次沒有透過媒體說話，關係開始出現新的界線。","你讓宿敵關係從口水回到兩個人的選擇。",{iq:1,discipline:2,rivalRespect:8}),
-  careerStoryChoice("fuel","把舊話再說一次","提高比賽火藥味，也讓自己沒有退路。","話題再度升高，教練提醒你必須用表現承擔。","你讓舊衝突成為下一場比賽的燃料。",{rep:3,fatigue:4,rivalRespect:-6})
+ careerStoryNode("school_rival_2","school_rivalry",2,"rivalry",["hbl","college"],"最後一波，他站到了你面前",`正式比賽剩十一秒，你的球隊落後一分。暫停結束後，{rival} 沒有照原本的對位站人，而是走到你面前。裁判把球交出來，第一次交流賽留下的那個回合，終於有了比分和時間。`,"rival",[
+  careerStoryChoice("answer","自己處理最後一擊","接受他把勝負放到你手上的方式，也承擔這球會跟著兩人很久。","你把隊友拉開，整座球館只剩運球聲。終場哨響後，他沒有慶祝也沒有抱怨，只朝你點了一下頭。","你們第一次用正式比賽，替彼此留下無法刪掉的答案。",{confidence:3,clutch:2,rivalRespect:4}),
+  careerStoryChoice("private","叫掩護，讀出他身後的防守","拒絕把球隊的勝負縮成兩個人的單挑，讓他必須防守你的完整選擇。","掩護一到，你逼出協防，再把球傳向弱邊。賽後他在球員通道攔住你，第一次認真談起那個判斷。","宿敵開始理解，你們爭的不是誰比較會單挑。",{iq:1,discipline:2,rivalRespect:8}),
+  careerStoryChoice("fuel","提前拔起，不等戰術跑完","用最直接的方式回應他，也把隊友與教練一起押在這次選擇上。","球一離手，全場同時站起來。無論結果如何，教練回到休息室只問你一句：為什麼是現在？","你讓這次對決更難忘，也讓自己必須解釋那個出手。",{rep:3,fatigue:4,rivalRespect:-6})
  ]),
- careerStoryNode("school_rival_3","school_rivalry",3,"rivalry",["college","pro"],"多年後的同場採訪",`你和 {rival} 已走上不同路線。節目把早年的比較畫面重新播出，主持人要你用現在的身分，重新定義這段一路跟來的競爭。`,"rival",[
-  careerStoryChoice("credit","公開說他讓你變得更好","放下輸贏口氣，承認競爭本身留下的價值。","兩人第一次在鏡頭前互相肯定，宿敵關係轉為長期尊重。","你把多年競爭留下的最好部分說了出來。",{rep:4,discipline:2,rivalRespect:12}),
-  careerStoryChoice("unfinished","說勝負還沒有結束","保留競爭張力，也接受每次交手仍會被放大。","節目把這句話當成下一次對決的標題。","即使走到更高舞台，你仍不願替競爭寫下句點。",{confidence:4,clutch:2,rivalRespect:3}),
-  careerStoryChoice("moveOn","拒絕再談學生時代","切斷舊標籤，但也可能讓一路關注的人失望。","你把焦點轉回現在，話題很快降溫。","你決定不再讓早年的比較定義生涯。",{iq:2,rep:-1,rivalRespect:-2})
- ]),
-
- careerStoryNode("friend_thread_1","friendship",1,"friendship",["hbl"],"看台上最早認識你的人",`{friend} 從你還沒有固定上場時間時就會來看球。這次他提醒你，最近為了競爭輪替，你連原本約好的投籃練習都忘了。`,"friend",[
-  careerStoryChoice("makeTime","留下來把約定練完","犧牲一點休息，保住兩人最早建立的默契。","夜裡的球館只剩你們，熟悉的節奏讓壓力慢慢降下來。","你沒有讓上場順位拿走最早的朋友。",{confidence:3,fatigue:3,friendTrust:8}),
-  careerStoryChoice("explain","坦白自己正在搶位置","不勉強赴約，但讓對方知道你不是故意疏遠。","他接受你的說明，也提醒你別把所有失敗都自己吞下去。","你第一次把競爭壓力說給朋友聽。",{discipline:2,confidence:1,friendTrust:5}),
-  careerStoryChoice("ignore","先把所有時間留給球隊","短期最專注，關係卻可能在沒有爭吵的情況下變遠。","訊息停在已讀，接下來幾個月你們幾乎沒有見面。","你為了輪替，暫時放下了最早的陪伴。",{rep:2,friendTrust:-9})
- ]),
- careerStoryNode("friend_thread_2","friendship",2,"friendship",["hbl","college","pro"],"那則沒有立刻回覆的訊息",`新的球季開始，{friend} 傳來一段舊球館整修前的影片。影片裡的你還不是明星，只是在一次次撿球與失誤裡學會留下來。`,"friend",[
-  careerStoryChoice("visit","安排一天回到舊球館","少一次個人訓練，換回被職業節奏遮住的生活感。","你們在空球場重投當年的位置，沒有媒體，也沒有數據。","你回到起點，確認有人記得成名以前的你。",{confidence:5,fatigue:-4,friendTrust:10}),
-  careerStoryChoice("call","打電話把近況說清楚","不改變行程，但讓關係重新有了真實對話。","一通電話沒有解決所有距離，至少停止彼此猜測。","你用一次坦白，沒有讓朋友只剩觀眾身分。",{iq:1,friendTrust:6}),
-  careerStoryChoice("saveLater","把影片存下來，等休賽季再說","維持工作節奏，卻讓未完成的約定繼續往後推。","你沒有刪掉訊息，但也沒有真正回到那段關係。","你把朋友留在『之後再說』的位置。",{discipline:1,friendTrust:-4})
- ]),
- careerStoryNode("friend_thread_3","friendship",3,"friendship",["college","pro"],"朋友不只想當你的觀眾",`{friend} 說，他不希望每次見面都只聽你談下一場比賽。他想知道這段關係能不能在籃球以外，也留下真正屬於你們的時間。`,"friend",[
-  careerStoryChoice("tradition","約定每年固定留一天給彼此","建立一個不因球隊、聯盟或名氣改變的習慣。","你們把日期寫進行事曆，這段友誼有了能跨城市延續的方式。","你替最早的朋友保留了一個不被賽程拿走的位置。",{confidence:3,friendTrust:12}),
-  careerStoryChoice("include","邀他參與自己的訓練計畫","讓友情靠近籃球，也冒著彼此界線變模糊的風險。","他開始偶爾加入休賽季訓練，重新理解你現在的生活。","你讓朋友走進職業生涯，而不只是遠遠旁觀。",{discipline:2,fatigue:-2,friendTrust:8}),
-  careerStoryChoice("distance","承認彼此已走向不同生活","不勉強維持過去的形式，也接受關係可能變淡。","你們沒有爭吵，只是把彼此放回偶爾問候的位置。","你接受有些同行者不一定會走完整段生涯。",{iq:2,friendTrust:-6})
+ careerStoryNode("school_rival_3","school_rivalry",3,"rivalry",["college","pro"],"他把那顆舊球帶來了",`多年後，{rival} 在共同受訪前把一顆褪色的球放到桌上。那是第一次交流賽使用的比賽球，上面還留著兩隊學長的簽名。他問你：如果沒有一路追著彼此，你們還會走到今天嗎？`,"rival",[
+  careerStoryChoice("credit","在球上補簽自己的名字","承認這段競爭已經成為生涯的一部分，不必再假裝全靠自己。","你們把多年後的名字簽在舊筆跡旁。節目沒有再追問誰贏得比較，鏡頭只留下同一顆球上的兩段生涯。","你終於承認，宿敵不只是要擊敗的人，也是看過你一路改變的人。",{rep:4,discipline:2,rivalRespect:12}),
+  careerStoryChoice("unfinished","收下球，但說下一場再簽","保留那個最熟悉的競爭方式：先比完，再談結局。","他笑著把筆收回去。訪問播出後，所有人都開始等你們的下一次交手。","你們沒有替競爭收尾，只替下一場留下位置。",{confidence:4,clutch:2,rivalRespect:3}),
+  careerStoryChoice("moveOn","請他自己留著這顆球","拒絕讓學生時代繼續定義現在，也接受這段關係可能停在此處。","你把話題轉回各自的球隊。訪問結束後，那顆球仍留在他手上，兩人沒有再提起簽名。","你選擇帶著共同歷史往前走，但不再讓它替你命名。",{iq:2,rep:-1,rivalRespect:-2})
  ]),
 
- careerStoryNode("coach_role_1","coach_role",1,"coach",["college","pro"],"第一次真正談角色",`{coach} 把你留下來，攤開最近五場的輪替表。他說能力不是唯一問題，球隊需要你決定：要先守住上場時間，還是爭取更大的持球責任。`,"coach",[
-  careerStoryChoice("earn","先把現有角色做到最好","短期球權不變，以穩定換取教練信任。","你接受明確工作，輪替變得穩定，但明星曝光仍有限。","你第一次選擇先贏得信任，再談更多球權。",{coachTrust:8,rep:2,planStatMod:-1}),
-  careerStoryChoice("ask","提出可驗證的升級條件","要求教練說清楚什麼表現能換來更多責任。","雙方訂出具體目標，壓力提高，承諾也不再模糊。","你要求角色變動必須有清楚標準。",{iq:2,coachTrust:3,confidence:2}),
-  careerStoryChoice("challenge","直接質疑輪替決定","可能立刻逼出答案，也可能讓關係先出現裂痕。","會議不歡而散，接下來每次換人都成為外界話題。","你用公開衝突換取角色談判。",{rep:-2,confidence:3,coachTrust:-10})
+ careerStoryNode("friend_thread_1","friendship",1,"friendship",["hbl"],"鐵門快關了，他還抱著那顆舊球",`晚間自主訓練結束，管理員已經開始關燈。{friend} 抱著你們國中用到掉皮的球等在場邊——入學前，你答應每次正式比賽前都要和他投進五十顆罰球。明早六點，校隊還有第一次體能測驗。`,"friend",[
+  careerStoryChoice("makeTime","留下來投完五十顆","少睡一點，把入學前的約定做完；這不是最有效率的訓練，卻是兩人共同的習慣。","管理員留下一盞燈。最後一球進網時，他沒有慶祝，只把舊球交回你手上，說下次換他撿球。","你的高中生涯第一次留下來，不是因為教練命令，而是因為有人記得你的約定。",{confidence:3,fatigue:3,friendTrust:8}),
+  careerStoryChoice("explain","把測驗表拿給他看，改約週末","不敷衍取消，而是讓他知道校隊生活現在如何安排你的時間。","你們在場邊重新約好日期。他把球收進袋子，順手在測驗表背面寫下：「先別第一天就被刷掉。」","你第一次讓朋友看見，進入校隊不只是穿上球衣。",{discipline:2,confidence:1,friendTrust:5}),
+  careerStoryChoice("ignore","跟著隊友離開，不回頭說明","保住休息與團隊行程，也讓那顆舊球第一次只剩一個人帶回家。","你坐上校車後才看到訊息。畫面裡只有空球場和一句：「我以為我們說好了。」","你沒有和朋友爭吵，但第一次讓校隊行程替你取消了約定。",{rep:2,friendTrust:-9})
  ]),
- careerStoryNode("coach_role_2","coach_role",2,"coach",["college","pro"],"承諾遇上連敗",`球隊連敗後，{coach} 改變輪替，你先前談好的角色也被縮減。那份沒有兌現的承諾，現在成為新球季裡必須當場處理的問題。`,"coach",[
-  careerStoryChoice("review","帶著影片逐條檢視承諾","用比賽內容談，不讓對話只剩情緒。","教練同意恢復部分責任，但要求你先改善兩個細節。","你讓舊承諾在新球季接受具體檢驗。",{iq:2,coachTrust:6,rep:1}),
-  careerStoryChoice("adapt","先適應新角色一個月","保住團隊關係，也承擔市場數據下降。","你沒有立刻反抗，隊內氣氛穩住，外界卻開始問你是否失勢。","你暫時把球隊需要放在個人角色之前。",{discipline:3,coachTrust:5,planStatMod:-2}),
-  careerStoryChoice("public","向媒體說承諾沒有兌現","把壓力交給球團，也讓關係難以回到私下。","新聞迫使球隊回應，你與教練的每個互動都被放大。","你把角色爭議帶到公開場合。",{rep:-3,coachTrust:-12,confidence:2})
+ careerStoryNode("friend_thread_2","friendship",2,"friendship",["hbl","college","pro"],"舊球場今晚最後一次開燈",`{friend} 傳來一張施工公告：你們最早練球的場地明天就要拆除。今晚管理員願意多留一小時，球袋裡還放著當年那顆掉皮的球。你的球隊同時排了恢復課表，明早也不能遲到。`,"friend",[
+  careerStoryChoice("visit","訓練結束後趕回舊球場","接受疲勞與車程，親自和那個起點告別。","你趕上最後半小時。籃框拆不走你們投過的球，關燈前，他剪下一小段舊球網交給你。","你沒有救下球場，但沒有錯過它最後一次亮燈。",{confidence:5,fatigue:-4,friendTrust:10}),
+  careerStoryChoice("call","請他開著通話，把球場走一遍","無法到場，仍願意完整聽完每個角落的故事。","鏡頭晃得厲害，你卻認得每一道線。通話結束前，他說會替你留下那顆舊球。","你沒有回到現場，但沒有讓朋友獨自替兩個人道別。",{iq:1,friendTrust:6}),
+  careerStoryChoice("saveLater","看完公告，繼續完成恢復課表","把職業要求放在最前面，也接受有些告別不能延到休賽季。","隔天再點開訊息時，場地已經圍上施工板。他沒有責怪你，只傳來最後一張空籃框的照片。","你守住了球隊安排，也永遠錯過舊球場最後一晚。",{discipline:1,friendTrust:-4})
  ]),
- careerStoryNode("coach_role_3","coach_role",3,"coach",["college","pro"],"這段教練關係留下什麼",`又一個球季的輪替變化後，{coach} 再次和你談角色。這次他沒有先拿出表格，而是問你：經過衝突與調整後，你想成為哪一種球員。`,"coach",[
-  careerStoryChoice("leader","把經驗轉成帶隊責任","接受球權不一定最多，改用溝通與判斷影響球隊。","教練把你放進領導小組，角色從數據延伸到更衣室。","你把角色衝突轉成了領導位置。",{iq:2,rep:4,coachTrust:10}),
-  careerStoryChoice("specialist","要求一項清楚的場上任務","縮小角色範圍，換取真正能累積的比賽價值。","你們定出明確任務，輪替與合約評價都更容易被理解。","你不再追求空泛定位，而是選擇可被信任的專長。",{discipline:3,coachTrust:8,confidence:2}),
-  careerStoryChoice("separate","承認彼此理念不合","不再消耗關係，為下一個環境保留選擇。","雙方結束拉扯，球團開始評估新的去向。","你接受不是每段教練關係都必須修復。",{confidence:2,coachTrust:-5,rep:-1})
- ]),
-
- careerStoryNode("playoff_injury_1","playoff_injury",1,"injury",["pro"],"關鍵賽程前的止痛選擇",`球隊醫療團隊確認傷勢沒有立即斷裂風險，但疼痛與代償已經明顯。球季最重要的一段賽程前，醫療報告要求你在正常上場、限時出賽與完整休養之間做決定。`,"medicalTeam",[
-  careerStoryChoice("play","接受止痛並照常上場","保住關鍵賽程角色，復發與長期負荷明顯上升。","你帶著疼痛出賽，完成當下任務，也把風險帶進下一季。","你在關鍵賽程選擇先替球隊承擔身體代價。",{rep:4,bodyLoad:14,health:-6,coachTrust:5}),
-  careerStoryChoice("limit","接受嚴格時間限制","仍參與比賽，但把部分球權與關鍵時間交給隊友。","你在限制中完成輪替，沒有英雄畫面，也避免傷勢失控。","你用限時上場平衡關鍵賽程與未來。",{rep:1,bodyLoad:5,health:-2,coachTrust:2}),
-  careerStoryChoice("rest","退出關鍵賽程完整治療","保護長期健康，承擔球隊與球迷的不滿。","你沒有上場，醫療報告則顯示傷勢開始穩定。","你在最難休息的時候選擇保住生涯。",{health:6,bodyLoad:-12,rep:-3,coachTrust:-2})
- ]),
- careerStoryNode("playoff_injury_2","playoff_injury",2,"injury",["pro"],"關鍵賽程的傷勢進入新球季評估",`訓練營開始，醫療團隊依照上一季的處理方式重新檢查同一部位。當時的選擇現在影響負荷限制、輪替安排與合約風險。`,"medicalTeam",[
-  careerStoryChoice("protocol","接受完整負荷計畫","犧牲季初數據，降低同部位復發機率。","你照表完成恢復，教練也承諾不在短期內追加上場時間。","你讓關鍵賽程的傷勢得到真正的後續處理。",{health:7,bodyLoad:-15,planStatMod:-2,coachTrust:4}),
-  careerStoryChoice("reinvent","改變打法減少碰撞","把部分爆發與得分機會換成判斷、傳球與防守位置。","你的角色開始轉型，數據結構也不再和受傷前相同。","你為了延長生涯，第一次主動改變打法。",{iq:2,pass:1,bodyLoad:-7,planStatMod:-1}),
-  careerStoryChoice("prove","拒絕限制，要求正常競爭","有機會搶回原角色，復發風險仍未消失。","你在訓練營全力競爭，身體負荷再次逼近警戒。","你選擇用表現證明傷勢已經過去。",{confidence:4,bodyLoad:11,health:-4,rep:2})
- ]),
- careerStoryNode("playoff_injury_3","playoff_injury",3,"injury",["pro"],"長期傷勢評估有了結論",`醫療團隊完成跨季追蹤，確認那次關鍵賽程的傷勢是否仍是固定限制。先前的恢復方式、上場選擇與角色轉型，現在都有明確結果。`,"medicalTeam",[
-  careerStoryChoice("maintain","把負荷管理變成長期習慣","接受不是每季都打滿，以穩定出勤延長競爭力。","球隊把管理方案寫進年度計畫，復發風險明顯下降。","你把一次傷勢轉成長期照顧身體的方法。",{health:6,bodyLoad:-10,discipline:3}),
-  careerStoryChoice("normal","逐步回到一般輪替","不再被特殊對待，但仍保留固定檢查。","你重新回到正常競爭，醫療限制只剩定期追蹤。","你讓那次關鍵賽程的傷勢真正走完復原過程。",{confidence:3,health:2,rep:2}),
-  careerStoryChoice("allOut","取消所有保護措施","完整追求單季上限，也重新承擔累積負荷。","球隊解除限制，你的數據空間提高，身體警訊也重新出現。","你在健康與巔峰之間選擇再次全力衝刺。",{planStatMod:2,bodyLoad:10,health:-4})
+ careerStoryNode("friend_thread_3","friendship",3,"friendship",["college","pro"],"那顆舊球，只能由一個人帶走",`{friend} 即將離開這座城市，行李箱已經裝不下那顆陪你們多年的舊球。他把球帶到車站，問的不是「還會不會聯絡」，而是你們要把這段共同生活放在哪裡。`,"friend",[
+  careerStoryChoice("tradition","接過舊球，每年找一座球場再投一次","讓一個具體約定替這段關係留下時間，不假裝被拆掉的舊球場仍在。","你把球收進自己的行李。從此每年同一天，不管效力哪支球隊，你們都在當時所在的城市找一座球場投完五十顆。","你們失去了最早的球場，仍替最早的朋友留下不會被賽程自動取消的日子。",{confidence:3,friendTrust:12}),
+  careerStoryChoice("include","請他在球上寫下第一句話","不承諾固定見面，把共同歷史帶進往後每一個球隊與城市。","他在掉皮的位置寫下：「先別第一天就被刷掉。」那顆球後來一直放在你的置物櫃。","你讓最早的朋友繼續存在於職業生涯裡，但不是只當觀眾。",{discipline:2,fatigue:-2,friendTrust:8}),
+  careerStoryChoice("distance","把球留給他，接受彼此走向不同生活","不靠形式勉強維持過去，也不否認那些年真的存在。","你們在月台擁抱，舊球跟著列車離開。往後偶爾傳訊息，卻不再假裝生活仍和學生時代一樣。","你沒有留住那顆球，也沒有把變淡的關係說成背叛。",{iq:2,friendTrust:-6})
  ]),
 
- careerStoryNode("teammate_scandal_1","teammate_scandal",1,"teammate",["pro"],"隊友的名字出現在調查新聞",`{teammate} 被捲入一則尚未查清的場外指控。球團要求全隊保持沉默，他則私下說自己需要有人陪著面對第一次正式詢問。`,"teammate",[
-  careerStoryChoice("support","陪他接受球團詢問","支持隊友但不替未知事實背書，自己也會被放進新聞。","你陪他進入會議室，並要求所有說法以調查結果為準。","你在隊友最孤立時選擇陪伴，也保留事實界線。",{teammateTrust:10,rep:1,discipline:2}),
-  careerStoryChoice("distance","遵守球團指示保持距離","保護自己與球隊，可能讓隊友認為你只在順境出現。","你沒有公開表態，更衣室氣氛因此變得拘謹。","你把球隊紀律放在私人支持之前。",{discipline:3,teammateTrust:-6}),
-  careerStoryChoice("defend","直接公開替他保證","立刻給出支持，也冒著調查結果反轉的風險。","你的發言成為新聞標題，球團要求你停止追加評論。","你在事實未明時用自己的名聲替隊友作保。",{rep:2,teammateTrust:8,discipline:-4})
+ careerStoryNode("coach_role_1","coach_role",1,"coach",["college","pro"],"戰術板上，你的名字只剩半格",`練習結束後，{coach} 擦掉戰術板上的先發組，只留下你的名字和一句「第二節六分鐘」。他把白板筆放到你面前：要先證明這六分鐘值得延長，還是現在就談你想承擔的球權？`,"coach",[
+  careerStoryChoice("earn","把六分鐘的工作逐項寫滿","先接下防守、卡位和第二拍進攻，不要求教練提前保證更多時間。","下一場你在六分鐘內完成所有標記。隔天戰術板上的名字沒有被擦掉，旁邊多了兩分鐘。","你和教練第一次建立的不是口頭信任，而是一張完成過的工作表。",{coachTrust:8,rep:2,planStatMod:-1}),
+  careerStoryChoice("ask","請他寫下增加球權的三個條件","把角色爭取變成可以逐場核對的標準，也接受未達標就不能抱怨。","教練在板上寫下失誤、出手選擇與防守輪轉。你拍下照片，兩人約好十場後重新檢查。","你讓角色承諾第一次有了日期和可以驗證的條件。",{iq:2,coachTrust:3,confidence:2}),
+  careerStoryChoice("challenge","把筆推回去，要求現在說清楚","拒絕用零碎時間等待，也讓談話從角色協商變成對教練判斷的直接挑戰。","休息室的門沒有關緊，隊友聽見你們提高音量。隔天，媒體已經知道輪替出現爭議。","你沒有接受那半格位置，卻讓往後每次換人都帶著這次衝突。",{rep:-2,confidence:3,coachTrust:-10})
  ]),
- careerStoryNode("teammate_scandal_2","teammate_scandal",2,"teammate",["pro"],"調查結果沒有讓事情立刻結束",`初步調查公布後，{teammate} 雖未遭最重處分，市場與更衣室仍把他當成風險。你先前的態度，也成了他判斷誰值得信任的依據。`,"teammate",[
-  careerStoryChoice("accountability","要求他把責任說清楚","支持不等於護短，關係可能短期緊張。","他第一次完整說明自己的錯誤與未被證實的部分。","你把支持變成要求隊友真正負責。",{discipline:3,teammateTrust:5,rep:2}),
-  careerStoryChoice("basketball","只幫他回到訓練節奏","避開公開爭議，讓場上配合先恢復。","你們重新一起訓練，外界問題仍留待他自己處理。","你用籃球陪隊友重建日常，但沒有替他回答所有問題。",{teammateTrust:7,confidence:2}),
-  careerStoryChoice("cutTies","明確結束私下往來","降低自己被牽連的機會，也關上修復關係的門。","你們仍是隊友，場外已不再交談。","你決定不再讓隊友的風波影響自己的生涯。",{rep:1,teammateTrust:-12})
+ careerStoryNode("coach_role_2","coach_role",2,"coach",["college","pro"],"十場過後，當初談過的角色還算數嗎？",`連敗後，{coach} 把輪替重新洗牌。球隊留存的輪替紀錄寫著你們當初談過的工作與時間，但現在的出場比那時更少；他在影片室等你，桌上正好放著這十場的剪輯。`,"coach",[
+  careerStoryChoice("review","把輪替紀錄和十場影片一起投上螢幕","逐條核對自己做到與沒做到的部分，不讓談話只剩各說各話。","你承認兩次錯誤輪轉，教練也承認縮短時間沒有先說明。下一場輪替重新寫出你的明確工作。","你們第一次用同一份證據處理分歧，而不是靠誰聲音更大。",{iq:2,coachTrust:6,rep:1}),
+  careerStoryChoice("adapt","先接下新的替補任務，月底再談","給教練一個月重整球隊，但要求月底一定再談，不讓退讓變成無限期。","你開始帶第二陣容，球隊止住連敗；月底日期被你親手圈在更衣室行事曆上。","你暫時讓出原本角色，卻替下一次談話留下明確期限。",{discipline:3,coachTrust:5,planStatMod:-2}),
+  careerStoryChoice("public","賽後公開球隊的輪替紀錄","讓外界看見角色變動確實存在，也等於關閉私下修補的空間。","紀錄成了隔天的頭條。球團被迫說明，教練則取消了原定的一對一會談。","你證明角色確實被改動，也讓這段關係從此多了一群旁觀者。",{rep:-3,coachTrust:-12,confidence:2})
  ]),
- careerStoryNode("teammate_scandal_3","teammate_scandal",3,"teammate",["pro"],"處分結束後，他回到同一間更衣室",`{teammate} 完成球團要求的處分與輔導，卻不再擁有原本的角色。新球員只知道新聞，你則知道整段過程，必須決定如何面對他的回歸。`,"teammate",[
-  careerStoryChoice("welcome","公開歡迎他重新競爭","承認已完成處分，也接受外界重新檢視你的立場。","更衣室有人跟著你伸出手，復出不再只是公關流程。","你讓一段場外風波以承擔與重新開始收尾。",{teammateTrust:12,rep:3}),
-  careerStoryChoice("quiet","私下支持，不替球團宣傳","保留關係，也避免把復出變成自己的形象工程。","你們恢復正常互動，沒有安排任何鏡頭。","你選擇讓隊友的復出屬於他自己。",{teammateTrust:8,discipline:2}),
-  careerStoryChoice("compete","把他當一般輪替對手","不排斥也不特別照顧，所有位置重新靠表現決定。","兩人在訓練中正面競爭，關係回到職業界線。","你用公平競爭替這段隊友關係畫下新界線。",{rep:2,confidence:2,teammateTrust:1})
- ]),
-
- careerStoryNode("family_city_1","family_city",1,"family",["pro","veteran"],"從 {fromTeam} 到 {toTeam}，生活也必須搬過去",`你已經確定從 {fromLeague} 的 {fromTeam} 轉往 {toLeague} 的 {toTeam}。這不是假設中的報價；交通、住處與彼此工作都要在開季前處理，你和家人現在必須決定怎麼搬。`,"family",[
-  careerStoryChoice("overseas","你先報到，家人分階段移動","先處理訓練營與住處，等生活穩定後再讓家人跟上。","你先抵達新球隊，家人保留原本生活幾個月；距離壓力增加，但搬遷不必一次賭完。","你選擇分階段完成這次真實轉隊的搬遷。",{rep:2,familyHarmony:-4,confidence:2}),
-  careerStoryChoice("stay","全家一起搬到新城市","一起處理工作、學校與住處，開季前完成共同生活的移動。","所有人都付出適應成本，但新球季不再從長期分隔開始。","你讓全家共同承擔這次跨城市或跨國轉隊。",{familyHarmony:10,rep:-1,financialLosses:60}),
-  careerStoryChoice("delay","先維持兩地生活一季","保留家人目前的工作與生活，排出固定返家和通話時間。","你們沒有假裝距離不存在，而是先用一季檢查兩地安排能不能長久。","你用明確期限測試兩地生活，而不是無限延期。",{familyHarmony:4,fatigue:3,discipline:2})
- ]),
- careerStoryNode("family_city_2","family_city",2,"family",["pro","veteran"],"搬到 {toTeam} 之後，原本的安排撐得住嗎？",`轉隊後的第一段生活已經過去。現在可以用真正的客場天數、返家距離與家庭節奏檢查：你們當初為這次搬遷做的安排，哪些有效，哪些必須重來？`,"family",[
-  careerStoryChoice("schedule","建立固定返家與通話安排","減少部分休息與商業活動，讓關係不靠臨時補救。","新的生活節奏逐漸穩定，家人也能預先知道你何時出現。","你用固定承諾處理旅外與家庭的距離。",{familyHarmony:10,fatigue:3,discipline:2}),
-  careerStoryChoice("relocate","協助家人搬到目前城市","投入金錢與適應成本，讓共同生活更接近可能。","搬遷沒有立刻解決所有問題，但你們不再隔著整個賽季。","你讓生涯城市也開始成為家人的生活。",{familyHarmony:12,confidence:3,financialLosses:80}),
-  careerStoryChoice("careerFirst","要求大家再撐一季","維持競技專注，家庭關係承受更多延後。","你把問題留到休賽季，家人接受了答案，卻沒有真正放心。","你再次把家庭決定延後到球季之後。",{rep:2,familyHarmony:-10})
- ]),
- careerStoryNode("family_city_3","family_city",3,"family",["pro","veteran"],"哪一座城市算是家",`幾個球季後，你和家人已經一起經歷搬遷、等待與短暫團聚。下一次談判要只看競技條件，還是把真正住過的地方也算進去，你們終於能用共同經歷回答。`,"agent",[
-  careerStoryChoice("homeClause","要求經紀人把地點列為優先","縮小市場範圍，換取更可持續的共同生活。","經紀人重新排序報價，最貴的選項不再必然排第一。","你第一次把『家』寫進職業生涯的條件。",{familyHarmony:10,agentTrust:4,rep:-1}),
-  careerStoryChoice("bestLeague","仍以最高層級為唯一目標","保留競技上限，也接受家庭繼續跟著變動。","你沒有改變路線，家人要求未來每次搬遷都一起決定。","你繼續追逐最高舞台，但不再假裝距離沒有代價。",{rep:4,confidence:2,familyHarmony:-4}),
-  careerStoryChoice("return","主動尋找回鄉機會","可能提早離開高階聯盟，換回長期歸屬與陪伴。","經紀人開始聯絡家鄉球隊，生涯方向出現明確轉彎。","你選擇讓最後幾段職業生涯靠近家。",{familyHarmony:14,rep:-2,agentTrust:2})
+ careerStoryNode("coach_role_3","coach_role",3,"coach",["college","pro"],"那塊戰術板，最後一次輪到你寫",`新球季第一次全隊會議前，{coach} 把當年那支白板筆放在你的座位。板上不再預填分鐘，只留下一個空格：你希望隊友在想到你時，先想到哪一種責任？`,"coach",[
+  careerStoryChoice("leader","寫下：讓場上五個人知道下一步","接受自己不一定出手最多，改用判斷、提醒與臨場整理影響比賽。","教練請你主持隔天的影片會議。年輕隊友第一次不是來問招式，而是問你怎麼讀懂整個回合。","你把多年角色拉扯，變成了別人願意跟隨的場上語言。",{iq:2,rep:4,coachTrust:10}),
+  careerStoryChoice("specialist","只寫下一項你願意被檢驗的任務","不再追逐模糊的核心稱號，讓每場比賽都能回答你有沒有完成工作。","你和教練替那項任務畫出固定戰術。從此換人時，所有人都知道你為什麼上場。","你沒有拿到最大的稱號，卻得到一個不必猜測的位置。",{discipline:3,coachTrust:8,confidence:2}),
+  careerStoryChoice("separate","把筆蓋上，說答案不在這支球隊","承認彼此對你的使用方式無法再靠一次談話修正，停止消耗剩下的球季。","教練沉默很久，最後把筆收回抽屜。球團開始低調尋找雙方都能接受的去向。","你替這段關係留下清楚結尾，而不是再等下一張模糊的輪替表。",{confidence:2,coachTrust:-5,rep:-1})
  ]),
 
- careerStoryNode("market_choice_1","market_choice",1,"contract",["pro"],"合約進入後段，先決定下次談什麼",`目前合約仍有效，桌上也沒有正式報價。{agent} 要你先說清楚：下一個市場窗口打開時，你最不願意犧牲的是舞台、角色，還是保障？`,"agent",[
-  careerStoryChoice("test","把聯盟升級列為第一順位","未來若有正式窗口，願意用保障與角色換更高舞台。","經紀人把聯盟層級排到搜尋條件最前面，沒有對外宣稱已有報價。","你先決定願意承擔哪種市場風險。",{confidence:3,agentTrust:6,rep:1}),
-  careerStoryChoice("extend","把留隊穩定列為第一順位","優先比較熟悉角色與保障，但不代表提前完成續約。","經紀人先準備留隊方案，真正條件仍等球團提出。","你讓確定性成為下次談判的起點。",{teamTrust:5,agentTrust:2,discipline:2}),
-  careerStoryChoice("option","把短約彈性列為第一順位","保留再次決定去向的空間，也接受更頻繁的市場評估。","經紀人把短期方案寫進談判筆記，提醒你彈性也代表明年還要再證明一次。","你選擇把未來選擇權放進談判排序。",{agentTrust:3,rep:1})
+ careerStoryNode("playoff_injury_1","playoff_injury",1,"injury",["pro"],"醫療室裡有三條不同顏色的腕帶",`關鍵系列賽前一晚，醫療團隊把檢查影像貼在燈板上：沒有立即斷裂，但代償已經出現。桌上三條腕帶分別代表正常出賽、限時出賽與休戰；選哪一條，明晚計分台就照哪一套執行。`,"medicalTeam",[
+  careerStoryChoice("play","拿走紅色腕帶，照常登錄","保住完整角色，也接受止痛只能壓住感覺，不能消除正在累積的負荷。","你沒有告訴觀眾每次落地都在疼。賽後腕帶被汗浸透，醫師把它和新的檢查單一起封進病歷袋。","你打完了眼前的系列賽，也把一份尚未結束的身體帳帶進下一季。",{rep:4,bodyLoad:14,health:-6,coachTrust:5}),
+  careerStoryChoice("limit","拿走黃色腕帶，接受硬性時間表","仍能上場，但計分台會在時間到時通知教練，不能靠臨場情緒延長。","最後兩分鐘你站在場邊，隊友替你完成比賽。醫師收回腕帶時，檢查數據沒有繼續惡化。","你沒有換到英雄畫面，卻讓身體和球隊都走完這段賽程。",{rep:1,bodyLoad:5,health:-2,coachTrust:2}),
+  careerStoryChoice("rest","把三條腕帶都留在桌上","退出系列賽，完整治療；你必須親自面對隊友，而不是讓球團替你宣布。","你在賽前會議說明決定。有人失望，但一週後的影像第一次顯示發炎正在下降。","你在最難休息的時候停下來，留下的是一個仍能復原的身體。",{health:6,bodyLoad:-12,rep:-3,coachTrust:-2})
  ]),
- careerStoryNode("market_choice_2","market_choice",2,"contract",["pro"],"真正的談約窗口到了",`合約年限、目前角色與已經出現的市場訊號，終於能檢查先前排序。{agent} 劃掉沒有具體條件的傳聞，只留下值得繼續談的方向。`,"agent",[
-  careerStoryChoice("level","維持最高競技層級優先","授權經紀人在正式選項中先比較舞台，再看保障。","你的市場清單依聯盟層級重新排序；沒有球隊名稱與條件的傳聞，一律不算答案。","你仍願意為更高舞台承擔較小角色。",{rep:3,confidence:3,planStatMod:-1}),
-  careerStoryChoice("role","改以上場角色優先","要求每個正式選項說清楚輪替，而不是只看隊名。","經紀人刪掉角色完全不明的方向，沒有替球團保證分鐘。","你讓下一次選擇先回答自己能否真正上場。",{agentTrust:4,rep:1}),
-  careerStoryChoice("money","改以保障與薪資優先","接受舞台可能不最高，但不把尚未簽下的金額計入收入。","經紀人把保障排在前面，生涯收入仍只在真正簽約後增加。","你清楚說出這次市場願意承擔的取捨。",{agentTrust:8,rep:2})
+ careerStoryNode("playoff_injury_2","playoff_injury",2,"injury",["pro"],"上一季的醫療決定，被放進新球季首頁",`訓練營報到時，醫療團隊沒有只問你「還痛不痛」。他們拿出上一季的出賽決定、影像與代償數據；無論你當時出賽、限時或休戰，接下來六週都要有一套能每天檢查的方案。`,"medicalTeam",[
+  careerStoryChoice("protocol","在每一個負荷上限旁簽名","接受季初少打、固定休息與不得臨時加量，讓教練也必須遵守同一張表。","第三週球隊連敗時，教練本想追加訓練；你指向雙方簽過的上限，醫療團隊替你守住了休息日。","你讓恢復計畫不再是落後時就能撕掉的建議。",{health:7,bodyLoad:-15,planStatMod:-2,coachTrust:4}),
+  careerStoryChoice("reinvent","請影片教練找出所有高碰撞回合","不只是少打一點，而是改掉每場都會反覆傷害同一部位的進攻路線。","你們刪掉三套硬碰硬戰術，換成提早出球與錯位選擇。數據形狀變了，疼痛卻不再每晚回到起點。","你沒有假裝回到受傷前，而是替受傷後的自己找到另一種打法。",{iq:2,pass:1,bodyLoad:-7,planStatMod:-1}),
+  careerStoryChoice("prove","要求拆掉限制，參加完整對抗","用訓練營表現搶回原角色，也承擔影像正常不等於身體已忘記代償。","第一週你贏回所有對抗；第二週結束後，醫師在負荷曲線上重新畫出紅線。","你證明自己仍能打，卻還沒有證明身體能整季這樣打。",{confidence:4,bodyLoad:11,health:-4,rep:2})
  ]),
- careerStoryNode("market_choice_3","market_choice",3,"contract",["pro"],"經紀人要求你回頭檢查答案",`合約進入後段，{agent} 拿出去年的選擇與實際上場、收入和球隊狀態逐項比較。他要你決定，下次談判要修正方向，還是接受原本代價。`,"agent",[
-  careerStoryChoice("correct","承認判斷有誤並調整優先順序","不替過去辯護，讓下一份合約重新排序。","經紀人重寫談判條件，你也清楚說出不願再承擔的代價。","你用實際結果修正了自己的合約價值觀。",{iq:2,agentTrust:8,confidence:1}),
-  careerStoryChoice("stayCourse","維持原本路線","接受短期不順，繼續追求當初選定的目標。","你沒有因一季結果改變方向，團隊開始準備下一次談判。","你選擇承擔原本決定，而不是追逐每次市場風向。",{discipline:3,agentTrust:4}),
-  careerStoryChoice("resetTerms","重訂合作規則","把責任、資訊與談判底線寫清楚，也代表彼此不再靠默契帶過。","你與經紀人重新劃定合作方式，下一次市場判斷必須說清楚依據。","你要求經紀合作留下可以檢驗的承諾。",{agentTrust:-8,confidence:2,discipline:2})
- ]),
-
- careerStoryNode("media_identity_1","media_identity",1,"identity",["college","pro"],"一個標籤開始比名字更快被記住",`連續幾場比賽後，媒體用「只會得分」或「沒有進攻威脅」概括你的打法。標籤不完全公平，卻已經影響教練、球迷與球探看待你的方式。`,"media",[
-  careerStoryChoice("expand","刻意補上被忽略的能力","短期效率可能下降，換取角色不被單一標籤限制。","你在比賽中主動展示不同工作，數據沒有立刻更漂亮。","你選擇用新的比賽內容反駁外界標籤。",{iq:2,pass:1,defense:1,planStatMod:-1}),
-  careerStoryChoice("own","把標籤變成招牌","集中強化最有辨識度的價值，也接受弱點被更仔細攻擊。","你不再迴避稱呼，反而用表現把它變成市場定位。","你選擇先把一件事做到無法忽視。",{confidence:4,rep:3,fatigue:3}),
-  careerStoryChoice("ignore","不回應，照原本方式打球","避免被媒體牽著走，標籤也可能在沉默中固定。","你沒有改變訓練與訪談，話題暫時沒有新材料。","你拒絕讓外界替你安排成長方向。",{discipline:2,rep:-1})
- ]),
- careerStoryNode("media_identity_2","media_identity",2,"identity",["college","pro"],"對手開始針對你的打法",`新球季對手開始按照外界對你的評價安排防守，{coach} 也拿出影片詢問你是否願意調整角色。去年的新聞標籤，現在變成真正的戰術問題。`,"coach",[
-  careerStoryChoice("study","和教練設計反制方案","投入時間理解對手如何利用你的習慣。","你們建立新的第二選項，標籤第一次被戰術破解。","你把媒體評語轉成可研究、可修正的比賽問題。",{iq:3,coachTrust:7,fatigue:2}),
-  careerStoryChoice("double","把原有優勢再推到極致","逼對手即使知道也無法阻止，風險是弱點更加固定。","你的招牌表現更強，球隊也更依賴同一種解法。","你用更極端的專長回應所有針對。",{shoot:1,finish:1,confidence:3,bodyLoad:4}),
-  careerStoryChoice("switch","要求完全不同的角色","有機會擺脫標籤，也可能失去原本最穩定的價值。","教練給你試驗期，輪替一度變得不穩定。","你寧願重新競爭，也不願被一個標籤困住。",{confidence:2,coachTrust:-2,planStatMod:-1})
- ]),
- careerStoryNode("media_identity_3","media_identity",3,"identity",["pro"],"由你替這段打法命名",`多年後，採訪節目再次提到當年的標籤。這次你已經有足夠比賽證據，不必只反駁別人的說法，而能主動解釋自己如何改變。`,"media",[
-  careerStoryChoice("whole","用完整生涯說明轉型","承認早期限制，也讓後來的調整得到位置。","訪談把你的成長分成幾個階段，不再只剩一句標籤。","你親自說清楚自己不是一季數據能定義的球員。",{rep:5,iq:2}),
-  careerStoryChoice("signature","保留招牌稱號","接受外界用一項能力記住你，並強調那是長年磨出的成果。","稱號從批評變成肯定，成為球迷辨識你的方式。","你把曾經限制自己的標籤，變成真正的招牌。",{confidence:5,rep:4}),
-  careerStoryChoice("next","不回顧，只談下一個角色","讓生涯繼續向前，也放棄替舊故事補上解釋。","訪談沒有懷舊段落，焦點留在下一季。","你選擇不替過去辯護，用下一段生涯回答。",{discipline:3,confidence:2})
+ careerStoryNode("playoff_injury_3","playoff_injury",3,"injury",["pro"],"醫師把三年的負荷曲線攤成同一張圖",`跨季追蹤完成後，當年的傷勢與處理方式仍清楚留在紀錄裡，最近一季也已經有新的走向。醫療團隊要你決定：把保護變成日常、逐步解除，或再次把單季上限放在最前面。`,"medicalTeam",[
+  careerStoryChoice("maintain","把休息日永久寫進年度計畫","接受不是每場都上，以可預期的管理換取更穩定的出勤。","新賽程公布時，醫療日已和客場一起標好。那次醫療決定被收進檔案，不再需要每次疼痛才重新爭論。","你沒有消除受傷史，而是學會不讓它再次接管整個球季。",{health:6,bodyLoad:-10,discipline:3}),
+  careerStoryChoice("normal","每月通過檢查後逐級解除限制","不突然宣布痊癒，用連續數據換回一般輪替。","最後一次檢查後，醫師擦掉表格上的硬性分鐘欄，只保留固定追蹤日期。","你不是靠一句沒事了回來，而是一步步走完那次傷勢。",{confidence:3,health:2,rep:2}),
+  careerStoryChoice("allOut","請球隊移除所有保護欄位","完整追逐下一季上限，也重新承擔那條負荷曲線可能再次向上。","教練拿到沒有時間限制的名單。醫師沒有阻止，只把當年的醫療紀錄放在你的置物櫃。","你清楚看過代價後，仍選擇再一次把全部能力放上場。",{planStatMod:2,bodyLoad:10,health:-4})
  ]),
 
- careerStoryNode("veteran_mentor_1","veteran_mentor",1,"veteran",["veteran"],"年輕隊友開始問你怎麼撐過來",`{teammate} 在訓練後留下來，問你如何處理角色下降、舊傷與短約。你仍在競爭自己的位置，分享經驗可能幫助球隊，也可能培養取代你的人。`,"teammate",[
-  careerStoryChoice("teach","完整分享訓練與比賽筆記","提高隊友成長與信任，自己的獨特優勢可能縮小。","你把多年累積的細節交出去，年輕球員開始真正理解職業節奏。","你第一次把生涯經驗當成可以傳下去的資產。",{iq:2,rep:4,teammateTrust:12,planStatMod:-1}),
-  careerStoryChoice("boundaries","只分享恢復與準備方法","願意幫忙，也保留場上競爭所需的界線。","你們建立固定交流，但輪替競爭仍照表現決定。","你選擇成為有界線的老將導師。",{discipline:3,teammateTrust:7,rep:2}),
-  careerStoryChoice("compete","告訴他位置只能自己搶","守住競爭心態，也可能失去更衣室領導機會。","訓練強度立刻提高，兩人的關係回到純粹競爭。","你拒絕提早成為只負責教人的老將。",{confidence:3,teammateTrust:-6,bodyLoad:4})
+ careerStoryNode("teammate_scandal_1","teammate_scandal",1,"teammate",["pro"],"他的置物櫃被貼上了封條",`客場返隊後，球團正在調查一批流出的內部票券與裝備，{teammate} 的名字出現在交接紀錄裡。事實還沒查清，球團要求所有人停止評論；他坐在空蕩的更衣室，請你陪他走進第一次正式詢問。`,"teammate",[
+  careerStoryChoice("support","陪他進門，但不替他回答","讓他不必獨自面對，同時清楚說明你不知道票券最後去了哪裡。","你坐在會議室外等到深夜。記者拍到你離開，卻沒有得到一句替未知事實背書的話。","你在隊友最孤立時留下，也守住了陪伴和作保之間的界線。",{teammateTrust:10,rep:1,discipline:2}),
+  careerStoryChoice("distance","照球團要求離開更衣室","不接觸調查、不增加傳聞，也讓他獨自走進那扇門。","你把手機交給球團人員後離開。隔天他的置物櫃仍貼著封條，兩人第一次沒有一起熱身。","你選擇不讓私人關係介入調查，也失去了他最需要陪伴的那一晚。",{discipline:3,teammateTrust:-6}),
+  careerStoryChoice("defend","在鏡頭前說你相信他沒有拿走任何東西","用自己的名聲替尚未查清的細節下結論，一旦紀錄不符就無法收回。","發言立刻登上新聞。球團傳來簡訊，要求你停止受訪，調查小組也把影片存進案件資料。","你沒有等證據說話，先把自己的名字綁上了他的版本。",{rep:2,teammateTrust:8,discipline:-4})
  ]),
- careerStoryNode("veteran_mentor_2","veteran_mentor",2,"veteran",["veteran"],"他真的搶走了一部分時間",`新球季，{teammate} 的成長讓教練重新分配輪替。你先前提供的幫助與現在失去的分鐘同時存在，必須決定如何面對這個具體後果。`,"teammate",[
-  careerStoryChoice("accept","接受新分工並帶第二陣容","個人數據下降，領導與球隊穩定性提升。","你不再追討每一分鐘，第二陣容因你的存在變得可靠。","你接受培養後輩也會改變自己的角色。",{rep:5,coachTrust:6,teammateTrust:8,planStatMod:-2}),
-  careerStoryChoice("competeFair","要求公平重新競爭","不否定後輩，也不放棄靠表現搶回時間。","教練安排公開競爭，兩人都知道答案只看比賽。","你用公平競爭處理導師與對手的雙重關係。",{confidence:3,coachTrust:2,teammateTrust:3,bodyLoad:4}),
-  careerStoryChoice("resent","停止分享並質疑球隊","短期保護自己，破壞此前建立的信任。","更衣室感受到轉變，教練開始把你視為不穩定因素。","你因失去時間而收回曾經給出的幫助。",{rep:-4,coachTrust:-8,teammateTrust:-12})
+ careerStoryNode("teammate_scandal_2","teammate_scandal",2,"teammate",["pro"],"封條拆了，旁邊的位置卻一直空著",`調查確認 {teammate} 沒有主導流出，但他私下轉交過一張不該離開球團的票券，因此受到停賽與內部處分。回隊第一天，他把那張交接紀錄影本放在你面前：不是清白，也不是新聞寫的全部。`,"teammate",[
+  careerStoryChoice("accountability","請他親口向全隊說明那張票券","支持他回來，但不讓更衣室靠猜測修補信任。","他在全隊面前承認自己轉交票券，也指出新聞中不實的部分。沒有人鼓掌，但有人把空椅推回他的櫃子前。","你沒有替他洗白，而是要求他用完整事實重新走進球隊。",{discipline:3,teammateTrust:5,rep:2}),
+  careerStoryChoice("basketball","先約他完成停賽期間缺少的訓練","不主持道德審判，讓他先用每天準時出現重建職業日常。","你們從清晨空球場開始。幾週後，隊友願意再次把球傳給他，場外問題仍由他自己回答。","你用一段沒有鏡頭的訓練陪他回來，但沒有替他刪掉責任。",{teammateTrust:7,confidence:2}),
+  careerStoryChoice("cutTies","把紀錄推回去，只維持場上往來","承認他沒有犯下所有指控，仍決定不再承擔這段私人關係。","你們照常完成戰術，離開球館後不再互傳訊息。那張空椅回來了，兩人的距離沒有。","你把事實和信任分開：接受調查結果，不代表必須恢復關係。",{rep:1,teammateTrust:-12})
  ]),
- careerStoryNode("veteran_mentor_3","veteran_mentor",3,"veteran",["veteran"],"球團要你定義下一季的價值",`球隊年度會議把前兩季的帶人效果與輪替變化一起攤開。管理層要你選擇：仍以場上輸出為主、成為雙重角色，或只在需要時提供經驗。這是角色協商，不是年齡到了就退休。`,"frontOffice",[
-  careerStoryChoice("dual","維持輪替並正式帶人","同時承擔上場與領導責任，體力管理更重要。","球隊給你明確雙重角色，年輕球員也知道何時能來找你。","你證明老將可以同時競爭與傳承。",{rep:6,iq:2,bodyLoad:3,teamTrust:8}),
-  careerStoryChoice("player","只用表現爭取位置","拒絕被提前定義成導師，接受每季重新評估。","球隊尊重你的選擇，輪替不再附帶教學責任。","你要求生涯是否延續仍由能力與表現回答。",{confidence:4,rep:2,teammateTrust:-2}),
-  careerStoryChoice("mentor","轉為更明確的板凳領袖","降低出場負荷，讓影響力轉向準備與溝通。","你的上場時間下降，球隊卻把關鍵更衣室責任交給你。","你主動把一部分舞台交給下一代。",{iq:3,rep:5,bodyLoad:-8,planStatMod:-3})
- ]),
-
- careerStoryNode("national_miss_1","national_miss",1,"national",["college","pro"],"代表隊把你列入觀察名單",`國家隊教練團來訊：目前只是觀察名單，還不是正式徵召。選訓人員會獨立檢查位置需求、健康與聯賽角色，母隊教練無法替你承諾席次。`,"nationalStaff",[
-  careerStoryChoice("askReport","要求列出評估條件","可能聽到不舒服的評價，但能得到可執行方向。","你收到明確回饋，下一季的訓練目標不再只是猜測。","你把模糊的代表隊觀察轉成具體改進清單。",{iq:2,discipline:3,confidence:-1}),
-  careerStoryChoice("publicGoal","公開說會爭取正式席次","把壓力放到自己身上，也讓代表隊持續注意。","宣言獲得支持，接下來每場表現都會被拿來檢驗。","你公開承擔爭取代表隊席次的目標。",{confidence:4,rep:3,fatigue:2}),
-  careerStoryChoice("withdraw","本期不參與後續觀察","把體能留給球隊，也暫時放下國際賽機會。","你說明身體與球隊安排，休賽季計畫回到原有節奏。","你暫時把代表隊觀察放到生涯次要位置。",{health:3,fatigue:-5,rep:-2})
- ]),
- careerStoryNode("national_miss_2","national_miss",2,"national",["college","pro"],"觀察名單被重新檢查",`國家隊教練團再度確認你的球隊角色、健康與可出席時段。訊息依舊沒有報到日期，也沒有球衣號碼；在正式名單公布前，這仍只是一扇半開的門。`,"nationalStaff",[
-  careerStoryChoice("camp","收到正式通知就完整參加","先表達可出席，也接受最後仍可能沒有名字。","教練團記下你的完整時段，提醒你繼續等待正式名單。","你讓代表隊知道自己準備好競爭，卻沒有先替結果慶祝。",{rep:2,fatigue:4,confidence:3}),
-  careerStoryChoice("managed","正式通知時需要負荷協調","保留健康，也可能降低教練團安排彈性。","你提交可出席範圍，球隊與國家隊只在正式窗口協調。","你沒有放棄觀察，也沒有假裝已經報到。",{health:3,fatigue:2,rep:1}),
-  careerStoryChoice("decline","本期不保留可出席時段","保持球隊與健康安排，代表隊不替你預留位置。","教練團記錄你的決定，下一次仍需重新接受評估。","你暫時結束這次觀察，不把它說成正式落選。",{health:4,rep:-2})
- ]),
- careerStoryNode("national_miss_3","national_miss",3,"national",["pro"],"是否繼續等待下一次觀察窗口",`幾個球季的比賽內容與真實徵召紀錄已經留下答案。國家隊教練團只確認你未來是否仍願意接受評估；任何正式席次、出賽與榮譽仍只由國家隊賽事產生。`,"nationalStaff",[
-  careerStoryChoice("role","保持所有角色的評估意願","不預設自己已在名單，只要收到正式通知就公平競爭。","教練團保留你的評估紀錄，但沒有承諾下一次席次。","你願意繼續等真正的國家隊窗口。",{rep:3,discipline:3,confidence:2}),
-  careerStoryChoice("compete","只在完整競爭條件下參加","保留自我要求，也接受可能一直沒有正式通知。","你的條件被清楚記錄，答案仍交給未來表現。","你寧願繼續等待，也不把觀察名單說成國手資歷。",{confidence:4,fatigue:2,rep:1}),
-  careerStoryChoice("close","不再參與後續觀察","結束長期等待，把休賽季完整留給球隊與健康。","教練團關閉這次觀察資料，未來若重啟必須從新評估。","你替這段觀察寫下清楚句點。",{iq:2,health:3,rep:-1})
+ careerStoryNode("teammate_scandal_3","teammate_scandal",3,"teammate",["pro"],"新來的球員指著封條留下的膠痕",`{teammate} 已完成停賽、歸還款項與球團要求的課程，但置物櫃上的膠痕還在。新秀低聲問你新聞是不是真的；他本人就在幾步外綁鞋帶，沒有插話。`,"teammate",[
+  careerStoryChoice("welcome","當著全隊說清楚：他做錯什麼，也完成了什麼","不抹掉處分，不讓新人只靠聳動標題認識他。","你講完後先伸出手。有人跟上，也有人保持距離；至少這次更衣室知道自己在接受什麼。","你替重新開始留下了事實，而不是一句大家都別再提。",{teammateTrust:12,rep:3}),
+  careerStoryChoice("quiet","把新秀帶去看球團公布的完整紀錄","不替任何人表演和解，讓文件回答能回答的部分。","回到球場後，你只和他照常完成配合。沒有合照，也沒有復出宣言。","你選擇讓他的回歸靠日常累積，而不是借你的形象翻頁。",{teammateTrust:8,discipline:2}),
+  careerStoryChoice("compete","告訴新秀：新聞是過去，位置看今天","承認處分已結束，也不為他保留原本輪替。","下一組對抗你正面守他，沒有放水。訓練結束後，他第一次主動把那塊膠痕刮乾淨。","你用同一套競爭標準接納他回來，也替關係畫出新的界線。",{rep:2,confidence:2,teammateTrust:1})
  ]),
 
- careerStoryNode("rebuild_core_1","rebuild_core",1,"team",["pro"],"球團邀你成為重建核心",`球團管理層在年度會議說明：年輕陣容需要你的穩定，但短期戰績與個人獎項都可能下降。球團只能承諾目前角色，不能保證重建何時成功。`,"frontOffice",[
-  careerStoryChoice("commit","承諾留下兩季","接受輸球與市場曝光下降，換取明確核心責任。","球隊把你列入重建領導群，年輕球員開始圍繞你的節奏成長。","你選擇把生涯時間投進一支尚未成形的球隊。",{teamTrust:10,rep:3,planStatMod:-1}),
-  careerStoryChoice("oneYear","只承諾觀察一季","保留離開權利，也讓球團不敢完全圍繞你規劃。","雙方同意一年檢查點，信任與彈性各保留一半。","你願意陪重建，但沒有交出全部選擇權。",{teamTrust:4,agentTrust:3,rep:1}),
-  careerStoryChoice("exit","要求轉往競爭球隊","爭取更快的勝利窗口，承擔球迷與更衣室反應。","球團開始聆聽報價，你的領導承諾也被重新檢視。","你拒絕把巔峰等待在不確定的重建裡。",{rep:-3,teamTrust:-10,agentTrust:5})
+ careerStoryNode("family_city_1","family_city",1,"family",["pro","veteran"],"從 {fromTeam} 搬到 {toTeam}，餐桌上有三份行程",`你已確定離開 {fromLeague} 的 {fromTeam}，前往 {toLeague} 的 {toTeam}。新住處鑰匙、報到日期與家人的工作行程攤在同一張桌上；這次不是同城換隊的空泛搬家題，而是生活真的無法全部在同一天移動。`,"family",[
+  careerStoryChoice("overseas","你先帶一只行李箱去報到","先處理訓練營與住處，家人等環境穩定再決定移動日期。","你在新城市組好一張餐桌，另一端的椅子暫時空著。視訊裡，家人把第二個月份圈成重新評估日。","你沒有把分隔說成沒問題，而是替這段距離留下明確期限。",{rep:2,familyHarmony:-4,confidence:2}),
+  careerStoryChoice("stay","把三份行程重排成同一個出發日","一起處理工作交接、住處與學校，接受每個人都要為這次轉隊付出成本。","搬家公司關門前，家人把舊家的最後一把鑰匙放到你手上。新球季開始時，餐桌兩端都有了人。","你沒有要求家人跟上，而是讓這次搬遷成為共同做出的決定。",{familyHarmony:10,rep:-1,financialLosses:60}),
+  careerStoryChoice("delay","保留兩邊鑰匙，先試一季","不急著辭職或退租，先排好返家日與每週固定通話，再用真實賽程檢查能否承受。","你把主客場表貼在冰箱上，每個能回家的日期都先圈起來。兩地成本變高，至少沒有人被一句再看看無限拖延。","你用一季測試距離，而不是把家人永遠留在等待裡。",{familyHarmony:4,fatigue:3,discipline:2})
  ]),
- careerStoryNode("rebuild_core_2","rebuild_core",2,"team",["pro"],"球團交出第一年重建報告",`球團管理層把戰績、年輕球員成長與你的角色一起攤開。第一年沒有立即成功，但現在可以具體檢查當初承諾是否有進展。`,"frontOffice",[
-  careerStoryChoice("stayPlan","維持原計畫再走一年","繼續承擔輸球與培養責任，等待陣容真正成熟。","球團沒有大改方向，你仍是更衣室最穩定的標準。","你沒有因第一年失敗就離開重建。",{rep:4,teamTrust:8,discipline:2}),
-  careerStoryChoice("demandHelp","要求球團補進即戰力","可能加速競爭，也可能犧牲年輕資產與信任。","管理層開始尋找交易，重建路線轉向更積極。","你要求球團不能只用你的時間等待。",{rep:2,teamTrust:-2,confidence:3}),
-  careerStoryChoice("openMarket","通知經紀人準備離隊","保留職業窗口，讓先前承諾承受真正代價。","離隊消息傳出，年輕隊友第一次意識到核心也可能離開。","你把重建承諾交給市場重新評估。",{agentTrust:7,teamTrust:-8,rep:-2})
+ careerStoryNode("family_city_2","family_city",2,"family",["pro","veteran"],"餐桌上的共同日期，被客場賽程劃掉一半",`來到 {toTeam} 後，原先排好的共同時間接連被補賽、客場與恢復課取消。無論家人已經搬來、仍在兩地往返，或暫時保留舊住處，那張滿是刪除線的賽程表都說明原本安排撐不住了。`,"family",[
+  careerStoryChoice("schedule","先鎖定不能再臨時取消的日子","減少商業活動與部分自主加練，把可預期的時間交還給共同生活。","你和球隊提前報備三個日期。第一個日期到來時，餐桌上終於有一個圈沒有被劃掉。","你用真正到場的時間修補距離，不再靠臨時道歉。",{familyHarmony:10,fatigue:3,discipline:2}),
+  careerStoryChoice("relocate","重新安排住處、工作與往返方式","投入調整與適應成本，換取一套符合目前城市與賽程的生活方式。","你們退掉不再需要的安排，也留下仍有用途的那一邊。新日程不完美，至少不再靠誰臨時犧牲。","你們沒有假裝搬家能解決一切，而是重新分配真正的生活成本。",{familyHarmony:12,confidence:3,financialLosses:80}),
+  careerStoryChoice("careerFirst","把賽程表推回去，請大家再等一季","維持所有訓練與曝光安排，也讓家人再次承擔沒有截止日期的等待。","家人把剩下的圈全部擦掉，只說以後你確定有時間再通知。賽程表變乾淨了，談話也變少了。","你守住了球季安排，卻讓共同計畫第一次不再需要你的名字。",{rep:2,familyHarmony:-10})
  ]),
- careerStoryNode("rebuild_core_3","rebuild_core",3,"team",["pro"],"重建進度需要最後一次決定",`第三季開始，球團管理層依照前兩年的戰績、角色與承諾提出新方案。你要決定繼續擔任核心、轉成其他角色，或結束這段合作。`,"frontOffice",[
-  careerStoryChoice("finish","留下來完成這段重建","接受結果不保證，以共同成長作為留下理由。","球隊正式把你列為文化核心，續約與角色都圍繞長期價值。","你選擇看完自己參與建立的球隊。",{rep:7,teamTrust:12,confidence:3}),
-  careerStoryChoice("supportRole","留下但讓出第一核心","降低個人數據，讓成熟的年輕球員接棒。","權力轉移沒有演成衝突，你成為穩定新核心的老將。","你讓重建完成，也接受主角不一定仍是自己。",{iq:3,rep:6,planStatMod:-3,teammateTrust:8}),
-  careerStoryChoice("leave","坦白尋找最後的競爭窗口","不否定共同經歷，也不再延後自己的目標。","球團同意合作找去向，離開不再被包裝成背叛。","你替重建付出時間，也替自己保留下一段路。",{agentTrust:6,teamTrust:-3,rep:1})
+ careerStoryNode("family_city_3","family_city",3,"family",["pro","veteran"],"經紀人問：下一份合約要寄哪一把鑰匙？",`幾個球季累積下來，鑰匙圈上留著不同城市的舊鑰匙。{agent} 準備下一次市場排序時，把它們全放到桌上：這次地點是附帶條件，還是正式底線？`,"agent",[
+  careerStoryChoice("homeClause","留下共同生活那一把，其餘交給經紀人","把可長期居住的地點列為談判優先，接受市場與薪資選擇因此縮小。","經紀人重新排序方向，最昂貴的可能性不再自動排第一。家人第一次看見地點被寫進正式談判筆記。","你把家從口頭考量，變成職業選擇真正必須回答的條件。",{familyHarmony:10,agentTrust:4,rep:-1}),
+  careerStoryChoice("bestLeague","把所有鑰匙收回，仍先看最高舞台","保留競技上限，也承諾每一次真實搬遷都重新和家人共同決定。","經紀人照聯盟層級排序。家人沒有阻止，只要求下一把鑰匙不能在簽約後才拿給他們看。","你繼續追逐最高舞台，但失去了獨自決定下一座城市的權利。",{rep:4,confidence:2,familyHarmony:-4}),
+  careerStoryChoice("return","把最早那把家門鑰匙放到最上面","請經紀人主動尋找靠近原本生活圈的正式機會，接受競技層級可能下降。","電話開始打回熟悉的城市。還沒有合約，但你的市場第一次有了明確回程方向。","你沒有立刻結束旅外，只是讓生涯下一次轉彎開始朝家靠近。",{familyHarmony:14,rep:-2,agentTrust:2})
  ]),
 
- careerStoryNode("final_chapter_1","final_chapter",1,"legacy",["veteran"],"球團第一次問你想怎麼安排生涯後段",`這不是退休通知。球團管理層只說未來合約會更短、角色會每年重評，並詢問你想優先追逐冠軍、留在熟悉城市或維持健康。`,"frontOffice",[
-  careerStoryChoice("contend","優先尋找爭冠角色","接受上場縮減與搬遷，只保留最高競爭舞台。","經紀人開始把角色與冠軍機會排在薪資之前。","你把生涯後段定義成對冠軍的最後追逐。",{rep:4,agentTrust:5,planStatMod:-2}),
-  careerStoryChoice("home","優先留在熟悉球隊與城市","縮小市場，讓關係與歸屬成為續戰條件。","球團知道你的底線，談判不再只看最高報價。","你希望最後幾季留在真正熟悉你的人身邊。",{familyHarmony:8,teamTrust:6,rep:2}),
-  careerStoryChoice("health","只在身體允許時續戰","接受休息與短約，拒絕靠硬撐換下一年。","醫療與球隊評估被放進每次決定，健康成為明確門檻。","你讓續戰取決於身體與表現，而不是年齡數字。",{health:6,bodyLoad:-8,discipline:3})
+ careerStoryNode("market_choice_1","market_choice",1,"contract",["pro"],"經紀人把三張空白卡推到你面前",`目前合約仍有效，市場也還沒有正式報價。{agent} 不准你先寫球隊名稱，只要在「舞台、角色、保障」三張卡中留下一張；等窗口打開時，所有選項都先過這一關。`,"agent",[
+  careerStoryChoice("test","留下寫著舞台的卡","願意用較少保障或較小角色換取更高層級，但不把傳聞當成已存在的機會。","經紀人在卡背寫下你的底線，收進尚未開封的市場資料夾。桌上仍沒有任何球隊標誌。","你先決定願意為更高舞台付出什麼，而不是先幻想哪支球隊會來。",{confidence:3,agentTrust:6,rep:1}),
+  careerStoryChoice("extend","留下寫著保障的卡","優先比較熟悉環境與確定年限，不代表母隊已提出續約。","經紀人開始整理留隊條件與市場行情，並把空白簽名欄留到真正報價出現。","你讓確定性成為下一次談判的起點，沒有提前替球團承諾。",{teamTrust:5,agentTrust:2,discipline:2}),
+  careerStoryChoice("option","留下寫著選擇權的卡","接受短約與反覆評估，換取下一年仍能重新決定去向。","經紀人在卡背標註：彈性不是免費，它代表每一季都要再次證明。","你選擇保留下一次決定，也接受市場會更頻繁地檢查你。",{agentTrust:3,rep:1})
  ]),
- careerStoryNode("final_chapter_2","final_chapter",2,"legacy",["veteran"],"合約真的進入逐年評估窗口",`目前合約已進入最後一年或市場重新評估期，短約與角色下降只是可能性，不是假定已收到的報價。你要先決定下一次正式條件出現時，願意接受到哪裡。`,"agent",[
-  careerStoryChoice("accept","願意用一年約繼續競爭","不要求過去功勞換長期保障，等正式條件出現再做決定。","經紀人把一年證明約列入可談範圍，也提醒你每一季都得重新證明。","你接受逐年評估，但沒有被迫離開。",{confidence:3,discipline:2,agentTrust:4}),
-  careerStoryChoice("wait","只等待有真實角色的報價","冒著市場關閉風險，不先答應只是湊名單的方向。","經紀人刪除沒有角色說明的可能性，真正報價仍待市場出現。","你不讓任何可能性自動等於續戰價值。",{confidence:2,agentTrust:3,rep:-1}),
-  careerStoryChoice("reduce","願意用更小角色換取負荷管理","降低數據上限，以健康和出勤延長競爭窗口。","醫療與經紀團隊記下角色底線，正式合約仍需球隊提出。","你用角色轉折準備生涯後段。",{health:5,bodyLoad:-10,planStatMod:-3,rep:2})
+ careerStoryNode("market_choice_2","market_choice",2,"contract",["pro"],"那張卡第一次壓在真實條件上",`市場窗口終於打開，{agent} 把沒有年限、角色或保障說明的消息全部丟進碎紙機。桌上留下的方向不一定完美，但每一個都能和你上季保留的那張卡逐項比較。`,"agent",[
+  careerStoryChoice("level","把高層級條件放到最上面","維持原排序，即使角色較小也先談最高競技舞台。","經紀人把其餘方向壓到資料夾底部，並在最上方標出角色風險。沒有簽字前，收入與履歷都不會提前增加。","真正選項出現後，你仍願意用角色交換舞台。",{rep:3,confidence:3,planStatMod:-1}),
+  careerStoryChoice("role","翻面那張卡，改寫成上場責任","承認市場出現後優先順序改變，要求每個方向說清楚預計工作。","經紀人刪掉只談隊名、不談輪替的聯絡。剩下的條件沒有保證分鐘，至少願意回答你為何被需要。","你沒有被名氣帶走，先確認下一季是否真的有球可打。",{agentTrust:4,rep:1}),
+  careerStoryChoice("money","把保障數字圈起來","接受舞台可能不是最高，先確保風險與報酬相稱；未簽下的金額仍不算收入。","經紀人重新計算年限與保障，並把獎金條款從宣傳數字中拆開。","你沒有假裝只為籃球，清楚承認這次談判最重視什麼。",{agentTrust:8,rep:2})
  ]),
- careerStoryNode("final_chapter_3","final_chapter",3,"legacy",["veteran"],"下一季是否續戰，由完整狀態決定",`球季結束前，球團管理層重新檢查巔峰能力、近期表現、出勤、健康與市場需求。答案不只看年齡，也不會因單一能力下降就直接退休。`,"frontOffice",[
-  careerStoryChoice("continue","確認仍要接受年度評估","只要能力與身體仍符合，就繼續和所有人競爭。","球隊同意季後重新評估，沒有預設退休日期。","你選擇讓續戰由表現與健康決定。",{confidence:4,discipline:3,bodyLoad:2}),
-  careerStoryChoice("oneMoreRole","只接受有意義的最後角色","不為了延長年齡紀錄簽沒有上場可能的合約。","經紀人只保留能提供真實角色的球隊，市場範圍縮小。","你要的是有內容的最後一段，而不是空白名單席次。",{agentTrust:5,rep:3}),
-  careerStoryChoice("prepare","開始準備告別，但不立即退休","把生活與身體安排好，仍保留下一季可能。","你完成初步規劃，球隊也知道這可能是最後一次談約。","你開始收束生涯，卻沒有讓單一年齡替你做決定。",{familyHarmony:6,health:3,confidence:1})
+ careerStoryNode("market_choice_3","market_choice",3,"contract",["pro"],"卡片背面，已經寫滿這一季的代價",`又一次談判準備開始，{agent} 拿回那張已經摺舊的卡。背面記著實際上場、保障與球隊結果；這次不能再用當初想像的好處回答，只能看你真正換到了什麼。`,"agent",[
+  careerStoryChoice("correct","劃掉原答案，寫下這次不再接受的代價","承認當初排序不適合現在，不把一季結果硬拗成原本就知道。","經紀人保留被劃掉的字，旁邊新增新的底線。下一份條件會同時顯示你要什麼、拒絕什麼。","你用實際經歷修正市場判斷，而不是只換一句更好聽的說法。",{iq:2,agentTrust:8,confidence:1}),
+  careerStoryChoice("stayCourse","把卡片重新壓平，維持原答案","接受已經看見的代價，確認那仍是你願意承擔的方向。","經紀人沒有再推銷替代方案，只要求你親手在背面寫下：我知道這會失去什麼。","你不是固執地忘記結果，而是在看過結果後仍選擇同一條路。",{discipline:3,agentTrust:4}),
+  careerStoryChoice("resetTerms","把卡片撕成兩半，重訂合作方式","認為問題不只在選項，也在資訊如何被篩選；往後每個建議都必須附上依據。","你們重新寫下回報時間、風險與誰有最後決定權。信任受損，合作卻第一次有明確規則。","你沒有把錯誤全推給經紀人，也不再接受只靠默契的市場判斷。",{agentTrust:-8,confidence:2,discipline:2})
+ ]),
+
+ careerStoryNode("media_identity_1","media_identity",1,"identity",["college","pro"],"十二秒精華，把你剪成了同一種球員",`一支熱門短片只保留你連續三次出手，標題寫著「拿到球就不會再傳」。完整比賽裡被剪掉的掩護、回防與助攻沒人看見；隔天客場觀眾已經拿這句話對你喊。`,"media",[
+  careerStoryChoice("expand","請球隊公開一段完整進攻回合","不用聲明吵架，讓傳球前的牽制、無球跑動與防守選擇一起被看見。","球隊剪出九十秒完整片段。觀看數沒有原短片高，教練卻把它放進下一次球探會議。","你沒有靠一句我不是那種球員反駁，而是補回被剪掉的比賽內容。",{iq:2,pass:1,defense:1,planStatMod:-1}),
+  careerStoryChoice("own","把那句話寫在自己的訓練本封面","接受對手會針對最鮮明的特點，決定把它練到即使預告也守不住。","下一場你命中關鍵球後，鏡頭拍到訓練本封面。原本的嘲諷開始變成球迷跟著喊的稱號。","你沒有否認標籤，而是試著把它變成真正配得上的招牌。",{confidence:4,rep:3,fatigue:3}),
+  careerStoryChoice("ignore","關掉影片，維持原本比賽方式","不讓網路剪輯改動訓練計畫，也接受沉默可能讓標籤繼續流傳。","你沒有回覆任何訪問。幾週後話題降溫，但球探資料夾仍沿用了同一句摘要。","你拒絕替十二秒影片改變自己，也沒有阻止它替你留下第一印象。",{discipline:2,rep:-1})
+ ]),
+ careerStoryNode("media_identity_2","media_identity",2,"identity",["college","pro"],"對手把那十二秒印進了球探報告",`新球季第一場，對手每次都用同一種站位逼你走向影片裡的選擇。{coach} 暫停時把球探報告塞到你手上，封面正是那支短片的截圖：外界標籤現在已經真的改變防守。`,"coach",[
+  careerStoryChoice("study","在報告每一頁寫下第二種答案","和教練逐回合拆解對手預判，建立同一個起手式後的不同出口。","下半場你用相同動作引出包夾，再把球送到底角。對手第一次把那頁報告翻回去重看。","你把一句媒體標籤，轉成可以被研究也可以被破解的戰術問題。",{iq:3,coachTrust:7,fatigue:2}),
+  careerStoryChoice("double","照原路再打一次，但做到更快更準","不逃離招牌，逼對手在知道答案的情況下仍阻止不了；失敗時也沒有第二層保護。","下一個回合全場都知道你要去哪裡，你仍完成出手。球隊開始更依賴這套解法，對手也會帶來更多人。","你讓標籤變得更真，同時把它推向足以成為武器的程度。",{shoot:1,finish:1,confidence:3,bodyLoad:4}),
+  careerStoryChoice("switch","請教練暫停原角色，給你一段試驗期","徹底離開對手準備好的劇本，也可能連原本最可靠的價值一起失去。","你開始在陌生位置接球，幾次配合明顯遲疑。球探報告失效了，教練的輪替表也暫時找不到固定位置。","你寧願重新證明自己，也不願永遠活在同一張影片截圖裡。",{confidence:2,coachTrust:-2,planStatMod:-1})
+ ]),
+ careerStoryNode("media_identity_3","media_identity",3,"identity",["pro"],"節目把十二秒短片和現在的你並排播放",`多年後，那支畫質模糊的短片再次出現在訪談大螢幕。主持人沒有問它對不對，只把你後來的助攻、防守與招牌得分一起播完，請你親自替這段變化下標題。`,"media",[
+  careerStoryChoice("whole","要求保留短片前後的完整回合","承認早期確實有局限，也讓後來學會的選擇得到同樣篇幅。","節目重新剪輯成一段完整生涯：同一個起手式，在不同年份出現了三種答案。","你沒有刪除最早的自己，而是讓所有人看見他後來學會了什麼。",{rep:5,iq:2}),
+  careerStoryChoice("signature","請節目保留當年的原標題","接受那項特點一直存在，並用後來的比賽證明它不是偶然或缺陷。","舊標題重新亮起時，現場觀眾先笑後鼓掌。曾經的嘲諷，現在成了只有你能背得起的稱號。","你把一個限制你的剪輯，熬成了辨識整段生涯的招牌。",{confidence:5,rep:4}),
+  careerStoryChoice("next","關掉舊畫面，只公布下一季的新任務","不再替過去爭取正確解釋，讓下一段比賽直接改寫搜尋結果。","訪談沒有播完懷舊段落。隔天新聞標題不再引用十二秒短片，而是你親口說出的下一個目標。","你沒有修復舊標籤，選擇讓它停在身後。",{discipline:3,confidence:2})
+ ]),
+
+ careerStoryNode("veteran_mentor_1","veteran_mentor",1,"veteran",["veteran"],"他撿到你遺落的黑色筆記本",`訓練結束後，{teammate} 把一本黑色筆記本送回你的置物櫃。裡面記著多年來的睡眠、舊傷反應、對手習慣與短約準備；他只看見翻開的那一頁，仍忍不住問：能不能教他怎麼把生涯撐得更久？`,"teammate",[
+  careerStoryChoice("teach","把整本筆記借他一週","分享恢復方法、球探習慣與失敗紀錄，也接受自己累積的優勢會被同位置年輕人學走。","一週後筆記本準時回來，空白頁多了一張他的訓練表。他第一次提早離開加練，因為看懂休息也是計畫。","你把多年才學會的代價交出去，不再讓下一個人全部重繳一次。",{iq:2,rep:4,teammateTrust:12,planStatMod:-1}),
+  careerStoryChoice("boundaries","撕下一張恢復頁，其餘留在自己手上","教他保護身體與準備比賽，但不分享針對同一位置的競爭細節。","你們每週一起檢查恢復紀錄，對抗賽仍誰也不讓。筆記本始終回到你的櫃子。","你願意成為導師，也沒有假裝輪替競爭已經結束。",{discipline:3,teammateTrust:7,rep:2}),
+  careerStoryChoice("compete","把筆記本鎖回櫃子，叫他自己寫一本","提醒他位置與經驗都不能索取，也可能讓求助從此停止。","隔天他真的帶來一本新筆記，第一頁只寫著你的名字和今天輸掉的對抗。","你守住自己的方法，也把兩人的關係推回最直接的競爭。",{confidence:3,teammateTrust:-6,bodyLoad:4})
+ ]),
+ careerStoryNode("veteran_mentor_2","veteran_mentor",2,"veteran",["veteran"],"輪替表上，他的名字寫進了你的時段",`新球季第一次公布輪替，{teammate} 得到的那段時間正是你過去負責的區間。無論你曾分享整本筆記、只給一頁，或要他自己記錄，他的準備裡都已經看得見你的影響；你的名字則被移到第二陣容旁邊。`,"teammate",[
+  careerStoryChoice("accept","在自己名字旁寫下第二陣容指揮","接受個人數據會下降，把同樣的準備標準帶到新的搭檔身上。","第二陣容第一次影片會議，你拿出另一支筆記本。那名年輕隊友沒有道歉，只在離開前替你留下戰術板。","你接受教會別人可能改變自己的位置，卻沒有因此停止影響比賽。",{rep:5,coachTrust:6,teammateTrust:8,planStatMod:-2}),
+  careerStoryChoice("competeFair","請教練把兩個名字都改成待定","不否定他的成長，也不把自己的位置當成已經送出；用一段公開對抗重新決定。","兩週內你們每次都同組對位，沒有人能靠關係避開比較。最後的分鐘由表現分配。","你讓導師和競爭者同時存在，沒有要求感謝，也沒有放棄爭取。",{confidence:3,coachTrust:2,teammateTrust:3,bodyLoad:4}),
+  careerStoryChoice("resent","拒絕再回答任何準備問題","把失去分鐘理解成被利用，切斷先前建立的交流。","他默默合上自己的筆記。訓練仍照常，更衣室卻知道有些問題不會再得到回答。","你守住了剩下的方法，也讓曾經的傳承變成一筆未結的帳。",{rep:-4,coachTrust:-8,teammateTrust:-12})
+ ]),
+ careerStoryNode("veteran_mentor_3","veteran_mentor",3,"veteran",["veteran"],"黑色筆記本多出最後一個空白章節",`年度會議上，球團把你與 {teammate} 的輪替、帶隊效果和出勤一起攤開。管理層沒有拿年齡通知你退休，只問那個空白章節要寫成純球員、雙重角色，還是更明確的傳承工作。`,"frontOffice",[
+  careerStoryChoice("dual","在章節標題寫下：上場，也帶人","維持正式輪替，同時把影片、恢復與賽前準備納入明確責任。","球隊替你保留競爭位置，也排出固定帶隊時間。年輕球員知道何時能翻開那本筆記，何時必須在場上擊敗你。","你沒有在球員與導師之間二選一，而是接受兩邊都要被檢驗。",{rep:6,iq:2,bodyLoad:3,teamTrust:8}),
+  careerStoryChoice("player","把空白頁留白，只簽球員角色","拒絕用教學責任交換名單位置，接受每季仍以能力、健康與表現重新評估。","球團刪除額外帶人工作，輪替不再附帶傳承義務。年輕隊友收起問題，準備在場上競爭。","你沒有否定曾經教過的人，只是不讓老將兩個字提前改掉自己的職業。",{confidence:4,rep:2,teammateTrust:-2}),
+  careerStoryChoice("mentor","把筆記本交給球隊，只留下自己的恢復頁","主動降低出場負荷，讓影響力轉向準備、溝通與關鍵時刻。","你的分鐘下降，筆記本卻開始在更衣室輪流傳閱。封面內側寫著：這不是退休證明。","你交出一部分舞台，但續戰與否仍由身體和場上價值決定。",{iq:3,rep:5,bodyLoad:-8,planStatMod:-3})
+ ]),
+
+ careerStoryNode("national_miss_1","national_miss",1,"national",["college","pro"],"信封裡沒有球衣，只有一張評估表",`國家隊教練團寄來位置評估表，抬頭清楚寫著「觀察名單，非正式徵召」。表上列出健康、出勤、聯賽角色與位置需求；沒有報到日期，也沒有任何人能替你保證最後席次。`,"nationalStaff",[
+  careerStoryChoice("askReport","把空白欄退回去，要求寫出具體差距","願意看見位置排序與能力缺口，不把進入觀察名單當成已經入選。","回信多了三行：防守對位、穩定出勤與目前輪替。內容不全好聽，至少下一季不必靠猜。","你得到的是一份可以執行的評估，不是一件不存在的國家隊球衣。",{iq:2,discipline:3,confidence:-1}),
+  careerStoryChoice("publicGoal","把評估表放進置物櫃，公開說要爭正式名單","讓每場表現都接受檢驗，也明確說目前仍只是被觀察。","媒體標題寫的是爭取入選，而不是已成國手。下一場開始，觀眾會替你計算每一次失誤與對位。","你公開承擔目標，沒有提前領走尚未得到的身分。",{confidence:4,rep:3,fatigue:2}),
+  careerStoryChoice("withdraw","在本期可出席欄勾選否","把休賽季留給球隊與身體，這次觀察資料會關閉，但不等於正式退出國家隊。","教練團確認收到，沒有寄來報到通知。你把評估表收進抽屜，恢復原本的休賽季計畫。","你暫時放下這扇尚未打開的門，沒有把它說成落選或退休。",{health:3,fatigue:-5,rep:-2})
+ ]),
+ careerStoryNode("national_miss_2","national_miss",2,"national",["college","pro"],"第二封信多了一件練習背心的尺寸欄",`國家隊教練團再次檢查你的球隊角色、健康與可出席時段。表格新增了練習背心尺寸，最下方仍印著同一句話：填寫資料不等於正式入選，只有正式通知才有報到日期。`,"nationalStaff",[
+  careerStoryChoice("camp","填上尺寸，保留完整可出席時段","讓教練團知道正式通知一到你就能參加，也接受背心可能永遠不會寄出。","資料送出後，回覆只有一句已收件。你沒有訂機票，也沒有在生涯紀錄裡多寫一場不存在的國際賽。","你把自己準備到可以出發，仍把最後答案留給正式名單。",{rep:2,fatigue:4,confidence:3}),
+  careerStoryChoice("managed","附上母隊核准的負荷範圍","保留健康並說清楚限制，可能讓教練團更難安排，但不靠隱瞞換取觀察。","母隊與教練團只交換醫療和時段資料，沒有任何一方替你宣布入選。","你願意競爭，也要求真正進入窗口後才能改動負荷。",{health:3,fatigue:2,rep:1}),
+  careerStoryChoice("decline","把尺寸欄劃掉，本期不保留時段","結束這次觀察流程，讓球隊與身體安排不再等待一封可能不來的通知。","教練團把資料標記為本期關閉。沒有落選記者會，也沒有被收回的球衣，因為它從未寄出。","你替這次觀察留下清楚狀態，不把半開的門當成已經走進去。",{health:4,rep:-2})
+ ]),
+ careerStoryNode("national_miss_3","national_miss",3,"national",["pro"],"教練團退回那件從未寄出的背心尺寸",`幾個球季後，國家隊教練團整理長期觀察資料，來信詢問是否繼續保留你的檔案。過去有沒有真正入選、出賽或獲獎，只看生涯裡實際發生的國家隊賽事；這封信不會補發任何榮譽。`,"nationalStaff",[
+  careerStoryChoice("role","保留檔案，任何角色都願意重新評估","不要求補償多年等待，只在正式通知出現時依當下條件公平競爭。","教練團留下你的資料，沒有承諾下個窗口。那個尺寸欄回到空白，等待真正需要時再量。","你願意繼續等一封有日期的通知，沒有把觀察史算成國手資歷。",{rep:3,discipline:3,confidence:2}),
+  careerStoryChoice("compete","只接受完整集訓與公平競爭的正式通知","拒絕只為補名單待命，也接受條件可能讓機會永遠不來。","教練團把要求寫進備註，沒有爭辯。答案仍由往後表現和真實名單決定。","你保留國家隊目標，也替自己畫出不能只靠等待跨過的線。",{confidence:4,fatigue:2,rep:1}),
+  careerStoryChoice("close","請教練團正式關閉觀察檔案","結束長期等待，把休賽季完整交還球隊、健康與生活。","確認信只寫著資料已關閉。沒有退役儀式，也沒有不存在的國家隊生涯可以告別。","你替一段未完成的可能性寫下句點，讓真正發生過的生涯繼續往前。",{iq:2,health:3,rep:-1})
+ ]),
+
+ careerStoryNode("rebuild_core_1","rebuild_core",1,"team",["pro"],"管理層把一個空置物櫃留在你旁邊",`年度會議後，球團帶你走進正在整修的更衣室。你的名牌旁邊是一排尚未填名的新秀置物櫃；管理層希望你成為重建標準，但只能承諾目前角色，不能承諾這些空格何時能換來勝利。`,"frontOffice",[
+  careerStoryChoice("commit","把自己的名牌鎖在原位兩季","接受輸球、曝光下降與帶領新人的責任，要求球團同時留下兩年檢查紀錄。","開季時第一位新秀搬進你旁邊。他問這支球隊要成為什麼，你只能從今天的訓練開始回答。","你把兩年生涯時間押進一排還沒有名字的置物櫃。",{teamTrust:10,rep:3,planStatMod:-1}),
+  careerStoryChoice("oneYear","在名牌背面寫下一年後重談","願意陪重建起步，保留檢查承諾與離開的權利，也讓球團無法把你當永久保證。","管理層拍下日期，沒有要求你喊忠誠口號。空置物櫃照樣補人，一年後雙方都必須拿出結果。","你給重建一季，不讓一季自動延長成無期限等待。",{teamTrust:4,agentTrust:3,rep:1}),
+  careerStoryChoice("exit","把名牌取下，請球團開始找交易方向","拒絕用自己的競爭窗口等待未知成果，也承擔球迷認為你先離開的代價。","管理層收回名牌，開始接聽電話。旁邊的空櫃仍在，只是不再預設由你帶第一批新人。","你沒有假裝相信一個不確定的時間表，選擇把剩下的巔峰留給別處。",{rep:-3,teamTrust:-10,agentTrust:5})
+ ]),
+ careerStoryNode("rebuild_core_2","rebuild_core",2,"team",["pro"],"進度板旁，置物櫃終於有了名字",`球團把這段期間的戰績、年輕球員成長與你的角色整理成一張進度板。旁邊的置物櫃已不再空白，但輸掉的比賽也確實存在；現在要檢查當初承諾，而不是再說重建需要時間。`,"frontOffice",[
+  careerStoryChoice("stayPlan","在進度板上圈出真正成長的三項","承認勝場不足，仍願意為看得見的進步再走一年。","管理層把三項指標留在板上，不能下季再換一套說法。年輕隊友把你的名牌移回最中央。","你不是因口號留下，而是因第一年確實有東西值得繼續驗證。",{rep:4,teamTrust:8,discipline:2}),
+  careerStoryChoice("demandHelp","在空缺位置貼上即戰力需求","要求球團補進能立即分擔的球員，可能加快競爭，也可能犧牲原本準備培養的資產。","管理層沒有承諾明星，只答應在期限前提出可執行方案。重建第一次被迫回答你的時間成本。","你要求球團不能只用你的球季換取別人的未來。",{rep:2,teamTrust:-2,confidence:3}),
+  careerStoryChoice("openMarket","把當初寫下的重談日期翻給管理層看","啟動離隊準備，不否認曾經承諾，也不讓檢查點變成裝飾。","經紀人開始了解市場。消息傳出後，旁邊的年輕隊友第一次問：如果你走了，這間更衣室要由誰回答？","你讓當初保留的選擇權真正生效，重建也第一次面對失去你的可能。",{agentTrust:7,teamTrust:-8,rep:-2})
+ ]),
+ careerStoryNode("rebuild_core_3","rebuild_core",3,"team",["pro"],"整排置物櫃都有名字了，中央那格仍等你決定",`再次檢查重建進度時，曾經空白的新秀櫃已經填滿，有人成長、有人離開，戰績也留下不能修飾的答案。管理層把你的舊名牌放在桌上：繼續掛在中央、移到新核心旁邊，或由你親手帶走。`,"frontOffice",[
+  careerStoryChoice("finish","把舊名牌重新掛回中央","結果仍不保證，但你願意看完自己參與建立的陣容，角色與續約必須反映這段共同責任。","全隊報到時，年輕球員已不再問球隊要成為什麼。他們把第一場會議交給你開場。","你選擇留下，不是守著空櫃，而是陪一群有名字的人完成答案。",{rep:7,teamTrust:12,confidence:3}),
+  careerStoryChoice("supportRole","把名牌移到新核心旁邊","主動讓出第一位置，保留場上責任與更衣室影響，不把權力轉移演成背叛。","年輕核心親手替你鎖好名牌。新的戰術板先寫他的名字，關鍵會議仍留著你的座位。","你讓重建真正完成，也接受自己不必永遠站在畫面中央。",{iq:3,rep:6,planStatMod:-3,teammateTrust:8}),
+  careerStoryChoice("leave","把名牌帶走，逐一和隊友告別","承認共同經歷有價值，也不再用它延後自己的競爭目標。","球團同意合作尋找去向。離開那天，曾經第一個搬進來的新秀把空櫃擦乾淨，沒有把你的選擇叫做背叛。","你替重建付出真實球季，也替自己保留一段尚未寫完的路。",{agentTrust:6,teamTrust:-3,rep:1})
+ ]),
+
+ careerStoryNode("final_chapter_1","final_chapter",1,"legacy",["veteran"],"賽程表後面，多了一張沒有日期的空白頁",`年度會議結束前，管理層把下一季賽程與一張空白頁並排放在你面前。這不是退休通知；球隊只提醒未來合約會更短、角色每年重評，請你先寫下什麼條件值得繼續打。`,"frontOffice",[
+  careerStoryChoice("contend","在空白頁寫下：仍能影響冠軍",`接受可能搬遷、縮減分鐘與較小角色，只保留真正有競爭意義的方向。`,`經紀人把冠軍窗口與實際角色排到薪資之前，沒有替任何尚未出現的球隊做保證。那張空白頁被收進市場資料夾。`,`你替生涯後段留下的第一條件，是仍能參與有重量的勝負。`,{rep:4,agentTrust:5,planStatMod:-2}),
+  careerStoryChoice("home","在空白頁寫下：熟悉的人和城市",`縮小可能市場，讓共同生活、球隊關係與歸屬成為續戰條件。`,`管理層第一次在談判筆記裡加入地點與角色延續。最高報價不再自動等於最適合的下一季。`,`你希望繼續打球，也希望剩下的球季不必一直和生活告別。`,{familyHarmony:8,teamTrust:6,rep:2}),
+  careerStoryChoice("health","在空白頁寫下：身體能完成整季",`接受休息、短約與負荷管理，拒絕只為延長紀錄硬撐下一年。`,`醫療團隊把健康、出勤與恢復門檻附在頁後。沒有人填上退休日期，也沒有人承諾一定續戰。`,`你讓下一季先通過身體與表現，而不是只通過年齡。`,{health:6,bodyLoad:-8,discipline:3})
+ ]),
+ careerStoryNode("final_chapter_2","final_chapter",2,"legacy",["veteran"],"空白頁終於夾進合約資料夾",`目前合約進入最後一年或市場重評期，{agent} 把你上季寫下的條件放在資料夾首頁。桌上仍可能沒有正式報價；今天要決定的只是，真正條件出現時哪些方向值得談。`,"agent",[
+  careerStoryChoice("accept","允許一年約進入比較範圍",`不拿過去功勞要求長期保障，接受每季重證明；沒有正式球隊與條件前不先簽空氣。`,`經紀人在資料夾新增「一年約可談」，旁邊標註角色與健康仍須逐項確認。你的生涯沒有因此自動延長，也沒有被迫結束。`,`你接受逐年評估，把下一季交給真正出現的條件。`,{confidence:3,discipline:2,agentTrust:4}),
+  careerStoryChoice("wait","只保留寫得出上場工作的方向",`冒著市場縮小或關閉的風險，不接受只用名字填滿名單的聯絡。`,`經紀人刪掉所有沒有角色說明的可能性。資料夾立刻變薄，剩下的每一頁至少能回答球隊為何需要你。`,`你要的是有內容的續戰，不是只在名單上多留一年。`,{confidence:2,agentTrust:3,rep:-1}),
+  careerStoryChoice("reduce","接受較小角色，但必須附帶負荷方案",`用數據上限交換健康與出勤，仍要求角色是真實的，不把休息包裝成退休。`,`醫療團隊把可承受的輪替寫進附件。經紀人只能拿這份範圍和正式條件比較，不能替球隊保證。`,`你開始轉折角色，目的是繼續競爭，而不是提前離開。`,{health:5,bodyLoad:-10,planStatMod:-3,rep:2})
+ ]),
+ careerStoryNode("final_chapter_3","final_chapter",3,"legacy",["veteran"],"最後一場後，那張空白頁仍沒有退休日期",`球季結束，管理層把巔峰能力、近期表現、出勤、健康與市場需求逐項放到空白頁旁邊。沒有單一能力可以直接判你退休，年齡也不是唯一答案；你現在只能決定下一次評估要以什麼底線繼續。`,"frontOffice",[
+  careerStoryChoice("continue","在頁底簽名：繼續接受完整評估",`只要能力、表現、出勤與健康仍符合，就和所有球員一起競爭，不要求預留位置。`,`球隊收下簽名，承諾季後依完整狀態判斷。頁面仍沒有下一份合約，也沒有預設退休日期。`,`你選擇讓續戰由現在的身體和比賽回答，而不是由出生年份回答。`,{confidence:4,discipline:3,bodyLoad:2}),
+  careerStoryChoice("oneMoreRole","只留下能說清楚責任的最後一段",`不為延長年齡紀錄接受沒有上場可能的名單席次，市場也可能因此只剩很少選項。`,`經紀人把角色空白的方向全部抽走。資料夾幾乎見底，但留下的任何一頁都必須說明你會在哪裡幫助球隊。`,`你要的是一段真正發生的生涯，不是一個只多一歲的紀錄。`,{agentTrust:5,rep:3}),
+  careerStoryChoice("prepare","把頁面收進行李，但先不填結束日期",`開始整理生活、身體與可能的告別方式，同時保留市場與健康允許時再打一季的可能。`,`你清空一半置物櫃，另一半仍放著球鞋。球隊知道這可能是最後一次談約，卻沒有人替你提前按下退休。`,`你開始替生涯收束做準備，也保留由下一個真實條件改寫答案的權利。`,{familyHarmony:6,health:3,confidence:1})
  ])
 ];
 

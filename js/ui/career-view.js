@@ -56,7 +56,7 @@ function startCareer(){
  conductMarketPenalty:0,conductSuspensionGames:0,nationalTeamBanUntil:0,conductPenaltySetYear:0,offCourtHistory:[],offCourtEventKinds:[],lastOffCourtEventYear:0,financialLosses:0,
  specialBonusPoints:0,internationalHistory:[],championshipHistory:[],awardHistoryByLeague:{},lastSeasonAwards:[],hallVotes:[],
     bodyLoad:0,oldInjuries:{},oldInjuryFloors:{},oldInjuryLastYear:{},rehabBoost:0,medicalHistory:[],medicalPressureHistory:[],lastMedicalPressureYear:0,majorInjuryCount:0,careerThreatInjuries:0,recoverySeasons:0,seasonInjuryRiskTarget:0,seasonInjurySurvival:1,seasonInjuryChecksDone:0,seasonInjuryExtra:0,seasonMedicalEventShown:false,seasonNaturalInjuryChecked:false,
-    recentEvents:[],eventMemory:{},specialEventMemory:{},feedHistory:[],relationshipHistory:[],chainQueue:[],storyBeats:[],seasonStoryCandidates:[],roleHistory:[],careerStoryHistory:[],careerStoryPending:[],careerStorySeen:[],careerStoryThemeYears:{},careerIntroductions:{},careerCast:{friend:{name:friendName,trait:"從學生時期就陪你練球",trust:58,metYear:2026},rival:{name:rivalName,trait:"從學生時期一路被拿來比較",respect:42,metYear:2026}},teamWorld:{},roleState:{},expandedFeedYear:null,showOlderFeedYears:false,pendingRenewalOffer:null,pendingNBAOffer:null,pendingTryoutOffer:{},declinedTryoutCount:0,marketOriginTeam:"",marketOriginLeague:"",marketReturnOffer:null,marketReturnMode:"",
+    recentEvents:[],eventMemory:{},specialEventMemory:{},feedHistory:[],relationshipHistory:[],chainQueue:[],storyBeats:[],seasonStoryCandidates:[],roleHistory:[],careerStoryHistory:[],careerStoryPending:[],careerStorySeen:[],careerStoryThemeYears:{},careerIntroductions:{},openingCareerStoryYear:0,specialReturnStage:"",careerCast:{friend:{name:friendName,trait:"從學生時期就陪你練球",trust:58,metYear:2026},rival:{name:rivalName,trait:"從學生時期一路被拿來比較",respect:42,metYear:2026}},teamWorld:{},roleState:{},expandedFeedYear:null,showOlderFeedYears:false,pendingRenewalOffer:null,pendingNBAOffer:null,pendingTryoutOffer:{},declinedTryoutCount:0,marketOriginTeam:"",marketOriginLeague:"",marketReturnOffer:null,marketReturnMode:"",
     medicalProtectionUntilYear:0,medicalProtectionReason:"",medicalProtectedArea:"",postOpCareChosen:false,lastMajorInjuryYear:0,
     lastDanceActive:false,lastDanceUsed:false,retirementDefianceUsed:false,retirementDefianceSucceeded:false,retirementPressureUsed:false,retirementCrisisCount:0,retirementCrisisReason:"",homecomingTeam:"",homecomingRegion:"",
     publicCareerId:"",publicCareerUploadId:"",leaderboardChoice:null,retirementRankSummary:null,careerUploadError:null,diceRevealCount:0,diceRolling:false,
@@ -146,12 +146,12 @@ function toggleAbilityHelp(el){
 document.addEventListener("pointerdown",event=>{if(!event.target.closest?.(".abilityHelpCard")&&!event.target.closest?.("#abilityHelpPopover"))closeAbilityHelp()});
 window.addEventListener("resize",()=>closeAbilityHelp());window.addEventListener("scroll",()=>closeAbilityHelp(),true);
 function trainingCardStage(){
- const ov=overall(),majorAwards=(p.careerMVP||0)+(p.careerFinalsMVP||0)+(p.careerFirstTeam||0)+(p.careerDPOY||0);
- if(p.path==="HBL"||isCollegePath())return {id:"campus",label:"校園篇章",eyebrow:"CAMPUS"};
+ const ov=overall();
  if(p.age>=34||(p.ageDeclineStage||0)>0)return {id:"veteran",label:"老將篇章",eyebrow:"VETERAN"};
- if(majorAwards>0&&Math.max(ov,p.peakOverall||0)>=86)return {id:"icon",label:"傳奇競逐",eyebrow:"ICON"};
- if(p.age>=25&&ov>=76)return {id:"prime",label:"巔峰篇章",eyebrow:"PRIME"};
- return {id:"pro",label:"職業篇章",eyebrow:"PRO"};
+ if(ov>=85)return {id:"icon",label:"傳奇戰力",eyebrow:"LEGEND"};
+ if(ov>=75)return {id:"prime",label:"菁英戰力",eyebrow:"ELITE"};
+ if(ov>=60)return {id:"pro",label:"主力戰力",eyebrow:"CORE"};
+ return {id:"campus",label:"潛力戰力",eyebrow:"PROSPECT"};
 }
 function trainingRadarMetrics(){
  const s=p.stats||{};
@@ -178,10 +178,11 @@ function trainingPlayerCardHTML(derived){
 }
 function trainingRelationshipRows(){
  const cast=p.careerCast||{},rows=[];
- if(cast.coach?.name)rows.push({type:"教練",name:cast.coach.name,note:`信任 ${Math.round(cast.coach.trust??50)} · ${cast.coach.trait||"負責本季輪替"}`});
- if(cast.agent?.name)rows.push({type:"經紀人",name:cast.agent.name,note:`信任 ${Math.round(cast.agent.trust??50)} · ${cast.agent.trait||"處理合約與市場"}`});
- if(cast.friend?.name)rows.push({type:"朋友",name:cast.friend.name,note:`${cast.friend.trait||"從學生時期認識"} · ${cast.friend.metYear||2026} 年相識`});
- if(cast.rival?.name)rows.push({type:"宿敵",name:cast.rival.name,note:`${cast.rival.trait||"長期競爭對手"} · 尊重 ${Math.round(cast.rival.respect??42)}`});
+ const introduced=(key,person)=>!!person?.name&&!!p.careerIntroductions?.[`${key}:${person.name}`];
+ if(introduced("coach",cast.coach))rows.push({type:"教練",name:cast.coach.name,note:`信任 ${Math.round(cast.coach.trust??50)} · ${cast.coach.trait||"負責本季輪替"}`});
+ if(introduced("agent",cast.agent))rows.push({type:"經紀人",name:cast.agent.name,note:`信任 ${Math.round(cast.agent.trust??50)} · ${cast.agent.trait||"處理合約與市場"}`});
+ if(introduced("friend",cast.friend))rows.push({type:"朋友",name:cast.friend.name,note:`${cast.friend.trait||"從學生時期認識"} · ${cast.friend.metYear||2026} 年相識`});
+ if(introduced("rival",cast.rival))rows.push({type:"宿敵",name:cast.rival.name,note:`${cast.rival.trait||"長期競爭對手"} · 尊重 ${Math.round(cast.rival.respect??42)}`});
  return rows.slice(0,4);
 }
 function trainingSeasonContextHTML(){

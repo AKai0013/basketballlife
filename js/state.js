@@ -148,10 +148,11 @@ function normalizeCareerPlayer(player){
     lastNationalCallupYear:0,nationalSelectionStreak:0,proEntryYear:0,
    familyHarmony:60,scandalCount:0,conductMarketPenalty:0,conductSuspensionGames:0,nationalTeamBanUntil:0,conductPenaltySetYear:0,lastOffCourtEventYear:0,financialLosses:0,developmentSeasons:0,medicalProtectionUntilYear:0,
    planRiskMod:0,planGrowthMod:0,planStatMod:0,specialBonusPoints:0,seasonEventSuccess:0,
-   eventSuccesses:0,clutchWins:0,tradeCount:0,careerRating:0,peakOverall:0,seasonInjuryRiskTarget:0,seasonInjurySurvival:1,seasonInjuryChecksDone:0,seasonInjuryExtra:0,lastMedicalPressureYear:0,lastCoachChangeYear:0,lastRelationshipEventYear:0
+   eventSuccesses:0,clutchWins:0,tradeCount:0,careerRating:0,peakOverall:0,seasonInjuryRiskTarget:0,seasonInjurySurvival:1,seasonInjuryChecksDone:0,seasonInjuryExtra:0,lastMedicalPressureYear:0,lastCoachChangeYear:0,lastRelationshipEventYear:0,openingCareerStoryYear:0
  };
   Object.entries(numberDefaults).forEach(([k,v])=>{if(!Number.isFinite(Number(player[k])))player[k]=v;else player[k]=Number(player[k])});
   if(typeof player.proEntrySource!=="string")player.proEntrySource="";
+  if(typeof player.specialReturnStage!=="string")player.specialReturnStage="";
  const objectDefaults={
     oldInjuries:{},oldInjuryFloors:{},oldInjuryLastYear:{},leagueHistory:{},awardHistoryByLeague:{},partnerProfile:{},romanceCandidate:{},trainingProgress:{shoot:0,finish:0,handle:0,pass:0,defense:0,rebound:0,ath:0,iq:0},
    strategyStats:{risk:{pick:0,success:0,streak:0,best:0},balance:{pick:0,success:0,streak:0,best:0},safe:{pick:0,success:0,streak:0,best:0}},careerCast:{},teamWorld:{},roleState:{},eventMemory:{},specialEventMemory:{},pendingTryoutOffer:{},careerStoryThemeYears:{},careerIntroductions:{},seasonPermanentGrowth:{},injuryRecoveryCredits:{}

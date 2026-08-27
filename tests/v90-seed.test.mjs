@@ -135,6 +135,11 @@ test("V9 season training uses real career data for the player card and context",
   assert.match(career,/\["shoot","finish","handle","pass","defense","rebound","ath","iq"\]/);
   assert.match(career,/ranked\.slice\(0,5\)/);
   assert.match(career,/ranked\.slice\(5\)/);
+  assert.match(career,/if\(ov>=85\)return \{id:"icon",label:"傳奇戰力",eyebrow:"LEGEND"\}/);
+  assert.match(career,/if\(ov>=75\)return \{id:"prime",label:"菁英戰力",eyebrow:"ELITE"\}/);
+  assert.match(career,/if\(ov>=60\)return \{id:"pro",label:"主力戰力",eyebrow:"CORE"\}/);
+  assert.match(career,/return \{id:"campus",label:"潛力戰力",eyebrow:"PROSPECT"\}/);
+  assert.ok(career.indexOf('id:"veteran"')<career.indexOf("if(ov>=85)"),"veteran ice-blue must override OVR colors");
   const playerCard=career.slice(career.indexOf("function trainingPlayerCardHTML"),career.indexOf("function trainingRelationshipRows"));
   assert.match(playerCard,/<small>OVR<\/small>/);
   assert.doesNotMatch(playerCard,/careerCardTraits|careerCardArchetype|PLAYER IDENTITY|OTHER SKILLS|OVERALL|<footer>|巔峰 OVR/);
@@ -359,6 +364,7 @@ test("V9 formal retirement page adds factual sections without replacing the two 
   assert.match(retirement,/function retirementLegacyProfile\(/);
   assert.match(retirement,/function v9RetirementPageHTML\(/);
   assert.match(retirement,/data-retire-tab="overview"|\["overview","生涯總覽"\]/);
+  assert.match(retirement,/\["records","完整數據"\]/);
   assert.match(retirement,/data-retire-panel="records"/);
   assert.match(retirement,/這段生涯留下了什麼/);
   assert.match(retirement,/場上角色如何改變/);
@@ -372,4 +378,7 @@ test("V9 formal retirement page adds factual sections without replacing the two 
   assert.match(styles,/body\.v9RetirementMode \.retireHero/);
   assert.match(styles,/body\.v9RetirementMode \.brandRow,body\.v9RetirementMode \.liveTicker/);
   assert.match(styles,/body\.v9RetirementMode \.v9GameNav\{display:none!important\}/);
+  assert.match(styles,/@media\(max-width:680px\)\{[\s\S]*?\.retireHero\{min-height:450px/);
+  assert.match(styles,/\.retireTabs\{top:6px;display:grid;grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
+  assert.doesNotMatch(styles,/\.retireTab\{flex:0 0 105px/);
 });

@@ -165,7 +165,10 @@ function careerStoryActorPresentation(event,player=p,pending=null){
  }
  const actor=careerStoryActor(player,key);
  if(!actor?.name)return null;
- const relationValue=key==="rival"?Number(actor.respect||50):Number(actor.trust||50),relationLabel=relationValue>=75?"彼此高度信任":relationValue>=58?"關係穩定":relationValue>=42?"仍在建立默契":relationValue>=25?"關係有明顯裂痕":"幾乎不再往來";
+ const relationValue=key==="rival"?Number(actor.respect||50):Number(actor.trust||50);
+ const relationLabel=key==="rival"
+  ?(relationValue>=75?"彼此高度尊重":relationValue>=58?"競爭中帶著尊重":relationValue>=42?"仍在觀察彼此":relationValue>=25?"火藥味正在升高":"關係幾乎決裂")
+  :(relationValue>=75?"彼此高度信任":relationValue>=58?"關係穩定":relationValue>=42?"仍在建立默契":relationValue>=25?"關係有明顯裂痕":"幾乎不再往來");
  return {key,isPerson:true,category:"生涯人物",name:actor.name,role:CAREER_STORY_PERSON_LABELS[key]||"生涯關係人物",note:actor.trait||"這段關係會跟著你的選擇改變",relationLabel,metYear:Number(actor.metYear)||null};
 }
 function careerStoryText(value,player=p,pending=null){
@@ -219,12 +222,18 @@ function careerStoryIntroduce(event,player=p,pending=null){
  ensureCareerStoryState(player);
  const presentation=careerStoryActorPresentation(event,player,pending);
  if(!presentation?.isPerson||!presentation.name)return "";
- const key=presentation.key,introductionKey=`${key}:${presentation.name}`;
+ return careerStoryMarkPersonIntroduced(player,presentation.key,presentation,presentation.role);
+}
+function careerStoryMarkPersonIntroduced(player=p,key,person,role=""){
+ ensureCareerStoryState(player);
+ if(!key||!person?.name)return "";
+ const introductionKey=`${key}:${person.name}`;
  if(player.careerIntroductions[introductionKey])return "";
- player.careerIntroductions[introductionKey]={year:player.year,person:presentation.name,type:key,role:presentation.role};
+ const personRole=role||person.role||CAREER_STORY_PERSON_LABELS[key]||"生涯關係人物";
+ player.careerIntroductions[introductionKey]={year:player.year,person:person.name,type:key,role:personRole};
  player.relationshipHistory=Array.isArray(player.relationshipHistory)?player.relationshipHistory:[];
- player.relationshipHistory.push({year:player.year,person:presentation.name,type:key,action:"introduced",story:`${presentation.name} 以「${presentation.role}」身分正式進入你的生涯`});
- return `人物登場｜${presentation.name}・${presentation.role}`;
+ player.relationshipHistory.push({year:player.year,person:person.name,type:key,action:"introduced",story:`${person.name} 以「${personRole}」身分正式進入你的生涯`});
+ return `人物登場｜${person.name}・${personRole}`;
 }
 function careerStoryUnusedPool(player=p){
  ensureCareerStoryState(player);
@@ -246,6 +255,9 @@ function careerStorySnapshot(player=p){
  return {year:Number(player?.year)||0,team:player?.team||"",path:player?.path||"",age:Number(player?.age)||0,health:Number(player?.health)||0,bodyLoad:Number(player?.bodyLoad)||0,role:player?.roleState?.currentLabel||"",games:Number(season.games)||0,mins:Number(season.mins)||0,pts:Number(season.pts)||0,nationalCaps:Number(player?.nationalCaps)||0,teamDirection:player?.teamWorld?.direction||"",contractYears:Number(contract.remaining)||0};
 }
 function careerStoryPendingResolution(pending,player=p){
+ const sourceId=String(pending?.sourceEventId||""),sourceChoice=String(pending?.sourceChoice||pending?.sourceChoiceId||"");
+ const sourceRecorded=!!(sourceId&&sourceChoice);
+ if(!sourceRecorded)return {title:"缺少可驗證的前情",reason:"這筆舊後續沒有對應的來源事件與玩家選擇，因此不會在生涯中憑空出現。"};
  const broken=careerStoryPendingBreak(pending,player);if(broken)return broken;
  const source=pending?.sourceSnapshot||{};
  if(pending?.line==="national_miss"&&Number(player.nationalCaps||0)>Number(source.nationalCaps||0))return {title:"正式徵召替觀察名單給了答案",reason:`你在後續球季正式進入代表隊紀錄。先前的觀察已由正式名單接手，之後只記錄真正的國際賽結果。`};
@@ -279,8 +291,9 @@ function careerStoryFollowUpFacts(pending,player=p){
  };
  return lines[pending?.line]||"這次只承接已經發生、仍然成立的前情。";
 }
-function buildCareerStorySpecial(player=p,{blockedThemes=[]}={}){
+function buildCareerStorySpecial(player=p,{blockedThemes=[],openingOnly=false}={}){
  ensureCareerStoryState(player);
+ if(player.retired)return null;
  const dueItems=player.careerStoryPending
   .filter(item=>item.status==="pending"&&Number(item.dueYear)<=Number(player.year))
   .sort((a,b)=>Number(a.dueYear)-Number(b.dueYear)||String(a.id).localeCompare(String(b.id)));
@@ -296,6 +309,10 @@ function buildCareerStorySpecial(player=p,{blockedThemes=[]}={}){
   return {kind:"careerStory",storyEventId:event.id,storyPendingId:due.id,title:careerStoryText(event.title,player,due),desc:`${careerStoryFollowUpFacts(due,player)} ${careerStoryText(event.desc,player,due)}`,careerStory:true,careerStoryTheme:event.theme};
  }
  let pool=careerStoryUnusedPool(player).filter(event=>!blocked.has(event.theme));
+ if(openingOnly){
+  const opening=pool.filter(event=>Number(event.node)===1&&["friendship","school_rivalry"].includes(event.line)&&["friend","rival"].includes(event.actor));
+  if(opening.length)pool=opening;
+ }
  const relocation=pool.find(event=>event.id==="family_city_1");
  if(relocation&&player.careerRelocationPending?.meaningful)pool=[relocation];
  const firstFinalChapter=pool.find(event=>event.id==="final_chapter_1");
@@ -353,7 +370,9 @@ function scheduleCareerStoryFollowUp(event,choice,player=p){
  const next=CAREER_STORY_EVENTS.find(candidate=>candidate.line===event.line&&Number(candidate.node)===Number(event.node)+1);
  if(!next)return null;
  const threeYearChoices=new Set(["wait","delay","careerFirst","saveLater"]),twoYearChoices=new Set(["distance","stayPlan","oneYear","review"]);
- const delay=threeYearChoices.has(choice.id)?3:twoYearChoices.has(choice.id)?2:1,dueYear=Number(player.year)+delay;
+ let delay=threeYearChoices.has(choice.id)?3:twoYearChoices.has(choice.id)?2:1;
+ if(["friendship","school_rivalry"].includes(event.line)&&Number(player.careerSeason||0)<5)delay=Number(event.node)===1?Math.min(2,delay):1;
+ const dueYear=Number(player.year)+delay;
  const current=(player.careerStoryPending||[]).find(item=>item.status==="resolved"&&item.eventId===event.id&&Number(item.dueYear)<=Number(player.year));
  const lineActors={...(current?.lineActors||{})},presentation=careerStoryActorPresentation(event,player,current);
  if(presentation?.isPerson&&!lineActors[presentation.key])lineActors[presentation.key]={name:presentation.name,role:presentation.role,note:presentation.note||""};
@@ -383,10 +402,12 @@ function resolveCareerStoryEvent(eventId,choiceId){
  const followUp=scheduleCareerStoryFollowUp(event,choice,p);
  if(event.id==="family_city_1")p.careerRelocationPending=null;
  const presentation=careerStoryActorPresentation(event,p,pending);
- const row={year:p.year,eventId:event.id,line:event.line||"standalone",node:event.node,title:careerStoryText(event.title,p,pending),choice:choice.label,result:choice.result,memory:choice.memory,theme:event.theme,person:presentation?.isPerson?presentation.name:"",actorLabel:presentation?.name||"",actorRole:presentation?.role||"",sourceTitle:pending?.sourceTitle||"",sourceChoice:pending?.sourceChoice||"",followUpEventId:followUp?.eventId||"",followUpDueYear:followUp?.dueYear||0};
+ const row={year:p.year,age:Number(p.age)||0,team:p.team||"",path:p.path||"",overall:typeof overall==="function"?Number(overall())||careerStoryOverall(p):careerStoryOverall(p),eventId:event.id,line:event.line||"standalone",node:event.node,title:careerStoryText(event.title,p,pending),choice:choice.label,result:choice.result,memory:choice.memory,theme:event.theme,person:presentation?.isPerson?presentation.name:"",actorLabel:presentation?.name||"",actorRole:presentation?.role||"",sourceTitle:pending?.sourceTitle||"",sourceChoice:pending?.sourceChoice||"",followUpEventId:followUp?.eventId||"",followUpDueYear:followUp?.dueYear||0};
  p.careerStoryHistory.push(row);p.careerStoryHistory=p.careerStoryHistory.slice(-160);
  const changeHTML=changes.length?changes.map(item=>`<span class="change ${careerStoryEffectTone(item.key,item.delta)}">${careerStoryEscape(item.label)} ${item.delta>0?"+":""}${item.delta}</span>`).join(""):`<span class="change info">沒有立即數值變化</span>`;
- const followHTML=followUp?`<div class="careerStoryFuture"><small>這段選擇已被記住</small><b>未來條件成立時，可能出現不同後果</b><span>有些關係會再相遇，有些則會隨球隊與生活變化自然結束。</span></div>`:`<div class="careerStoryFuture resolved"><small>這段故事已完成</small><b>後果已寫入生涯紀錄</b></div>`;
+ const followEvent=followUp?careerStoryEventById(followUp.eventId):null;
+ const followTitle=followEvent?careerStoryText(followEvent.title,p,followUp):"下一次相遇";
+ const followHTML=followUp?`<div class="careerStoryFuture"><small>這段關係還沒結束</small><b>${careerStoryEscape(followTitle)}</b><span>${Number(followUp.dueYear)||Number(p.year)+1} 年起，${careerStoryEscape(row.actorLabel||"這個人")}會帶著你今天的選擇再次出現。</span></div>`:`<div class="careerStoryFuture resolved"><small>這段故事已完成</small><b>後果已寫入生涯紀錄</b></div>`;
  const introHTML=introduction?`<div class="careerStoryIntroduction">${careerStoryEscape(introduction)}</div>`:"";
  const html=`${introHTML}<div class="outcome success careerStoryOutcome"><div class="outcomeHead"><b>選擇後果｜${careerStoryEscape(choice.label)}</b><span class="outcomeRate">生涯事件</span></div><div class="eventMain">${careerStoryEscape(choice.result)}</div><div class="changes">${changeHTML}</div><div class="careerStoryMemory"><small>留下的記憶</small><b>${careerStoryEscape(choice.memory)}</b></div>${followHTML}</div>`;
  recordV8Story("life",`${row.title}｜${row.choice}：${row.result}`,5,{chain:followUp?event.line:"",person:row.person,careerStory:true});
@@ -394,11 +415,11 @@ function resolveCareerStoryEvent(eventId,choiceId){
  if(row.person)p.relationshipHistory.push({year:p.year,person:row.person,type:event.actor||"story",action:choice.id,story:choice.memory});
  finishSpecialEvent(html,`${row.title}：${row.choice} → ${row.result}`);
 }
-function careerStoryPeople(player=p){
+function careerStoryPeople(player=p,{includeUnintroduced=false}={}){
  if(!player)return [];
  ensureCareerStoryState(player);
  const cast=player.careerCast||{},stage=careerStoryStage(player),rows=[];
- const add=(key,label,person,note)=>{if(person?.name)rows.push({key,label,name:person.name,note,introduced:!!player.careerIntroductions[`${key}:${person.name}`]})};
+ const add=(key,label,person,note)=>{if(person?.name){const introduced=!!player.careerIntroductions[`${key}:${person.name}`];if(includeUnintroduced||introduced)rows.push({key,label,name:person.name,note,introduced})}};
  add("friend","最早的球友",cast.friend,cast.friend?.trait||"從學生時期就認識你");
  add("rival","長期對手",cast.rival,cast.rival?.trait||"一路被拿來比較");
  add("coach","目前教練",cast.coach,cast.coach?.trait||"決定你的輪替與角色");
