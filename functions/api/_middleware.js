@@ -1,5 +1,5 @@
 const CACHE_TTL_SECONDS = 300;
-const CACHE_VERSION = "v9.1";
+const CACHE_VERSION = "v9.1.1";
 
 function cacheablePath(url) {
   if (url.pathname === "/api/careers" && url.searchParams.get("mine") === "1") return false;

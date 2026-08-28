@@ -87,9 +87,9 @@ test("V8.0 careers cannot be submitted to the V9 or preserved V8.1 boards",async
   assert.match(payload.error,/V9\.0／V9\.1.*V8\.1/);
 });
 
-test("V9.1 accepts current careers and keeps V9.0 and V8.1 republication",async()=>{
+test("V9.1.1 accepts current careers and keeps V9.1, V9.0 and V8.1 republication",async()=>{
   const userId="44444444-4444-4444-8444-444444444444",token="compatibility-test-token-longer-than-thirty-two";
-  for(const [era,publisher,schema,id] of [["v9","9.1.0","v9-core-1","55555555-5555-4555-8555-555555555555"],["v9","9.0.0","v9-core-1","77777777-7777-4777-8777-777777777777"],["v81","8.1.1","v8-core-1","66666666-6666-4666-8666-666666666666"]]){
+  for(const [era,publisher,schema,id] of [["v9","9.1.1","v9-core-1","55555555-5555-4555-8555-555555555555"],["v9","9.1.0","v9-core-1","44444444-4444-4444-8444-444444444444"],["v9","9.0.0","v9-core-1","77777777-7777-4777-8777-777777777777"],["v81","8.1.1","v8-core-1","66666666-6666-4666-8666-666666666666"]]){
     const stored={id,career_data:JSON.stringify({ranking_era:era,publisher_version:publisher,integrity:{schema,verdict:"passed",career_games:1,season_count:1,server_verified:"passed"}}),season_history:"[]",awards:"[]",titles:"[]",hall_of_fame:"[]",jersey_retired:"[]",league_summary:"{}",is_public:1};
     const DB={prepare(sql){return {bind(){return this},async first(){
       if(sql.includes("FROM profiles"))return {user_id:userId,nickname:"AKai",token_hash:await digest(token)};

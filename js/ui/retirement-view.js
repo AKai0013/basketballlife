@@ -1097,6 +1097,11 @@ function retirementEraPeopleHTML(){
  const people=retirementEraPeople();if(!people.length)return "";
  return `<div class="legacySection"><div class="legacySectionTitle">同時代的人</div><div class="retirementPeopleGrid">${people.map(person=>`<article><small>${escapeFeedText(person.type)}${person.years.length?`｜${person.years[0]}${person.years.length>1?`–${person.years[person.years.length-1]}`:""}`:""}</small><b>${escapeFeedText(person.name)}</b><span>${escapeFeedText(person.story)}</span></article>`).join("")}</div></div>`;
 }
+function retirementSharedWorldHTML(){
+ const shared=p?.onlineSharedWorld,history=shared?.history||[];if(!shared||!history.length)return "";
+ const cooperation=history.reduce((sum,row)=>sum+(Number(row.cooperation)||0),0),people=new Set(history.flatMap(row=>(row.standings||[]).map(item=>item.player_name)).filter(Boolean));
+ return `<section class="eraPeople sharedRetirementHistory"><div class="echoIntro"><span>共同生涯</span><h2>你的生涯，也改變了真人隊友的時間線。</h2><p>世界 ${escapeFeedText(shared.code)}｜共同事件 ${history.length} 次｜合作分數 ${cooperation>=0?"+":""}${cooperation}${people.size?`｜${[...people].map(escapeFeedText).join("・")}`:""}</p></div><div class="eraPeopleGrid">${history.slice(-6).reverse().map(row=>`<article><small>${row.year}｜${escapeFeedText(row.label||"共同選擇")}</small><b>${escapeFeedText(row.title||"共同事件")}</b><span>${escapeFeedText((row.causedBy||[])[0]||row.detail||"結果已寫入共同時間線")}</span></article>`).join("")}</div></section>`;
+}
 function retirementTalentRevealHTML(){
  const profile=p.talentProfile;if(profile?.model!=="v9-specialist-1")return "";
  const labels=keys=>(keys||[]).map(key=>L[key]||key).join("、");
@@ -1181,7 +1186,7 @@ function v9RetirementStoryHTML(){
  const roleRows=roles.map(stage=>`<article><time>${stage.start}${stage.end!==stage.start?`–${stage.end}`:""}</time><div><span>場上角色</span><h3>${escapeFeedText(stage.identity)}</h3><p>${escapeFeedText(stage.teams.join("、")||stage.leagues.join("、")||"職業賽場")}・${stage.seasons} 季</p></div></article>`).join("");
  const choiceRows=choices.map(row=>`<article><time>${row.year}</time><div><span>${escapeFeedText(row.title)}</span><h3>${escapeFeedText(row.category==="injury"?"傷病與復出":row.category==="key-battle"?"關鍵戰":"生涯轉折")}</h3><p>${escapeFeedText(row.text)}</p></div></article>`).join("");
  const peopleRows=people.map(person=>`<article><small>${escapeFeedText(person.type)}</small><b>${escapeFeedText(person.name)}</b><span>${person.years.length?`${person.years[0]}${person.years.length>1?`–${person.years[person.years.length-1]}`:""}`:"共同經歷"}</span><p>${escapeFeedText(person.story)}</p></article>`).join("");
- return `<section class="retirePanel" data-retire-panel="story"><section class="chapterTimeline">${roleRows||choiceRows||`<article><time>${p.year}</time><div><span>生涯終章</span><h3>正式離開球員舞台</h3><p>${escapeFeedText(p.retirementReason||"完成球員生涯")}</p></div></article>`}${roleRows&&choiceRows?choiceRows:""}</section><article class="v9RetirementFinale"><span>最後一頁</span>${retirementDayNarrative()}</article>${peopleRows?`<section class="eraPeople"><div class="echoIntro"><span>同時代的人</span><h2>一段生涯，也留在別人的紀錄裡。</h2></div><div class="eraPeopleGrid">${peopleRows}</div></section>`:""}</section>`;
+ return `<section class="retirePanel" data-retire-panel="story"><section class="chapterTimeline">${roleRows||choiceRows||`<article><time>${p.year}</time><div><span>生涯終章</span><h3>正式離開球員舞台</h3><p>${escapeFeedText(p.retirementReason||"完成球員生涯")}</p></div></article>`}${roleRows&&choiceRows?choiceRows:""}</section>${retirementSharedWorldHTML()}<article class="v9RetirementFinale"><span>最後一頁</span>${retirementDayNarrative()}</article>${peopleRows?`<section class="eraPeople"><div class="echoIntro"><span>同時代的人</span><h2>一段生涯，也留在別人的紀錄裡。</h2></div><div class="eraPeopleGrid">${peopleRows}</div></section>`:""}</section>`;
 }
 function v9RetirementRecordsHTML(){
  const groups=careerLeagueSummary(),profiles=careerLeagueProfiles(),games=Math.max(0,Number(p?.careerGames||0)),pts=Number(p?.careerPtsTotal||0),reb=Number(p?.careerRebTotal||0),ast=Number(p?.careerAstTotal||0);
@@ -1220,7 +1225,7 @@ function legacyRetirementBodyHTML(includeSeasons=false){
 }
 
 function retireCareer(reason){
- p.retired=true;p.retirementReason=reason;p.stage="retired";evaluateCareerLegacyTitles();evaluateHallOfFame();resetMain();render();flow.innerHTML="";
+ p.retired=true;p.retirementReason=reason;p.stage="retired";window.BasketballLifeKeyBattle?.notifyRetirement?.();evaluateCareerLegacyTitles();evaluateHallOfFame();resetMain();render();flow.innerHTML="";
  chapter.textContent="生涯終章";
  title.textContent=retirementExitClass()==="ceremony"?"正式引退":retirementExitClass()==="farewell"?"告別球場":"球員生涯落幕";
  text.textContent=`終場哨聲響起，${p.name} 最後一次走下球場。掌聲、遺憾與一路累積的回憶，都在此刻成為完整的生涯。`;
