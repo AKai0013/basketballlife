@@ -11,8 +11,8 @@ test("V9.1.1 release wires the approved responsive UI without changing platform 
   const html=read("index.html"),manifest=JSON.parse(read("manifest.webmanifest"));
   assert.match(html,/rel="manifest"/);
   assert.match(html,/>V9\.1\.1</);
-  assert.match(html,/aria-label="目前版本 V9\.1\.1"/);
-  assert.doesNotMatch(html,/github\.com\/AKai0013\/basketballlife\/blob\/main\/README\.md/);
+  assert.match(html,/class="versionLink"[^>]+href="https:\/\/github\.com\/AKai0013\/basketballlife#readme"/);
+  assert.match(html,/aria-label="查看 V9\.1\.1 版本說明"/);
   assert.equal(manifest.display,"standalone");
   assert.equal(manifest.orientation,"portrait-primary");
   assert.match(html,/css\/v9-ui\.css\?v=9\.1\.1/);
@@ -32,10 +32,10 @@ test("V9.1.1 release wires the approved responsive UI without changing platform 
   assert.match(read("css/home.css"),/data-stage="points".*pointrow/s);
 });
 
-test("README describes the current V9.1 game instead of retired leaderboard eras",()=>{
+test("README describes the current V9.1.1 game and multiplayer release",()=>{
   const readme=read("README.md");
-  assert.match(readme,/目前正式版：V9\.1/);
-  for(const feature of ["七級 Seed","SSS+ 神話","NBA 選秀","西班牙 Liga ACB","版本冠軍榜","portrait-primary","50 歲","精華生涯","共享世界"])assert.match(readme,new RegExp(feature.replace("+","\\+")));
+  assert.match(readme,/目前正式版：V9\.1\.1/);
+  for(const feature of ["V9.1.1","七級 Seed","SSS+ 神話","NBA 選秀","西班牙 Liga ACB","版本冠軍榜","portrait-primary","50 歲","精華生涯","共享世界","多人合作排行榜"])assert.match(readme,new RegExp(feature.replace("+","\\+")));
   assert.doesNotMatch(readme,/SHARED WORLD/);
   assert.ok(readme.indexOf("## 📚 重要版本")<readme.indexOf("## 🎮 一季怎麼進行？"));
   assert.doesNotMatch(readme,/目前正式版：V8\.0/);
