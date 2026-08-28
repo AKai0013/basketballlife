@@ -314,7 +314,7 @@ function renderCareerMode(){
   button.classList.toggle("on",active);button.setAttribute("aria-pressed",String(active));button.disabled=weeklySetupActive;
  });
  const help=document.getElementById("careerModeHelp");
- if(help)help.textContent=mode==="highlight"?"約 20～30 分鐘、全程約 10～14 章；低影響球季會自動整理，重大轉折仍由你決定。":"逐季處理訓練、事件、健康、成績與能力點，完整走過每一個球季。";
+ if(help)help.textContent=mode==="highlight"?"全程約 10～14 章；低影響球季會自動整理，重大轉折仍由你決定。":"逐季處理訓練、事件、健康、成績與能力點，完整走過每一個球季。";
  const start=document.getElementById("startCareerBtn");
  if(start)start.textContent=mode==="highlight"?"精華生涯｜從 HBL 開始":"踏上球場｜高一・HBL";
 }
