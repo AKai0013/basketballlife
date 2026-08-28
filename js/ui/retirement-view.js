@@ -581,25 +581,70 @@ function retirementExitClass(){
  if(respected)return "farewell";
  return "quiet";
 }
+function retirementReasonKind(){
+ const reason=String(p?.retirementReason||"");
+ if(p?.lastDanceUsed||/最後一舞|告別巡迴|返鄉告別/.test(reason))return "homecoming";
+ if(/傷|手術|復健|健康|身體|醫療/.test(reason))return "injury";
+ if(/沒有球隊|公開測試|測試仍沒有|市場.*沒有|失去市場|未獲.*合約|沒有任何.*合約|無合約/.test(reason))return "no-offer";
+ if(/主動|自己決定|宣布引退|選擇退休/.test(reason))return "voluntary";
+ return retirementExitClass()==="ceremony"?"ceremony":retirementExitClass()==="farewell"?"farewell":"quiet";
+}
+function retirementMajorInjuryFact(){
+ const rows=[...(Array.isArray(p?.medicalHistory)?p.medicalHistory:[]),...(Array.isArray(p?.injuryHistory)?p.injuryHistory:[])].filter(x=>x&&typeof x==="object");
+ return rows.filter(x=>/大傷|重傷/.test(String(x?.tier||x?.level||""))||Number(x?.missedGames||0)>=16).sort((a,b)=>Number(a?.year||0)-Number(b?.year||0)).at(-1)||null;
+}
+function retirementSeniorInternationalFact(){
+ if(Number(p?.nationalCaps||0)<=0)return null;
+ return (Array.isArray(p?.internationalHistory)?p.internationalHistory:[]).filter(x=>(x?.level||"SENIOR")==="SENIOR").sort((a,b)=>Number(a?.year||0)-Number(b?.year||0)).at(-1)||null;
+}
+function retirementChampionshipFact(){
+ if(Number(p?.championships||0)<=0)return null;
+ return (Array.isArray(p?.championshipHistory)?p.championshipHistory:[]).filter(x=>isProfessionalPathValue(x?.path)).sort((a,b)=>Number(a?.year||0)-Number(b?.year||0)).at(-1)||{count:Number(p.championships||0)};
+}
 function retirementDayNarrative(){
  const last=[...(p.seasonHistory||[])].reverse().find(x=>isProfessionalPathValue(x.path))||p.seasonHistory?.[p.seasonHistory.length-1];
  const team=last?.team||p.team||"最後一支球隊",league=last?leagueDisplay(last.path):leagueDisplay(p.path);
- const playerName=escapeFeedText(p.name),reason=escapeFeedText(p.retirementReason),safeTeam=escapeFeedText(team),safeLeague=escapeFeedText(league);
- const cls=retirementExitClass();
+ const kind=retirementReasonKind(),roles=retirementRoleTimeline(),lastRole=roles.at(-1)?.identity||retirementRoleIdentity(last||{}),choice=retirementChoiceEntries(1)[0],person=retirementEraPeople()[0];
+ const injury=retirementMajorInjuryFact(),international=retirementSeniorInternationalFact(),championship=retirementChampionshipFact(),paragraphs=[];
+ let title="生涯最後一頁",ending="你關掉置物櫃上方的小燈。走廊沒有變得特別，但你知道自己不會再從這扇門穿著球衣回來。";
 
- if(cls==="ceremony"){
-   return `<div class="legacyNarrative"><b>◆ 引退之夜</b><br>
-   ${playerName} 在 ${p.year} 年正式結束球員生涯。最後一次主場出賽前，球團關閉主場燈光，大螢幕播放你的代表性生涯片段；隊友在球員通道列隊，你最後一次走上球場向觀眾致意。<br>
-   <span class="mut">最後所屬：${safeTeam}｜${safeLeague}｜退休時 ${p.age} 歲｜原因：${reason}</span></div>`;
+ if(kind==="homecoming"){
+   title="母隊最後一舞";
+   paragraphs.push(`球隊巴士再次停在${team}熟悉的入口。這次合約沒有把你寫成巔峰時的球員，而是照最後一季真正的「${lastRole}」安排上場與帶領年輕隊友。`);
+   ending="你最後一次把門禁卡放到櫃檯。管理員沒有收進回收盒，而是把它夾進那本寫滿歷年球員名字的簿子。";
+ }else if(kind==="injury"&&injury){
+   title="傷勢替賽程畫下界線";
+   paragraphs.push(`醫療室的燈板再次亮起，顯示的是 ${Number(injury.year)||"生涯後期"} 年留下的${injury.name||"重大傷病"}${injury.area?`（${injury.area}）`:""}，以及曾因此缺席的 ${Number(injury.missedGames||0)} 場比賽。這一次，醫療團隊沒有再替你寫出復出日期。`);
+   ending="你把那件戴過最久的護具留在治療床上；走出門時，第一次不必問明天能不能訓練。";
+ }else if(kind==="no-offer"){
+   title="市場沒有再開門";
+   paragraphs.push(`最後一次市場評估結束後，經紀團隊把正式答覆攤在桌上：${p.retirementReason||"沒有球隊送來下一份合約"}。這不是主動告別，也沒有用掌聲掩蓋沒有報價的結果。`);
+   ending="經紀人把手機反扣在桌上。這一次，你們都沒有再說「再等一天」。";
+ }else if(kind==="voluntary"){
+   title="自己決定停下來";
+   paragraphs.push(`下一季仍有可能安排角色與工作，但你選擇在 ${p.year} 年停下來。你把最後一季在${team}擔任「${lastRole}」的理由說清楚，不讓某一場勝負或市場傳聞替你宣布結局。`);
+   ending="離開球館前，你把下一季行事曆折好放進口袋——上面第一次沒有任何一場比賽非到不可。";
+ }else if(kind==="ceremony"){
+   title="主場正式引退";
+   paragraphs.push(`${team}把你的置物櫃留到最後才收。球衣、護具和本季的比賽計畫仍在原位，門上只多了一張由隊友簽滿的紙：「今天不用替下一場留力。」最後一段比賽仍照「${lastRole}」的工作完成，不因引退夜突然改回巔峰打法。`);
+   ending="你把球鞋放進置物櫃，卻沒有把門關上。最年輕的隊友還要進來拿走明天的訓練表。";
+ }else if(kind==="farewell"){
+   title="最後一場主場比賽";
+   paragraphs.push(`本季最後一場主場賽事結束後，${team}的隊友留在球員通道。沒有額外製造絕殺，也沒有把現在的你寫成年輕時的版本；大家記住的是你最後仍完成了「${lastRole}」的責任。`);
+ }else{
+   paragraphs.push(`最後一場比賽結束時，場館照常播放散場音樂。你在${team}完成握手、伸展與賽後會議；沒有盛大儀式，也沒有臨時創造一群從未在生涯裡出現的人。`);
  }
- if(cls==="farewell"){
-   return `<div class="legacyNarrative"><b>◆ 最後一戰</b><br>
-   ${playerName} 在 ${p.year} 年決定結束球員生涯。球團沒有舉辦大型儀式，但在本季最後一場主場賽事結束後，隊友與現場球迷留下來向你致意。你在場中央簡短向球迷道謝，為這段職業旅程畫下句點。<br>
-   <span class="mut">最後所屬：${safeTeam}｜${safeLeague}｜退休時 ${p.age} 歲｜原因：${reason}</span></div>`;
+
+ if(choice)paragraphs.push(`${choice.year} 年留下的「${choice.title}」沒有被退休頁改寫：${choice.text}`);
+ if(championship){
+   const factYear=Number(championship.year),factTeam=championship.team||"當時效力的球隊";
+   paragraphs.push(factYear?`${factYear} 年，你曾和${factTeam}真正走到冠軍終點。退休頁保留那一季的隊友與選擇，不把獎盃拿來替最後一季改寫結果。`:`生涯留下 ${Number(championship.count||p.championships)} 座主要冠軍；這些冠軍屬於當時真正並肩完成球季的球隊。`);
  }
- return `<div class="legacyNarrative"><b>◆ 生涯落幕</b><br>
- ${playerName} 的球員生涯沒有以盛大的引退儀式結束。最後一次公開測試／市場評估結束後，經紀團隊確認沒有合適的新合約，你回到球隊整理置物櫃，和幾名熟悉的隊友簡單道別。幾天後，你正式對外宣布離開球員舞台。<br>
- <span class="mut">最後所屬：${safeTeam}｜${safeLeague}｜離開球員舞台時 ${p.age} 歲｜原因：${reason}</span></div>`;
+ if(international)paragraphs.push(`${Number(international.year)||"生涯期間"} 年的${international.event||international.tournament||"成人代表隊賽事"}留下「${international.finish||"正式出賽"}」紀錄。只有這段已發生的成人代表隊經歷會出現在最後一頁。`);
+ if(person)paragraphs.push(`${person.type}${person.name}沒有替你總結生涯，只留下那段已經發生的關係：${person.story}`);
+
+ const body=paragraphs.slice(0,5).map(text=>`<p>${escapeFeedText(text)}</p>`).join("");
+ return `<div class="legacyNarrative"><b>◆ ${escapeFeedText(title)}</b>${body}<p>${escapeFeedText(ending)}</p><span class="mut">最後所屬：${escapeFeedText(team)}｜${escapeFeedText(league)}｜${p.age} 歲｜${escapeFeedText(p.retirementReason||"完成球員生涯")}</span></div>`;
 }
 function uniqueHonorYears(items){
  return [...new Set((Array.isArray(items)?items:[]).map(x=>Number(x?.year)).filter(Number.isFinite))].sort((a,b)=>a-b);
@@ -1187,7 +1232,7 @@ function v9RetirementStoryHTML(){
  const roleRows=roles.map(stage=>`<article><time>${stage.start}${stage.end!==stage.start?`–${stage.end}`:""}</time><div><span>場上角色</span><h3>${escapeFeedText(stage.identity)}</h3><p>${escapeFeedText(stage.teams.join("、")||stage.leagues.join("、")||"職業賽場")}・${stage.seasons} 季</p></div></article>`).join("");
  const choiceRows=choices.map(row=>`<article><time>${row.year}</time><div><span>${escapeFeedText(row.title)}</span><h3>${escapeFeedText(row.category==="injury"?"傷病與復出":row.category==="key-battle"?"關鍵戰":"生涯轉折")}</h3><p>${escapeFeedText(row.text)}</p></div></article>`).join("");
  const peopleRows=people.map(person=>`<article><small>${escapeFeedText(person.type)}</small><b>${escapeFeedText(person.name)}</b><span>${person.years.length?`${person.years[0]}${person.years.length>1?`–${person.years[person.years.length-1]}`:""}`:"共同經歷"}</span><p>${escapeFeedText(person.story)}</p></article>`).join("");
- return `<section class="retirePanel" data-retire-panel="story"><section class="chapterTimeline">${roleRows||choiceRows||`<article><time>${p.year}</time><div><span>生涯終章</span><h3>正式離開球員舞台</h3><p>${escapeFeedText(p.retirementReason||"完成球員生涯")}</p></div></article>`}${roleRows&&choiceRows?choiceRows:""}</section>${retirementSharedWorldHTML()}<article class="v9RetirementFinale"><span>最後一頁</span>${retirementDayNarrative()}</article>${peopleRows?`<section class="eraPeople"><div class="echoIntro"><span>同時代的人</span><h2>一段生涯，也留在別人的紀錄裡。</h2></div><div class="eraPeopleGrid">${peopleRows}</div></section>`:""}</section>`;
+ return `<section class="retirePanel" data-retire-panel="story"><section class="chapterTimeline">${roleRows||choiceRows||`<article><time>${p.year}</time><div><span>生涯終章</span><h3>正式離開球員舞台</h3><p>${escapeFeedText(p.retirementReason||"完成球員生涯")}</p></div></article>`}${roleRows&&choiceRows?choiceRows:""}</section>${retirementSharedWorldHTML()}<article class="v9RetirementFinale"><span>最後一頁</span>${retirementDayNarrative()}</article>${peopleRows?`<section class="eraPeople"><div class="echoIntro"><span>同行的人</span><h2>只有真正走進這段生涯的人，才會留在最後一頁。</h2></div><div class="eraPeopleGrid">${peopleRows}</div></section>`:""}</section>`;
 }
 function v9RetirementRecordsHTML(){
  const groups=careerLeagueSummary(),profiles=careerLeagueProfiles(),games=Math.max(0,Number(p?.careerGames||0)),pts=Number(p?.careerPtsTotal||0),reb=Number(p?.careerRebTotal||0),ast=Number(p?.careerAstTotal||0);
@@ -1203,8 +1248,8 @@ function showV9RetirementTab(name,button){
 }
 function v9RetirementPageHTML(activeTab="overview"){
  const panels={overview:v9RetirementOverviewHTML(),honors:v9RetirementHonorsHTML(),story:v9RetirementStoryHTML(),records:v9RetirementRecordsHTML()};
- const tabs=[["overview","生涯總覽"],["honors","榮譽殿堂"],["story","生涯故事"],["records","完整數據"]];
- const page=`<main class="retirementOnly">${v9RetirementHeroHTML()}${v9RetirementNumbersHTML()}<nav class="retireTabs" aria-label="退休生涯內容">${tabs.map(([key,label])=>`<button class="retireTab ${key===activeTab?"is-on":""}" type="button" data-retire-tab="${key}" onclick="showV9RetirementTab('${key}',this)">${label}</button>`).join("")}</nav>${Object.entries(panels).map(([key,html])=>key===activeTab?html.replace('class="retirePanel"','class="retirePanel is-active"'):html.replace('class="retirePanel is-active"','class="retirePanel"')).join("")}<section class="publishDock publishDockCompact"><div><span>分享這段生涯</span><b>使用正式的引退故事圖與完整生涯長圖。</b></div><div class="retirementRankingActionsHost">${retirementActionsHTML()}</div></section><div class="legacyRankMarkHost">${retirementRankMarkHTML()}</div><div id="publicCareerStatus" class="publicCareerStatus"></div>${retirementRestartHTML()}${creatorCreditHTML()}</main>`;
+ const tabs=[["overview","生涯總覽"],["honors","榮譽殿堂"],["story","生涯故事"],["records","逐季紀錄"]];
+ const page=`<main class="retirementOnly">${v9RetirementHeroHTML()}${v9RetirementNumbersHTML()}<nav class="retireTabs" aria-label="退休生涯內容">${tabs.map(([key,label])=>`<button class="retireTab ${key===activeTab?"is-on":""}" type="button" data-retire-tab="${key}" onclick="showV9RetirementTab('${key}',this)">${label}</button>`).join("")}</nav>${Object.entries(panels).map(([key,html])=>key===activeTab?html.replace('class="retirePanel"','class="retirePanel is-active"'):html.replace('class="retirePanel is-active"','class="retirePanel"')).join("")}<section class="publishDock publishDockCompact"><div><span>分享這段真正走過的生涯</span><b>引退故事圖只會使用已發生的球隊、選擇、勝負與人物。</b></div><div class="retirementRankingActionsHost">${retirementActionsHTML()}</div></section><div class="legacyRankMarkHost">${retirementRankMarkHTML()}</div><div id="publicCareerStatus" class="publicCareerStatus"></div>${retirementRestartHTML()}${creatorCreditHTML()}</main>`;
  return `<div class="v9RetirementPage">${page}</div>`;
 }
 function legacyRetirementBodyHTML(includeSeasons=false){
