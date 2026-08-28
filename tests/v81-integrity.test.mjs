@@ -178,7 +178,8 @@ test("player-entered names are escaped at dynamic HTML display boundaries",()=>{
   assert.match(eventView,/const playerName=escapeFeedText\(p\.name\)/);
   assert.match(eventView,/\$\{playerName\} 與/);
   assert.match(retirement,/const playerName=escapeFeedText\(p\.name\)/);
-  assert.match(retirement,/const playerName=escapeFeedText\(p\.name\),reason=escapeFeedText/);
+  assert.match(retirement,/const body=paragraphs\.slice\(0,5\)\.map\(text=>`<p>\$\{escapeFeedText\(text\)\}<\/p>`\)/);
+  assert.match(retirement,/escapeFeedText\(team\)/);
 });
 
 test("retirement story uses structured career facts and home has a visible community invitation",()=>{

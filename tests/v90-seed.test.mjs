@@ -364,7 +364,7 @@ test("V9 formal retirement page adds factual sections without replacing the two 
   assert.match(retirement,/function retirementLegacyProfile\(/);
   assert.match(retirement,/function v9RetirementPageHTML\(/);
   assert.match(retirement,/data-retire-tab="overview"|\["overview","生涯總覽"\]/);
-  assert.match(retirement,/\["records","完整數據"\]/);
+  assert.match(retirement,/\["records","逐季紀錄"\]/);
   assert.match(retirement,/data-retire-panel="records"/);
   assert.match(retirement,/這段生涯留下了什麼/);
   assert.match(retirement,/場上角色如何改變/);
