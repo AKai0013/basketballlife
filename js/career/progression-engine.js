@@ -168,6 +168,10 @@ function progressionSeasonGrowthMultiplier(player){
  if(!isV9Progression(player))return 1;
  return ({prime:1,transition:.78,technical:.55,veteran:.32,maintenance:.12})[progressionAgeBand(player)]||1;
 }
+function progressionPotentialMultiplier(player){
+ if(!isV9Progression(player))return 1;
+ return Math.max(.8,Math.min(1.6,1+(number(player?.growth,72)-72)*.025));
+}
 function careerLifecycleProfile(player){
  const current=progressionOverall(player),peak=Math.max(current,number(player?.peakOverall,current));
  const gap=Math.max(0,peak-current),health=number(player?.health,100),bodyLoad=number(player?.bodyLoad,0);
@@ -182,5 +186,5 @@ function careerLifecycleProfile(player){
  return {chapter,current,peak,gap,health,bodyLoad,role,promised,contractYears,strained,reason};
 }
 
-Object.assign(global,{BL_PROGRESS_SKILLS:BL_SKILLS,isV9Progression,careerStatCap,careerStatBreakthroughRoom,careerStatLimit,progressionAgeBand,progressionSkillGroup,permanentGrowthAllowance,availablePermanentGrowth,availableManualGrowth,availableTrainingGrowth,canUseManualGrowth,resetPermanentGrowthSeason,applyCareerStatChange,raiseCareerStatCap,progressionSeasonGrowthMultiplier,careerLifecycleProfile});
+Object.assign(global,{BL_PROGRESS_SKILLS:BL_SKILLS,isV9Progression,careerStatCap,careerStatBreakthroughRoom,careerStatLimit,progressionAgeBand,progressionSkillGroup,permanentGrowthAllowance,availablePermanentGrowth,availableManualGrowth,availableTrainingGrowth,canUseManualGrowth,resetPermanentGrowthSeason,applyCareerStatChange,raiseCareerStatCap,progressionSeasonGrowthMultiplier,progressionPotentialMultiplier,careerLifecycleProfile});
 })(globalThis);

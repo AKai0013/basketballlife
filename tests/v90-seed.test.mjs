@@ -82,18 +82,19 @@ test("position changes archetype likelihood without locking out modern hybrid ro
   assert.ok(roles.C.has("two_way_wing"));
 });
 
-test("V9 growth discounts only core and support abilities while legacy careers keep their old curve",()=>{
+test("V9 Seed affinities do not change the price of the same ability increase",()=>{
   const context=talentContext();
   context.skillCostModifier=()=>0;context.chainSkillDiscount=()=>0;
+  vm.runInContext(read("js/career/progression-engine.js"),context);
   vm.runInContext(read("js/career/season-engine.js"),context);
   const tier=context.tier("SSS+"),talent=context.v90GenerateTalent("COSTTEST","PG",tier,{}),core=talent.profile.core[0];
   const foundation=Object.keys(talent.profile.affinity).find(key=>talent.profile.affinity[key]==="foundation");
   const stats=Object.fromEntries(Object.keys(talent.stats).map(key=>[key,82])),caps=Object.fromEntries(Object.keys(talent.stats).map(key=>[key,90]));
-  context.p={age:24,seedTier:"SSS+",stats,caps,talentProfile:talent.profile,geniusCostDiscount:0};
+  context.p={careerVersion:"9.1.1",age:24,seedTier:"SSS+",stats,caps,talentProfile:talent.profile,geniusCostDiscount:0};
   const coreCost=context.pointCost(core),foundationCost=context.pointCost(foundation);
-  assert.ok(coreCost<foundationCost);
-  context.p={age:24,seedTier:"SSS+",stats,caps,geniusCostDiscount:0};
   assert.equal(context.pointCost(core),context.pointCost(foundation));
+  context.p={careerVersion:"9.1.1",age:24,seedTier:"C",stats,caps,talentProfile:talent.profile,geniusCostDiscount:0};
+  assert.equal(context.pointCost(core),coreCost);
 });
 
 test("V9 wiring preserves legacy save fields and separates the new leaderboard era",()=>{
