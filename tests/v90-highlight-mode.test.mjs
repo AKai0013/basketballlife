@@ -12,12 +12,13 @@ function context(player){
 }
 
 test("career mode is additive and old saves default to complete",()=>{
-  const state=read("js/state.js"),career=read("js/ui/career-view.js"),html=read("index.html");
+  const state=read("js/state.js"),career=read("js/ui/career-view.js"),home=read("js/ui/home-view.js"),html=read("index.html");
   assert.match(state,/chosenCareerMode="complete"/);
   assert.match(state,/!\["complete","highlight"\]\.includes\(player\.careerMode\)/);
   assert.match(career,/careerMode:weeklySetupMatches\?"complete":chosenCareerMode/);
   assert.match(html,/data-career-mode="highlight"/);
-  assert.match(html,/約 20～30 分鐘/);
+  assert.doesNotMatch(html,/約 20～30 分鐘/);
+  assert.doesNotMatch(home,/約 20～30 分鐘/);
   assert.match(state,/"highlightChapterHistory"/);
 });
 
