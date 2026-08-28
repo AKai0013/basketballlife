@@ -182,7 +182,7 @@ function initializeCareerSave(){
  document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")saveCareerNow()});
  window.addEventListener("pagehide",saveCareerNow);
 }
-window.BasketballLifeCareerSave={save:saveCareerNow,read:readCareerSave,readShared:code=>readCareerSave(sharedCareerSaveKey(code)),clear:clearCareerSave,resume:continueCareer,resumeShared:code=>continueCareer(sharedCareerSaveKey(code))};
+window.BasketballLifeCareerSave={save:saveCareerNow,read:readCareerSave,readShared:code=>readCareerSave(sharedCareerSaveKey(code)),clear:clearCareerSave,clearShared:code=>{try{localStorage.removeItem(sharedCareerSaveKey(code));return true}catch(_){return false}},resume:continueCareer,resumeShared:code=>continueCareer(sharedCareerSaveKey(code))};
 window.addEventListener("DOMContentLoaded",initializeCareerSave);
 
 /* =========================================================
