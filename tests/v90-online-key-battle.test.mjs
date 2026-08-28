@@ -71,7 +71,7 @@ test("national camp respects eligibility and cross-team injuries do not become t
 
 test("shared career can be retried or removed locally without touching the solo save",()=>{assert.match(frontend,/retrySeasonSync/);assert.match(frontend,/leaveSharedCareer/);assert.match(storage,/clearShared/)});
 
-test("opening multiplayer shows shared save slots instead of auto-resuming the last room",()=>{assert.match(frontend,/共享生涯存檔/);assert.match(frontend,/本機進度已保存/);assert.match(frontend,/async function open\(\).*await loadRooms\(\);renderLobby\(\)/s);assert.doesNotMatch(frontend,/async function open\(\).*rooms\/\$\{remembered\}/s)});
+test("opening multiplayer separates new-world setup from shared save slots",()=>{assert.match(frontend,/建立新世界時使用/);assert.match(frontend,/共享生涯存檔/);assert.match(frontend,/本機進度已保存/);assert.match(frontend,/async function open\(\).*await loadRooms\(\);renderLobby\(\)/s);assert.doesNotMatch(frontend,/async function open\(\).*rooms\/\$\{remembered\}/s)});
 
 test("shared save slots can return, cancel locally, hide, and rejoin by code",()=>{for(const name of ["backToSaveList","cancelSharedSave","hiddenRooms","setRoomHidden"])assert.match(frontend,new RegExp(name));assert.match(frontend,/取消這份生涯/);assert.match(frontend,/setRoomHidden\(code,false\)/)});
 
