@@ -297,7 +297,6 @@ function initializeCharacterBuilder(){
  const birthplace=document.getElementById("birthplaceInput");
  if(birthplace)renderBirthplaceChoices();
  refreshSetupBody(true);
- renderAvatarPicker();
 }
 function selectBirthplace(value){
  if(value!=="RANDOM"&&!TAIWAN_BIRTHPLACES.includes(value))return;

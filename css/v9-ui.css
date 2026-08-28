@@ -1250,12 +1250,27 @@ body.blGameMode #liveTickerTopSlot{order:0!important}
   body.blHomeMode .brandActions>.versionLink,
   body.blGameMode .brandActions>.versionLink,
   body.blCommunityMode .brandActions>.versionLink{display:none!important}
+
   body.blHomeMode #liveTickerTopSlot,
   body.blGameMode #liveTickerTopSlot,
   body.blCommunityMode #liveTickerTopSlot{flex-basis:120px!important}
   body.blHomeMode .topRankBtn,
   body.blGameMode .topRankBtn,
   body.blCommunityMode .topRankBtn{padding-inline:8px!important}
+}
+
+/* Keep release notes reachable and Chinese event copy readable on phones. */
+@media(max-width:819px){
+  body.blHomeMode .brandActions>.versionLink,
+  body.blGameMode .brandActions>.versionLink,
+  body.blCommunityMode .brandActions>.versionLink{display:inline-flex!important;min-width:44px!important;min-height:44px!important;justify-content:center!important}
+  body.blHomeMode .brandActions>.versionLink span,
+  body.blGameMode .brandActions>.versionLink span,
+  body.blCommunityMode .brandActions>.versionLink span{display:none!important}
+  body.blHomeMode [data-career-mode] small,
+  body.blHomeMode .onlineBattleInvite small{font-size:13.5px!important;line-height:1.55!important}
+  body.blGameMode .currentPanel>.chapter{font-size:11px!important;line-height:1.45!important}
+  body.blGameMode .choice>small{font-size:14px!important;line-height:1.55!important}
 }
 
 @media(max-width:430px){
