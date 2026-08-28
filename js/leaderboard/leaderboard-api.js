@@ -437,9 +437,9 @@
    return `${location.origin}${location.pathname}?career=${encodeURIComponent(id)}`;
  }
 
- const GAME_VERSION="9.1.0";
- const CAREER_PUBLISHER_VERSION="9.1.0";
- const V9_PUBLISHER_VERSIONS=new Set(["9.0.0","9.1.0"]);
+ const GAME_VERSION="9.1.1";
+ const CAREER_PUBLISHER_VERSION="9.1.1";
+ const V9_PUBLISHER_VERSIONS=new Set(["9.0.0","9.1.0","9.1.1"]);
  const CAREER_INTEGRITY_SCHEMA="v9-core-1";
  const INVALID_CAREER_IDS=new Set([
    "e9040a1c-5dc3-49f6-944c-8172cb8a518d"
@@ -1148,6 +1148,7 @@
    const metric=leaderboardMetrics[metricKey]?metricKey:"power";
    const rankingEra=leaderboardEras[era]?era:"v9";
    if(rankingEra==="champions"){await loadVersionChampions();return []}
+   if(rankingEra==="coop"){const data=await apiRequest("online/key-battle/rankings",{timeout:15000});state.cooperationRows=data?.rows||[];return []}
    const weeklyId=rankingEra==="weekly"?weeklyLeaderboardProfile().id:"";
    const cacheKey=`${rankingEra}:${metric}:${weeklyId}`;
    const cached=state.leaderboardCache instanceof Map?state.leaderboardCache.get(cacheKey):null;
@@ -1232,7 +1233,8 @@
  }
 
   const leaderboardEras={
-   v9:{label:"V9.1 玩家殿堂",note:"相容收錄 V9.0／V9.1 正式生涯；每個項目由每位玩家的最佳公開生涯代表上榜。"},
+   v9:{label:"V9.1.1 玩家殿堂",note:"相容收錄 V9.0／V9.1／V9.1.1 正式生涯；每個項目由每位玩家的最佳公開生涯代表上榜。"},
+   coop:{label:"多人合作排行榜",note:"依共享球季、共同事件與合作選擇計分；世界代碼只顯示前兩碼。"},
    weekly:{label:"每週 Seed 挑戰榜",note:"相同 Seed、位置與身材競賽；每位玩家保留 BL POWER 最高的一支生涯。"},
    champions:{label:"版本冠軍榜",note:"保留 V8.1、V8.0 與 V7.50 各排行榜項目的最終第一名。"}
   };
@@ -1336,7 +1338,7 @@
  }
 
  function hallEraTabs(era){
-   const labels={v9:"V9 現役榜",weekly:"每週 Seed",champions:"版本紀錄"};
+   const labels={v9:"V9 現役榜",coop:"多人合作",weekly:"每週 Seed",champions:"版本紀錄"};
    return `<div class="v9HallSwitchRow v9HallEraSwitch" aria-label="選擇排行榜">${Object.keys(leaderboardEras).map(key=>`<button type="button" class="v9HallSwitch ${key===era?"is-on":""}" aria-pressed="${key===era}" onclick="BasketballLifeOnline.changeLeaderboardEra('${key}')">${labels[key]}</button>`).join("")}</div>`;
  }
 
@@ -1430,7 +1432,12 @@
    const content=document.getElementById("communityContent");if(!content)return;
    const def=leaderboardMetrics[metricKey]||leaderboardMetrics.power;
    const era=state.activeLeaderboardEra||"v9",allEra=leaderboardEraRecords(records,era);
-   const chrome=`${hallHero(era)}<nav class="v9HallConsole">${hallEraTabs(era)}${era!=="champions"?hallMetricTabs(metricKey):""}</nav>`;
+   const chrome=`${hallHero(era)}<nav class="v9HallConsole">${hallEraTabs(era)}${!["champions","coop"].includes(era)?hallMetricTabs(metricKey):""}</nav>`;
+   if(era==="coop"){
+     const rows=state.cooperationRows||[];
+     content.innerHTML=`<div class="v9HallPage">${chrome}<div class="v9HallSnapshot"><span>${rows.length} 個完成共同事件的世界</span><span>2～3 人共同計分</span><span>共享球季＋交會事件＋合作選擇</span></div><section class="v9HallSection v9HallRankListSection"><div class="v9HallSectionHeading"><div><span>CO-OP CAREER RANKING</span><h3>多人合作排行榜</h3></div><p>只計入所有玩家共同完成的交會；純粹各玩各的球季不會產生合作分數。</p></div><div class="v9HallRankList">${rows.length?rows.map((row,index)=>`<div class="rankRow"><span class="rankNo">${index<3?["🥇","🥈","🥉"][index]:`#${index+1}`}</span><span class="rankIdentity"><b>${esc(row.names.join("・")||row.room)}</b><small>${esc(row.room)}・${row.players} 人・推進至 ${row.year}・共同事件 ${row.events} 次</small></span><span class="rankValue"><b>${Number(row.score).toLocaleString()}</b><small>合作分數 ${row.cooperation>=0?"+":""}${row.cooperation}</small></span></div>`).join(""):`<div class="rankEmpty">完成第一個真正共同事件後，世界才會出現在這裡。</div>`}</div></section></div>`;
+     return;
+   }
    if(era==="champions"){
      content.innerHTML=`<div class="v9HallPage">${chrome}<section class="v9HallSection v9HallRecordVault"><div class="v9HallSectionHeading"><div><span>VERSION RECORDS</span><h3>版本紀錄室</h3></div><p>切換版本與分類，查看每個項目的最終紀錄保持人。</p></div>${versionChampionsHTML(state.versionChampionRows||[])}</section></div>`;
      return;

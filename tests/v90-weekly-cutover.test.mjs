@@ -28,6 +28,6 @@ test("release-week Seed remains playable through the matching V8.1 model",async(
   assert.doesNotMatch(home,/button\.disabled=leaderboard\.legacy/);
   assert.doesNotMatch(home,/if\(weeklyLeaderboardProfile\(\)\.legacy\)return/);
   assert.match(career,/function legacyWeeklyTalent\(/);
-  assert.match(career,/legacyWeeklyChallenge\?"8\.1\.1":"9\.1\.0"/);
+  assert.match(career,/legacyWeeklyChallenge\?"8\.1\.1":"9\.1\.1"/);
   assert.match(career,/id:weeklyBoard\.id/);
 });

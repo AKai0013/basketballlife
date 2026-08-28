@@ -7,26 +7,26 @@ import { fileURLToPath } from "node:url";
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"..");
 const read=relative=>fs.readFileSync(path.join(root,relative),"utf8");
 
-test("V9.1 release wires the approved responsive UI without changing platform settings",()=>{
+test("V9.1.1 release wires the approved responsive UI without changing platform settings",()=>{
   const html=read("index.html"),manifest=JSON.parse(read("manifest.webmanifest"));
   assert.match(html,/rel="manifest"/);
-  assert.match(html,/>V9\.1</);
-  assert.match(html,/aria-label="目前版本 V9\.1"/);
+  assert.match(html,/>V9\.1\.1</);
+  assert.match(html,/aria-label="目前版本 V9\.1\.1"/);
   assert.doesNotMatch(html,/github\.com\/AKai0013\/basketballlife\/blob\/main\/README\.md/);
   assert.equal(manifest.display,"standalone");
   assert.equal(manifest.orientation,"portrait-primary");
-  assert.match(html,/css\/v9-ui\.css\?v=9\.1\.0/);
+  assert.match(html,/css\/v9-ui\.css\?v=9\.1\.1/);
   assert.doesNotMatch(html,/css\/v9-shell\.css|v9CareerShell|v9PlayerRail|v9CareerWorkspace/);
   assert.match(read("css/growth-preview.css"),/@media\(max-width:760px\)/);
   assert.match(read("js/ui/career-view.js"),/function focusCurrentScreen\(/);
-  assert.match(html,/css\/home\.css\?v=9\.1\.0/);
-  assert.match(html,/js\/events\/event-engine\.js\?v=9\.1\.0/);
+  assert.match(html,/css\/home\.css\?v=9\.1\.1/);
+  assert.match(html,/js\/events\/event-engine\.js\?v=9\.1\.1/);
   assert.equal((html.match(/class="onlineBattleInvite"/g)||[]).length,1);
   assert.match(html,/class="careerModeGrid"[\s\S]*?class="onlineBattleInvite"[\s\S]*?<\/div>\s*<p id="careerModeHelp"/);
   assert.match(read("css/home.css"),/careerModeGrid\{display:grid;grid-template-columns:repeat\(3/);
   assert.doesNotMatch(html,/\?v=8\.1\.0-(?:rc[78]|sync1)|\?v=20260821-home2/);
   const assetVersions=[...html.matchAll(/(?:href|src)="\.\/[^"?]+\?v=([^"&]+)"/g)].map(match=>match[1]);
-  assert.deepEqual([...new Set(assetVersions)],["9.1.0"]);
+  assert.deepEqual([...new Set(assetVersions)],["9.1.1"]);
   assert.match(read("css/v9-ui.css"),/\.v9GameNav\{/);
   assert.match(read("css/home.css"),/choice\.eventChoice \.eventChancePreview/);
   assert.match(read("css/home.css"),/data-stage="points".*pointrow/s);
@@ -111,15 +111,15 @@ test("national callups create one player-chosen key battle without changing the 
   assert.match(events,/function declineNationalCallup\(/);
 });
 
-test("V9.1 keeps V9.0 and V8.1 publisher compatibility while exposing the current talent layer",()=>{
+test("V9.1.1 keeps V9.1, V9.0 and V8.1 publisher compatibility while exposing the current talent layer",()=>{
   const api=read("functions/api/[[path]].js"),board=read("js/leaderboard/leaderboard-api.js"),storage=read("js/storage.js"),career=read("js/ui/career-view.js"),contracts=read("js/career/contract-engine.js"),retirement=read("js/career/retirement-engine.js"),ability=read("js/career/ability-profile.js");
   assert.match(api,/new Set\(\["8\.1\.0","8\.1\.1"\]\)/);
-  assert.match(api,/\["9\.0\.0","9\.1\.0"\]\.includes/);
-  assert.match(board,/GAME_VERSION="9\.1\.0"/);
-  assert.match(board,/CAREER_PUBLISHER_VERSION="9\.1\.0"/);
-  assert.match(board,/V9_PUBLISHER_VERSIONS=new Set\(\["9\.0\.0","9\.1\.0"\]\)/);
-  assert.match(storage,/gameVersion:"9\.1\.0"/);
-  assert.match(career,/careerVersion:legacyWeeklyChallenge\?"8\.1\.1":"9\.1\.0"/);
+  assert.match(api,/\["9\.0\.0","9\.1\.0","9\.1\.1"\]\.includes/);
+  assert.match(board,/GAME_VERSION="9\.1\.1"/);
+  assert.match(board,/CAREER_PUBLISHER_VERSION="9\.1\.1"/);
+  assert.match(board,/V9_PUBLISHER_VERSIONS=new Set\(\["9\.0\.0","9\.1\.0","9\.1\.1"\]\)/);
+  assert.match(storage,/gameVersion:"9\.1\.1"/);
+  assert.match(career,/careerVersion:legacyWeeklyChallenge\?"8\.1\.1":"9\.1\.1"/);
   assert.match(career,/v90GenerateTalent/);
   assert.match(career,/v90TalentPanelHTML/);
   assert.match(career,/v811AbilityPanelHTML/);
@@ -197,7 +197,7 @@ test("leaderboard groups compatible V9 releases and separates old personal caree
   const board=read("js/leaderboard/leaderboard-api.js"),api=read("functions/api/[[path]].js"),middleware=read("functions/api/_middleware.js");
   assert.doesNotMatch(board,/v7:\{label:"V7 傳奇榜"/);
   assert.match(board,/careers\?mine=1/);
-  assert.match(board,/V9\.1 玩家殿堂/);
+  assert.match(board,/V9\.1\.1 玩家殿堂/);
   assert.match(board,/champions:\{label:"版本冠軍榜"/);
   assert.match(board,/championFeatureMetrics=\["power","peak","championships","salary"\]/);
   assert.match(board,/function changeChampionVersion\(/);
