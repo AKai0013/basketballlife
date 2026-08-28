@@ -139,7 +139,16 @@ test("V9 season training uses real career data for the player card and context",
   assert.match(career,/if\(ov>=75\)return \{id:"prime",label:"菁英戰力",eyebrow:"ELITE"\}/);
   assert.match(career,/if\(ov>=60\)return \{id:"pro",label:"主力戰力",eyebrow:"CORE"\}/);
   assert.match(career,/return \{id:"campus",label:"潛力戰力",eyebrow:"PROSPECT"\}/);
-  assert.ok(career.indexOf('id:"veteran"')<career.indexOf("if(ov>=85)"),"veteran ice-blue must override OVR colors");
+  const stageSource=career.slice(career.indexOf("function trainingCardStage"),career.indexOf("function trainingRadarMetrics"));
+  const stage=(age,ov,ageDeclineStage=0)=>{
+    const context={p:{age,ageDeclineStage},overall:()=>ov,progressionAgeBand:player=>player.age<=28?"prime":player.age<=31?"transition":player.age<=34?"technical":player.age<=37?"veteran":"maintenance"};
+    vm.runInNewContext(`${stageSource};this.result=trainingCardStage()`,context);
+    return JSON.parse(JSON.stringify(context.result));
+  };
+  assert.deepEqual(stage(31,78,1),{id:"prime",label:"菁英戰力",eyebrow:"ELITE"});
+  assert.deepEqual(stage(34,86,2),{id:"icon",label:"傳奇戰力",eyebrow:"LEGEND"});
+  assert.deepEqual(stage(35,78,3),{id:"veteran",label:"老將篇章",eyebrow:"VETERAN"});
+  assert.deepEqual(stage(35,86,3),{id:"icon",label:"傳奇老將",eyebrow:"LEGEND"});
   const playerCard=career.slice(career.indexOf("function trainingPlayerCardHTML"),career.indexOf("function trainingRelationshipRows"));
   assert.match(playerCard,/<small>OVR<\/small>/);
   assert.doesNotMatch(playerCard,/careerCardTraits|careerCardArchetype|PLAYER IDENTITY|OTHER SKILLS|OVERALL|<footer>|巔峰 OVR/);
