@@ -91,6 +91,16 @@ test("30s development becomes technical and 38+ cannot add permanent ability",()
  assert.equal(box.applyCareerStatChange(late,"pass",1,{source:"point"}).applied,0);
 });
 
+test("V9 growth rating changes earned season resources without changing point prices",()=>{
+ const box=context();
+ assert.equal(box.progressionPotentialMultiplier(player({growth:50})),.8);
+ assert.equal(box.progressionPotentialMultiplier(player({growth:72})),1);
+ assert.equal(box.progressionPotentialMultiplier(player({growth:94})),1.55);
+ assert.equal(box.progressionPotentialMultiplier(player({growth:99})),1.6);
+ const legacy=player({careerVersion:"8.1.1",growth:99});
+ assert.equal(box.progressionPotentialMultiplier(legacy),1);
+});
+
 test("a new season does not inherit the previous season's per-skill growth lock",()=>{
  const box=context(),career=player({
   age:28,year:2040,careerSeason:12,permanentGrowthSeasonKey:"2040:12",seasonPermanentGrowth:{finish:4,handle:4,defense:4}

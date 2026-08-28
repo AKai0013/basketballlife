@@ -1234,7 +1234,7 @@
 
   const leaderboardEras={
    v9:{label:"V9.1.1 玩家殿堂",note:"相容收錄 V9.0／V9.1／V9.1.1 正式生涯；每個項目由每位玩家的最佳公開生涯代表上榜。"},
-   coop:{label:"多人合作排行榜",note:"依季中共同回合、跨季主線、真人對決與合作選擇計分；世界代碼只顯示前兩碼。"},
+   coop:{label:"多人合作排行榜",note:"以玩家平均 BL POWER 為生涯基礎，再加上真正共同完成的合作實績；世界代碼只顯示前兩碼。"},
    weekly:{label:"每週 Seed 挑戰榜",note:"相同 Seed、位置與身材競賽；每位玩家保留 BL POWER 最高的一支生涯。"},
    champions:{label:"版本冠軍榜",note:"保留 V8.1、V8.0 與 V7.50 各排行榜項目的最終第一名。"}
   };
@@ -1435,7 +1435,7 @@
    const chrome=`${hallHero(era)}<nav class="v9HallConsole">${hallEraTabs(era)}${!["champions","coop"].includes(era)?hallMetricTabs(metricKey):""}</nav>`;
    if(era==="coop"){
      const rows=state.cooperationRows||[];
-     content.innerHTML=`<div class="v9HallPage">${chrome}<div class="v9HallSnapshot"><span>${rows.length} 個完成共同事件的世界</span><span>2～3 人共同計分</span><span>季中共同回合＋跨季主線＋真人對決</span></div><section class="v9HallSection v9HallRankListSection"><div class="v9HallSectionHeading"><div><span>CO-OP CAREER RANKING</span><h3>多人合作排行榜</h3></div><p>只計入所有真人共同完成的回合與故事；單人生涯數值不會直接換成合作分數。</p></div><div class="v9HallRankList">${rows.length?rows.map((row,index)=>`<div class="rankRow"><span class="rankNo">${index<3?["🥇","🥈","🥉"][index]:`#${index+1}`}</span><span class="rankIdentity"><b>${esc(row.names.join("・")||row.room)}</b><small>${esc(row.room)}・${row.players} 人・推進至 ${row.year}・季中回合 ${row.midseasonEvents||0}・主線章節 ${row.storyChapters||0}</small><small>共同成就 ${row.jointAchievements||0}・真人對決 ${row.rivalryEvents||0}・默契 ${row.cooperation>=0?"+":""}${row.cooperation}</small></span><span class="rankValue"><b>${Number(row.score).toLocaleString()}</b><small>多人世界總分</small></span></div>`).join(""):`<div class="rankEmpty">完成第一個真正共同事件後，世界才會出現在這裡。</div>`}</div></section></div>`;
+     content.innerHTML=`<div class="v9HallPage">${chrome}<div class="v9HallSnapshot"><span>${rows.length} 個完成共同賽季的世界</span><span>平均玩家 BL POWER＋合作實績</span><span>合作加分：時間線每年 800・共同事件每次 1,200・共同成就每次 2,500・真人對決每次 800・默契每點 100</span></div><section class="v9HallSection v9HallRankListSection"><div class="v9HallSectionHeading"><div><span>CO-OP CAREER RANKING</span><h3>多人合作排行榜</h3></div><p>至少完成一組季中共同回合與跨季主線才正式入榜；2 人與 3 人都採平均 BL POWER，避免單靠人數取得優勢。</p></div><div class="v9HallRankList">${rows.length?rows.map((row,index)=>{const score=row.scoreBreakdown||{},parts=[`平均 BL POWER ${Number(score.career||row.averageCareerPower||0).toLocaleString()}`,`時間線 +${Number(score.timeline)||0}`,`共同事件 +${Number(score.events)||0}`,`共同成就 +${Number(score.achievements)||0}`,`真人對決 +${Number(score.rivalries)||0}`,`默契 ${Number(score.chemistry)>=0?"+":""}${Number(score.chemistry)||0}`];return `<div class="rankRow"><span class="rankNo">${index<3?["🥇","🥈","🥉"][index]:`#${index+1}`}</span><span class="rankIdentity"><b>${esc(row.names.join("・")||row.room)}</b><small>${esc(row.room)}・${row.players} 人・${esc(row.rankStage||"剛起步")}・推進至 ${row.year}・季中回合 ${row.midseasonEvents||0}・主線章節 ${row.storyChapters||0}</small><small>共同成就 ${row.jointAchievements||0}・真人對決 ${row.rivalryEvents||0}・默契 ${row.cooperation>=0?"+":""}${row.cooperation}</small><small>${parts.join("・")}</small></span><span class="rankValue"><b>${Number(row.score).toLocaleString()}</b><small>多人世界總分</small></span></div>`}).join(""):`<div class="rankEmpty">完成一組季中共同回合與跨季主線後，世界才會正式入榜。</div>`}</div></section></div>`;
      return;
    }
    if(era==="champions"){

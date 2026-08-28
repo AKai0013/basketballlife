@@ -262,11 +262,12 @@ function showResults(){
  const healthyAttackBonus=isProPath()&&p.seasonPlan==="attack"&&!p.injury?1:0;
  const rawGrowthTotal=growthBase+planGrowthPoints+healthyAttackBonus;
  const veteranGrowthMultiplier=isProPath()&&typeof progressionSeasonGrowthMultiplier==="function"?progressionSeasonGrowthMultiplier(p):1;
+ const potentialGrowthMultiplier=typeof progressionPotentialMultiplier==="function"?progressionPotentialMultiplier(p):1;
  // V9 veterans still earn a season result, but permanent development slows with the same
  // age rule used by points and event rewards. V8.1 keeps its existing minimum point flow.
  let total=isProPath()&&typeof isV9Progression==="function"&&isV9Progression(p)
-   ?Math.max(0,Math.round(rawGrowthTotal*veteranGrowthMultiplier))
-   :Math.max(1,rawGrowthTotal);
+   ?Math.max(0,Math.round(rawGrowthTotal*veteranGrowthMultiplier*potentialGrowthMultiplier))
+   :Math.max(1,Math.round(rawGrowthTotal*potentialGrowthMultiplier));
  let chainHTML=checkChainTitles(p.seasonStats);
  const representative=resultRows.slice().sort((a,b)=>(b.reward||0)-(a.reward||0))[0];
  if(representative)recordV8Story("game",`${representative.name}取得${representative.finish}；你繳出 ${pts}分、${reb}籃板、${ast}助攻`,representative.finish==="冠軍"?5:3);
@@ -342,6 +343,7 @@ const missReasonParts=[];
     ${p.path!=="HBL"&&eliteDevelopmentPoints?`${v9Talent?"核心潛力兌現":"菁英潛力兌現"}：<b class="gold">${eliteDevelopmentPoints} 點</b><br>`:""}
     ${planGrowthPoints?`賽季策略影響：<b class="${planGrowthPoints>0?"gold":"bad"}">${planGrowthPoints>0?"+":""}${planGrowthPoints} 點</b><br>`:""}
     ${healthyAttackBonus?`健康完成高強度球季：<b class="gold">+1 點</b><br>`:""}
+    ${potentialGrowthMultiplier!==1?`Seed 成長效率：<b class="${potentialGrowthMultiplier>1?"gold":"mut"}">×${Math.round(potentialGrowthMultiplier*100)}%</b><br>`:""}
     ${isProPath()&&veteranGrowthMultiplier<1?`生涯階段調整：<b class="mut">本季永久成長 ×${Math.round(veteranGrowthMultiplier*100)}%</b><br>`:""}
    </div></details>
  </footer></section>`;
@@ -411,7 +413,7 @@ function pointCost(k){
  if(typeof isV9Progression==="function"&&isV9Progression(p)){
    const band=typeof progressionAgeBand==="function"?progressionAgeBand(p):"prime";
    const ageCost={prime:0,transition:1,technical:2,veteran:3,maintenance:4}[band]||0;
-   return Math.max(1,basePointCost(p.stats[k])+breakthroughSurcharge(k)+ageCost+skillCostModifier(k)+chainSkillDiscount(k));
+   return Math.max(1,basePointCost(p.stats[k])+breakthroughSurcharge(k)+ageCost-(p.geniusCostDiscount||0)+skillCostModifier(k)+chainSkillDiscount(k));
  }
  let seedDiscount=0;
  if(p.talentProfile?.model==="v9-specialist-1"){
