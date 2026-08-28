@@ -1,5 +1,12 @@
 # BasketballLife V8.1 修正交接
 
+## 2026-08-28 V9.1.1 球員卡生涯階段修正
+
+- 階段：maintenance。修正 `trainingCardStage()` 把 29 歲開始的 `ageDeclineStage` 誤判為老將卡，導致仍在成長的 31 歲球員被提早標示為「老將篇章」。
+- 新規則：34 歲以前依 OVR 顯示潛力／主力／菁英／傳奇戰力；35 歲起才進入老將階段；35 歲後 OVR 85 以上顯示「傳奇老將」。能力成長、老化、存檔與卡片版型均未修改。
+- 驗證：31 歲 OVR 78、34 歲 OVR 86、35 歲 OVR 78、35 歲 OVR 86 四個分界案例通過；全套 232/232 Node 測試、`node --check js/ui/career-view.js`、`git diff --check` 通過。
+- 重要檔案：`index.html`、`js/ui/career-view.js`、`tests/v90-seed.test.mjs`。`career-view.js` 使用獨立快取識別；版本、README 與 D1 均不需變更。
+
 ## 2026-08-28 V9.1.1 全量敘事檢核與退休終章整合（待發布）
 
 - 階段：production／敘事審稿。依真實生涯條件、既有球隊與結果、固定人物、分歧後果、主題式比賽段落及記憶動作，完成全量事件審稿本；一般事件維持短篇，長篇只保留給國家隊、冠軍、大傷、重逢、退休與重大轉折。

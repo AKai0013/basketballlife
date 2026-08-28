@@ -148,8 +148,11 @@ function toggleAbilityHelp(el){
 document.addEventListener("pointerdown",event=>{if(!event.target.closest?.(".abilityHelpCard")&&!event.target.closest?.("#abilityHelpPopover"))closeAbilityHelp()});
 window.addEventListener("resize",()=>closeAbilityHelp());window.addEventListener("scroll",()=>closeAbilityHelp(),true);
 function trainingCardStage(){
- const ov=overall();
- if(p.age>=34||(p.ageDeclineStage||0)>0)return {id:"veteran",label:"老將篇章",eyebrow:"VETERAN"};
+ const ov=overall(),ageBand=typeof progressionAgeBand==="function"?progressionAgeBand(p):(p.age>=35?"veteran":"prime");
+ if(["veteran","maintenance"].includes(ageBand)){
+  if(ov>=85)return {id:"icon",label:"傳奇老將",eyebrow:"LEGEND"};
+  return {id:"veteran",label:"老將篇章",eyebrow:"VETERAN"};
+ }
  if(ov>=85)return {id:"icon",label:"傳奇戰力",eyebrow:"LEGEND"};
  if(ov>=75)return {id:"prime",label:"菁英戰力",eyebrow:"ELITE"};
  if(ov>=60)return {id:"pro",label:"主力戰力",eyebrow:"CORE"};
