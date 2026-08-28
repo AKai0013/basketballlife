@@ -345,7 +345,7 @@ function nextStep(){
    p.stage="events";showEvent();return
  }
  if(p.stage==="midcareer"){startSpecialPhase();return}
- if(p.stage==="events"){if(p.eventIndex<p.seasonEventCount)showEvent();else startSpecialPhase();return}
+ if(p.stage==="events"){if(window.BasketballLifeKeyBattle?.maybeMidseasonCheckpoint?.(()=>{if(p.eventIndex<p.seasonEventCount)showEvent();else startSpecialPhase()}))return;if(p.eventIndex<p.seasonEventCount)showEvent();else startSpecialPhase();return}
  if(p.stage==="special"){if(p.specialIndex<p.specialQueue.length){if(typeof highlightAutoResolveRoutineSpecials==="function"&&highlightAutoResolveRoutineSpecials())return;showSpecialEvent()}else if(p.specialReturnStage==="events"){p.specialReturnStage="";p.stage="events";showEvent()}else showHealth();return}
  if(p.stage==="health"){showResults();return}
  if(p.stage==="results"){if(p.lastDanceActive){finishSeason();return}showPointDistribution();return}
