@@ -182,7 +182,24 @@ function initializeCareerSave(){
  document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")saveCareerNow()});
  window.addEventListener("pagehide",saveCareerNow);
 }
-window.BasketballLifeCareerSave={save:saveCareerNow,read:readCareerSave,readShared:code=>readCareerSave(sharedCareerSaveKey(code)),clear:clearCareerSave,clearShared:code=>{try{localStorage.removeItem(sharedCareerSaveKey(code));return true}catch(_){return false}},resume:continueCareer,resumeShared:code=>continueCareer(sharedCareerSaveKey(code))};
+function exportSharedCareerSave(code){
+ const roomCode=String(code||"").toUpperCase(),save=readCareerSave(sharedCareerSaveKey(roomCode));
+ if(!/^[A-Z2-9]{6}$/.test(roomCode)||!save)throw new Error("找不到可備份的共享生涯存檔");
+ const payload={kind:"basketballlife-shared-career",format:1,roomCode,exportedAt:Date.now(),save},blob=new Blob([JSON.stringify(payload)],{type:"application/json"}),url=URL.createObjectURL(blob),link=document.createElement("a");
+ link.href=url;link.download=`BasketballLife-${roomCode}-${new Date().toISOString().slice(0,10)}.blsave.json`;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);return true;
+}
+async function importSharedCareerSave(file,expectedCode=""){
+ if(!file||Number(file.size)>5000000)throw new Error("備份檔不存在或超過 5 MB");
+ let payload;try{payload=JSON.parse(await file.text())}catch(_){throw new Error("備份檔不是有效的 BasketballLife 存檔")}
+ const code=String(payload?.roomCode||"").toUpperCase(),save=payload?.save;
+ if(payload?.kind!=="basketballlife-shared-career"||payload?.format!==1||!/^[A-Z2-9]{6}$/.test(code))throw new Error("備份檔格式或世界代碼不正確");
+ if(expectedCode&&code!==String(expectedCode).toUpperCase())throw new Error(`這是世界 ${code} 的備份，不能覆蓋其他世界`);
+ if(save?.schema!==CAREER_SAVE_SCHEMA||!save.player||!validCareerScreen(save.screen))throw new Error("備份檔缺少完整生涯資料");
+ save.player=normalizeCareerPlayer(save.player);if(!validCareerPlayer(save.player)||String(save.player?.onlineSharedWorld?.code||"").toUpperCase()!==code)throw new Error("備份檔的球員與共享世界不一致");
+ if(readCareerSave(sharedCareerSaveKey(code))&&!window.confirm(`共享世界 ${code} 已有本機存檔，確定要用備份覆蓋嗎？`))throw new Error("已取消匯入");
+ save.savedAt=Date.now();localStorage.setItem(sharedCareerSaveKey(code),JSON.stringify(save));return {code,save};
+}
+window.BasketballLifeCareerSave={save:saveCareerNow,read:readCareerSave,readShared:code=>readCareerSave(sharedCareerSaveKey(code)),clear:clearCareerSave,clearShared:code=>{try{localStorage.removeItem(sharedCareerSaveKey(code));return true}catch(_){return false}},exportShared:exportSharedCareerSave,importShared:importSharedCareerSave,resume:continueCareer,resumeShared:code=>continueCareer(sharedCareerSaveKey(code))};
 window.addEventListener("DOMContentLoaded",initializeCareerSave);
 
 /* =========================================================
