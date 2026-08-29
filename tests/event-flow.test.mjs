@@ -34,13 +34,13 @@ test("ordinary and professional events keep three choices", () => {
   }
 });
 
-test("expanded ordinary pools contain 82 distinct authored events",()=>{
+test("expanded ordinary pools contain 103 distinct events",()=>{
   const ordinary=Array.from(context.__BL_TEST_DATA.events);
   const professional=Array.from(context.__BL_TEST_DATA.PRO_GENERAL_EVENTS);
-  assert.equal(ordinary.length,38);
-  assert.equal(professional.length,44);
+  assert.equal(ordinary.length,46);
+  assert.equal(professional.length,57);
   const titles=[...ordinary,...professional].map(event=>event.t);
-  assert.equal(new Set(titles).size,82);
+  assert.equal(new Set(titles).size,103);
 });
 
 test("new scene events provide a specific result for every choice and outcome tier",()=>{
@@ -59,6 +59,27 @@ test("new scene events provide a specific result for every choice and outcome ti
     for(const option of event.opts){
       assert.deepEqual(Object.keys(option[3]||{}).sort(),["disaster","fail","great","success"],`${event.t}: ${option[0]}`);
       for(const result of Object.values(option[3]))assert.ok(result.length>=24,`${event.t}: ${option[0]}`);
+    }
+  }
+});
+
+test("new emotional ordinary scenes keep concrete copy and four authored outcomes",()=>{
+  const titles=new Set([
+    "輸球後，校車只剩最後一排","家人坐在客隊看台","隊友的鞋底在熱身時裂開","助教刪掉你唯一一段精華",
+    "器材室最後一件球衣","畢業合照和彩排撞上決勝練習","班導把賽程貼在作業旁","學長把護膝留在你的椅上",
+    "隊友被交易後留下半杯咖啡","連續未登錄後，名牌被移到最外側","季後賽輪替縮成八人","主場開始喊替補的名字",
+    "交易截止日前的未接來電","體能教練的最後一個工作日","客場房門下的手寫信","練習隊球員拿到正式合約",
+    "賽後只剩那次失誤被反覆播放","主場地板換掉了舊隊徽","最後一波不再畫給你","教練忘了約好的角色會議",
+    "賽前，隊友請你把最後一球交給他"
+  ]);
+  const rows=[...context.__BL_TEST_DATA.events,...context.__BL_TEST_DATA.PRO_GENERAL_EVENTS].filter(event=>titles.has(event.t));
+  assert.equal(rows.length,titles.size);
+  for(const event of rows){
+    assert.ok(event.d.length>=40,event.t);
+    for(const option of event.opts){
+      assert.ok(option[1].length>=17,`${event.t}: ${option[0]}`);
+      assert.deepEqual(Object.keys(option[3]||{}).sort(),["disaster","fail","great","success"],`${event.t}: ${option[0]}`);
+      assert.doesNotMatch(Object.values(option[3]).join(" "),/事情往最好的方向|選擇帶來正面結果|沒有帶來預期效果|朝最差方向發展/,event.t);
     }
   }
 });
@@ -168,7 +189,7 @@ test("travel and postseason copy does not appear without its real context",()=>{
 });
 
 test("all ordinary choices use supported outcomes and contain no unresolved placeholders",()=>{
-  const supported=new Set(["ath","check","clutch","compete","defense","finish","handle","injrisk","iq","minuteslimit","normal","pass","playhurt","rebound","risk","safe","shoot","show","sitout","social","study","talk","team","three"]);
+  const supported=new Set(["ath","check","clutch","compete","defense","discipline","finish","handle","injrisk","iq","minuteslimit","normal","pass","playhurt","rebound","risk","safe","shoot","show","sitout","social","study","talk","team","three"]);
   const rows=[...context.__BL_TEST_DATA.events,...context.__BL_TEST_DATA.PRO_GENERAL_EVENTS,...context.__BL_TEST_DATA.INJURY_PRESSURE_EVENTS];
   for(const event of rows){
     assert.doesNotMatch(`${event.t} ${event.d}`,/\{[a-z]+\}/i,event.t);

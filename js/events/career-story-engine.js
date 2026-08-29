@@ -357,6 +357,12 @@ function buildCareerStorySpecial(player=p,{blockedThemes=[],openingOnly=false}={
   const opening=pool.filter(event=>Number(event.node)===1&&["friendship","school_rivalry"].includes(event.line)&&["friend","rival"].includes(event.actor));
   if(opening.length)pool=opening;
  }
+ // 新增單篇事件不能把本輪已選中的人物長線全部擠掉；至少先讓一條長線正式登場，
+ // 後續年份才由回訪與單篇事件共同競爭。
+ const startedLines=careerStoryStartedLines(player),selectedLines=new Set(ensureCareerStoryLineSelection(player));
+ const hasStartedSelectedLine=[...startedLines].some(line=>selectedLines.has(line));
+ const selectedOpeners=pool.filter(event=>Number(event.node)===1&&event.line&&selectedLines.has(event.line)&&!startedLines.has(event.line));
+ if(!openingOnly&&!hasStartedSelectedLine&&selectedOpeners.length)pool=selectedOpeners;
  const relocation=pool.find(event=>event.id==="family_city_1");
  if(relocation&&player.careerRelocationPending?.meaningful)pool=[relocation];
  const firstFinalChapter=pool.find(event=>event.id==="final_chapter_1");
