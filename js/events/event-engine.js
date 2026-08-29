@@ -446,6 +446,7 @@ function keepRecurringSpecial(event){
 }
 function buildSeasonSpecialQueue(){
  let q=[];
+ if(p.medicalClearancePending)q.push({kind:"medicalClearance",title:"回場醫療評估",desc:`${p.medicalClearancePending.injuryName} 的復健期已結束，但檢測結果不支持直接回到原本負荷。你必須決定下一段復出方式。`});
  const nt=nationalTeamOpportunity();
  const careerStory=Number(p.openingCareerStoryYear)===Number(p.year)?null:typeof buildCareerStorySpecial==="function"?buildCareerStorySpecial(p,{blockedThemes:nt?["national"]:[]}):null;
  if(careerStory)q.push(careerStory);
@@ -462,7 +463,7 @@ function buildSeasonSpecialQueue(){
  let offCourt=buildOffCourtSpecial();if(offCourt)q.push(offCourt);
  let relationship=buildV8RelationshipSpecial();if(relationship)q.push(relationship);
  let career=buildCareerExtraSpecial();if(career)q.push(career);
- const priority={national:1,seasonKeyBattle:1,v8Chain:2,careerStory:2,careerStoryClosure:2,career:3,relationship:4,romanceFirst:5,romanceFollow:5,proposal:5,childPlan:5,familySupport:5,marriageStrain:5,affairTemptation:5,offCourt:6,tradeChoice:6};
+ const priority={medicalClearance:0,national:1,seasonKeyBattle:1,v8Chain:2,careerStory:2,careerStoryClosure:2,career:3,relationship:4,romanceFirst:5,romanceFollow:5,proposal:5,childPlan:5,familySupport:5,marriageStrain:5,affairTemptation:5,offCourt:6,tradeChoice:6};
  return q.sort((a,b)=>(priority[a.kind]||9)-(priority[b.kind]||9)).slice(0,3).filter(keepRecurringSpecial);
 }
 function startOpeningCareerStory(){
@@ -645,6 +646,12 @@ function showSpecialEvent(){
    <button class="choice" onclick="resolveCareerSpecial('specialistRehab')"><b>尋求第二意見並密集復健</b><small>恢復速度與復發風險介於手術、一般保守復健之間。</small></button>
    <button class="choice" onclick="resolveCareerSpecial('rehab')"><b>保守復健</b><small>較快回歸，但舊傷可能反覆。</small></button>
    </div>`;
+   return;
+ }
+ if(e.kind==="medicalClearance"){
+   const c=p.medicalClearancePending||{},failed=c.outcome==="failed";
+   special.innerHTML=`<div class="specialStage career"><div class="specialKicker">🏥 回場評估</div><b>${c.injuryName||"重大傷病"}</b><br><span class="bad">${c.label||"需要限制負荷"}</span><br><span class="mut">${failed?"這不是自動退休；延長復健、接受限時角色或結束現役都由你決定。":"你可以延長復健再接受評估，或接受限時／降階角色回到球場。"}</span></div>`;
+   choices.innerHTML=`<div class="twoChoices"><button class="choice" onclick="resolveMedicalClearance('rehab')"><b>延長復健，再做一次評估</b><small>再休養 6～9 個月；保留原球隊關係，但下一季仍會缺席比賽。</small></button><button class="choice" onclick="resolveMedicalClearance('restricted')"><b>接受限時／降階角色復出</b><small>立刻回場，但 ${c.yearsRemaining||2} 季內有上場時間與市場層級限制。</small></button>${failed&&isProPath()?`<button class="choice" onclick="resolveMedicalClearance('retire')"><b>因傷結束現役生涯</b><small>確認身體無法承受職業負荷，以這次傷勢作為正式退休原因。</small></button>`:""}</div>`;
    return;
  }
  if(e.kind==="postOpRehab"){
@@ -1375,6 +1382,23 @@ function resolveCareerSpecial(action){
  finishSpecialEvent(html,`特殊職涯事件：${action}`);
 }
 
+function resolveMedicalClearance(action){
+ const pending=p.medicalClearancePending;if(!pending)return;
+ if(action==="retire"){
+   retireCareer(`${pending.injuryName} 復健後仍未通過原層級回場評估，你選擇結束現役生涯`);return;
+ }
+ if(action==="rehab"){
+   const r=RNG(`${p.seed}-second-rehab-${pending.episodeId}-${p.year}`),months=ri(r,6,9);
+   p.injury={name:pending.injuryName,area:pending.area,level:"重傷",severity:4,episodeId:pending.episodeId,startYear:p.year,onsetFraction:0,returnProfile:"",recur:true,surgeryDone:true,originalRecoveryMonths:months,remainingRecoveryMonths:months,recovery:`${months} 個月追加復健`};
+   p.postInjuryStatus=null;p.medicalLeagueCeilingRank=0;updateMedicalEpisode(p.injury,{note:"回場評估未過，選擇追加復健",secondRehab:true});
+   p.medicalClearancePending=null;logIt(`🏥 ${pending.injuryName}｜追加 ${months} 個月復健`);
+   finishSpecialEvent(`<div class="specialStage career"><b>再把門關上一季</b><br>你沒有拿一次檢測結果賭掉生涯。醫療團隊排定 ${months} 個月追加復健，下一次回場會重新評估。</div>`,"回場評估：追加復健");return;
+ }
+ p.medicalClearancePending=null;p.medicalProtectionUntilYear=Math.max(p.medicalProtectionUntilYear||0,p.year+1);p.medicalProtectionReason="重大傷病後限時復出";
+ logIt(`⏱️ ${pending.injuryName}｜接受限時／降階角色復出`);
+ finishSpecialEvent(`<div class="specialStage career"><b>你回到場上，但不是回到從前</b><br>教練團依醫療報告執行單場上限 ${pending.minutesCap||26} 分鐘；未來 ${pending.yearsRemaining||2} 季，合約市場也會依實際出勤重新評估。</div>`,"回場評估：限制復出");
+}
+
 
 function titleDefinition(raw){
  const t=typeof raw==="string"?{id:"",name:raw}:raw||{};
@@ -1583,7 +1607,7 @@ function aggravateActiveInjury(r,severe=false){
    const order=["輕傷","中傷","大傷","重傷"],i=order.indexOf(p.injury.level);
    if(i>=0&&i<2){p.injury.level=order[i+1];p.injury.severity=tierWeight(p.injury.level);if(p.injury.level==="大傷")p.majorInjuryCount=(p.majorInjuryCount||0)+1;}
  }
- p.medicalHistory.push({year:p.year,name:p.injury.name,area:p.injury.area,tier:p.injury.level,missedGames:extra,recovery:p.injury.recovery,recur:true,note:"帶傷硬打後惡化"});
+ const row=updateMedicalEpisode(p.injury);updateMedicalEpisode(p.injury,{aggravations:(Number(row?.aggravations)||0)+1,addedRecoveryGames:(Number(row?.addedRecoveryGames)||0)+extra,note:"帶傷硬打後惡化"});
  return `${p.injury.name} 復原期再增加約 ${extra} 場${before!==p.injury.level?`，傷勢由${before}升為${p.injury.level}`:""}`;
 }
 

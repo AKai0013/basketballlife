@@ -18,17 +18,17 @@ const injuryTypes=[
  {name:"腦震盪",area:"頭部",side:"頭部",tier:"中傷",games:[2,8],recovery:"1～3週／依檢查結果",perm:{},base:1.2},
  {name:"半月板撕裂",area:"膝蓋",side:"下肢",tier:"大傷",games:[20,40],recovery:"2～4個月",perm:{ath:2,defense:1},base:4},
  {name:"嚴重腳踝韌帶撕裂",area:"腳踝",side:"下肢",tier:"大傷",games:[18,35],recovery:"2～4個月",perm:{ath:2,finish:1},base:3},
- {name:"足部應力性骨折",area:"足部",side:"下肢",tier:"大傷",games:[20,42],recovery:"2～5個月",perm:{ath:2},base:3},
+ {name:"足部應力性骨折",area:"足部",side:"下肢",tier:"大傷",games:[20,42],months:[3,6],recovery:"3～6個月",returnProfile:"stress",perm:{ath:2},base:3},
  {name:"肩關節唇撕裂",area:"肩膀",side:"上肢",tier:"大傷",games:[22,46],recovery:"3～6個月",perm:{shoot:2,finish:1},base:2},
  {name:"腰椎椎間盤突出",area:"下背",side:"軀幹",tier:"大傷",games:[24,48],recovery:"3～7個月",perm:{ath:2,defense:1},base:1.5},
- {name:"髕腱重度傷勢",area:"膝蓋",side:"下肢",tier:"大傷",games:[25,50],recovery:"3～6個月",perm:{ath:3,finish:2},base:2},
+ {name:"髕腱重度傷勢",area:"膝蓋",side:"下肢",tier:"大傷",games:[25,50],months:[4,7],recovery:"4～7個月",returnProfile:"patellar",perm:{ath:3,finish:2},base:2},
  {name:"腿後肌重度撕裂",area:"腿後肌",side:"下肢",tier:"大傷",games:[22,44],recovery:"3～5個月",perm:{ath:3,finish:1},base:2},
- {name:"ACL撕裂",area:"膝蓋",side:"下肢",tier:"重傷",games:[45,82],recovery:"8～12個月",perm:{ath:5,finish:2,defense:2},base:2},
- {name:"阿基里斯腱斷裂",area:"阿基里斯腱",side:"下肢",tier:"重傷",games:[55,90],recovery:"9～14個月",perm:{ath:7,finish:4,defense:2},base:1},
- {name:"嚴重腳踝韌帶斷裂",area:"腳踝",side:"下肢",tier:"重傷",games:[42,72],recovery:"7～11個月",perm:{ath:5,defense:2},base:.8},
- {name:"Lisfranc 足部韌帶重傷",area:"足部",side:"下肢",tier:"重傷",games:[45,78],recovery:"8～12個月",perm:{ath:5,finish:2},base:.6},
- {name:"腿後肌腱撕脫",area:"腿後肌",side:"下肢",tier:"重傷",games:[45,76],recovery:"7～11個月",perm:{ath:5,finish:3},base:.7},
- {name:"髕腱斷裂",area:"膝蓋",side:"下肢",tier:"重傷",games:[50,86],recovery:"9～13個月",perm:{ath:6,finish:3,defense:2},base:1}
+ {name:"ACL撕裂",area:"膝蓋",side:"下肢",tier:"重傷",games:[45,82],months:[8,12],recovery:"8～12個月",returnProfile:"acl",perm:{ath:5,finish:2,defense:2},base:2},
+ {name:"阿基里斯腱斷裂",area:"阿基里斯腱",side:"下肢",tier:"重傷",games:[55,90],months:[9,14],recovery:"9～14個月",returnProfile:"achilles",perm:{ath:7,finish:4,defense:2},base:1},
+ {name:"嚴重腳踝韌帶斷裂",area:"腳踝",side:"下肢",tier:"重傷",games:[42,72],months:[7,11],recovery:"7～11個月",returnProfile:"ankle",perm:{ath:5,defense:2},base:.8},
+ {name:"Lisfranc 足部韌帶重傷",area:"足部",side:"下肢",tier:"重傷",games:[45,78],months:[8,12],recovery:"8～12個月",returnProfile:"lisfranc",perm:{ath:5,finish:2},base:.6},
+ {name:"腿後肌腱撕脫",area:"腿後肌",side:"下肢",tier:"重傷",games:[45,76],months:[7,11],recovery:"7～11個月",returnProfile:"hamstring",perm:{ath:5,finish:3},base:.7},
+ {name:"髕腱斷裂",area:"膝蓋",side:"下肢",tier:"重傷",games:[50,86],months:[9,13],recovery:"9～13個月",returnProfile:"patellar",perm:{ath:6,finish:3,defense:2},base:1}
 ];
 
 

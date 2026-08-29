@@ -258,6 +258,7 @@ function contractMarketScore(league,scout){
  if(p.roleState?.current==="garbage")score-=2;
  const recentInjuries=(p.injuryHistory||[]).filter(x=>p.year-(Number(x.year)||0)<=3);
  score-=Math.min(7,recentInjuries.length*.65+recentInjuries.filter(x=>["大傷","重傷"].includes(x.level)).length*1.4);
+ if(p.postInjuryStatus?.yearsRemaining>0)score-=p.postInjuryStatus.outcome==="failed"?9:5;
  score+=collegeReturnMarketBonus(league);
  if(hasTitle("lockerroom"))score-=6;
  return score;
@@ -267,6 +268,10 @@ function chooseContractType(league,scout,r,renewal=false){
  // A real NBA two-way deal is created only after the player clears the
  // G League call-up résumé. G League offers no longer borrow the NBA label.
  let type=cs<1?"測試／證明短約":cs<5?"短約":cs<10?"標準合約":cs<16?"先發合約":cs<23?"明星合約":"核心長約";
+ if(p.postInjuryStatus?.yearsRemaining>0){
+  if(p.postInjuryStatus.outcome==="failed")type="測試／證明短約";
+  else if(["先發合約","明星合約","核心長約"].includes(type))type="標準合約";
+ }
  if(Number(p.age||0)>=38){
   const margin=overall()-leagueRosterOverallFloor(league),season=p.seasonStats||{},mins=Number(season.mins||0),legacy=typeof careerLifecycleProfile==="function"&&careerLifecycleProfile(p).chapter==="legacy";
   if(margin<4||mins>0&&mins<10)type="測試／證明短約";
@@ -598,7 +603,7 @@ function listenFreeAgencyMarket(){
  chapter.textContent=`${p.year} · ${p.age}歲 · 自由市場`;
  title.textContent=offers.length?"市場報價出爐":"市場遇冷";
  text.innerHTML=offers.length
-   ? `經紀團隊帶回 ${offers.length} 份正式報價。除了薪資與年限，也要比較<b>聯盟層級、球隊角色與未來機會</b>。${trajectory.recovering?"上一季剛完成聯盟轉換，本次市場先以相鄰層級重新評估。":""}${back?(returnTerms.mode==="validated"?"你獲得更高層級球隊邀請，母隊仍維持原本的續約條件。":"母隊報價仍可選擇。 "):""}`
+   ? `經紀團隊帶回 ${offers.length} 份正式報價。除了薪資與年限，也要比較<b>聯盟層級、球隊角色與未來機會</b>。${p.postInjuryStatus?.yearsRemaining?`${p.postInjuryStatus.injuryName} 的回場報告仍有效，球隊只提出符合目前醫療層級與負荷限制的合約。`:""}${trajectory.recovering?"上一季剛完成聯盟轉換，本次市場先以相鄰層級重新評估。":""}${back?(returnTerms.mode==="validated"?"你獲得更高層級球隊邀請，母隊仍維持原本的續約條件。":"母隊報價仍可選擇。 "):""}`
    : `母隊與其他球隊都沒有提出正式合約。現在還不會直接退休；你將透過公開測試爭取最後的現役資格。`;
 
  let cards=offers.map(proOfferCard).join("");
@@ -805,6 +810,7 @@ function veteranContractRiskProfile(league=p.path,incumbent=false){
 }
 function canReceiveStandardContract(league,score=scoutingScore(),incumbent=false){
  const cfg=LEAGUE_CFG[league];if(!cfg)return false;
+ if((p.medicalLeagueCeilingRank||0)>0&&leagueMarketRank(league)>p.medicalLeagueCeilingRank)return false;
  const resumeBonus=collegeReturnMarketBonus(league);
  const rookieWindow=incumbent&&p.age<=29&&earlyCareerProfessionalSeasons()<=3;
  const productiveRookie=rookieWindow&&rookieRenewalPerformanceEligible();
@@ -924,15 +930,16 @@ function makeNBAPathwayContract(score,kind,salt,forcedTeam=null){
 }
 function proOffersForScore(score,salt){
  let out=[];
- const eligible=(league)=>canReceiveStandardContract(league,score,false);
+ const medicalAllowed=(league)=>!(p.medicalLeagueCeilingRank>0)||leagueMarketRank(league)<=p.medicalLeagueCeilingRank;
+ const eligible=(league)=>medicalAllowed(league)&&canReceiveStandardContract(league,score,false);
  if(eligible("SBL／半職業"))out.push(makeContract("SBL／半職業",score,salt+"semi"));
  if(eligible("台灣職業"))out.push(makeContract("台灣職業",score,salt+"tw"));
  if(eligible("韓國職業"))out.push(makeContract("韓國職業",score,salt+"kr"));
  if(eligible("日本職業"))out.push(makeContract("日本職業",score,salt+"jp"));
  if(eligible("CBA"))out.push(makeContract("CBA",score,salt+"cn"));
- if(gLeaguePathwayEligible(score))out.push(makeContract("NBA G League",score,salt+"gl"));
+ if(medicalAllowed("NBA G League")&&gLeaguePathwayEligible(score))out.push(makeContract("NBA G League",score,salt+"gl"));
  if(eligible("歐洲聯賽"))out.push(makeContract("歐洲聯賽",score,salt+"eu"));
- const nbaKind=nbaPathwayOfferKind(score);
+ const nbaKind=medicalAllowed("NBA")?nbaPathwayOfferKind(score):"";
  if(nbaKind)out.push(makeNBAPathwayContract(score,nbaKind,salt+"nba"));
  return out.sort((a,b)=>leagueMarketRank(b.league)-leagueMarketRank(a.league)||(b.salary||0)-(a.salary||0));
 }

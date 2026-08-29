@@ -27,7 +27,7 @@ function highlightRoutineChapterDue(player=p){
   return (HIGHLIGHT_STAGE_MILESTONES[stage]||[]).includes(marker);
 }
 function highlightForcedSpecial(event){
-  return ["lastDance","national","tradeChoice","surgeryChoice","postOpRehab","returnChoice"].includes(String(event?.kind||""));
+  return ["lastDance","national","tradeChoice","surgeryChoice","postOpRehab","returnChoice","medicalClearance"].includes(String(event?.kind||""));
 }
 function highlightRegisterChapter(events,reason="routine",player=p){
   const rows=ensureHighlightChapterState(player),stage=highlightCareerStage(player),id=`${Number(player.year)||0}:${stage}`;
@@ -134,7 +134,7 @@ function highlightPushHistory(entry){
 function highlightMajorSpecialKind(kind,event=null){
   if(event?.highlightRoutine)return false;
   if(event?.highlightChapter)return true;
-  return ["careerStory","careerStoryClosure","lastDance","v8Chain","seasonKeyBattle","national","tradeChoice","surgeryChoice","postOpRehab","returnChoice","agentCrossroads","teammateRole"].includes(kind);
+  return ["careerStory","careerStoryClosure","lastDance","v8Chain","seasonKeyBattle","national","tradeChoice","surgeryChoice","postOpRehab","returnChoice","medicalClearance","agentCrossroads","teammateRole"].includes(kind);
 }
 function highlightPrepareSpecialQueue(queue){
   if(!isHighlightCareer(p))return queue;

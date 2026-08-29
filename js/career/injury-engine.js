@@ -1,28 +1,102 @@
 function tierWeight(tier){return tier==="輕傷"?1:tier==="中傷"?2:tier==="大傷"?3:4}
+function recoveryMonthsFromText(text=""){
+ const values=String(text).match(/\d+/g)?.map(Number)||[];
+ if(/個月/.test(text))return values.length>1?(values[0]+values[1])/2:(values[0]||1);
+ if(/週/.test(text))return (values.length>1?(values[0]+values[1])/2:(values[0]||1))/4.345;
+ return .5;
+}
+function injuryReturnProfile(injury={}){
+ const id=injury.returnProfile||(/阿基里斯/.test(injury.name)?"achilles":/ACL/.test(injury.name)?"acl":/髕腱/.test(injury.name)?"patellar":/Lisfranc/.test(injury.name)?"lisfranc":/應力性骨折/.test(injury.name)?"stress":"general");
+ const profiles={
+  acl:{full:86,failed:5,years:2},achilles:{full:73,failed:13,years:3},patellar:{full:68,failed:18,years:3},
+  lisfranc:{full:74,failed:11,years:3},stress:{full:78,failed:9,years:2},ankle:{full:78,failed:8,years:2},hamstring:{full:76,failed:9,years:2},general:{full:84,failed:5,years:1}
+ };
+ return {id,...profiles[id]||profiles.general};
+}
 function ensureInjuryRecoveryState(injury=p?.injury,path=p?.path,year=p?.year){
  if(!injury)return null;
  const schedule=Math.max(1,scheduledGamesForSeason(path,year));
  const legacyOriginal=Math.max(0,Number(injury.originalMissedGames)||0);
  const legacyRemaining=Math.max(0,Number(injury.remainingGames ?? legacyOriginal)||0);
- if(!Number.isFinite(Number(injury.originalSeasonShare)))injury.originalSeasonShare=legacyOriginal/82;
- if(!Number.isFinite(Number(injury.remainingSeasonShare)))injury.remainingSeasonShare=legacyRemaining/82;
+ if(!Number.isFinite(Number(injury.originalRecoveryMonths)))injury.originalRecoveryMonths=Math.max(.1,recoveryMonthsFromText(injury.recovery)||legacyOriginal/82*12);
+ if(!Number.isFinite(Number(injury.remainingRecoveryMonths)))injury.remainingRecoveryMonths=Math.max(0,Number.isFinite(Number(injury.remainingSeasonShare))?Number(injury.remainingSeasonShare)*12:legacyRemaining/82*12||injury.originalRecoveryMonths);
+ if(!Number.isFinite(Number(injury.originalSeasonShare)))injury.originalSeasonShare=injury.originalRecoveryMonths/12;
+ if(!Number.isFinite(Number(injury.remainingSeasonShare)))injury.remainingSeasonShare=injury.remainingRecoveryMonths/12;
+ if(!injury.episodeId)injury.episodeId=`inj-${injury.startYear||year||0}-${String(injury.name||"injury").replace(/\s/g,"")}`;
+ if(!Number.isFinite(Number(injury.startYear)))injury.startYear=Number(year)||0;
+ if(!Number.isFinite(Number(injury.onsetFraction)))injury.onsetFraction=.35;
  injury.originalSeasonShare=Math.max(0,Number(injury.originalSeasonShare)||0);
  injury.remainingSeasonShare=Math.max(0,Number(injury.remainingSeasonShare)||0);
- injury.originalMissedGames=Math.max(injury.originalSeasonShare>0?1:0,Math.round(schedule*injury.originalSeasonShare));
- injury.remainingGames=Math.max(injury.remainingSeasonShare>0?1:0,Math.round(schedule*injury.remainingSeasonShare));
- return {schedule,originalShare:injury.originalSeasonShare,remainingShare:injury.remainingSeasonShare};
+ injury.originalRecoveryMonths=Math.max(0,Number(injury.originalRecoveryMonths)||0);
+ injury.remainingRecoveryMonths=Math.max(0,Number(injury.remainingRecoveryMonths)||0);
+ injury.originalSeasonShare=injury.originalRecoveryMonths/12;injury.remainingSeasonShare=injury.remainingRecoveryMonths/12;
+ injury.originalMissedGames=Number(injury.startYear)===Number(year)&&Number.isFinite(Number(injury.firstSeasonExpectedGames))
+  ?Math.max(0,Number(injury.firstSeasonExpectedGames))
+  :Math.max(injury.originalRecoveryMonths>0?1:0,Math.round(schedule*Math.min(1,injury.originalSeasonShare)));
+ injury.remainingGames=Math.max(injury.remainingRecoveryMonths>0?1:0,Math.round(schedule*Math.min(1,injury.remainingSeasonShare)));
+ return {schedule,originalShare:injury.originalSeasonShare,remainingShare:injury.remainingSeasonShare,originalMonths:injury.originalRecoveryMonths,remainingMonths:injury.remainingRecoveryMonths};
 }
 function adjustInjuryRecoveryGames(deltaGames){
  if(!p?.injury)return;
  const state=ensureInjuryRecoveryState();
- p.injury.remainingSeasonShare=Math.max(0,state.remainingShare+(Number(deltaGames)||0)/state.schedule);
+ // Legacy callers express treatment changes in NBA-equivalent games. Convert
+ // against 82 games so an eight-game adjustment is not worth four months in HBL.
+ p.injury.remainingRecoveryMonths=Math.max(0,state.remainingMonths+(Number(deltaGames)||0)/82*12);
  ensureInjuryRecoveryState();
 }
 function setInjuryRecoveryFloor(share){
  if(!p?.injury)return;
  ensureInjuryRecoveryState();
- p.injury.remainingSeasonShare=Math.max(p.injury.remainingSeasonShare||0,Math.max(0,Number(share)||0));
+ p.injury.remainingRecoveryMonths=Math.max(p.injury.remainingRecoveryMonths||0,Math.max(0,Number(share)||0)*12);
  ensureInjuryRecoveryState();
+}
+function injuryRecoveryLabel(injury=p?.injury){
+ const state=ensureInjuryRecoveryState(injury);if(!state)return "";
+ const months=Math.max(0,state.remainingMonths);
+ return months<=.1?"等待回場評估":months<1?"不到 1 個月":`約 ${Math.ceil(months)} 個月${months>12?"（將跨季）":""}`;
+}
+function updateMedicalEpisode(injury=p?.injury,changes={}){
+ if(!injury)return null;p.medicalHistory=p.medicalHistory||[];
+ let row=[...p.medicalHistory].reverse().find(x=>x.episodeId===injury.episodeId)||[...p.medicalHistory].reverse().find(x=>x.year===injury.startYear&&x.name===injury.name&&!x.returnOutcome);
+ if(!row){row={year:injury.startYear||p.year,name:injury.name,area:injury.area,tier:injury.level,episodeId:injury.episodeId};p.medicalHistory.push(row)}
+ Object.assign(row,changes,{episodeId:injury.episodeId,name:injury.name,area:injury.area,tier:injury.level,recovery:injury.recovery,months:Math.round((injury.originalRecoveryMonths||0)*10)/10});
+ const history=[...(p.injuryHistory||[])].reverse().find(x=>x.episodeId===injury.episodeId)||[...(p.injuryHistory||[])].reverse().find(x=>x.year===injury.startYear&&x.name===injury.name);
+ if(history){history.episodeId=injury.episodeId;history.level=injury.level;history.months=row.months;if(Number.isFinite(Number(changes.missedGames)))history.missedGames=Number(changes.missedGames);}
+ return row;
+}
+function consumeInjuryRecoveryForSeason(){
+ const state=ensureInjuryRecoveryState();if(!state)return 0;
+ const isOpeningYear=Number(p.injury.startYear)===Number(p.year)&&!p.injury.seasonRecoveryConsumed;
+ const playableShare=isOpeningYear?Math.max(.12,1-Math.max(0,Math.min(.88,p.injury.onsetFraction||.35))):1;
+ const consumed=Math.min(playableShare,state.remainingMonths/12);
+ const missed=Math.min(state.schedule,Math.max(consumed>0?1:0,Math.round(state.schedule*consumed)));
+ p.injury.remainingRecoveryMonths=Math.max(0,state.remainingMonths-consumed*12);p.injury.seasonRecoveryConsumed=true;
+ ensureInjuryRecoveryState();const row=updateMedicalEpisode(p.injury);updateMedicalEpisode(p.injury,{missedGames:(Number(row?.missedGames)||0)+missed});
+ return missed;
+}
+function settleInjuryReturn(){
+ if(!p?.injury)return null;const state=ensureInjuryRecoveryState();if(state.remainingMonths>.1)return null;
+ const injury={...p.injury},profile=injuryReturnProfile(injury),r=RNG(`${p.seed}-medical-clearance-${injury.episodeId}-${p.year}`);
+ let failed=profile.failed+(p.age>=32?(p.age-31)*1.1:0)+(injury.recur?5:0)+(p.oldInjuries?.[injury.area]||0)*1.3;
+ let full=profile.full+(p.postOpCareChosen?7:0)+(injury.surgeryDone?3:0)+(p.durability>=82?4:0)-(p.age>=30?(p.age-29)*.8:0)-(p.planRiskMod>=12?7:0);
+ failed=Math.max(2,Math.min(35,failed));full=Math.min(100-failed,Math.max(45,Math.min(94,full)));const roll=r()*100;
+ const outcome=roll<failed?"failed":roll<Math.max(failed,100-full)?"limited":"full";
+ const label=outcome==="full"?"通過完整回場評估":outcome==="limited"?"僅通過限時／降階回場評估":"未通過原層級回場評估";
+ if(injury.level==="重傷")p.severeInjuryRecovered=true,p.recoverySeasons=0;
+ if(outcome!=="full"){
+   const years=Math.min(3,profile.years+(outcome==="failed"?1:0)),cap=outcome==="failed"?18:26;
+   p.postInjuryStatus={episodeId:injury.episodeId,injuryName:injury.name,outcome,startedYear:p.year,yearsRemaining:years,minutesCap:cap,performancePenalty:outcome==="failed"?4:2};
+   p.medicalLeagueCeilingRank=Math.max(1,leagueMarketRank(p.path)-(outcome==="failed"?2:1));
+   p.medicalClearancePending={...p.postInjuryStatus,area:injury.area,label};
+ }
+ updateMedicalEpisode(injury,{returnYear:p.year,returnOutcome:outcome,returnLabel:label});
+ p.lastMedicalReturn={year:p.year,injuryName:injury.name,outcome,label};p.injury=null;p.health=Math.min(100,(p.health||70)+(outcome==="full"?15:8));
+ logIt(`🩺 ${injury.name}｜${label}`);return p.lastMedicalReturn;
+}
+function advancePostInjuryStatus(){
+ const status=p?.postInjuryStatus;if(!status||Number(p.year)<=Number(status.startedYear))return;
+ status.yearsRemaining=Math.max(0,(Number(status.yearsRemaining)||0)-1);
+ if(status.yearsRemaining<=0){p.postInjuryStatus=null;p.medicalLeagueCeilingRank=0;logIt("✅ 長期回場限制解除，醫療團隊改為一般追蹤")}
 }
 function medicalProtectionActive(){
  return (p.medicalProtectionUntilYear||0)>=p.year;
@@ -140,7 +214,8 @@ function injuryDescription(x,missedGames,changes,recur){
  let extra=recur?`<br><span class="bad">這是 ${x.area} 的舊傷復發。</span>`:"";
  let dmg=changes.length?`<br>永久影響：${changes.join("｜")}`:"";
  let cross=x.tier==="重傷"?`<br><span class="bad">可能跨季缺陣，實際復出時間依復健進度而定。</span>`:"";
- return `${x.name}｜${x.tier}<br><b>預估缺席 ${missedGames} 場｜恢復時間 ${x.recovery}</b>${extra}${dmg}${cross}`;
+ const monthText=x.months?`${x.months[0]}～${x.months[1]} 個月`:x.recovery;
+ return `${x.name}｜${x.tier}<br><b>醫療恢復期 ${monthText}｜本聯盟本季預估影響 ${missedGames} 場</b>${extra}${dmg}${cross}`;
 }
 function createInjury(r,risk,areaHint=""){
  let tier=pickInjuryTier(r);
@@ -209,17 +284,21 @@ function createInjury(r,risk,areaHint=""){
      nbaEquivalentGames=Math.max(nbaEquivalentGames,ri(r,x.games[0],x.games[1]));
    }
  }
- const originalSeasonShare=nbaEquivalentGames/82;
  const localSchedule=scheduledGamesForSeason();
- const missedGames=Math.max(nbaEquivalentGames>0?1:0,Math.round(localSchedule*originalSeasonShare));
+ const recoveryMonths=x.months?ri(r,x.months[0],x.months[1]):Math.max(.25,Math.round(recoveryMonthsFromText(x.recovery)*10)/10);
+ const onsetFraction=Math.round((.18+r()*.58)*100)/100;
+ const currentSeasonShare=Math.min(1-onsetFraction,recoveryMonths/12);
+ const missedGames=Math.max(recoveryMonths>0?1:0,Math.round(localSchedule*currentSeasonShare));
  let changes=permanentDamageFromInjury(x);
 
+ const episodeId=`inj-${p.year}-${(p.injuryHistory||[]).length+1}-${String(x.name).replace(/\s/g,"")}`;
  p.injury={
    name:x.name,area:x.area,level:tier,severity:tierWeight(tier),recur,surgeryDone:false,
-   originalMissedGames:missedGames,remainingGames:missedGames,originalSeasonShare,remainingSeasonShare:originalSeasonShare,recovery:x.recovery
+   episodeId,startYear:p.year,onsetFraction,firstSeasonExpectedGames:missedGames,returnProfile:x.returnProfile||"",originalRecoveryMonths:recoveryMonths,remainingRecoveryMonths:recoveryMonths,
+   originalMissedGames:missedGames,remainingGames:missedGames,originalSeasonShare:recoveryMonths/12,remainingSeasonShare:recoveryMonths/12,recovery:x.recovery
  };
- p.injuryHistory.push({year:p.year,name:x.name,area:x.area,level:tier,missedGames,recovery:x.recovery,seasonShare:originalSeasonShare});
- p.medicalHistory.push({year:p.year,name:x.name,area:x.area,tier,missedGames,recovery:x.recovery,recur,seasonShare:originalSeasonShare});
+ p.injuryHistory.push({year:p.year,name:x.name,area:x.area,level:tier,episodeId,missedGames,recovery:x.recovery,months:recoveryMonths,seasonShare:recoveryMonths/12});
+ p.medicalHistory.push({year:p.year,name:x.name,area:x.area,tier,episodeId,missedGames:0,recovery:x.recovery,months:recoveryMonths,recur,seasonShare:recoveryMonths/12});
  if(x.area!=="頭部")addOldInjury(x.area,tier==="重傷"?1.8:tier==="大傷"?1.2:tier==="中傷"?.75:.45,tier);
  p.health=Math.max(20,p.health-tierWeight(tier)*8);
  p.bodyLoad=Math.min(100,(p.bodyLoad||0)+tierWeight(tier)*7);
@@ -232,7 +311,7 @@ function createInjury(r,risk,areaHint=""){
    p.majorInjuryCount++;p.careerThreatInjuries++;p.lastMajorInjuryYear=p.year;
    pushNews(`💥 ${p.name} 遭遇生涯級重傷【${x.name}】`);
  }
- logIt(`🏥 ${x.name}（${tier}）｜預估缺席 ${missedGames} 場`);
+ logIt(`🏥 ${x.name}（${tier}）｜醫療恢復期約 ${recoveryMonths} 個月`);
  p.lastInjurySummary=injuryDescription(x,missedGames,changes,recur);
 }
 function rehabSeasonEffect(){
