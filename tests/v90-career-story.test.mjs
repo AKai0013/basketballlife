@@ -35,7 +35,7 @@ function player(overrides={}){
  };
 }
 
-test("career-story catalog contains 104 unique events, at least eight four-node lines and 312 choices",()=>{
+test("career-story catalog contains 112 unique events, at least eight four-node lines and 336 choices",()=>{
  const context=storyContext(player());
  const report=vm.runInContext(`({
   total:CAREER_STORY_EVENTS.length,
@@ -47,7 +47,22 @@ test("career-story catalog contains 104 unique events, at least eight four-node 
   fourNodeLines:new Set(CAREER_STORY_LINES.filter(event=>event.node===4).map(event=>event.line)).size,
   badChoices:CAREER_STORY_EVENTS.filter(event=>event.choices.length!==3).map(event=>event.id)
  })`,context);
- assert.deepEqual(JSON.parse(JSON.stringify(report)),{total:104,ids:104,lines:12,linked:44,standalone:60,choices:312,fourNodeLines:8,badChoices:[]});
+ assert.deepEqual(JSON.parse(JSON.stringify(report)),{total:112,ids:112,lines:12,linked:44,standalone:68,choices:336,fourNodeLines:8,badChoices:[]});
+});
+
+test("new major scenes are stage-gated and end with a concrete memory",()=>{
+ const context=storyContext(player());
+ const ids=["hbl_empty_family_seat","hbl_last_uniform_wash","college_roommate_transfer","college_scholarship_table","pro_first_full_dnp","pro_returning_teammate_locker","late_unused_towel","late_bus_nameplate"];
+ const report=vm.runInContext(`(${JSON.stringify(ids)}).map(id=>{const event=careerStoryEventById(id);return {id:event.id,stages:event.stages,choices:event.choices.map(choice=>({result:choice.result,memory:choice.memory}))}})`,context);
+ assert.equal(report.length,ids.length);
+ for(const event of report){
+  assert.equal(event.stages.length,1,event.id);
+  assert.equal(event.choices.length,3,event.id);
+  for(const choice of event.choices){
+   assert.ok(choice.result.length>=17,event.id);
+   assert.ok(choice.memory.length>=17,event.id);
+  }
+ }
 });
 
 test("each new career deterministically unlocks two character lines plus one team, life and late line",()=>{
@@ -131,7 +146,7 @@ test("student pools exclude professional agent, marriage, free-market and retire
  assert.deepEqual(Array.from(report.collegeForbidden),[]);
 });
 
-test("all 104 events expose a clear actor role and institutional events never borrow unrelated people",()=>{
+test("all 112 events expose a clear actor role and institutional events never borrow unrelated people",()=>{
  const context=storyContext(player({year:2036,age:26,path:"台灣職業",careerSeason:10}));
  const report=vm.runInContext(`(()=>{
   const missing=CAREER_STORY_EVENTS.filter(event=>!careerStoryActorPresentation(event,p)?.name).map(event=>event.id);

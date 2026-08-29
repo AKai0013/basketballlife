@@ -426,9 +426,53 @@ standaloneStory("pro_old_fan_letter","identity",["pro"],"一封球迷來信只�
  standaloneStory("late_rehab_return","injury",["veteran"],"復出後第一場背靠背就在眼前",`醫療團隊確認單場出賽沒有問題，但連續兩天比賽仍缺少實際資料。球隊需要你決定打兩場、只打一場，或再延後完整復出。`,"medicalTeam",[
   careerStoryChoice("one","只打一場","犧牲完整出勤，取得較安全的身體反應資料。","你完成第一場後按計畫休息。","你用一場比賽測試復出，而不是一次賭完。",{health:4,bodyLoad:-3,discipline:2}),careerStoryChoice("both","兩場都上","保住輪替與競爭感，復發風險提高。","你完成背靠背，第二場動作明顯變慢。","你選擇立刻承擔完整賽程。",{confidence:4,bodyLoad:10,health:-3}),careerStoryChoice("delay","再延後一週","最大化恢復，球隊必須繼續調整輪替。","醫療團隊增加一週對抗與檢查。","你拒絕讓賽程替身體決定復出日。",{health:6,bodyLoad:-7,teamTrust:-2})
  ],{medicalConcern:true}),
- standaloneStory("late_rival_reunion","rivalry",["veteran"],"宿敵第一次以替補身分和你同場",`{rival} 已不再是早年那個每晚主導比賽的人，你的角色也和巔峰不同。多年比較仍被重新拿出來，但這次兩人都必須用現在的分鐘完成比賽。`,"rival",[
+standaloneStory("late_rival_reunion","rivalry",["veteran"],"宿敵第一次以替補身分和你同場",`{rival} 已不再是早年那個每晚主導比賽的人，你的角色也和巔峰不同。多年比較仍被重新拿出來，但這次兩人都必須用現在的分鐘完成比賽。`,"rival",[
   careerStoryChoice("respect","賽前主動致意","承認彼此都已改變，不取消場上競爭。","你們短暫交談後各自回到球隊。","你讓長年競爭容得下角色變化。",{rivalRespect:10,rep:3}),careerStoryChoice("compete","把有限分鐘當成最後一次對決","提高對抗與話題，也增加身體負荷。","兩人在替補時段正面交手。","你拒絕讓角色下降帶走競爭感。",{confidence:4,bodyLoad:5,rivalRespect:3}),careerStoryChoice("present","只準備現在的球隊任務","不回應舊比較，把注意力留給當前比賽。","媒體沒有得到期待中的宿敵宣言。","你不再讓早年對手決定每次上場意義。",{discipline:3,rivalRespect:-1})
 ],{minCareerSeason:12,roles:["worker","benchLeader","garbage"]})
+
+ ,standaloneStory("hbl_empty_family_seat","family",["hbl"],"家人答應來的座位，開賽後仍空著",`熱身結束，你仍看見家人預留的位置空著。手機裡只有一句「正在趕」，教練已經催全隊收起電話。這不是冠軍戰，也可能是他們本季唯一能到場的一次。`,"family",[
+  careerStoryChoice("call","在進更衣室前打最後一通電話","少聽一段賽前提醒，確認家人是否安全，也讓自己不必帶著猜測上場。","電話接通時，家人正在壅塞的車陣裡。他們要你別再等，先把比賽打完。","那個空位沒有消失，但你知道它為什麼空著。",{familyHarmony:7,coachTrust:-1,confidence:2}),
+  careerStoryChoice("focus","把手機交給隊務，照原流程準備","不讓看台改變比賽準備，答案留到終場後再確認。","終場哨響後，你第一眼又看向那個位置；椅背上多了一件家人的外套。","你沒有在開賽前等到人，卻在比賽結束後看見他們真的來過。",{discipline:3,confidence:2}),
+  careerStoryChoice("friend","請場邊朋友留意座位並傳訊息","把焦慮交給信任的人，也接受自己可能在比賽中等待暗號。","第二節死球時，朋友朝你比出拇指。家人剛坐下，還在喘氣。","你記得的不是他們遲到，而是那個從看台傳下來的手勢。",{friendTrust:5,familyHarmony:5,fatigue:1})
+ ],{minAge:16}),
+ standaloneStory("hbl_last_uniform_wash","identity",["hbl"],"最後一次洗完校隊球衣，名字標籤開始脫線",`畢業前最後一場正式比賽結束，器材室只剩洗衣機轉動。你的姓名標籤已經翹起一角，學弟問這件球衣下季是不是會交給別人。`,"teammate",[
+  careerStoryChoice("repair","把標籤重新縫好再交回去","承認球衣會被下一個人穿走，仍替它留下完整的名字。","你一針一針把標籤縫回去。學弟接過球衣時，先摸了摸那條新線。","你沒有帶走球衣，只留下有人認真穿過它的痕跡。",{teamTrust:6,discipline:3}),
+  careerStoryChoice("gift","把護腕留在球衣口袋給下一個人","不替學弟規定怎麼打，只留下一件曾陪你撐過低潮的東西。","學弟沒有當場戴上，只把護腕和球衣一起收進自己的櫃子。","離校那天，你看見熟悉的顏色留在別人的位置。",{teammateTrust:7,rep:2}),
+  careerStoryChoice("keepTag","拆下姓名標籤留作紀念","球衣歸還球隊，把只屬於你的那一小塊帶走。","標籤背面沾著洗不掉的膠。你把它夾進學生證套，沒有再貼到任何球衣上。","你帶走的不是號碼，而是一小塊已經完成任務的名字。",{confidence:4,teamTrust:-1})
+ ],{minAge:18}),
+
+ standaloneStory("college_roommate_transfer","friendship",["college"],"室友把轉學文件壓在戰術本下面",`你回到宿舍時，室友的床已經收掉一半。他在這裡等不到輪替，決定去另一所學校；文件上需要一名共同生活過的人簽名證明。`,"roommate",[
+  careerStoryChoice("help","陪他把程序與離隊談話走完","可能被教練誤會你支持離隊，但不讓室友獨自處理最後一天。","你陪他交完文件，再一起把最後一箱鞋搬下樓。","房門關上前，他把你們共用的延長線留在桌上。",{friendTrust:9,coachTrust:-2,iq:1}),
+  careerStoryChoice("review","先問清楚他離開的真正原因","不急著勸留或送走，讓這次選擇不是只剩上場時間。","他說最難的不是坐板凳，而是每天回房都假裝自己沒事。你簽下名字，沒有再叫他撐一下。","你第一次明白，留下不一定比離開勇敢。",{friendTrust:7,confidence:2}),
+  careerStoryChoice("distance","拒絕介入轉學程序","保住與球隊的界線，也讓共同生活停在行政表格之外。","他自己找到另一名同學簽字。搬走那天，桌上只留下你忘記收回的充電線。","你沒有阻止他離開，也沒有參與他的告別。",{discipline:2,friendTrust:-7})
+ ],{minCareerSeason:2}),
+ standaloneStory("college_scholarship_table","family",["college"],"獎學金續領會議，家人在螢幕另一端",`學校通知下季補助將依出勤、成績與球隊角色重新審查。家人透過視訊加入，桌上每個人談的都是數字，只有他們知道少掉的那筆錢會落到哪一項生活開支。`,"family",[
+  careerStoryChoice("plan","提出可查核的課業與出勤計畫","把承諾寫成期限與負責人，接受下一次審查不能再靠解釋。","導師把三個日期圈起來，教練也在客場名單旁補上課業窗口。","會議結束後，家人第一次說：這不像保證，像一個真的計畫。",{discipline:5,iq:2,familyHarmony:6}),
+  careerStoryChoice("basketball","要求球隊用場上價值保留補助","把壓力放到比賽表現，短期更直接，也讓一次傷病或掉出輪替變得更危險。","教練願意替你背書，但沒有替下季角色保證。","你拿到的不是安全，只是多一季證明自己的期限。",{coachTrust:5,confidence:3,familyHarmony:-2}),
+  careerStoryChoice("work","接受補助減少並安排校內工作","減少訓練與恢復時間，換取不必把全家生活押在輪替上。","你領到第一張值班表，班次就在重量訓練後兩小時。","那張表很重，卻是你自己接住的重量。",{familyHarmony:8,fatigue:5,rep:-1})
+ ],{minCareerSeason:2}),
+
+ standaloneStory("pro_first_full_dnp","identity",["pro"],"第一次整場沒上，朋友沒有問你得幾分",`終場後你仍穿著乾的球衣。手機跳出 {friend} 的訊息：「晚餐吃了嗎？」他顯然看完比賽，卻刻意沒有提技術統計。`,"friend",[
+  careerStoryChoice("call","在球員通道打給他","承認今晚沒有任何上場內容，也不把沉默包裝成成熟。","你說完「我一分鐘都沒打」後，電話那頭停了幾秒，只回你：「那你現在很難受吧。」","那晚第一個把你當成球員以外的人，不在更衣室裡。",{friendTrust:9,confidence:3}),
+  careerStoryChoice("film","回傳明早影片室的照片","把失落轉成準備，也讓朋友知道你現在只想用工作回答。","隔天清晨，他回了一個鬧鐘圖示。你打開影片時，球館還沒有人。","你沒有假裝沒事，只把回答留到下一次被叫到名字。",{discipline:4,coachTrust:3,friendTrust:3}),
+  careerStoryChoice("ignore","把訊息滑掉，獨自離開球館","不必解釋最難堪的一晚，也把關心一起擋在門外。","深夜回到家，那句晚餐仍停在未讀。冰箱的燈亮了很久，你沒有拿任何東西。","沒有上場的夜晚，最後連一句話也沒有留下。",{confidence:-3,friendTrust:-6,fatigue:2})
+ ],{minCareerSeason:2,maxMins:10}),
+ standaloneStory("pro_returning_teammate_locker","teammate",["pro"],"舊隊友回到主場，他原本的名牌已換人",`被交易離隊後，{teammate} 第一次以客隊身分回來。賽前他站在更衣室外，看見自己過去的位置已經掛上新人的名字；工作人員問你要不要帶他進去看一眼。`,"teammate",[
+  careerStoryChoice("enter","陪他走進舊更衣室","可能打亂賽前準備，讓一段共同生活有真正回訪。","他沒有碰那個新名牌，只從櫃子最深處摸出一條遺忘的鞋帶，笑說自己當年果然收得很差。","有些人離開球隊後，仍認得櫃門最難拉開的角度。",{teammateTrust:10,rep:2,fatigue:1}),
+  careerStoryChoice("tunnel","在球員通道正式致意","保留雙方比賽身分，不把重逢變成公開表演。","你們只碰了一下拳。他走向客隊休息室前，回頭看了那扇門一次。","你沒有帶他回去，卻讓他知道那段日子沒有被抹掉。",{teammateTrust:6,discipline:2}),
+  careerStoryChoice("game","請工作人員等賽後再談","把目前球隊與比賽放在前面，也接受賽後可能沒有合適時機。","比賽結束後客隊巴士提早離開。那條走廊恢復安靜，你們只剩賽前遠遠點頭。","你守住了比賽程序，也錯過一次不一定再來的回訪。",{teamTrust:4,teammateTrust:-3})
+ ],{minCareerSeason:5}),
+
+ standaloneStory("late_unused_towel","teammate",["veteran"],"比賽結束後，年輕隊友把你沒用到的毛巾摺回去",`你整場沒有被叫到名字。散場時，年輕隊友把板凳旁那條乾毛巾摺好，問你是不是每個老將都會有一天突然不知道該在比賽裡等什麼。`,"teammate",[
+  careerStoryChoice("teach","把今晚每次可能換人的時機說給他聽","承認自己一直在等，也把沒有上場的觀察交給下一個人。","你們在空場邊重走第四節三次換人。他最後問的已經不是你為何沒上，而是自己下一次該看哪裡。","那條沒擦過汗的毛巾，最後墊在兩人中間的戰術板下。",{teammateTrust:10,iq:2,confidence:2}),
+  careerStoryChoice("honest","告訴他你今晚也沒有答案","不假裝老將永遠理解安排，讓關係從真實困惑開始。","他點點頭，把毛巾交回你手上，說下次如果換成他，也希望有人承認難受。","你沒有給建議，只讓一個年輕人知道沉默不等於沒感覺。",{teammateTrust:8,confidence:3}),
+  careerStoryChoice("leave","叫他別想太多，先跟隊伍離場","維持老將距離，不在最脆弱的時候談角色。","他把毛巾放回籃子，之後幾場也不再問你換人與等待。","你保住了表情，卻讓那個問題留給他自己。",{discipline:2,teammateTrust:-6})
+ ],{minAge:30,minCareerSeason:10,maxMins:16}),
+ standaloneStory("late_bus_nameplate","legacy",["veteran"],"客場巴士上，第一排換了新人的名牌",`多年來隊務習慣替你留第一排，這次座位卡卻改成新加盟的核心。沒有人宣布地位改變，只剩你的行李還停在那格上方。`,"teammate",[
+  careerStoryChoice("move","把行李移到後排，主動坐到年輕隊友旁邊","接受隊內順序已經變動，讓新的位置產生新的工作。","車開上高速公路後，年輕隊友拿出影片問你最後一波為什麼站錯半步。","你失去第一排，卻在後排多了一個真正需要你的座位。",{teammateTrust:9,teamTrust:5,confidence:2}),
+  careerStoryChoice("ask","請隊務說明座位安排","不把小事悶成猜測，也可能聽見球隊確實正在交棒。","隊務道歉說忘了先告知：球隊希望新核心方便和教練討論。你把行李拿走，至少不用再假裝這只是印錯。","名字被換下來以前，你先要求一句清楚的說明。",{iq:2,teamTrust:1,confidence:2}),
+  careerStoryChoice("claim","把自己的名牌放回第一排","守住多年位置，也讓全車看見你拒絕默默退後。","新人沒有爭，教練卻在下一站上車後看了兩張重疊的名牌很久。","座位保住了，車上的每個人也知道交棒不會自然發生。",{confidence:4,teamTrust:-6,teammateTrust:-3})
+ ],{minAge:32,minCareerSeason:12})
 ];
 
 const CAREER_STORY_EVENTS=[...CAREER_STORY_LINES,...CAREER_STORY_STANDALONES];

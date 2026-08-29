@@ -27,7 +27,7 @@ function normalEventEligible(event){
  return true;
 }
 function eventOptionRiskScore(option,index=0){
- const raw=effectType(String(option?.[2]||"normal"));
+ const requested=effectType(String(option?.[2]||"normal")),raw=requested==="discipline"?"normal":requested;
  const weights={playhurt:110,risk:100,injrisk:100,three:92,clutch:88,show:86,compete:84,social:76,ath:66,finish:64,shoot:62,handle:60,rebound:58,defense:56,minuteslimit:52,pass:44,iq:42,talk:38,study:36,team:30,normal:25,check:15,sitout:5,safe:0};
  const words=`${option?.[0]||""} ${option?.[1]||""}`;
  return (weights[raw]??50)+(/高風險|全力|挑戰|強勢|直接|大量|硬撐/.test(words)?8:0)-(/保守|休息|恢復|穩定|安全|降低/.test(words)?8:0)-index*.001;
@@ -39,13 +39,17 @@ function mapEventOptions(options){
  else if(ranked.length===2){strategyByIndex[ranked[0].index]="risk";strategyByIndex[ranked[1].index]="safe"}
  else ranked.forEach((item,rank)=>{strategyByIndex[item.index]=rank===0?"risk":rank===ranked.length-1?"safe":"balance"});
  return source.map((option,index)=>{
-   const raw=effectType(String(option[2]||"normal")),typed=`${strategyByIndex[index]||"balance"}|${raw}`;
+   const requested=effectType(String(option[2]||"normal")),raw=requested==="discipline"?"normal":requested,typed=`${strategyByIndex[index]||"balance"}|${raw}`;
    return [option[0],option[1],typed,raw];
  });
 }
 function memoryWeightedPick(items,r,memory,recent=[]){
  const pool=Array.isArray(items)?items:[];if(!pool.length)return null;
- const weights=pool.map(item=>{
+ // 同一條件池還有未看過的題目時先抽未讀內容；全部看過後才重新採用跨季降權。
+ // 這保留 Seed 決定性，也避免新增事件仍被舊題目提早搶走。
+ const unseen=pool.filter(item=>!Number(memory?.[String(item?.t||item?.title||"")]?.count||0));
+ const candidates=unseen.length?unseen:pool;
+ const weights=candidates.map(item=>{
    const key=String(item?.t||item?.title||""),record=memory?.[key]||{},count=Math.max(0,Number(record.count)||0);
    const last=Number(record.lastYear),gap=Number.isFinite(last)?Math.max(0,p.year-last):99;
    // 同一個賽季只有 2～4 次事件，完全相同的題目不應在幾個回合內再次出現；
@@ -55,8 +59,8 @@ function memoryWeightedPick(items,r,memory,recent=[]){
    return gapWeight===0?0:Math.max(.008,gapWeight*countWeight*recentWeight);
  });
  let roll=r()*weights.reduce((sum,value)=>sum+value,0);
- for(let i=0;i<pool.length;i++){roll-=weights[i];if(roll<=0)return pool[i]}
- return pool[pool.length-1];
+ for(let i=0;i<candidates.length;i++){roll-=weights[i];if(roll<=0)return candidates[i]}
+ return candidates[candidates.length-1];
 }
 function rememberEvent(memory,key){
  if(!memory||!key)return;
