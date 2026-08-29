@@ -333,6 +333,7 @@ function offCourtEventEligible(kind){
  if(kind==="podcastSlip"&&Number(p.rep||0)<10)return false;
  if(kind==="partyLeak"&&Number(p.rep||0)<8)return false;
  if(kind==="fanPhoneConflict"&&Number(p.rep||0)<5)return false;
+ if(kind==="overseasHome"&&!['日本職業','韓國職業','CBA','NBA G League','歐洲聯賽','NBA'].includes(String(p.path||'')))return false;
  return true;
 }
 function buildOffCourtSpecial(){
@@ -347,8 +348,8 @@ function buildOffCourtSpecial(){
  if(r()>=rate)return null;
  // 高風險場外誘惑也要能實際抽到；玩家可以安全離開，也可能主動把生涯押上去。
  let pool=isCollegePath()
-   ? ["teammateScandal","lockerRoomFaction","socialMediaStorm","teamDiscipline","charityCommitment","rumorPhoto","podcastSlip","partyLeak","fanPhoneConflict","lateNightRide","gamblingApproach"]
-   : ["teammateScandal","importWalkout","lockerRoomFaction","socialMediaStorm","teamDiscipline","agentFinance","charityCommitment","friendLoan","rumorPhoto","podcastSlip","partyLeak","fanPhoneConflict","lateNightRide","gamblingApproach"];
+   ? ["teammateScandal","lockerRoomFaction","socialMediaStorm","teamDiscipline","charityCommitment","rumorPhoto","podcastSlip","partyLeak","fanPhoneConflict","lateNightRide","gamblingApproach","mentorCall","familyVisit"]
+   : ["teammateScandal","importWalkout","lockerRoomFaction","socialMediaStorm","teamDiscipline","agentFinance","charityCommitment","friendLoan","rumorPhoto","podcastSlip","partyLeak","fanPhoneConflict","lateNightRide","gamblingApproach","mentorCall","familyVisit","overseasHome"];
  // 酒駕屬罕見的「事情已發生」事件；低紀律提高機率，但不保證每段長生涯都抽到。
  const duiChance=(p.discipline||50)<42?.12:(p.discipline||50)<58?.055:.018;
  if(r()<duiChance)pool.push("duiIncident","duiIncident","duiIncident");
@@ -1105,6 +1106,8 @@ function resolveOffCourtSpecial(action){
    p.conductMarketPenalty=Math.max(p.conductMarketPenalty||0,value);p.conductPenaltySetYear=p.year;
    if(suspension)p.conductSuspensionGames=Math.max(p.conductSuspensionGames||0,suspension);
  };
+ const authored=typeof OFF_COURT_AUTHORED_ACTIONS!=="undefined"?OFF_COURT_AUTHORED_ACTIONS[action]:null;
+ if(authored){const [effects,copy]=authored;for(const [key,value] of Object.entries(effects)){const current=Number(p[key]||0);p[key]=["confidence","discipline","familyHarmony","bodyLoad","fatigue","health"].includes(key)?Math.max(0,Math.min(100,current+value)):current+value}record(offCourtEventDefinition(activeKind)?.title||activeKind,copy);html=`<div class="specialStage career"><b>${offCourtEventDefinition(activeKind)?.title||"場外抉擇"}</b><br>${copy}</div>`;finishSpecialEvent(html,`場外事件：${action}`);return}
  if(action==="defendTeammate"){
    const r=RNG(`${p.seed}-teammate-scandal-${p.year}`),backfire=r()<.42;
    if(backfire){p.rep-=4;p.confidence=Math.max(0,p.confidence-2);record("隊友桃色風波","替隊友發言後遭新證據打臉");html=`<div class="specialStage career"><b class="bad">📰 新證據讓發言反噬</b><br>隊友記住你曾替他擋下媒體，但外界開始質疑你是否協助隱瞞。球隊評價 -4｜信心 -2。</div>`;}

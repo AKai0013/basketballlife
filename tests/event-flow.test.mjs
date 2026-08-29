@@ -8,13 +8,17 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const context = vm.createContext({});
 const eventSource = fs.readFileSync(path.join(root, "data/events.js"), "utf8");
+const offCourtSource = fs.readFileSync(path.join(root, "data/off-court-events-v911.js"), "utf8");
+const ordinaryOutcomeSource = fs.readFileSync(path.join(root, "data/ordinary-event-outcomes-v911.js"), "utf8");
 const injurySource = fs.readFileSync(path.join(root, "data/injuries.js"), "utf8");
 const eventEngineSource = fs.readFileSync(path.join(root, "js/events/event-engine.js"), "utf8");
-vm.runInContext(`${eventSource}\n${injurySource}\nglobalThis.__BL_TEST_DATA={events,PRO_GENERAL_EVENTS,INJURY_PRESSURE_EVENTS,OFF_COURT_EVENT_DEFS};`, context);
+vm.runInContext(`${eventSource}\n${offCourtSource}\n${ordinaryOutcomeSource}\n${injurySource}\nglobalThis.__BL_TEST_DATA={events,PRO_GENERAL_EVENTS,INJURY_PRESSURE_EVENTS,OFF_COURT_EVENT_DEFS};`, context);
 
 function eventLogic(player) {
   const logic = vm.createContext({p:player,console});
   vm.runInContext(eventSource, logic);
+  vm.runInContext(offCourtSource, logic);
+  vm.runInContext(ordinaryOutcomeSource, logic);
   vm.runInContext(injurySource, logic);
   vm.runInContext(`
     function isProPath(){return ["SBL／半職業","台灣職業","日本職業","韓國職業","CBA","NBA G League","歐洲聯賽","NBA"].includes(p.path)}
@@ -63,6 +67,22 @@ test("new scene events provide a specific result for every choice and outcome ti
   }
 });
 
+test("all 103 ordinary events provide scene-specific four-tier results",()=>{
+  const rows=[...context.__BL_TEST_DATA.events,...context.__BL_TEST_DATA.PRO_GENERAL_EVENTS];
+  assert.equal(rows.length,103);
+  for(const event of rows){
+    for(const option of event.opts){
+      assert.deepEqual(Object.keys(option[3]||{}).sort(),["disaster","fail","great","success"],`${event.t}: ${option[0]}`);
+      const results=Object.values(option[3]);
+      assert.equal(new Set(results).size,4,`${event.t}: ${option[0]}`);
+      for(const result of results){
+        assert.ok(result.length>=16,`${event.t}: ${option[0]}`);
+        assert.doesNotMatch(result,/事情往最好的方向|選擇帶來正面結果|沒有帶來預期效果|朝最差方向發展/,`${event.t}: ${option[0]}`);
+      }
+    }
+  }
+});
+
 test("new emotional ordinary scenes keep concrete copy and four authored outcomes",()=>{
   const titles=new Set([
     "輸球後，校車只剩最後一排","家人坐在客隊看台","隊友的鞋底在熱身時裂開","助教刪掉你唯一一段精華",
@@ -104,12 +124,12 @@ test("rewritten legacy drills describe a real decision instead of stat labels",(
   }
 });
 
-test("ordinary event resolver prefers authored result text and keeps legacy fallback",()=>{
+test("ordinary event resolver prefers authored result text for new and upgraded scenes",()=>{
   assert.match(eventEngineSource,/const authoredOutcome=ordinaryEventOutcome\(activeOrdinaryEvent,label,tier\)/);
   const logic=eventLogic({year:2032,path:"HBL",stats:{shoot:60,finish:60,handle:60,pass:60,defense:60,rebound:60,ath:60,iq:60}});
   const result=vm.runInContext(`ordinaryEventOutcome(events.find(event=>event.t==="邊線球只剩零點八秒"),"改成外彈接球直接出手","great")`,logic);
   assert.match(result,/紅燈剛亮/);
-  assert.equal(vm.runInContext(`ordinaryEventOutcome(events[0],events[0].opts[0][0],"great")`,logic),"");
+  assert.match(vm.runInContext(`ordinaryEventOutcome(events[0],events[0].opts[0][0],"great")`,logic),/大螢幕/);
 });
 
 test("context-gated events stay out of illogical leagues and career states",()=>{
@@ -207,10 +227,20 @@ test("ordinary-event memory prevents repeats within the same season while unused
 });
 
 test("off-court events keep three distinct actions", () => {
+  assert.equal(Object.keys(context.__BL_TEST_DATA.OFF_COURT_EVENT_DEFS).length,20);
   for (const [id, event] of Object.entries(context.__BL_TEST_DATA.OFF_COURT_EVENT_DEFS)) {
     assert.equal(event.actions?.length, 3, id);
     assert.equal(new Set(event.actions.map((action) => action[0])).size, 3, id);
   }
+});
+
+test("new off-court scenes have authored consequences and truthful eligibility",()=>{
+  const logic=eventLogic({year:2032,age:25,path:"台灣職業",rep:8,careerSalary:500,stats:{shoot:70,finish:70,handle:70,pass:70,defense:70,rebound:70,ath:70,iq:70}});
+  for(const kind of ["mentorCall","familyVisit"]){assert.equal(vm.runInContext(`offCourtEventEligible("${kind}")`,logic),true,kind)}
+  assert.equal(vm.runInContext(`offCourtEventEligible("overseasHome")`,logic),false);
+  logic.p.path="日本職業";
+  assert.equal(vm.runInContext(`offCourtEventEligible("overseasHome")`,logic),true);
+  assert.equal(vm.runInContext(`Object.keys(OFF_COURT_AUTHORED_ACTIONS).length`,logic),9);
 });
 
 test("ordinary events do not invent a contract year, exhaustion or scouting attention",()=>{
