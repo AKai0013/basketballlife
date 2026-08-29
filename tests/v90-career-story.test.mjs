@@ -19,6 +19,7 @@ function storyContext(player){
  };
  vm.createContext(context);
  vm.runInContext(read("data/career-story-events.js"),context);
+ vm.runInContext(read("data/career-story-copy-v911.js"),context);
  vm.runInContext(read("js/career/progression-engine.js"),context);
  vm.runInContext(read("js/events/career-story-engine.js"),context);
  return context;
@@ -48,6 +49,12 @@ test("career-story catalog contains 112 unique events, at least eight four-node 
   badChoices:CAREER_STORY_EVENTS.filter(event=>event.choices.length!==3).map(event=>event.id)
  })`,context);
  assert.deepEqual(JSON.parse(JSON.stringify(report)),{total:112,ids:112,lines:12,linked:44,standalone:68,choices:336,fourNodeLines:8,badChoices:[]});
+});
+
+test("legacy major-story outcomes no longer stop at a generic short sentence",()=>{
+ const context=storyContext(player());
+ const short=vm.runInContext(`CAREER_STORY_EVENTS.flatMap(event=>event.choices).filter(choice=>choice.result.trim().length<18||choice.memory.trim().length<18).length`,context);
+ assert.equal(short,0);
 });
 
 test("new major scenes are stage-gated and end with a concrete memory",()=>{

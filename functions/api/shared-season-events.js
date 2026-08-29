@@ -11,9 +11,13 @@ export const SHARED_SEASON_EVENTS={
  pro_matchup:{title:"職業例行賽真人對決",detail:"你們在同一職業聯盟的例行賽碰頭。進攻、封鎖與臨場調整彼此克制，沒有任何玩家能單獨決定共同勝負。",kind:"competitive"},
  same_team_possession:{title:"同隊關鍵回合",detail:"你們效力同一支球隊。發動、終結與防守收尾必須由不同真人接起來；責任重疊就會留下沒人處理的工作。",kind:"cooperative",roleSpecific:true},
  same_team_rotation:{title:"同隊短輪替責任分配",detail:"連戰壓縮輪替後，真人隊友必須分開承擔組織、主要產出與防守收尾。所有人都搶同一件事，球隊就會在另一端留下缺口。",kind:"cooperative",options:[option("shared_create","接管組織與節奏","降低其他真人的持球壓力，自己負責把回合送進正確位置。"),option("shared_finish","承擔主要產出","接住隊友創造的機會，接受出手與終結責任。"),option("shared_anchor","扛下防守與籃板收尾","保護隊友的體力與失誤風險，完成每個回合最後一道工作。")]},
+ same_team_closing:{title:"同隊最後五分鐘分工",detail:"比分接近時，真人隊友要把發動、最後處理與防守收尾拆開。少掉任何一項，最後五分鐘就會留下對手能反覆攻擊的缺口。",kind:"cooperative",roleSpecific:true},
  injury_rotation:{title:"傷病後的真人輪替",detail:"同隊真人的傷病正在改變輪替。傷者與健康隊友會收到不同任務，恢復、代扛與角色安排必須一起成立。",kind:"cooperative"},
  veteran_handoff:{title:"老將與新核心的比賽交接",detail:"同隊真人正處於不同生涯階段。有人要整理場上資訊、有人要接下產出，還要有人保護老將負荷；交棒不是自動加成。",kind:"cooperative",options:[option("shared_create","老將整理對位與節奏","把累積的閱讀交給真人隊友，降低全隊決策成本。"),option("shared_finish","新核心接下關鍵產出","使用隊友整理出的機會，承擔本場主要得分與失誤責任。"),option("shared_anchor","共同保護輪替負荷","補上防守與恢復安排，避免交接變成單純增加老將消耗。")]},
  national_unit:{title:"國家培訓隊共同回合",detail:"具備資格的真人同時進入培訓窗口。這次只決定搭配順位、健康與評價，不會憑空增加正式國家隊出賽。",kind:"cooperative",roleSpecific:true},
+ national_pressure:{title:"培訓隊最後一席的真人協作",detail:"你們都具備本次培訓資格，但名單與負荷有限。整理戰術、完成驗收與保護健康必須由不同真人接起來；本事件不會把培訓紀錄冒充正式出賽。",kind:"cooperative",roleSpecific:true},
+ college_joint_camp:{title:"大學暑期聯合訓練",detail:"不同大學路線在正式休賽窗口共同訓練。每名真人用自己的位置完成互補工作；結果只影響共同評價，不會虛構轉學或招募承諾。",kind:"cooperative",roleSpecific:true},
+ pro_scout_adjustment:{title:"職業球探報告真人拆招",detail:"同聯盟球隊已把真人球員的第一選擇寫進報告。主動進攻、預先封鎖與保留變招彼此克制；結果進入本季壓力，但不改寫各自正式賽果。",kind:"competitive"},
  cross_league_window:{title:"跨聯盟季中交流",detail:"你們分處不同聯盟，只在合理的停賽窗口交換影片與訓練資訊。各自原球隊賽程與合約完全保留。",kind:"cooperative",roleSpecific:true},
  cross_league_recovery:{title:"跨聯盟連戰恢復協議",detail:"至少一名真人正帶著明顯疲勞或低健康進入交流窗口。影片、替代訓練與恢復監督要由不同玩家接起來，不能只叫傷者自己休息。",kind:"cooperative",options:[option("shared_create","整理可替代的訓練內容","把對方聯盟的比賽需求轉成低負荷課表。"),option("shared_finish","完成有限強度實戰驗證","在安全範圍測試課表，回報哪些動作仍會造成壓力。"),option("shared_anchor","監督恢復與停止條件","依健康反應決定何時停止，避免交流變成額外消耗。")]}
 };
@@ -32,11 +36,11 @@ const cooperativeOptions=()=>[
 export function midseasonEventFor(rows,year){if(rows.length<2)return null;const sameTeam=new Set(rows.map(row=>`${row.league}|${row.team_name}`)).size===1,sameLeague=new Set(rows.map(row=>row.league)).size===1,allHbl=rows.every(row=>row.league==="HBL"),allCollege=rows.every(row=>!pro(row)&&row.league!=="HBL"),allPro=rows.every(pro),injured=rows.some(row=>+row.health<=55||flags(row).injured),strained=rows.some(row=>+row.health<75||+flags(row).fatigue>=65),veteran=rows.some(row=>+row.age>=35),eligible=rows.every(row=>flags(row).nationalEligible!==false);let type="";
  if(sameTeam&&injured)type="injury_rotation";
  else if(allPro&&sameTeam&&veteran)type="veteran_handoff";
- else if(allPro&&sameTeam)type=year%2?"same_team_rotation":"same_team_possession";
+ else if(allPro&&sameTeam)type=year%3===0?"same_team_closing":year%2?"same_team_rotation":"same_team_possession";
  else if(allHbl)type=year%2?"hbl_elimination":"hbl_match";
- else if(allCollege&&sameLeague)type=year%2?"college_recruiting_scrimmage":"college_showcase";
- else if(allPro&&sameLeague)type="pro_matchup";
- else if(eligible&&rows.every(row=>+row.age>=18)&&year%4===0)type="national_unit";
+ else if(allCollege&&sameLeague)type=year%3===0?"college_joint_camp":year%2?"college_recruiting_scrimmage":"college_showcase";
+ else if(allPro&&sameLeague)type=year%3===0?"pro_scout_adjustment":"pro_matchup";
+ else if(eligible&&rows.every(row=>+row.age>=18)&&year%4===0)type=year%8===0?"national_pressure":"national_unit";
  else if(strained)type="cross_league_recovery";
  else type="cross_league_window";
  const source=SHARED_SEASON_EVENTS[type],options=(source.options||(source.kind==="competitive"?competitiveOptions():cooperativeOptions())).map(item=>({...item}));

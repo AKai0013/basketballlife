@@ -15,6 +15,14 @@ function evaluateClassic(file, names) {
   return Object.fromEntries(names.map(name => [name, context[name]]));
 }
 
+function evaluateClassicFiles(files, names) {
+  const context = {};
+  vm.createContext(context);
+  const expose = names.map(name => `globalThis.${name} = typeof ${name} === "undefined" ? undefined : ${name};`).join("\n");
+  vm.runInContext(`${files.map(read).join("\n")}\n${expose}`, context, { filename: files.join(" + ") });
+  return Object.fromEntries(names.map(name => [name, context[name]]));
+}
+
 function evaluateModuleData(file, names) {
   const context = {};
   vm.createContext(context);
@@ -26,12 +34,12 @@ function evaluateModuleData(file, names) {
   return Object.fromEntries(names.map(name => [name, context[name]]));
 }
 
-const ordinaryData = evaluateClassic("data/events.js", ["events", "OFF_COURT_EVENT_DEFS"]);
-const storyData = evaluateClassic("data/career-story-events.js", ["CAREER_STORY_EVENTS"]);
+const ordinaryData = evaluateClassicFiles(["data/events.js", "data/off-court-events-v911.js", "data/ordinary-event-outcomes-v911.js"], ["events", "PRO_GENERAL_EVENTS", "OFF_COURT_EVENT_DEFS"]);
+const storyData = evaluateClassicFiles(["data/career-story-events.js", "data/career-story-copy-v911.js"], ["CAREER_STORY_EVENTS"]);
 const sharedSeasonData = evaluateModuleData("functions/api/shared-season-events.js", ["SHARED_SEASON_EVENTS"]);
 const sharedStoryData = evaluateModuleData("functions/api/shared-career-stories.js", ["STORY_NODES"]);
 
-const ordinary = ordinaryData.events || [];
+const ordinary = [...(ordinaryData.events || []), ...(ordinaryData.PRO_GENERAL_EVENTS || [])];
 const offCourt = ordinaryData.OFF_COURT_EVENT_DEFS || {};
 const stories = storyData.CAREER_STORY_EVENTS || [];
 const sharedSeason = sharedSeasonData.SHARED_SEASON_EVENTS || {};
