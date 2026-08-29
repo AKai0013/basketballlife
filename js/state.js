@@ -175,6 +175,10 @@ function normalizeCareerPlayer(player){
    const remaining=Math.max(0,Number(player.injury.remainingGames ?? original)||0);
    if(!Number.isFinite(Number(player.injury.originalSeasonShare)))player.injury.originalSeasonShare=original/82;
    if(!Number.isFinite(Number(player.injury.remainingSeasonShare)))player.injury.remainingSeasonShare=remaining/82;
+   if(!Number.isFinite(Number(player.injury.originalRecoveryMonths)))player.injury.originalRecoveryMonths=Math.max(.1,player.injury.originalSeasonShare*12);
+   if(!Number.isFinite(Number(player.injury.remainingRecoveryMonths)))player.injury.remainingRecoveryMonths=Math.max(0,player.injury.remainingSeasonShare*12);
+   if(!Number.isFinite(Number(player.injury.startYear)))player.injury.startYear=Number(player.year)||0;
+   if(!player.injury.episodeId)player.injury.episodeId=`inj-${player.injury.startYear}-${String(player.injury.name||"injury").replace(/\s/g,"")}`;
  }
  if(player.contract&&typeof player.contract==="object")normalizeV8Contract(player.contract);
  return player;

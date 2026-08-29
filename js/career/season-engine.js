@@ -74,7 +74,7 @@ function showHealth(){
    p.healthySeasons=0;
    ensureInjuryRecoveryState();
    const original=p.injury.originalMissedGames??0;
-   const remaining=Math.max(0,p.injury.remainingGames??original);
+   const remainingLabel=injuryRecoveryLabel();
    const baseRisk=Math.round(p.seasonInjuryRiskTarget||estimatedPlanRisk(p.seasonPlan||"normal"));
    const actualRisk=Math.round((1-Math.max(0,Math.min(1,Number(p.seasonInjurySurvival)||0)))*100);
    const riskSettlement=p.seasonNaturalInjuryChecked?`${actualRisk}%`:`已記錄 ${p.injury.name}`;
@@ -84,9 +84,9 @@ function showHealth(){
       <div class="v9HealthHeroCopy"><small>MEDICAL REPORT · ${p.year}</small><span>需要復健</span><h3>${p.injury.name}</h3><p>${p.lastInjurySummary||"醫療團隊已完成傷勢評估。"}</p></div>
       <div class="v9HealthGauge" role="meter" aria-label="目前健康 ${healthScore}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${healthScore}"><i><b>${healthScore}</b><small>健康</small></i></div>
     </header>
-    <div class="v9HealthRiskStrip"><article><small>季初風險</small><b>${baseRisk}%</b></article><span>→</span><article><small>球季結果</small><b>${riskSettlement}</b></article><article><small>尚需缺席</small><b>${remaining>0?remaining+" 場":"可望復出"}</b></article></div>
+    <div class="v9HealthRiskStrip"><article><small>季初風險</small><b>${baseRisk}%</b></article><span>→</span><article><small>球季結果</small><b>${riskSettlement}</b></article><article><small>尚需復健</small><b>${remainingLabel}</b></article></div>
     <div class="v9MedicalBoard">
-      <section class="injuryCard v9InjuryFocus ${p.injury.level==="輕傷"?"light":p.injury.level==="中傷"?"mid":""}"><div class="v9ReportLabel">傷勢資料</div><div class="medicalGrid"><div class="medicalCell"><small>部位</small><b>${p.injury.area}</b></div><div class="medicalCell"><small>嚴重度</small><b>${p.injury.level}</b></div><div class="medicalCell"><small>原估缺席</small><b>${original} 場</b></div><div class="medicalCell"><small>恢復時間</small><b>${p.injury.recovery||"依復健進度"}</b></div></div></section>
+      <section class="injuryCard v9InjuryFocus ${p.injury.level==="輕傷"?"light":p.injury.level==="中傷"?"mid":""}"><div class="v9ReportLabel">傷勢資料</div><div class="medicalGrid"><div class="medicalCell"><small>部位</small><b>${p.injury.area}</b></div><div class="medicalCell"><small>嚴重度</small><b>${p.injury.level}</b></div><div class="medicalCell"><small>本季預估影響</small><b>${original} 場</b></div><div class="medicalCell"><small>醫療恢復期</small><b>${p.injury.recovery||"依復健進度"}</b></div></div></section>
       <aside class="medicalPanel v9MedicalHistory"><div class="v9ReportLabel">身體紀錄</div><div class="medicalHistory">${oldInjuryHTML()}</div><p>接下來以治療與復健為主，恢復時間會隨進度更新。</p></aside>
     </div>
   </section>`;
@@ -100,14 +100,15 @@ function showHealth(){
    let actualRisk=Math.round((1-Math.max(0,Math.min(1,Number(p.seasonInjurySurvival)||1)))*100);
    const healthScore=Math.max(0,Math.min(100,Math.round(p.health||100)));
    const load=Math.max(0,Math.min(100,Math.round(p.bodyLoad||0)));
+   const returnStatus=p.postInjuryStatus?.yearsRemaining>0?p.postInjuryStatus:null;
    special.innerHTML=`<section class="v9HealthReport is-clear" style="--health:${healthScore};--load:${load}">
     <header class="v9HealthHero">
-      <div class="v9HealthHeroCopy"><small>MEDICAL REPORT · ${p.year}</small><span>可以出賽</span><h3>球季完整收官</h3><p>沒有新增需要停賽治療的傷勢，身體狀態已完成季末整理。</p></div>
+      <div class="v9HealthHeroCopy"><small>MEDICAL REPORT · ${p.year}</small><span>${returnStatus?"限制復出":"可以出賽"}</span><h3>${returnStatus?`${returnStatus.injuryName} 後負荷管理`:`球季完整收官`}</h3><p>${returnStatus?`本季沒有新增傷勢，但仍依回場評估執行單場 ${returnStatus.minutesCap} 分鐘上限；限制尚餘 ${returnStatus.yearsRemaining} 季。`:`沒有新增需要停賽治療的傷勢，身體狀態已完成季末整理。`}</p></div>
       <div class="v9HealthGauge" role="meter" aria-label="目前健康 ${healthScore}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${healthScore}"><i><b>${healthScore}</b><small>健康</small></i></div>
     </header>
     <div class="v9HealthRiskStrip"><article><small>季初風險</small><b>${baseRisk}%</b></article><span>→</span><article><small>季末風險</small><b>${actualRisk}%</b></article><article><small>連續健康球季</small><b>${p.healthySeasons}</b></article></div>
     <div class="v9MedicalBoard">
-      <section class="medicalPanel v9LoadPanel"><div class="v9ReportLabel">身體負荷</div><div class="v9LoadValue"><b>${load}</b><span>/100<br>${medicalRiskLabel()}</span></div><div class="bodyLoadBar" role="meter" aria-label="身體負荷 ${load}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${load}"><div class="bodyLoadFill" style="width:${load}%"></div></div>${fadedOldInjuries.length?`<p>${fadedOldInjuries.join("、")} 的舊傷警報已解除。</p>`:"<p>目前沒有新增傷勢警報。</p>"}</section>
+      <section class="medicalPanel v9LoadPanel"><div class="v9ReportLabel">身體負荷</div><div class="v9LoadValue"><b>${load}</b><span>/100<br>${medicalRiskLabel()}</span></div><div class="bodyLoadBar" role="meter" aria-label="身體負荷 ${load}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${load}"><div class="bodyLoadFill" style="width:${load}%"></div></div>${returnStatus?`<p>${returnStatus.outcome==="failed"?"未通過原層級回場評估":"僅通過限制回場評估"}；出勤與合約市場會持續反映這項結果。</p>`:fadedOldInjuries.length?`<p>${fadedOldInjuries.join("、")} 的舊傷警報已解除。</p>`:"<p>目前沒有新增傷勢警報。</p>"}</section>
       <aside class="medicalPanel v9MedicalHistory"><div class="v9ReportLabel">身體紀錄</div><div class="medicalHistory">${oldInjuryHTML()}</div></aside>
     </div>
    </section>${ironHTML}${comebackHTML}`;
@@ -116,16 +117,13 @@ function showHealth(){
 }
 function showResults(){
  p.stage="results";resetMain();render();
- let r=RNG(p.seed+"season-"+p.year+"-"+p.path),ov=overall(),injPenalty=p.injury?ri(r,4,12):0;
+ let r=RNG(p.seed+"season-"+p.year+"-"+p.path),ov=overall(),injPenalty=p.injury?ri(r,4,12):Math.max(0,Number(p.postInjuryStatus?.performancePenalty)||0);
  let bias=performanceBiasByPosition(),mental=confidencePerformanceMod();
 
  let scheduledGames=scheduledGamesForSeason();
  let missedThisSeason=0;
  if(p.injury){
-   const recovery=ensureInjuryRecoveryState();
-   missedThisSeason=Math.min(scheduledGames,Math.max(recovery.remainingShare>0?1:0,Math.round(scheduledGames*Math.min(1,recovery.remainingShare))));
-   p.injury.remainingSeasonShare=Math.max(0,recovery.remainingShare-missedThisSeason/scheduledGames);
-   ensureInjuryRecoveryState();
+   missedThisSeason=consumeInjuryRecoveryForSeason();
  }
  const injuryMissed=missedThisSeason;
  const conductMissed=Math.min(Math.max(0,scheduledGames-missedThisSeason),Math.max(0,Math.round(p.conductSuspensionGames||0)));
@@ -316,7 +314,7 @@ const missReasonParts=[];
  let injurySeasonHTML = missedThisSeason>0 ? `<div class="injuryCard ${p.injury?.level==="輕傷"?"light":p.injury?.level==="中傷"?"mid":""}">
  <b>${missedHeadline}</b><br>
  原定賽程 ${scheduledGames} 場｜${missReasonParts.join("｜")}｜實際出賽 <b>${games}</b> 場
- ${p.injury?.remainingGames>0?`<br><span class="bad">目前仍預估缺席 ${p.injury.remainingGames} 場，傷勢將延續至下一階段。</span>`:""}
+ ${p.injury?.remainingRecoveryMonths>0?`<br><span class="bad">目前仍需復健 ${injuryRecoveryLabel()}，傷勢會跨季延續，不以短賽程折算痊癒。</span>`:""}
  </div>` : "";
  let veteranMinutesHTML=isProPath()&&veteranProfile.label==="身體狀態管理"?`<div class="notice"><b>⏱️ ${veteranProfile.label}</b><br>依目前健康、出勤與身體負荷，教練團將單場負荷控制在 <b>${maxMins} 分鐘</b>左右。</div>`:"";
  let keyBattleHTML=keyBattle?`<div class="keyBattleResult ${keyBattle.kind==="national"?"national":"regular"}"><div class="resultSectionTitle">本季關鍵戰｜${escapeFeedText(keyBattle.objective||keyBattle.outcome||"已完成")}</div><b>${escapeFeedText(keyBattle.title||"本季關鍵戰")}</b>｜${escapeFeedText(keyBattle.opponent||"代表性對手")}<br><span class="mut">${escapeFeedText(keyBattle.battleLabel||"以球隊勝負為優先")}｜${keyBattle.performanceOutcome?`場上表現：${escapeFeedText(keyBattle.performanceOutcome)}｜`:""}${escapeFeedText(keyBattle.teamResult||"本戰結果已記錄")}${keyBattle.marketDelta?`｜球探評價 ${keyBattle.marketDelta>0?"+":""}${keyBattle.marketDelta}`:""}</span></div>`:"";
@@ -570,12 +568,11 @@ function finishSeasonLocal(){
 
  if(p.injury){
    ensureInjuryRecoveryState();
-   if((p.injury.remainingSeasonShare??0)<=0){
-     if(p.injury.level==="重傷"){p.severeInjuryRecovered=true;p.recoverySeasons=0}
-     logIt(`✅ ${p.injury.name} 康復，下一階段可正常出賽`);
-     p.bodyLoad=Math.round(Math.max(0,(p.bodyLoad||0)-10));p.injury=null;p.health=Math.min(100,p.health+15);
+   if((p.injury.remainingRecoveryMonths??0)<=.1){
+     const result=settleInjuryReturn();
+     if(result?.outcome==="full")p.bodyLoad=Math.round(Math.max(0,(p.bodyLoad||0)-10));
    }else{
-     logIt(`🩺 ${p.injury.name} 持續復健｜預估仍缺席 ${p.injury.remainingGames} 場`);
+     logIt(`🩺 ${p.injury.name} 持續復健｜尚需 ${injuryRecoveryLabel()}`);
    }
  }
  const staminaRecovery=Math.max(-3,Math.min(7,Math.round((p.stats.ath-50)*.10)));
@@ -584,6 +581,7 @@ function finishSeasonLocal(){
  if(!p.injury)p.health=Math.min(100,(p.health||100)+(p.seasonPlan==="care"?10:6));
  p.confidence=Math.max(0,Math.min(100,Math.round(50+(p.confidence-50)*.88)));
  if((p.conductMarketPenalty||0)>0&&(p.conductPenaltySetYear||0)<p.year)p.conductMarketPenalty=Math.max(0,p.conductMarketPenalty-4);
+ advancePostInjuryStatus();
 
  // 高中：三年後第一次人生岔路
  if(p.path==="HBL"){

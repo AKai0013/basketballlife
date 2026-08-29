@@ -1089,7 +1089,7 @@ function retirementLegacyProfile(){
  if(first&&last&&first.identity!==last.identity)sentences.push(`場上角色由「${first.identity}」轉為「${last.identity}」，生涯後段仍找到新的位置。`);
  else if(peak)sentences.push(`生涯最具代表性的場上位置是「${peak.identity}」。`);
  const majorMedical=(Array.isArray(p?.medicalHistory)?p.medicalHistory:[]).filter(x=>/大傷|重傷/.test(String(x?.tier||x?.level||""))||Number(x?.missedGames||0)>=16).sort((a,b)=>Number(a?.year||0)-Number(b?.year||0))[0];
- if(majorMedical){const after=seasons.filter(x=>Number(x.year)>Number(majorMedical.year)).length;if(after)sentences.push(`${majorMedical.year} 年遭遇${majorMedical.name||"重大傷病"}後，他仍完成後續 ${after} 個職業球季。`)}
+ if(majorMedical){const after=seasons.filter(x=>Number(x.year)>Number(majorMedical.year)).length;if(after)sentences.push(`${majorMedical.year} 年遭遇${majorMedical.name||"重大傷病"}後，他仍完成後續 ${after} 個職業球季。`);else if(retirementReasonKind()==="injury")sentences.push(`${majorMedical.year} 年遭遇${majorMedical.name||"重大傷病"}後，他在回場評估結束後決定離開現役。`)}
  if(returnedHome)sentences.push(`最後回到 ${p.homecomingTeam||p.homecomingRegion}，完成生涯最後一舞。`);
 
  const evidence=[];
@@ -1098,7 +1098,7 @@ function retirementLegacyProfile(){
  if(longest)addEvidence(`${longest.team} ${longest.seasons} 季`);
  if(majorMedical&&first&&last&&first.identity!==last.identity)addEvidence(`${majorMedical.year} 年傷後：${first.identity} → ${last.identity}`);
  else if(first&&last&&first.identity!==last.identity)addEvidence(`${first.identity} → ${last.identity}`);
- else if(majorMedical)addEvidence(`${majorMedical.year} 年重大傷病後續戰`);
+ else if(majorMedical)addEvidence(`${majorMedical.year} 年${majorMedical.name||"重大傷病"}後續戰`);
  if(returnedHome)addEvidence("返鄉最後一舞");
  addEvidence(seasons.length?`${seasons.length} 個職業球季`:`${(p?.seasonHistory||[]).length} 季球員紀錄`);
  if(majorAwards)addEvidence(`${majorAwards} 項主要個人榮譽`);

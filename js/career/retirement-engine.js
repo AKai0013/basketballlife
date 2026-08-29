@@ -162,10 +162,11 @@ function veteranMinutesProfile(ov=overall()){
  cap+=readiness;
  if(ov>=leagueTarget()+8&&(p.rep||0)>=10)cap+=2;
  if(p.injury)cap-=p.injury.level==="重傷"?5:p.injury.level==="大傷"?3:2;
+ if(p.postInjuryStatus?.yearsRemaining>0){cap=Math.min(cap,Number(p.postInjuryStatus.minutesCap)||26);penalty+=Number(p.postInjuryStatus.performancePenalty||0)*.35;}
  if(bodyLoad>=75)cap-=2;
  if(p.lastDanceActive)cap=Math.min(cap,22);
  if(p.retirementDefianceUsed&&!p.lastDanceActive)cap=Math.min(cap,20);
- const needsLoadManagement=readiness<=1||bodyLoad>=65||availability<.75||health<80||!!p.injury||["benchLeader","garbage"].includes(p.roleState?.current);
+ const needsLoadManagement=readiness<=1||bodyLoad>=65||availability<.75||health<80||!!p.injury||!!p.postInjuryStatus||["benchLeader","garbage"].includes(p.roleState?.current);
  const label=needsLoadManagement?"身體狀態管理":readiness>=5&&["core","starter"].includes(p.roleState?.current)?"正常主力輪替":"依對位輪替";
   return {penalty,cap:Math.max(12,Math.min(36,cap)),label};
 }

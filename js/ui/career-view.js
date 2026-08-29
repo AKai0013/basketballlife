@@ -101,7 +101,7 @@ function render(){
  ppos.title=`${p.handedness||"右手"}｜臂展 ${p.wingspanCm||"—"} cm｜出生地 ${p.birthplace||"未設定"}`;teamname.textContent=currentTeam()?`・${currentTeam()}`:"";
  renderPlayerAvatar(document.getElementById("playerAvatar"),p.avatarSeed,p.pos,p.age,`${p.name} 的球員頭像`);
  age.textContent=p.age;year.textContent=p.year;ovr.textContent=overall();path.textContent=p.path;
- if(injurySummary)injurySummary.innerHTML=p.injury?`目前傷勢：<span class="bad">${p.injury.name}（${p.injury.level}）</span>`:(p.injuryHistory.length?`傷病履歷：${p.injuryHistory.length} 次正式傷勢`:"目前沒有正式傷病紀錄。");
+ if(injurySummary)injurySummary.innerHTML=p.injury?`目前傷勢：<span class="bad">${p.injury.name}（${p.injury.level}）</span>${typeof injuryRecoveryLabel==="function"?`｜尚需復健 ${injuryRecoveryLabel(p.injury)}`:""}`:(p.postInjuryStatus?.yearsRemaining?`回場限制：<span class="bad">${p.postInjuryStatus.injuryName} 後 ${p.postInjuryStatus.yearsRemaining} 季負荷管理</span>`:p.injuryHistory.length?`傷病履歷：${p.injuryHistory.length} 次正式傷勢`:"目前沒有正式傷病紀錄。");
  if(log)log.innerHTML=p.log.map(x=>`<div>• ${x}</div>`).join("");
  const cl=confidenceLabel();
  titleShelf.innerHTML=([...[...p.titles,...p.chainTitles].map(t=>{const def=typeof titleDefinition==="function"?titleDefinition(t):{};const effect=t.id==="genius"?(t.effect||def.effect):(def.effect||t.effect);return `<span class="titleBadge ${titleRarityClass(t)}" tabindex="0" data-tip="${escapeFeedText(effect||"生涯特殊稱號")}">${def.name||t.name}</span>`}),
