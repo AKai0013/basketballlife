@@ -50,7 +50,7 @@
 - README 與全量敘事審稿文件已同步目前正式數量。
 - PR #85 合併完整敘事補強；PR #86 記錄正式發布狀態。
 
-## 本機未發布：傷病系統重整
+## 正式發布：傷病系統重整
 
 - 傷病恢復改以月份為主，依受傷時點計算當季缺席，重大傷病可自然跨越兩個球季；短賽程聯盟不再把 9～14 個月的阿基里斯腱斷裂顯示成幾場就痊癒。
 - ACL、阿基里斯腱、髕腱、Lisfranc、嚴重踝傷、腿後肌腱與高風險應力性骨折具有個別恢復期與回場校準。
@@ -93,9 +93,9 @@
 - 未修改存檔 schema、Seed 規則、OVR 成長、能力成本、合約、老化、個人排行榜公式或正式 D1 資料。
 - 舊存檔、退休資料、公開生涯及既有排行榜相容路徑維持不變。
 
-## 目前本機狀態
+## 目前發布狀態
 
-- `CODEX_HANDOFF.md` 整理與傷病系統重整均尚未提交、上傳、合併或部署；正式 `main` 仍是 `3d13aa4b973ab4ebf4bdef236cd2a411aaf612ff`。
+- 傷病系統重整已由 `codex/v911-injury-recovery` 合併至正式 `main`；程式合併提交為 `f744cb8`，Cloudflare Pages 正式資產已確認包含新回場與退休文案。
 - 本次傷病修改檔案：`data/injuries.js`、`js/career/injury-engine.js`、`js/career/season-engine.js`、`js/events/event-engine.js`、`js/career/retirement-engine.js`、`js/career/contract-engine.js`、`js/career/highlight-engine.js`、`js/ui/career-view.js`、`js/ui/retirement-view.js`、`js/state.js`、`tests/v911-injury-recovery.test.mjs`。
 - 使用者原有工作狀態必須保留，不得納入無關提交：`basketballlife-emblem.jpg` 的刪除狀態、`.wrangler/`、`DEBUG_HANDOFF.md`、`prototypes/`、`scripts/recalculate-v9-growth.mjs`。
 - `DEBUG_HANDOFF.md` 目前是未追蹤的歷史除錯紀錄，內容多為已解決問題，不代表正式版仍有相同故障。
@@ -109,7 +109,7 @@
 
 ## 下一個最安全任務
 
-收到使用者明確「上傳合併部署」授權後，先提交並發布已完成 Preview 驗收的傷病閉環；之後再執行正式多人驗收矩陣：
+執行正式多人驗收矩陣：
 
 1. 兩人完整生涯：驗證季中共同回合、季末同步、斷線重連與跨季回訪。
 2. 三人精華生涯：驗證三種責任互補、重複責任失敗、等待與共同結算。
