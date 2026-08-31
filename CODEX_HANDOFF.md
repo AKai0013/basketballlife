@@ -11,9 +11,10 @@
 - 階段：production／maintenance
 - 正式版本：V9.1.1
 - 正式來源：GitHub `main`
-- 正式提交：`7f53e58ab7290e2e8c6f36396450b4d022aba661`
+- 正式產品程式基線：`7f53e58ab7290e2e8c6f36396450b4d022aba661`
+- 最新文件內容合併：`ca89fe0`（本檔案無法自我記錄其後續發布紀錄提交；接手時仍須先 fetch `origin/main`）
 - 正式網站：https://basketballlife.pages.dev/
-- 狀態：PR #85、#86 已合併；傷病系統以 `5511b67` 實作、`f744cb8` 合併、`7f53e58` 記錄發布，Cloudflare Pages 已部署並驗證。
+- 狀態：PR #85、#86 已合併；傷病系統以 `5511b67` 實作、`f744cb8` 合併、`7f53e58` 記錄發布；V9.1.1 文件以 `52843c5` 更新、`ca89fe0` 合併，Cloudflare Pages 已部署並驗證。
 
 ## 正式已上線
 
@@ -105,14 +106,15 @@
 - 使用者原有工作狀態必須保留，不得納入無關提交：`basketballlife-emblem.jpg` 的刪除狀態、`.wrangler/`、`DEBUG_HANDOFF.md`、`prototypes/`、`scripts/recalculate-v9-growth.mjs`。
 - `DEBUG_HANDOFF.md` 目前是未追蹤的歷史除錯紀錄，內容多為已解決問題，不代表正式版仍有相同故障。
 
-## 2026-08-31 本機未發布文件更新
+## 2026-08-31 正式文件更新
 
-- `CODEX_HANDOFF.md`：頂部正式提交改為 `7f53e58`，補齊傷病發布鏈與本次未發布狀態。
+- `CODEX_HANDOFF.md`：區分正式產品程式基線與最新文件合併，補齊傷病及文件發布鏈。
 - `CLOUDFLARE_D1_SETUP.md`：補齊六個 migration、Preview／Production 隔離、PowerShell 指令、多人 D1 寫入與 schema 核對。
 - `README.md`：補上月份制傷病與回場評估發布說明，移除精華生涯時間承諾。
 - `docs/multiplayer-acceptance-matrix-v911.md`：新增兩人完整生涯、三人精華生涯、條件交會、退休終章、重連冪等與裝置驗收矩陣。
-- 驗證：文件相關、多人與傷病針對性測試 60/60 通過；`git diff --check` 無錯誤。
-- 以上四個文件尚未 commit、push、merge 或部署；多人驗收項目仍全部標記為「未執行」。
+- 發布：分支 `codex/v911-docs-multiplayer-acceptance` 的內容提交為 `52843c5`，正式 `main` 的 no-ff 合併提交為 `ca89fe0`。
+- 驗證：完整自動測試 243/243 通過；`git diff --check` 無錯誤；正式站四份文件皆回傳 HTTP 200 且包含預期內容。
+- 未變更 production D1 schema 或資料，也未執行任何 D1 migration／寫入；多人驗收矩陣 43 項仍全部標記為「未執行」。
 
 ## 已知風險／尚未驗證
 
