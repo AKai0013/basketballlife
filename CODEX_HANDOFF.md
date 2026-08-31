@@ -1,6 +1,6 @@
 # BasketballLife 工作交接
 
-最後更新：2026-08-29
+最後更新：2026-08-31
 
 ## 專案目標
 
@@ -11,9 +11,9 @@
 - 階段：production／maintenance
 - 正式版本：V9.1.1
 - 正式來源：GitHub `main`
-- 正式提交：`3d13aa4b973ab4ebf4bdef236cd2a411aaf612ff`
+- 正式提交：`7f53e58ab7290e2e8c6f36396450b4d022aba661`
 - 正式網站：https://basketballlife.pages.dev/
-- 狀態：PR #85、#86 已合併，Cloudflare Pages 已部署並驗證。
+- 狀態：PR #85、#86 已合併；傷病系統以 `5511b67` 實作、`f744cb8` 合併、`7f53e58` 記錄發布，Cloudflare Pages 已部署並驗證。
 
 ## 正式已上線
 
@@ -43,6 +43,9 @@
 
 ## 最新完成工作
 
+- 傷病恢復改為月份制，補齊跨季缺席、同一傷病 episode 惡化、回場評估、市場限制、追加復健與因傷退休閉環。
+- 傷病程式已由 `codex/v911-injury-recovery` 合併至 `main`，正式發布紀錄為 `7f53e58`。
+- 以下敲事補強內容也已在正式版：
 - 補齊 54 則舊一般事件原本會掉回泛用結果的文本。
 - 擴寫 179 個過短的重大故事結果或記憶文字，補上人物反應、已發生後果及可回訪記號。
 - 場外事件由 17 增至 20 則。
@@ -73,6 +76,8 @@
 - `functions/api/shared-season-events.js`：多人季中條件事件。
 - `functions/api/shared-career-stories.js`：多人跨季主線。
 - `functions/api/key-battle.js`：多人共同回合與共同結算。
+- `docs/multiplayer-acceptance-matrix-v911.md`：兩人／三人共享世界的正式驗收矩陣與證據格式。
+- `CLOUDFLARE_D1_SETUP.md`：D1 環境、migration、Preview 隔離與上線檢查。
 - `docs/narrative-copy-review-v911.md`：全量敘事審稿索引。
 - `tests/`：單人、精華、多人、D1、Seed、退休及相容性回歸測試。
 
@@ -100,6 +105,15 @@
 - 使用者原有工作狀態必須保留，不得納入無關提交：`basketballlife-emblem.jpg` 的刪除狀態、`.wrangler/`、`DEBUG_HANDOFF.md`、`prototypes/`、`scripts/recalculate-v9-growth.mjs`。
 - `DEBUG_HANDOFF.md` 目前是未追蹤的歷史除錯紀錄，內容多為已解決問題，不代表正式版仍有相同故障。
 
+## 2026-08-31 本機未發布文件更新
+
+- `CODEX_HANDOFF.md`：頂部正式提交改為 `7f53e58`，補齊傷病發布鏈與本次未發布狀態。
+- `CLOUDFLARE_D1_SETUP.md`：補齊六個 migration、Preview／Production 隔離、PowerShell 指令、多人 D1 寫入與 schema 核對。
+- `README.md`：補上月份制傷病與回場評估發布說明，移除精華生涯時間承諾。
+- `docs/multiplayer-acceptance-matrix-v911.md`：新增兩人完整生涯、三人精華生涯、條件交會、退休終章、重連冪等與裝置驗收矩陣。
+- 驗證：文件相關、多人與傷病針對性測試 60/60 通過；`git diff --check` 無錯誤。
+- 以上四個文件尚未 commit、push、merge 或部署；多人驗收項目仍全部標記為「未執行」。
+
 ## 已知風險／尚未驗證
 
 1. 尚未在兩至三台真實裝置上，完整跑完跨網路多人長期生涯。
@@ -109,7 +123,7 @@
 
 ## 下一個最安全任務
 
-執行正式多人驗收矩陣：
+依 `docs/multiplayer-acceptance-matrix-v911.md` 在隔離 Preview D1 執行正式多人驗收：
 
 1. 兩人完整生涯：驗證季中共同回合、季末同步、斷線重連與跨季回訪。
 2. 三人精華生涯：驗證三種責任互補、重複責任失敗、等待與共同結算。
