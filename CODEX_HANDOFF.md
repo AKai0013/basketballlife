@@ -138,3 +138,42 @@
 - 未收到使用者明確「上傳／合併／部署」授權前，不得推送、建立或合併 PR、部署、修改版本號或 README。
 - 有關遊戲邏輯、存檔、多人、排行榜或 D1 的修改必須先在 Preview 驗證，不以正式站作測試環境。
 - 歷史實作細節請查 Git 紀錄；根交接文件只維護目前可執行狀態。
+
+## 2026-08-31 多人最終驗收與發布候選
+
+### 基線與隔離環境
+
+- 驗收基線：執行前本機 `HEAD` 與 `origin/main` 均為 `5b6e6a5720f5ba2d62c39b2ddb2925ba59fdc80e`；其後多人修正的正式發布狀態以目前 Git `main` 為準。
+- 因本機沒有可用的 Wrangler cache，新增 `tools/local-multiplayer-preview.mjs`，載入正式 `functions/api/[[path]].js` 與六個既有 migration，使用全新 SQLite D1 模擬庫；未連線、讀寫或遷移 Production D1。
+- 三個隔離 origin：`127.0.0.1:8791`、`:8792`、`:8793`，各自保存玩家 token／localStorage，共用同一隔離 D1。
+- 兩人完整房 `4EGW7K`；三人精華房 `QTY5JV`。
+
+### 本機修正
+
+- `js/online/key-battle.js`：恢復共享存檔後立即重新對帳季中 checkpoint，避免送出選擇後重載回到一般事件。
+- `js/online/key-battle.js`：等待大廳重繪不再停止自己的輪詢；隊友加入與房主開局可自動更新。
+- `js/online/key-battle.js`：未開局房重進時讀回保存的完整／精華模式，避免精華房重載後誤開完整生涯。
+- `tests/v90-online-key-battle.test.mjs`：新增三條前端續玩／輪詢／模式保存契約測試。
+
+### 實際瀏覽器結果
+
+- 兩人完整生涯：不同 HBL 球隊與球員設定分離；A 先到共同回合會等待；A 主動進攻、B 提前封鎖形成同一權威結果；A 重載可補抓結果並繼續原生涯。
+- 兩人 D1：2 choices、2 history rows、1 個 event ID `shared-2026-midseason-hbl_match`。
+- 三人精華生涯：後衛／側翼／內線三個玩家自動跟隨房主開局；A、B 先送出時不會略過 C；C 送出後三端看到同一排名、同一敘事與同一事件。
+- 三人 D1：3 choices、3 history rows、1 個 event ID；世界 seed 為 `v2:highlight`。
+- 390px 與 430px：document scroll width 等於 client width，確認按鈕分別約 321px／363px，可操作且未被原生涯導覽覆蓋。
+- 三人正式單人生涯實際球隊為 A／C 欣榮高中、B 南弧高中；因此矩陣 B01 的「三人不同 HBL 球隊」只列部分通過。系統本來支援同隊多人事件，本次未為測試條文擴大修改抽隊規則。
+
+### 自動驗證
+
+- `node --check js/online/key-battle.js`：通過。
+- `node --check tools/local-multiplayer-preview.mjs`：通過。
+- 多人＋精華專項：53/53 通過。
+- 完整 Node 測試：246/246 通過。
+- `git diff --check`：通過；只有既有 LF→CRLF 提示。
+
+### 發布與剩餘範圍
+
+- 本次發布範圍未修改版本號、README、Cloudflare 設定或 Production D1；push、PR、merge 與 deploy 是否完成必須以 GitHub、Cloudflare Pages 與正式端點的當次驗證為準。
+- 尚未用瀏覽器實跑：季末／跨季主線、同隊重複責任、封存恢復、提早退休／共同終章、手機 Safari 真機與 API 中斷。這些仍保留在 `docs/multiplayer-acceptance-matrix-v911.md`，自動測試覆蓋不等於真人／真機驗收。
+- 使用者既有髒檔仍須排除：`basketballlife-emblem.jpg` 刪除、`.wrangler/`、`DEBUG_HANDOFF.md`、`prototypes/`、`scripts/recalculate-v9-growth.mjs`。
