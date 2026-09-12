@@ -904,6 +904,11 @@ body.blGameMode .v9DraftRouteReport small{color:#748895!important;font-size:8px!
 body.blGameMode .v9DraftRouteReport b{min-width:0;color:#dce7ec;font-size:10px;line-height:1.45;overflow-wrap:anywhere}
 body.blGameMode .draftRouteChoice.selected .v9DraftRouteReport>i{background:#19140f}
 body.blGameMode .v9DraftResultShell{display:grid;gap:18px}
+body.blGameMode .v9DraftRecoveryAction{display:grid;gap:7px;padding:15px;border:1px solid #8b5931;border-left:4px solid #f09a4e;border-radius:13px;background:linear-gradient(120deg,#26190f,#0c171e)}
+body.blGameMode .v9DraftRecoveryAction>small{color:#ee974c;font-size:9px;font-weight:1000;letter-spacing:.14em}
+body.blGameMode .v9DraftRecoveryAction>b{color:#f7efe5;font-size:20px}
+body.blGameMode .v9DraftRecoveryAction>p{margin:0;color:#a9bac4;font-size:11px;line-height:1.6}
+body.blGameMode .v9DraftRecoveryAction>.choice{margin-top:5px!important}
 body.blGameMode .v9DraftResultShell>.draftScoutingSummary{margin:0!important}
 body.blGameMode .v9DraftResultShell .draftResultList{gap:10px;margin:0!important}
 body.blGameMode .v9DraftResultShell .draftResultRow{display:grid!important;grid-template-columns:1fr!important;gap:11px!important;padding:16px!important;overflow:hidden}

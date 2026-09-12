@@ -177,3 +177,21 @@
 - 本次發布範圍未修改版本號、README、Cloudflare 設定或 Production D1；push、PR、merge 與 deploy 是否完成必須以 GitHub、Cloudflare Pages 與正式端點的當次驗證為準。
 - 尚未用瀏覽器實跑：季末／跨季主線、同隊重複責任、封存恢復、提早退休／共同終章、手機 Safari 真機與 API 中斷。這些仍保留在 `docs/multiplayer-acceptance-matrix-v911.md`，自動測試覆蓋不等於真人／真機驗收。
 - 使用者既有髒檔仍須排除：`basketballlife-emblem.jpg` 刪除、`.wrangler/`、`DEBUG_HANDOFF.md`、`prototypes/`、`scripts/recalculate-v9-growth.mjs`。
+
+## 2026-09-12 共享世界大一 NBA 落選續玩修正
+
+### 問題與修正
+
+- 玩家回報：兩名共享世界玩家同在大一挑戰 NBA 選秀並落選後，畫面看似沒有後續且無法結束生涯。
+- 根因：落選結果把標準 `choices` 下一步區清空，只在長篇選秀結果最底部的資訊卡放置小型續讀按鈕；手機上容易被判斷為卡死。
+- `js/career/contract-engine.js`：落選結果最前方新增「落選不是結束」續讀入口，結果底部也保留標準主操作；按下後沿用既有 `stayCollege()`，升上下一年級並正常推進年份、年齡與下一季，未改動選秀機率或 RNG。
+- `css/v9-ui.css`：只新增落選續讀入口樣式，未改動其他決策頁。
+- `tests/v90-draft.test.mjs`：新增 host／guest 兩名共享玩家皆在大一 NBA 落選後可獨立進入大二的回歸測試，並確認共享世界代碼與角色保留。
+
+### 驗證與發布邊界
+
+- 完整 Node 測試：247/247 通過。
+- Chrome 隔離 Preview：桌機 1440px、手機 430px、手機 390px 均可看到並點擊續讀入口；三者都從 2030／18 歲／大一進入 2031／19 歲／大二，無水平溢位且無頁面錯誤。
+- Preview 使用 `tools/local-multiplayer-preview.mjs` 與全新本機 SQLite D1 模擬庫；未連線、讀寫或遷移 Production D1。
+- 版本維持 V9.1.1；未修改 README、選秀機率、Seed／RNG、存檔 schema、Cloudflare 設定或 Production D1。
+- 發布分支：`codex/v911-shared-freshman-draft-recovery`；push、PR、merge、Cloudflare Pages 與正式站驗證狀態必須以本次發布完成後的 GitHub／Cloudflare 結果為準。

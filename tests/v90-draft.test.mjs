@@ -10,6 +10,8 @@ const read=relative=>fs.readFileSync(path.join(root,relative),"utf8");
 
 function draftContext(){
   const random=()=>.12;
+  const element=()=>({innerHTML:"",textContent:"",classList:{add(){},remove(){}}});
+  const elements={chapter:element(),title:element(),text:element(),special:element(),choices:element(),flow:element(),next:element()};
   const context={
     p:{
       careerVersion:"9.0.0",seed:"V9DRAFT1",seedTier:"SS+",year:2032,age:21,grade:3,path:"NCAA D1",team:"測試大學",pos:"PG",
@@ -18,8 +20,11 @@ function draftContext(){
       talentProfile:{model:"v9-specialist-1",label:"控場指揮官",core:["handle","pass","iq"],support:["shoot"],affinity:{handle:"core",pass:"core",iq:"core",shoot:"support",finish:"foundation",defense:"foundation",rebound:"foundation",ath:"support"}},
       seasonStats:{pts:18,ast:7,reb:4,stl:1.4,blk:.2},lastSeasonAwards:[]
     },
+    ...elements,
     window:{BL_LEAGUE_CFG:{},BL_STUDENT_SCHEDULES:{}},RNG:()=>random,ri:(r,min,max)=>min+Math.floor(r()*(max-min+1)),
-    overall:()=>78,scoutingScore:()=>88,leagueMarketRank:league=>league==="NBA"?7:2
+    overall:()=>78,scoutingScore:()=>88,leagueMarketRank:league=>league==="NBA"?7:2,
+    collegeMaxYears:()=>4,isProPath:()=>false,resetMain(){},render(){},recordV8Story(){},
+    showCareerChapter(type){context.lastCareerChapter=type;context.p.stage="transition";}
   };
   vm.createContext(context);
   vm.runInContext(read("js/career/ability-profile.js"),context);
@@ -97,6 +102,34 @@ test("V9 draft UI exposes scouting, projection, need, fit and contract guarantee
   assert.match(storage,/rebuildV9CollegeDraftResultFromSave\(save\.screen\)/);
   assert.match(css,/\.v9DraftOutcomeGrid/);
   assert.match(css,/\.v9DraftContractFacts/);
+});
+
+test("both shared-world freshmen can continue independently after NBA rejection",()=>{
+  for(const [index,role] of ["host","guest"].entries()){
+    const context=draftContext(),before={year:2030,age:18};
+    Object.assign(context.p,{year:before.year,age:before.age,grade:1,path:"NCAA D1",team:`共享測試大學${index+1}`,stage:"decision",pendingSeasonAdvance:true,draftEntrySelections:["nba"],onlineSharedWorld:{code:"ABC123",role}});
+    const assessment={score:72,ov:68,impact:20,grade:1,profile:{level:"star",label:"主力",mins:31}};
+    const nba=context.collegeDraftRoutes().find(route=>route.id==="nba"),draft=context.v9DraftEntryDetails(nba,assessment,false);
+    context.renderCollegeDraftResult(assessment,[{id:"nba",label:nba.label,league:nba.league,method:nba.method,chance:20,roll:99,success:false,draft,feedback:"本屆未錄取"}]);
+
+    assert.match(context.choices.innerHTML,/onclick="stayCollege\(\)"/);
+    assert.match(context.choices.innerHTML,/回大學繼續打/);
+    assert.match(context.choices.innerHTML,/正常進入下一季/);
+    assert.match(context.special.innerHTML,/v9DraftRecoveryAction/);
+    assert.match(context.special.innerHTML,/落選不是結束/);
+    assert.match(context.special.innerHTML,/onclick="stayCollege\(\)"/);
+
+    context.stayCollege();
+    assert.equal(context.p.grade,2);
+    assert.equal(context.p.year,before.year+1);
+    assert.equal(context.p.age,before.age+1);
+    assert.equal(context.p.pendingSeasonAdvance,false);
+    assert.equal(context.p.onlineSharedWorld.code,"ABC123");
+    assert.equal(context.p.onlineSharedWorld.role,role);
+    assert.equal(context.p.draftEntrySelections.length,0);
+    assert.equal(context.lastCareerChapter,"newSchoolYear");
+    assert.equal(context.p.stage,"transition");
+  }
 });
 
 test("draft contract cards distinguish selected picks from non-draft invitations",()=>{
