@@ -904,6 +904,12 @@ body.blGameMode .v9DraftRouteReport small{color:#748895!important;font-size:8px!
 body.blGameMode .v9DraftRouteReport b{min-width:0;color:#dce7ec;font-size:10px;line-height:1.45;overflow-wrap:anywhere}
 body.blGameMode .draftRouteChoice.selected .v9DraftRouteReport>i{background:#19140f}
 body.blGameMode .v9DraftResultShell{display:grid;gap:18px}
+.wrap>.serviceClosureNotice{margin:18px 0;padding:18px 20px;border:1px solid #a55c3b;border-left:4px solid #ff9b62;border-radius:12px;background:#26170f;color:#f8eee7;text-align:left}
+.wrap:has(>#setup.hidden)>.serviceClosureNotice{display:none}
+.serviceClosureNotice>b{display:block;margin-bottom:8px;font-size:20px;line-height:1.4;color:#ffc89f}
+.serviceClosureNotice>p{margin:8px 0 0;font-size:16px;line-height:1.7;overflow-wrap:anywhere}
+.serviceClosureNotice time{font-weight:900;color:#fff1dc}
+@media(max-width:430px){.wrap>.serviceClosureNotice{margin:12px 8px;padding:16px}}
 body.blGameMode .v9DraftRecoveryAction{display:grid;gap:7px;padding:15px;border:1px solid #8b5931;border-left:4px solid #f09a4e;border-radius:13px;background:linear-gradient(120deg,#26190f,#0c171e)}
 body.blGameMode .v9DraftRecoveryAction>small{color:#ee974c;font-size:9px;font-weight:1000;letter-spacing:.14em}
 body.blGameMode .v9DraftRecoveryAction>b{color:#f7efe5;font-size:20px}
