@@ -1,3 +1,5 @@
+import {serviceClosureResponse} from "./service-closure.js";
+
 const PREVIEW_ASSET_REV = "growth-ui-v1-20260817d";
 
 function previewAssets() {
@@ -9,6 +11,8 @@ function previewAssets() {
 }
 
 export async function onRequest(context) {
+  const closed=serviceClosureResponse(context.request);
+  if(closed)return closed;
   const response = await context.next();
   if (context.request.method !== "GET") return response;
 
